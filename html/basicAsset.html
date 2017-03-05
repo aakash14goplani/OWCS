@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Oracle WebCenter Sites Tutorial</title>
+        <link rel="stylesheet" type="text/css" href="../styles/bootstrap/css/bootstrap.min.css" />
+    </head>
+    <body>
+    	<div class="page-header">
+   			<h1 class="text-center text-danger">Rendering Basic Assets</h1> 
+        </div>
+        <hr />
+        <div class="container">        	
+       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
+			<ol>
+            	<li>Load the basic asset (using <code>asset:load</code> tag)</li>
+                <li>Scatter the loaded basic asset (using <code>asset:scatter</code> tag) OR get the loaded basic asset (using <code>asset:get</code> tag)</li>
+                <li>Retrieve information after scattering the asset via <code>prefix:attributename</code> (using <code>ics:getvar</code> tag)</li>
+            </ol>
+            <u>CASE 1</u>: 
+            <p>If you know asset type(<code>c</code>) and asset id (<code>cid</code>). This is basically used to retrieve information from the basic asset usually to render on page. Following example shows retrieving name after the basic asset is loaded and scattered.</p>    
+           	<code>
+            	&lt;asset:load name=&quot;anyName&quot; type='&lt;%=ics.GetVar(&quot;c&quot;)%&gt;' objectid='&lt;%=ics.GetVar(&quot;cid&quot;)
+                %&gt;' flushonvoid=&quot;true&quot; /&gt; <br/>
+				&lt;asset:scatter name=&quot;anyName&quot; prefix=&quot;asset&quot; /&gt; <br/>
+				&lt;ics:getvar name=&quot;asset:attribute_name&quot; /&gt; <br/>
+                
+                <p class="text-center">OR</p>
+
+                &lt;asset:load name=&quot;anyName&quot; type='&lt;%=ics.GetVar(&quot;c&quot;)%&gt;
+                ' objectid='&lt;%=ics.GetVar(&quot;cid&quot;)%&gt;' flushonvoid=&quot;true&quot; /&gt;<br/>
+				&lt;asset:get name=&quot;anyName&quot; field=&quot;taxo_type&quot; /&gt;<br/>
+				&lt;ics:getvar name=&quot;taxo_type&quot; /&gt;<br/><br/>
+            </code>
+            <u> CASE 2</u>: 
+            <p>If you know asset type,  a field, value and site. This is generally used to get association using asset:children tag after the asset is loaded.</p>
+            <code>
+            	&lt;asset:load name=&quot;anyName&quot; type=&quot;assetTypeName&quot; field=&quot;name&quot; value=&quot;someAssetName
+                &quot; site='&lt;%=ics.GetVar(&quot;site&quot;)%&gt;'/&gt;<br/>
+				&lt;asset:get name=&quot;anyName&quot; field=&quot;description&quot; /&gt; <br/>
+				&lt;ics:getvar name=&quot;description&quot;/&gt;
+            </code>
+            <h3 class="text-center">XML Version</h3>
+            <code>
+            	&lt;ASSET.LOAD NAME=&quot;assetName&quot; TYPE=&quot;assetType&quot; OBJECTID=&quot;object.id&quot; FLUSHONVOID=&quot;true&quot; /
+                &gt;<br/>
+				&lt;ASSET.SCATTER NAME=&quot;assetName&quot; PREFIX=&quot;variablePrefix&quot; /&gt;<br/>
+				&lt;CSVAR NAME=&quot;Variables.variablePrefix:attribute_name&quot;/&gt;<br/><br/>
+
+				&lt;ASSET.LOAD NAME=&quot;assetName&quot; TYPE=&quot;assetType&quot; FIELD=&quot;fieldName&quot; VALUE=&quot;fieldValue
+                &quot; SITE=&quot;siteName&quot; /&gt;<br/>
+				&lt;ASSET.GET NAME=&quot;assetName&quot; FIELD=&quot;fieldName&quot; OUTPUT=&quot;outputVariable&quot; /&gt;<br/>
+				&lt;CSVAR NAME=&quot;Variables.variablePrefix:attribute_name&quot;/&gt;<br/><br/>
+            </code>
+            <div>
+            	<p class="float-left text-info"><a href="#home">top</a></p>
+                <p class="float-right text-info">
+                	<a href="https://docs.oracle.com/cd/E72987_01/wcs/tag-ref/JSP/asset-load.html" target="_blank">Documentation JSP</a>
+                    <br />
+                    <a href="https://docs.oracle.com/cd/E72987_01/wcs/tag-ref/JSP/asset-load.html" target="_blank">Documentation XML</a>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

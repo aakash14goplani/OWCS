@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Oracle WebCenter Sites Tutorial</title>
+        <link rel="stylesheet" type="text/css" href="../styles/bootstrap/css/bootstrap.min.css" />
+    </head>
+    <body>
+    	<div class="page-header">
+   			<h1 class="text-center text-danger">Attribute Editors</h1> 
+        </div>
+        <hr />
+        
+        <div class="container">
+        	
+            <ul>
+            	<li>An attribute editor specifies how data is entered for an attribute when that attribute is displayed on a New or Edit form for a flex asset or a flex parent asset in the WebCenter Sites interface on the management system.</li>
+                <li>When you assign an attribute editor to an attribute, it replaces the default input mechanism (style) that would otherwise be used for that attribute. The default input style is based on the data type of the attribute.</li>
+            </ul>
+             
+            <h5 class="text-left">
+            	<a href="https://docs.oracle.com/cd/E29542_01/doc.1111/e29634/data_attributeeditors.htm#WBCSD2291" target="_blank">presentationobject.dtd file</a>
+            </h5>
+            <ul>
+            	<li>The presentationobject.dtd file. It defines several input styles (presentation objects) that you can use in your attribute editors. This means you do not have to define your own unless the nine that are included do not cover your needs</li>
+                <li>If you want to create custom attribute editors other than the ones made possible by default, you must first define an XML input style tag, a PRESENTATIONOBJECT tag, in the presentationobject.dtd file. To define a new  PRESENTATIONOBJECT tag, you must do the following:
+					<ul>
+						<li>Add the new tag (presentation object) to the list in the <code>&lt;!ELEMENT PRESENTATIONOBJECT...&gt;</code> statement.</li>
+						<li>Add a <code>&lt;!ELEMENT...&gt;</code> section that defines the new tag (presentation object) and the arguments that it takes. Follow the normal syntax rules for a .dtd file and follow the conventions used in the  presentationobject.dtd file.</li>
+                    </ul>
+                </li>
+            </ul> 
+                   	
+       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
+			<ol>
+            	<li>Create an XML file</li>
+                <li>Load the XML file <a href="https://docs.oracle.com/cd/E29542_01/doc.1111/e29634/data_attributeeditors.htm#WBCSD2314" target="_blank">e.g.</a></li>
+                <li>Create a flex attribute and add your editor in <i>Attribute Editor</i> field</li>
+                <li>Add it to flex definition</li>
+                <li>Create a demo asset and load it</li>
+            </ol>
+            
+            <h5>Creating Attribute Editors</h5>
+			<ol>
+            	<li>
+                	<h6><a href="https://docs.oracle.com/cd/E29542_01/doc.1111/e29634/data_attributeeditors.htm#i1110785">CHECKBOXES</a></h6>
+                    <code>
+                    	&lt;?XML VERSION=&quot;1.0&quot;?&gt; <br/>
+						&lt;!DOCTYPE PRESENTATIONOBJECT SYSTEM &quot;presentationobject.dtd&quot;&gt; <br/>
+						&lt;PRESENTATIONOBJECT NAME=&quot;PersonalizeCheckBox&quot;&gt;<br/>
+						&nbsp;&lt;CHECKBOXES LAYOUT=&quot;VERTICAL&quot;&gt;&lt;!--default is HORIZONTAL--&gt;<br/>
+							&nbsp;&nbsp;&lt;ITEM&gt;OUTDOOR GAMES&lt;/ITEM&gt;&lt;!--to retrieve value from db use QUERYASSETNAME--&gt;<br/>
+							&nbsp;&nbsp;&lt;ITEM&gt;INDOOR GAMES&lt;/ITEM&gt;<br/>
+						&nbsp;&lt;/CHECKBOXES&gt;<br/>
+						&lt;/PRESENTATIONOBJECT&gt;<br/><br/>
+                    </code>
+                    <p class="text-danger">Load the checkboxes</p>
+                    <code>
+                    	&lt;asset:load name=&quot;anyName&quot; type='&lt;%=ics.GetVar(&quot;c&quot;)%&gt;' objectid='&lt;%=ics.GetVar(&quot;cid
+                        &quot;)%&gt;' flushonvoid=&quot;true&quot; /&gt;<br/>
+						&lt;asset:scatter name=&quot;anyName&quot; prefix=&quot;asset&quot; /&gt;<br/><br/>
+
+						&lt;assetset:setasset name=&quot;flexAsset&quot; type='&lt;%=ics.GetVar(&quot;c&quot;)%&gt;' id='&lt;%=ics.GetVar(&quot;
+                        cid&quot;)%&gt;' /&gt;<br/>			
+						&lt;assetset:getattributevalues name=&quot;flexAsset&quot; typename=&quot;HIG_ComponentWidget_A&quot; attribute=&quot;
+                        checkbox&quot; listvarname=&quot;checkboxList&quot;/&gt;	<br/><br/>	
+	
+						NAME : &lt;ics:getvar name=&quot;asset:name&quot; /&gt;&lt;br/&gt;<br/>	
+						&lt;ics:listloop listname=&quot;checkboxList&quot;&gt;<br/>
+							Hobby : &lt;ics:listget listname=&quot;checkboxList&quot; fieldname=&quot;value&quot; /&gt;&lt;br/&gt;<br/>
+						&lt;/ics:listloop&gt;<br/><br/>
+                    </code>
+                </li>
+            </ol>
+            
+            <div>
+            	<p class="float-left text-info"><a href="#home">top</a></p>
+                <p class="float-right text-info">
+                	<a href="https://docs.oracle.com/cd/E29542_01/doc.1111/e29634/data_attributeeditors.htm#WBCSD2289" target="_blank">Documentation</a>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
