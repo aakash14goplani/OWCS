@@ -5,52 +5,71 @@
         <meta content="Personal Website" name="description">
         <meta content="Aakash Goplani" name="author">
         <meta content="width=device-width,initial-scale=1,maximum-scale=1" name="viewport">
-        <title>Oracle WebCenter Sites Tutorial</title>
-        <link rel="stylesheet" type="text/css" href="styles/bootstrap/css/bootstrap.min.css" />
-    </head>
+        <title>Oracle WebCenter Sites</title>
+        <link href="styles/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+        <link href="styles/bootstrap/css/navigation.css" type="text/css" rel="stylesheet" />
+        <link href="https://use.fontawesome.com/a3a4adbcff.css" media="all" rel="stylesheet">
+        <script src="https://use.fontawesome.com/a3a4adbcff.js"></script>
+    </head>   
     <body>
-    	<div class="page-header">
-   			<h1 class="text-center text-danger" id="home">Oracle WebCenter Sites Tutorial</h1> 
-        </div>
-        <hr />
-        <div class="container-fluid">
-        	<div class="row">
-            	<div class="col-md-3 col-xs-12">
-                	<h2 class="text-center text-warning">Topics</h2>
-                    <hr />
-					<ul class="list-group">
-						<li class="list-group-item"><a href="#one">Rendering Basic Assets</a></li>
-                      	<li class="list-group-item"><a href="#two">Rendering Flex Assets</a></li>
-                      	<li class="list-group-item"><a href="#three">Rendering Recommendations</a></li>
-                      	<li class="list-group-item"><a href="#four">Attribute Editors</a></li>
-                      	<li class="list-group-item"><a href="#five"></a></li>
+    	<div class="nav-side-menu">
+            <div class="brand">
+                <a href="html/iframe.html" target="targer_iframe" style="color:#e1ffff; padding: 0 10px;">
+                    <i class="fa fa-home" aria-hidden="true"></i>
+                </a>Oracle WebCenter Sites
+            </div>
+            <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+            <div class="menu-list">
+                <ul id="menu-content" class="menu-content collapse out">
+                    <li>
+                        <a href="html/basicAsset.html" target="targer_iframe"><i class="fa fa-link"></i> Rendering Basic Assets</a>
+                    </li>
+                    <li>
+                        <a href="html/flexAsset.html" target="targer_iframe"><i class="fa fa-link"></i> Rendering Flex Assets</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-link" target="targer_iframe"></i> Rendering Recommendations</a>
+                    </li>
+                    <li>
+                        <a href="html/attributeEditor.html" target="targer_iframe"><i class="fa fa-link"></i> Attribute Editors</a>
+                    </li>
+                    <li data-toggle="collapse" data-target="#products" class="collapsed active">
+                        <a href="#"><i class="fa fa-link"></i> UI Elements <span class="arrow"></span></a>
+                    </li>
+                    <ul class="sub-menu collapse" id="products">
+                        <li class="active"><a href="#">CSS3 Animation</a></li>
+                        <li><a href="#">General</a></li>
+                        <li><a href="#">Buttons</a></li>
+                        <li><a href="#">Tabs &amp; Accordions</a></li>
+                        <li><a href="#">Typography</a></li>
+                        <li><a href="#">FontAwesome</a></li>
+                        <li><a href="#">Slider</a></li>
+                        <li><a href="#">Panels</a></li>
+                        <li><a href="#">Widgets</a></li>
+                        <li><a href="#">Bootstrap Model</a></li>
                     </ul>
-                </div>
-                <div class="col-md-9 col-xs-12">
-                	<h2 class="text-center text-warning">Contents</h2>
-                    <hr />
-                    <section id="one">
-                    	<div class="embed-responsive embed-responsive-16by9">
-                        	<iframe class="embed-responsive-item" src="html/basicAsset.html"></iframe>
-                        </div>
-                    </section>
-                    <hr />
-                    <section id="two">
-                    	<div class="embed-responsive embed-responsive-16by9">
-                        	<iframe class="embed-responsive-item" src="html/flexAsset.html"></iframe>
-                        </div>
-                    </section>
-                    <hr />
-                    <section id="three"></section>
-                    <hr />
-                    <section id="four">
-                    	<div class="embed-responsive embed-responsive-16by9">
-                        	<iframe class="embed-responsive-item" src="html/attributeEditor.html"></iframe>
-                        </div>
-                    </section>
-                    <hr />
+                    <li data-toggle="collapse" data-target="#service" class="collapsed">
+                        <a href="#"><i class="fa fa-globe fa-lg"></i> Services <span class="arrow"></span></a>
+                    </li>
+                    <ul class="sub-menu collapse" id="service">
+                        <li>New Service 1</li>
+                        <li>New Service 2</li>
+                        <li>New Service 3</li>
+                    </ul>
+                </ul>
+            </div>
+        </div>
+        <div class="container" id="main">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" name="targer_iframe" src="html/iframe.html"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
+    	
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    	<script src="styles/bootstrap/js/bootstrap.min.js"></script>
     </body>
 </html>
