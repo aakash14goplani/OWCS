@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Oracle WebCenter Sites Tutorial</title>
+        <link rel="stylesheet" type="text/css" href="../styles/bootstrap/css/bootstrap.min.css" />
+    </head>
+    <body>
+    	<div class="page-header" id="home">
+   			<h1 class="text-center text-danger">Share Assets</h1> 
+        </div>
+        
+        <div class="container">        	
+            <p>
+                To create a element that would share assets of particular asset type from one side to other.<br/>
+                Output : errors(if any), total # of shared assets, assets (id : name) format <br/>
+            </p>
+       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
+			<ol>
+                <li>Enable the asset type at target website</li>
+                <li>Count # of assets before sharing from ASSETPUBLICATION table</li>
+            	<li>Share asset (using <code>asset:share</code> tag)</li>
+                <li>Count # of assets after sharing from ASSETPUBLICATION table</li>
+                <li>pass c, cid and run=true from site entry (if run=false, or missing from site entry, assets won't be shared).</li>
+            </ol>
+            <u>CASE 1</u>: 
+            <p>Using tags</p>    
+           	<a href="../wcsFiles/ShareAssets.jsp" download>
+                <button class="btn btn-primary">Share Assets (TAGS)</button>
+            </a>
+            <br/><br/>
+            <u> CASE 2</u>: 
+             <p>Asset API</p>
+            <code>
+            	<a href="../wcsFiles/ShareAssetsAPI.jsp" download>
+                    <button class="btn btn-primary">Share Assets (API)</button>
+                </a>
+                <br/><br/>
+            </code>
+            <div>
+            	<p class="float-left text-info"><a href="#home">top</a></p>
+                
+            </div>
+        </div>
+    </body>
+</html>
