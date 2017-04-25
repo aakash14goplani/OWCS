@@ -7,16 +7,11 @@
     </head>
     <body>
     	<div class="page-header" id="home">
-   			<h1 class="text-center text-danger">Rendering Basic Assets</h1> 
+   			<h1 class="text-center text-danger">LIST</h1> 
         </div>
         
         <div class="container">        	
        		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
-			<ol>
-            	<li>Load the basic asset (using <code>asset:load</code> tag)</li>
-                <li>Scatter the loaded basic asset (using <code>asset:scatter</code> tag) OR get the loaded basic asset (using <code>asset:get</code> tag)</li>
-                <li>Retrieve information after scattering the asset via <code>prefix:attributename</code> (using <code>ics:getvar</code> tag)</li>
-            </ol>
             <code>
             	&lt;%<br/>
                     String assetType = ics.GetVar(&quot;c&quot;);<br/>
