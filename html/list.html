@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Oracle WebCenter Sites Tutorial</title>
+        <link rel="stylesheet" type="text/css" href="../styles/bootstrap/css/bootstrap.min.css" />
+    </head>
+    <body>
+    	<div class="page-header" id="home">
+   			<h1 class="text-center text-danger">Rendering Basic Assets</h1> 
+        </div>
+        
+        <div class="container">        	
+       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
+			<ol>
+            	<li>Load the basic asset (using <code>asset:load</code> tag)</li>
+                <li>Scatter the loaded basic asset (using <code>asset:scatter</code> tag) OR get the loaded basic asset (using <code>asset:get</code> tag)</li>
+                <li>Retrieve information after scattering the asset via <code>prefix:attributename</code> (using <code>ics:getvar</code> tag)</li>
+            </ol>
+            <code>
+            	&lt;%<br/>
+                    String assetType = ics.GetVar(&quot;c&quot;);<br/>
+                    String assetId = ics.GetVar(&quot;cid&quot;);<br/>
+                    if(Utilities.goodString(assetId) &amp;&amp; Utilities.goodString(assetType)){<br/>
+                 %&gt;<br/>
+                        &lt;assetset:setasset name=&quot;flexAsset&quot; type='&lt;%=assetType %&gt;' id='&lt;%=assetId %&gt;'/&gt;<br/>
+                        &lt;assetset:getattributevalues name=&quot;flexAsset&quot; listvarname=&quot;ckeditorList&quot; attribute=&quot;ckeditor&quot; typename=&quot;Widget_A&quot; /&gt;<br/>
+                        &lt;ics:if condition='&lt;%=ics.GetList(&quot;ckeditorList&quot;) != null &amp;&amp; ics.GetList(&quot;ckeditorList&quot;).hasData()%&gt;'&gt;<br/>
+                            &lt;ics:then&gt;<br/>
+                                &lt;ics:listloop listname=&quot;ckeditorList&quot;&gt;<br/>
+                                    Editor Content : &lt;ics:listget fieldname=&quot;value&quot; listname=&quot;ckeditorList&quot;/&gt;&lt;br/&gt;<br/>
+                                &lt;/ics:listloop&gt;<br/>
+                            &lt;/ics:then&gt;<br/>
+                            &lt;ics:else&gt;<br/>
+                                &lt;%out.println(&quot;Empty List!&quot;); %&gt;<br/>
+                            &lt;/ics:else&gt;<br/>
+                        &lt;/ics:if&gt;<br/>
+                 &lt;%<br/>
+                        IList list = ics.GetList(&quot;ckeditorList&quot;);<br/>
+                        int rows = list.numRows();<br/>
+                        int cols = list.numColumns();<br/>
+                        String columnName = &quot;&quot;, columnValue = &quot;&quot;;<br/>
+                        out.println(&quot;Rows : &quot; + rows + &quot;, &quot; + &quot;Columns : &quot; + cols + &quot; for list &quot; + list.getName() + &quot; : &quot; + list.hasData() + &quot;&lt;br/&gt;&quot;);<br/>
+                        for(int i=1; i&lt;=rows; i++){<br/>
+                            for(int j=0; j&lt;cols; j++){<br/>
+                                out.println(&quot;Is &quot; + list.currentRow() + &quot; last row : &quot; + list.atEnd() + &quot;&lt;br/&gt;&quot;);<br/>
+                                columnName = list.getColumnName(j);<br/>
+                                columnValue = list.getValue(columnName);<br/>
+                                out.println(columnName + &quot; : &quot; + columnValue + &quot;&lt;br/&gt;&quot;);<br/>
+                                list.moveTo(i+1);<br/>
+                            }<br/>
+                        }<br/>
+                    }<br/>
+                    else{<br/>
+                        out.println(&quot;c : cid not specified in site entry!&quot;);<br/>
+                    }<br/>
+                  %&gt;<br/><br/>
+            </code>
+            <div>
+            	<p class="float-left text-info"><a href="#home">top</a></p>
+                <p class="float-right text-info">
+                	<a href="https://docs.oracle.com/cd/E29542_01/apirefs.1111/e39356/COM/FutureTense/Interfaces/IList.html" target="_blank">Documentation JAVA</a>
+                    <br />
+                    <a href="https://docs.oracle.com/cd/E72987_01/wcs/tag-ref/JSP/ics-listloop.html" target="_blank">Documentation JSP</a>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
