@@ -13,43 +13,43 @@
         <div class="container">        	
        		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
             <pre><code>
-            	&lt;%<br/>
-                    String assetType = ics.GetVar(&quot;c&quot;);<br/>
-                    String assetId = ics.GetVar(&quot;cid&quot;);<br/>
-                    if(Utilities.goodString(assetId) &amp;&amp; Utilities.goodString(assetType)){<br/>
-                 %&gt;<br/>
-                        &lt;assetset:setasset name=&quot;flexAsset&quot; type='&lt;%=assetType %&gt;' id='&lt;%=assetId %&gt;'/&gt;<br/>
-                        &lt;assetset:getattributevalues name=&quot;flexAsset&quot; listvarname=&quot;ckeditorList&quot; attribute=&quot;ckeditor&quot; typename=&quot;Widget_A&quot; /&gt;<br/>
-                        &lt;ics:if condition='&lt;%=ics.GetList(&quot;ckeditorList&quot;) != null &amp;&amp; ics.GetList(&quot;ckeditorList&quot;).hasData()%&gt;'&gt;<br/>
-                            &lt;ics:then&gt;<br/>
-                                &lt;ics:listloop listname=&quot;ckeditorList&quot;&gt;<br/>
-                                    Editor Content : &lt;ics:listget fieldname=&quot;value&quot; listname=&quot;ckeditorList&quot;/&gt;&lt;br/&gt;<br/>
-                                &lt;/ics:listloop&gt;<br/>
-                            &lt;/ics:then&gt;<br/>
-                            &lt;ics:else&gt;<br/>
-                                &lt;%out.println(&quot;Empty List!&quot;); %&gt;<br/>
-                            &lt;/ics:else&gt;<br/>
-                        &lt;/ics:if&gt;<br/>
-                 &lt;%<br/>
-                        IList list = ics.GetList(&quot;ckeditorList&quot;);<br/>
-                        int rows = list.numRows();<br/>
-                        int cols = list.numColumns();<br/>
-                        String columnName = &quot;&quot;, columnValue = &quot;&quot;;<br/>
-                        out.println(&quot;Rows : &quot; + rows + &quot;, &quot; + &quot;Columns : &quot; + cols + &quot; for list &quot; + list.getName() + &quot; : &quot; + list.hasData() + &quot;&lt;br/&gt;&quot;);<br/>
-                        for(int i=1; i&lt;=rows; i++){<br/>
-                            for(int j=0; j&lt;cols; j++){<br/>
-                                out.println(&quot;Is &quot; + list.currentRow() + &quot; last row : &quot; + list.atEnd() + &quot;&lt;br/&gt;&quot;);<br/>
-                                columnName = list.getColumnName(j);<br/>
-                                columnValue = list.getValue(columnName);<br/>
-                                out.println(columnName + &quot; : &quot; + columnValue + &quot;&lt;br/&gt;&quot;);<br/>
-                                list.moveTo(i+1);<br/>
-                            }<br/>
-                        }<br/>
-                    }<br/>
-                    else{<br/>
-                        out.println(&quot;c : cid not specified in site entry!&quot;);<br/>
-                    }<br/>
-                  %&gt;<br/><br/>
+            	&lt;%
+                    String assetType = ics.GetVar(&quot;c&quot;);
+                    String assetId = ics.GetVar(&quot;cid&quot;);
+                    if(Utilities.goodString(assetId) &amp;&amp; Utilities.goodString(assetType)){
+                 %&gt;
+                        &lt;assetset:setasset name=&quot;flexAsset&quot; type='&lt;%=assetType %&gt;' id='&lt;%=assetId %&gt;'/&gt;
+                        &lt;assetset:getattributevalues name=&quot;flexAsset&quot; listvarname=&quot;ckeditorList&quot; attribute=&quot;ckeditor&quot; typename=&quot;Widget_A&quot; /&gt;
+                        &lt;ics:if condition='&lt;%=ics.GetList(&quot;ckeditorList&quot;) != null &amp;&amp; ics.GetList(&quot;ckeditorList&quot;).hasData()%&gt;'&gt;
+                            &lt;ics:then&gt;
+                                &lt;ics:listloop listname=&quot;ckeditorList&quot;&gt;
+                                    Editor Content : &lt;ics:listget fieldname=&quot;value&quot; listname=&quot;ckeditorList&quot;/&gt;&lt;br/&gt;
+                                &lt;/ics:listloop&gt;
+                            &lt;/ics:then&gt;
+                            &lt;ics:else&gt;
+                                &lt;%out.println(&quot;Empty List!&quot;); %&gt;
+                            &lt;/ics:else&gt;
+                        &lt;/ics:if&gt;
+                 &lt;%
+                        IList list = ics.GetList(&quot;ckeditorList&quot;);
+                        int rows = list.numRows();
+                        int cols = list.numColumns();
+                        String columnName = &quot;&quot;, columnValue = &quot;&quot;;
+                        out.println(&quot;Rows : &quot; + rows + &quot;, &quot; + &quot;Columns : &quot; + cols + &quot; for list &quot; + list.getName() + &quot; : &quot; + list.hasData() + &quot;&lt;br/&gt;&quot;);
+                        for(int i=1; i&lt;=rows; i++){
+                            for(int j=0; j&lt;cols; j++){
+                                out.println(&quot;Is &quot; + list.currentRow() + &quot; last row : &quot; + list.atEnd() + &quot;&lt;br/&gt;&quot;);
+                                columnName = list.getColumnName(j);
+                                columnValue = list.getValue(columnName);
+                                out.println(columnName + &quot; : &quot; + columnValue + &quot;&lt;br/&gt;&quot;);
+                                list.moveTo(i+1);
+                            }
+                        }
+                    }
+                    else{
+                        out.println(&quot;c : cid not specified in site entry!&quot;);
+                    }
+                  %&gt;
             </code></pre>
             <div>
             	<p class="float-left text-info"><a href="#home">top</a></p>
