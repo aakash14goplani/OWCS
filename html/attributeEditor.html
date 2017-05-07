@@ -4,6 +4,11 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Oracle WebCenter Sites Tutorial</title>
         <link rel="stylesheet" type="text/css" href="../styles/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="../lib/codemirror.css" />
+        <script src="../lib/codemirror.js"></script>
+        <script>
+            var editor = CodeMirror.fromTextArea(myTextArea, { lineNumbers : true });
+        </script>
     </head>
     <body>
     	<div class="page-header" id="home">
@@ -71,7 +76,6 @@
                     </code>
                 </li>
             </ol>
-            
             <div>
             	<p class="float-left text-info"><a href="#home">top</a></p>
                 <p class="float-right text-info">
