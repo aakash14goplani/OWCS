@@ -22,12 +22,17 @@
             <div class="menu-list">
                 <ul id="menu-content" class="menu-content collapse out">
                     <!-- Introduction -->
-                    <li>
-                        <a href="html/404.html" target="targer_iframe"><i class="fa fa-link fa-lg"></i> Introduction</a>
+                    <li data-toggle="collapse" data-target="#introduction" class="collapsed">
+                        <a href="#"><i class="fa fa-plus-square-o fa-lg"></i> Introduction <span class="arrow"></span></a>
                     </li>
-                    <li>
-                        <a href="html/404.html" target="targer_iframe"><i class="fa fa-link fa-lg"></i> About Content Server</a>
-                    </li>
+                    <ul class="sub-menu collapse" id="introduction">
+                        <li>
+                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Introduction</a>
+                        </li>
+                        <li>
+                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> About Content Server</a>
+                        </li>
+                    </ul>
 
                     <!-- Creating Assets -->
                     <li data-toggle="collapse" data-target="#createAssets" class="collapsed">
@@ -80,6 +85,9 @@
                         <li>
                             <a href="html/RenderAssets/attributeEditor.html" target="targer_iframe"><i class="fa fa-link"></i> Rendering Attribute Editors</a>
                         </li>
+                        <li>
+                            <a href="html/RenderAssets/RenderBlob.html" target="targer_iframe"><i class="fa fa-link"></i> Rendering BLOB</a>
+                        </li>
                     </ul>
 
                     <!-- Asset API-->
@@ -88,16 +96,16 @@
                     </li>
                     <ul class="sub-menu collapse" id="service">
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> READ</a>
+                            <a href="html/AssetAPI/read.html" target="targer_iframe"><i class="fa fa-link"></i> READ</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Write</a>
+                            <a href="html/AssetAPI/write.html" target="targer_iframe"><i class="fa fa-link"></i> Write</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Update</a>
+                            <a href="html/AssetAPI/update.html" target="targer_iframe"><i class="fa fa-link"></i> Update</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Delete</a>
+                            <a href="html/AssetAPI/delete.html" target="targer_iframe"><i class="fa fa-link"></i> Delete</a>
                         </li>
                     </ul>
 
@@ -107,10 +115,10 @@
                     </li>
                     <ul class="sub-menu collapse" id="searchAssets">
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Simple Search</a>
+                            <a href="html/AssetSearch/searchstate.html" target="targer_iframe"><i class="fa fa-link"></i> Simple Search</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Lucence Search</a>
+                            <a href="html/AssetSearch/lucence.html" target="targer_iframe"><i class="fa fa-link"></i> Lucence Search</a>
                         </li>
                     </ul>
 
@@ -136,24 +144,29 @@
                             <a href="html/Miscellaneous/list.html" target="targer_iframe"><i class="fa fa-link"></i> Looping Lists</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Create XML</a>
+                            <a href="html/Miscellaneous/createXML.html" target="targer_iframe"><i class="fa fa-link"></i> Create XML</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Create JSON</a>
+                            <a href="html/Miscellaneous/GetAssetInfo.html" target="targer_iframe"><i class="fa fa-link"></i> GetAssetInfo (Read JSON)</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Read JSON</a>
+                            <a href="html/Miscellaneous/LoadAssetInfo.html" target="targer_iframe"><i class="fa fa-link"></i> LoadAssetInfo (Create JSON)</a>
                         </li>
                         <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Create String</a>
-                        </li>
-                        <li>
-                            <a href="html/404.html" target="targer_iframe"><i class="fa fa-link"></i> Delete</a>
+                            <a href="html/Miscellaneous/createString.html" target="targer_iframe"><i class="fa fa-link"></i> Create String</a>
                         </li>
                         <li>
                             <a href="html/Miscellaneous/shareAsset.html" target="targer_iframe"><i class="fa fa-link"></i> Share Assets</a>
                         </li>
-                    </ul>                   
+                        <li>
+                            <a href="html/Miscellaneous/flushVisitorData.html" target="targer_iframe"><i class="fa fa-link"></i> Flush Visitor Data</a>
+                        </li>
+                    </ul>
+
+                    <!-- Blogs -->
+                    <li>
+                        <a href="html/blogs.html" target="targer_iframe"><i class="fa fa-link fa-lg"></i> Blogs I refer from</a>
+                    </li>                   
                 </ul>
             </div>
         </div>

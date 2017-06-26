@@ -11,54 +11,9 @@
         </div>
         
         <div class="container">        	
-       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
-            <pre><code>
-            	&lt;%
-                    String assetType = ics.GetVar(&quot;c&quot;);
-                    String assetId = ics.GetVar(&quot;cid&quot;);
-                    if(Utilities.goodString(assetId) &amp;&amp; Utilities.goodString(assetType)){
-                 %&gt;
-                        &lt;assetset:setasset name=&quot;flexAsset&quot; type='&lt;%=assetType %&gt;' id='&lt;%=assetId %&gt;'/&gt;
-                        &lt;assetset:getattributevalues name=&quot;flexAsset&quot; listvarname=&quot;ckeditorList&quot; attribute=&quot;ckeditor&quot; typename=&quot;Widget_A&quot; /&gt;
-                        &lt;ics:if condition='&lt;%=ics.GetList(&quot;ckeditorList&quot;) != null &amp;&amp; ics.GetList(&quot;ckeditorList&quot;).hasData()%&gt;'&gt;
-                            &lt;ics:then&gt;
-                                &lt;ics:listloop listname=&quot;ckeditorList&quot;&gt;
-                                    Editor Content : &lt;ics:listget fieldname=&quot;value&quot; listname=&quot;ckeditorList&quot;/&gt;&lt;br/&gt;
-                                &lt;/ics:listloop&gt;
-                            &lt;/ics:then&gt;
-                            &lt;ics:else&gt;
-                                &lt;%out.println(&quot;Empty List!&quot;); %&gt;
-                            &lt;/ics:else&gt;
-                        &lt;/ics:if&gt;
-                 &lt;%
-                        IList list = ics.GetList(&quot;ckeditorList&quot;);
-                        int rows = list.numRows();
-                        int cols = list.numColumns();
-                        String columnName = &quot;&quot;, columnValue = &quot;&quot;;
-                        out.println(&quot;Rows : &quot; + rows + &quot;, &quot; + &quot;Columns : &quot; + cols + &quot; for list &quot; + list.getName() + &quot; : &quot; + list.hasData() + &quot;&lt;br/&gt;&quot;);
-                        for(int i=1; i&lt;=rows; i++){
-                            for(int j=0; j&lt;cols; j++){
-                                out.println(&quot;Is &quot; + list.currentRow() + &quot; last row : &quot; + list.atEnd() + &quot;&lt;br/&gt;&quot;);
-                                columnName = list.getColumnName(j);
-                                columnValue = list.getValue(columnName);
-                                out.println(columnName + &quot; : &quot; + columnValue + &quot;&lt;br/&gt;&quot;);
-                                list.moveTo(i+1);
-                            }
-                        }
-                    }
-                    else{
-                        out.println(&quot;c : cid not specified in site entry!&quot;);
-                    }
-                  %&gt;
-            </code></pre>
-            <div>
-            	<p class="float-left text-info"><a href="#home">top</a></p>
-                <p class="float-right text-info">
-                	<a href="https://docs.oracle.com/cd/E29542_01/apirefs.1111/e39356/COM/FutureTense/Interfaces/IList.html" target="_blank">Documentation JAVA</a>
-                    <br />
-                    <a href="https://docs.oracle.com/cd/E72987_01/wcs/tag-ref/JSP/ics-listloop.html" target="_blank">Documentation JSP</a>
-                </p>
-            </div>
+       		<script src="https://gist.github.com/aakash14goplani/6464195e4dd22d8fb4e2bb73fd00b0da.js"></script>
+            <script src="https://gist.github.com/aakash14goplani/5c4882b723f03ebbbf1789eca0d2ee30.js"></script>
+            <script src="../../styles/bootstrap/js/remove_meta.js"></script>        
         </div>
     </body>
 </html>

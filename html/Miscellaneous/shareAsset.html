@@ -8,28 +8,13 @@
     <body>
     	<div class="page-header" id="home">
    			<h1 class="text-center text-danger">Share Assets</h1> 
-        </div>
-        
+        </div>       
         <div class="container">        	
             <p>
                 To create a element that would share assets of particular asset type from one side to other.<br/>
                 Output : errors(if any), total # of shared assets, assets (id : name) format <br/>
             </p>
-       		<p class="text-uppercase">GENERAL STEPS TO FOLLOW:</p>
-			<ol>
-                <li>Enable the asset type at target website</li>
-                <li>Count # of assets before sharing from ASSETPUBLICATION table</li>
-            	<li>Share asset (using <code>asset:share</code> tag)</li>
-                <li>Count # of assets after sharing from ASSETPUBLICATION table</li>
-                <li>pass c, cid and run=true from site entry (if run=false, or missing from site entry, assets won't be shared).</li>
-            </ol>
-            <u>CASE 1</u>: 
-            <p>Using tags</p>    
-           	<script src="https://gist.github.com/aakash14goplani/d82249c3c44758b6842cd76c4857e39b.js"></script>
-            <br/><br/>
-            <u> CASE 2</u>: 
-            <p>Asset API</p>
-            <script src="https://gist.github.com/aakash14goplani/7734c30020fcc6855034288ac8c147c2.js"></script>
+            <script src="https://gist.github.com/aakash14goplani/d82249c3c44758b6842cd76c4857e39b.js"></script>
             <script src="../../styles/bootstrap/js/remove_meta.js"></script>
         </div>
     </body>
