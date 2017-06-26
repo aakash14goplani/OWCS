@@ -1,0 +1,117 @@
+// name of the Webroot
+ 
+String newWebRoot = "Avi";
+ 
+//Publication ID as in WCS DB
+ 
+Long siteid = 1322052581735L;
+ 
+//Sitename of the Publication
+ 
+String sitename="avisports";
+ 
+//Asset Type
+ 
+String assettype="Page";
+ 
+//Asset Id
+ 
+Long assetid=1329851332601L;
+ 
+//Default Template Name, if none is set
+ 
+String templatename = "SectionLayoutGreen";             
+ 
+List<AssetData> updateAssets = new ArrayList<AssetData>();
+ 
+Session ses = SessionFactory.getSession();
+ 
+AssetDataManager mgr =(AssetDataManager) ses.getManager( AssetDataManager.class.getName() );
+ 
+//create new AssetId instance.
+ 
+AssetId id = new AssetIdImpl( assettype, assetid );
+ 
+Iterable<AssetData> assetdataItr = mgr.read( Arrays.asList(id));
+ 
+     for(AssetData data: assetdataItr){
+ 
+            // Get Webreference object that contains data needed to generate and resolve the URL
+ 
+            AttributeData attrDataWebRef = data.getAttributeData("Webreference");
+ 
+            AttributeData attrDataTemplate = data.getAttributeData("template");
+ 
+            // If Template is set, use the assigned template for the asset instead of the default
+ 
+            if(attrDataTemplate != null && attrDataTemplate.getData() != null){
+ 
+                    templatename = attrDataTemplate.getData().toString();
+ 
+            }
+ 
+            // URI for the asset.  This needs to be unique for each asset.
+ 
+            String newAssetURL = "test-new-vanity-url";
+ 
+            if(attrDataWebRef != null){
+ 
+                    List<WebReference> mappingArray = (List<WebReference>) attrDataWebRef.getData();
+ 
+                    /* If there is an existing Webreference Object, i.e. an existing entry in the
+ 
+                    Webreference table, update the existing object with new values. */
+ 
+                    if(mappingArray != null && mappingArray.size()>0){
+ 
+                           // We assume that there is only one existing entry and we overwrite it.
+ 
+                           for (int i=0; i < mappingArray.size(); i++)
+ 
+                           {
+ 
+                                  WebReference webRef = (WebReference) mappingArray.get(i);
+ 
+                                  String currentAssetURL = webRef.getAssetUrl();
+ 
+                                  String currentWebRoot = webRef.getWebRoot();
+ 
+                                  if( currentWebRoot != null )
+ 
+                                  {     
+ 
+                                         webRef.setAssetUrl(newAssetURL);
+ 
+                                         webRef.setWebRoot(newWebRoot);
+ 
+                                         webRef.setTemplate(templatename);
+ 
+                                         updateAssets.add(data);
+ 
+                                  }
+ 
+                           }
+ 
+                                      
+ 
+                    }
+ 
+                    // If there is no Webreference object, create a new instance one and attach it to the asset
+ 
+                    else{
+ 
+                                WebReference webRef = new WebReferenceImpl(newWebRoot,newAssetURL, new java.lang.Integer(200), templatename);
+ 
+                                webRef.setWebRoot(newWebRoot);
+ 
+                                mappingArray.add(webRef);
+ 
+                                updateAssets.add(data);
+ 
+                                  }     
+ 
+                           }     
+ 
+                    }
+ 
+ mgr.update(updateAssets);
