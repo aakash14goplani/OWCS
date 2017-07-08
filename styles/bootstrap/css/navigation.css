@@ -78,7 +78,7 @@
 .nav-side-menu ul .sub-menu li:before,
 .nav-side-menu li .sub-menu li:before {
   font-family: FontAwesome;
-  /*content: "\f105";*/
+  content: "\f105";
   display: inline-block;
   padding-left: 10px;
   padding-right: 10px;
@@ -92,8 +92,6 @@
 .nav-side-menu li a {
   text-decoration: none;
   color: #e1ffff;
-  padding: 0 10px;
-  display: block;
 }
 .nav-side-menu li a i {
   padding-left: 10px;
