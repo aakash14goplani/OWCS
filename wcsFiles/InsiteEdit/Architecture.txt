@@ -1,0 +1,54 @@
+Architechture:
+
+ATTRIBUTE EDITOR
+
+1. CKEditor
+
+PRACTICE ATTRIBUTES
+
+1. body_text
+2. non_editable_assets
+3. practice_assets
+4. practice_date
+5. practice_id
+6. practice_image
+7. practice_price
+8. practice_title
+
+BASIC ASSET
+
+1. ImageAsset (from gist)
+
+PRACTICE DEFINITION
+
+1. insite_edit
+2. non_editable_definition
+3. practice_asset_dropzone
+4. practice_body_text
+5. practice_date_price
+
+PAGE ATTRIBUTES
+
+1. content_editable_dropzone	
+2. cselement_dropzone
+3. page_title
+4. practice_insite_asset_dropzone
+5. practice_page_bodyText_dropzone
+6. practice_page_date_price_dropzone
+7. practice_page_image_dropzone
+8. practice_page_title
+9. site_entry_dropzone
+
+PAGE DEFINITION
+
+1. practice_page_definition
+
+TEMPLATES
+
+1. ContentEditableDropzone
+2. InSiteEdit
+3. NonEditable
+4. PresentationEditing
+5. RenderPriceDate
+6. RenderBodyText
+7. RenderImage
