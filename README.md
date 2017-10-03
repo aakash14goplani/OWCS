@@ -87,9 +87,6 @@
     + Presentation + Content Editing
     + Context System
     + Miscellaneous Items
-* Assembler and Disassembler
-    + What is Assembler?
-    + What is Disassembler?
 * Debugging
     + Basic Debugging
     + Common errors and their Prevention
@@ -112,6 +109,8 @@
     + Never Expiring BLOBs
     + Revision Tracking
     + bSites Chrome Extension
+    + What is Assembler?
+    + What is Disassembler? (in progress yet)
 * Miscellaneous
     + Important Tags in WCS
     + Tag Guidelines
