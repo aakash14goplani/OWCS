@@ -1,4 +1,4 @@
-//include jquery
+//include jquery to remove link around images
 var jq = document.createElement("script");
 jq.addEventListener("load", proceed);
 jq.src = "../../styles/bootstrap/js/jquery-3.2.1.min.js";
