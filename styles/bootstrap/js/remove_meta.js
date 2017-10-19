@@ -1,3 +1,11 @@
+//include jquery
+var jq = document.createElement("script");
+jq.addEventListener("load", proceed);
+jq.src = "../../styles/bootstrap/js/jquery-3.2.1.min.js";
+document.querySelector("head").appendChild(jq);
+function proceed () {
+    $("a > img").unwrap();
+}
 // hide meta-data
 var divsToHide = document.getElementsByClassName("gist-meta");
 for(var i = 0; i < divsToHide.length; i++)
