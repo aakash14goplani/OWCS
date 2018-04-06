@@ -1,0 +1,285 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadSecurity
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<!-- This element handles all children of the Security root node -->
+<!-- Variables.Depth=1 means 'Groups' and 'User Group Configuration' -->
+<!-- Variables.Depth=2 means 'Add New' and any groups for
+	  Variables.Node=Groups or 'Add New' and any user group configuration
+	  types for Variables.Node='User Group Configuration' -->
+
+<IF COND="Variables.Depth=1">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="Groups"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	
+	<REMOVEVAR NAME="Description"/>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+    <XLAT.LOOKUP KEY="dvin/TreeApplet/SecurityGroups" ENCODE="false" VARNAME="_XLAT_"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/GroupsFront" outstring="ExecuteURL">
+		<satellite.argument name="action" value="list"/>
+		<satellite.argument name="cs_imagedir" VALUE="Variables.cs_imagedir"/>
+	</SATELLITE.LINK>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadAdminTree" outstring="LoadURL">
+		<satellite.argument name="op" value="load"/>
+		<satellite.argument name="NodeType" value="Security"/>
+		<satellite.argument name="Node" value="Groups"/>
+		<satellite.argument name="Depth" value="2"/>
+	</SATELLITE.LINK>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/> 
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="LoadURL" VALUE="Variables.LoadURL"/>
+		<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Personal.png"/>
+		<ARGUMENT NAME="RefreshKeys" VALUE="Security:Groups"/>
+	</CALLELEMENT>
+	<REMOVEVAR NAME="RefreshKeys"/>	
+	
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="User Group Configuration"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	<REMOVEVAR NAME="LoadURL"/>
+	<REMOVEVAR NAME="Description"/>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+    <XLAT.LOOKUP KEY="dvin/TreeApplet/AssignUsersToGroups" ENCODE="false" VARNAME="_XLAT_"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/UserGroupsFront" outstring="ExecuteURL">
+		<satellite.argument name="action" value="list"/>
+	</SATELLITE.LINK>
+	
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadAdminTree" outstring="LoadURL">
+		<satellite.argument name="op" value="load"/>
+		<satellite.argument name="NodeType" value="Security"/>
+		<satellite.argument name="Node" value="AssignUsersToGroups"/>
+		<satellite.argument name="Depth" value="2"/>
+	</SATELLITE.LINK>
+	
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/UserGroups" ENCODE="false" VARNAME="desc"/>
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="Description" VALUE="Variables.desc"/> 
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="LoadURL" VALUE="Variables.LoadURL"/>
+		<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Personal.png"/>
+		<ARGUMENT NAME="RefreshKeys" VALUE="Security:UserGroups"/>
+	</CALLELEMENT>
+	<REMOVEVAR NAME="RefreshKeys"/>	
+	
+	
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="Security Configuration"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	
+	<REMOVEVAR NAME="Description"/>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+    <XLAT.LOOKUP KEY="dvin/TreeApplet/ConfigureSecurity" ENCODE="false" VARNAME="_XLAT_"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/SecurityConfigsFront" outstring="ExecuteURL">
+		<satellite.argument name="action" value="list"/>
+	</SATELLITE.LINK>
+	
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadAdminTree" outstring="LoadURL">
+		<satellite.argument name="op" value="load"/>
+		<satellite.argument name="NodeType" value="Security"/>
+		<satellite.argument name="Node" value="ConfigureSecurity"/>
+		<satellite.argument name="Depth" value="2"/>
+	</SATELLITE.LINK>
+	
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/SecurityConfigurations" ENCODE="false" VARNAME="scdesc"/>
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="Description" VALUE="Variables.scdesc"/> 
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Security.png"/>
+	</CALLELEMENT>
+	
+	
+</THEN>
+<ELSE>
+	<IF COND="Variables.Depth=2">
+	<THEN>
+		<IF COND="Variables.Node=Groups">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+				<ARGUMENT NAME="AdHoc" VALUE="Groups:New"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+			
+			<REMOVEVAR NAME="Description"/>
+			<REMOVEVAR NAME="LoadURL"/>
+			<REMOVEVAR NAME="OKActions"/>
+            <XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/GroupsFront" outstring="ExecuteURL">
+				<satellite.argument name="action" value="new"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/AddNewGroup" ENCODE="false" VARNAME="_newgroupdesc"/>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables._newgroupdesc"/> 
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Personal.png"/>
+			</CALLELEMENT>
+			
+			<selectto LIST="groups" WHAT="name,description" FROM="FW_CSGroups" ORDERBY="name"/>
+			<if COND="IsList.groups=true">
+			<then>
+				<loop LIST="groups">
+						<REMOVEVAR NAME="Description"/>
+						<REMOVEVAR NAME="OKActions"/>
+						
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+							<ARGUMENT NAME="AdHoc" VALUE="Groups:groups.name"/>
+							<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+						</CALLELEMENT>
+
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/GroupsFront" outstring="ExecuteURL">
+							<satellite.argument name="action" value="inspect"/>
+							<satellite.argument name="groupname" value="groups.name"/>
+						</SATELLITE.LINK>
+	
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+						
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+							<ARGUMENT NAME="Label" VALUE="groups.name"/>
+							<ARGUMENT NAME="Description" VALUE="groups.description"/>
+							<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+							<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+							<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+							<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/default.png"/>
+						</CALLELEMENT>
+				</loop>
+			</then>
+			</if>
+		</THEN>
+		<ELSE>
+		<IF COND="Variables.Node=AssignUsersToGroups">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+				<ARGUMENT NAME="AdHoc" VALUE="AssignUsersToGroups:New"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+			
+			<REMOVEVAR NAME="Description"/>
+			<REMOVEVAR NAME="LoadURL"/>
+			<REMOVEVAR NAME="OKActions"/>
+            <XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/UserGroupsFront" outstring="ExecuteURL">
+				<satellite.argument name="action" value="new"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables._XLAT_ "/> 
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Personal.png"/>
+			</CALLELEMENT>
+			
+			<selectto LIST="usergroups" WHAT="username,groups" FROM="FW_CSUserGroups" ORDERBY="username"/>
+			<if COND="IsList.usergroups=true">
+			<then>
+				<loop LIST="usergroups">
+						<REMOVEVAR NAME="Description"/>
+						<REMOVEVAR NAME="OKActions"/>
+						
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+							<ARGUMENT NAME="AdHoc" VALUE="AssignUsersToGroups:usergroups.username"/>
+							<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+						</CALLELEMENT>
+						
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/UserGroupsFront" outstring="ExecuteURL">
+							<satellite.argument name="action" value="inspect"/>
+							<satellite.argument name="username" value="usergroups.username"/>
+						</SATELLITE.LINK>
+	
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+							<ARGUMENT NAME="Label" VALUE="usergroups.username"/>
+							<ARGUMENT NAME="Description" VALUE="usergroups.groups : usergroups.username "/> 
+							<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+							<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+							<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+							<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/default.png"/>
+						</CALLELEMENT>
+				</loop>
+			</then>
+			</if>
+		</THEN>
+		<ELSE>
+		<IF COND="Variables.Node=ConfigureSecurity">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+				<ARGUMENT NAME="AdHoc" VALUE="ConfigureSecurity:New"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+			
+			<REMOVEVAR NAME="Description"/>
+			<REMOVEVAR NAME="LoadURL"/>
+			<REMOVEVAR NAME="OKActions"/>
+            <XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/SecurityConfigsFront" outstring="ExecuteURL">
+				<satellite.argument name="action" value="new"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/AddNewSecurityConfiguration" ENCODE="false" VARNAME="descForNew"/>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables.descForNew "/> 
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/Personal.png"/>
+			</CALLELEMENT>
+		</THEN>
+		</IF>
+		</ELSE>
+		</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+
+</FTCS> 

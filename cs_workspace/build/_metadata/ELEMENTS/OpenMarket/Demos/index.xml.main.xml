@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Demos/index</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Demos/index</string>
+        <string>Publication and Sample Site Index Page</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Demos/index.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Demos/index.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FDemos%2Findex.xml
+@hashval=-1359047907
+key=@ELEMENTCATALOG-OpenMarket/Demos/index
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

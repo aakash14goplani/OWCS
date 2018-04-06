@@ -1,0 +1,313 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/AssetMaker/EWebEditProCheckFields
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<PROPERTY.GET PARAM="xcelerate.ewebeditpro" INIFILE="futuretense_xcel.ini" VARNAME="ewebeditpro"/>
+<script type="text/javascript" language="JavaScript1.2" src="Variables.ewebeditpro" REPLACEALL="Variables.ewebeditpro"> </script>
+<PROPERTY.GET PARAM="xcelerate.renumcharref" INIFILE="futuretense_xcel.ini" VARNAME="renumcharref"/>
+<IF COND="IsVariable.renumcharref=true">
+	<THEN>
+		<IF COND="Variables.renumcharref!=Variables.empty">
+			<THEN>
+				<REPLACE STR="Variables.renumcharref">
+				<![CDATA[
+				<script language="JavaScript1.2">
+					if (typeof eWebEditPro == "object") {
+						eWebEditPro.onsave = function() {
+							var reNumCharRef = Variables.renumcharref;
+							for(var i=0; i < eWebEditPro.instances.length; i++) {
+								var input = eWebEditPro.instances[i].linkedElement();
+								input.value = input.value.replace(reNumCharRef,
+									function(s) {
+										var html = "";
+										for (var i = 0; i < s.length; i++) {
+											var c = s.charCodeAt(i);
+											html += "&#"+c+";";
+										}
+										return html;
+									}
+								);
+							}
+						};
+					}
+				</script>
+				]]>
+				</REPLACE>
+			</THEN>
+		</IF>
+	</THEN>
+</IF>
+
+<![CDATA[            
+<script type="text/javascript" language="JavaScript1.2">
+	if (typeof eWebEditPro != "object")
+	{
+		]]>
+		alert("<XLAT.STREAM KEY="dvin/Assetmaker/FailedToCreate" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+	}
+	else
+	{
+		eWebEditPro.actionOnUnload = EWEP_ONUNLOAD_SAVE;
+	}
+</script>
+]]>
+
+<script LANGUAGE="JavaScript">
+	
+	function checkfieldsnosubmit()
+	{    
+		var obj = document.forms[0].elements[0];
+	
+        <replaceall LIST="Variables.AssetType, Proplist.ITEM">
+        <if COND="IsList.Proplist=true">
+            <then>
+                <loop LIST="Proplist">
+                <setvar NAME="fieldType" VALUE="Variables.assetmaker/property/Proplist.ITEM/inputform/type"/>
+                <if COND="Variables.fieldType=EWEBEDITPRO">
+                <then>
+                     <removevar NAME="maxlength"/>
+                     <setvar NAME="maxlength" VALUE="0"/>
+                     <if cond="IsVariables.assetmaker/property/Proplist.ITEM/inputform/maxlength=true">
+                     <then>
+                        <setvar NAME="maxlength" VALUE="Variables.assetmaker/property/Proplist.ITEM/inputform/maxlength"/>
+                     </then>
+                     <else>
+                        <BEGINS STR="Proplist.ITEM" WHAT="url"/>
+                        <if COND="Variables.errno=0">
+                        <then>
+                            <if COND="IsVariable.assetmaker/property/Proplist.ITEM/storage/length=true">
+                            <then>
+                                <setvar NAME="maxlength" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/length"/>
+                            </then>
+                            <else>
+                                <setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+                                <if COND="Variables.storagetype!=LONGVARCHAR">
+                                <then>
+                                    <setvar NAME="maxlength" VALUE="10"/>
+                                </then>
+                                </if>
+                            </else>
+                            </if>
+                        </then>
+                        </if>
+                    </else>
+                    </if>
+                     <replaceall LIST="Variables.maxlength">
+                     <![CDATA[                     
+                     if (Variables.maxlength != '0'){
+                            var attr = 'Variables.AssetType:Proplist.ITEM';
+                            var oEWebEditor = eWebEditPro.instances['Proplist.ITEM'];
+                            var actualText = oEWebEditor.editor.getBodyHTML();
+                            var actualLen = actualText.length;
+                            if (actualLen  > Variables.maxlength)
+                            {
+                                var xlatstr= ']]><XLAT.STREAM KEY="dvin/AT/Common/editorTexttooLong" ESCAPE="true" ENCODE="false"/><![CDATA[' ;
+                                var newstr=xlatstr.replace("Variables.fieldname",'Proplist.ITEM') ;
+                                newstr=newstr.replace("Variables.len",'Variables.maxlength') ;
+                                alert(newstr);
+                                return false;
+                            }
+                      }
+                     ]]>
+                     </replaceall>
+
+                </then>
+                </if>
+                </loop>
+            </then>
+            </if>
+
+        <![CDATA[
+		if ( ( obj.form.elements['Variables.AssetType:name'].value.search(/['"?;:]/) != -1 ) ||
+				 ( obj.form.elements['Variables.AssetType:name'].value.length == 0 ) ||
+				 ( obj.form.elements['Variables.AssetType:name'].value.match(/^[\s]/) != null ) ) {
+		
+		//Here means something is wrong, let us figure out what
+		
+				if ( ( obj.form.elements['Variables.AssetType:name'].value.search(/['"?;:]/) != -1 ) ) {
+                     var replacestr=/\bVariables.name\b/   ;
+                     var xlatstr= ']]><XLAT.STREAM KEY="dvin/Assetmaker/InvalidCharacter" ENCODE="false" ESCAPE="true"/><![CDATA[' ;
+                     var newstr=xlatstr.replace(replacestr, obj.form.elements['Variables.AssetType:name'].value) ;
+                     alert(newstr);
+
+ 				}
+		
+				if (obj.form.elements['Variables.AssetType:name'].value.length == 0) {
+					]]>
+					alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyUniqueName" ESCAPE="true" ENCODE="false"/> ");
+					<![CDATA[
+					
+				}
+				
+				if ( obj.form.elements['Variables.AssetType:name'].value.match(/^[\s]/) != null ) {
+					]]>
+					alert("<XLAT.STREAM KEY="dvin/Assetmaker/NameNotStartBySpace" ESCAPE="true" ENCODE="false"/> ");
+					<![CDATA[
+				}
+	
+				return false;
+		}
+		]]>
+		</replaceall>
+		
+	
+		<if COND="IsVariable.assetmaker/ewebeditpropertylist=true">
+		<then>
+	 	    <stringlist NAME="ewebeditfields" STR="Variables.assetmaker/ewebeditpropertylist" DELIM=","/>
+	 	    <stringlist NAME="requiredlist" STR="Variables.assetmaker/requiredpropertylist" DELIM=","/>
+
+		    <loop LIST="ewebeditfields">
+				<setvar NAME="ewebeditrequired" VALUE="false"/>
+				<replaceall LIST="Variables.AssetType,ewebeditfields.ITEM,requiredlist.ITEM,Variables.ewebeditrequired">
+				<![CDATA[
+					obj.form.elements['Variables.AssetType:ewebeditfields.ITEM'].value=obj.form.elements['ewebeditfields.ITEM'];
+				]]>
+		    <loop LIST="requiredlist">
+  				<if COND="ewebeditfields.ITEM=requiredlist.ITEM">
+  				<then>	
+						<setvar NAME="ewebeditrequired" VALUE="true"/>
+  				</then> 
+  				</if>
+  			</loop>
+  			<if COND="Variables.ewebeditrequired=false">
+  			<then>
+				<![CDATA[
+					var content = new Object();
+					content.value="";
+					eWebEditPro.instances['ewebeditfields.ITEM'].save(content);					
+					obj.form.elements['ewebeditfields.ITEM'].value=content.value;
+				]]>
+			  </then>
+  			</if>
+				</replaceall>	
+			</loop>
+		</then>
+		</if>
+
+
+		<if COND="IsVariable.assetmaker/requiredpropertylist=true">
+		<then>
+	 	    <stringlist NAME="requiredlist" STR="Variables.assetmaker/requiredpropertylist" DELIM=","/>
+		    <loop LIST="requiredlist">
+		    	<setvar NAME="ewebeditrequired" VALUE="false"/>
+				<if COND="IsVariable.assetmaker/ewebeditpropertylist=true">
+				<then>
+					<loop LIST="ewebeditfields">
+						<if COND="ewebeditfields.ITEM=requiredlist.ITEM">
+						<then>
+							<setvar NAME="ewebeditrequired" VALUE="true"/>
+						</then>
+						</if>
+					</loop>
+				</then>
+				</if>
+
+		    	<setvar NAME="fielddescription" VALUE="Variables.assetmaker/property/requiredlist.ITEM/description"/>
+				<replaceall LIST="Variables.AssetType,requiredlist.ITEM,Variables.fielddescription">
+				<if COND="Variables.ewebeditrequired=true">
+				<then>
+				<![CDATA[
+					var content = new Object();
+					content.value="";
+					eWebEditPro.instances['requiredlist.ITEM'].save(content);
+                    var eWebEditProEmpty = String.fromCharCode(60,112,62,160,60,47,112,62,13,10);
+                    var eWebEditProEmpty2 = String.fromCharCode(160,13,10);
+					if (content.value=="" ||
+                        content.value==eWebEditProEmpty ||
+                        content.value==eWebEditProEmpty2)
+					{
+						]]>
+						alert("<XLAT.STREAM KEY="dvin/Assetmaker/specifyfieldAssetType" ESCAPE="true" ENCODE="false"/> ");
+						<![CDATA[
+						return false;
+					}
+					obj.form.elements['requiredlist.ITEM'].value=content.value;
+				]]>
+				</then>
+				<else>
+				<![CDATA[
+					if (obj.form.elements['Variables.AssetType:requiredlist.ITEM'].value=="")
+					{
+						if (obj.form.elements['Variables.AssetType:requiredlist.ITEM'].type=="file")
+						{
+							if (obj.form.elements['UploadDeleterequiredlist.ITEM'].value=="nofile" ||
+								obj.form.elements['UploadDeleterequiredlist.ITEM'].checked==true )
+							{
+								]]>
+								alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyFieldDes" ESCAPE="true" ENCODE="false"/> ");
+								<![CDATA[
+								return false;
+							}
+						}
+						else {
+							]]>
+							alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyFieldDes" ESCAPE="true" ENCODE="false"/> ");
+							<![CDATA[
+							return false;
+						}
+					}
+					// code added to handle required check boxes
+	 				else {
+						var type = obj.form.elements['Variables.AssetType:requiredlist.ITEM'].type;
+						if ( type==null )
+						{
+							var numitems = obj.form.elements['Variables.AssetType:requiredlist.ITEM'].length;
+							if ( numitems > 1 )
+							{
+								var somethingchecked = false;
+								var numitems = obj.form.elements['Variables.AssetType:requiredlist.ITEM'].length;
+								for ( var j=0 ; j < numitems ; j++ )
+								{
+									if ( obj.form.elements['Variables.AssetType:requiredlist.ITEM'][j].checked==true ) {
+										somethingchecked = true;
+										break;
+									}
+								}
+								if (somethingchecked==false ) {
+									]]>
+									alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyFieldDes" ESCAPE="true" ENCODE="false"/>");
+									<![CDATA[
+									return false;
+								}
+							}
+						}
+					}
+					if (obj.form.elements['Variables.AssetType:requiredlist.ITEM'].selectedIndex==-1)
+					{
+						]]>
+						alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyFieldDes" ESCAPE="true" ENCODE="false"/> ");
+						<![CDATA[
+						return false;
+					}
+				]]>
+				</else>
+				</if>
+				</replaceall>
+		    </loop>
+		</then>
+		</if>
+		<if COND="Variables.assetmaker/assettags/unnamedassociations=YES">
+		<then>
+			<![CDATA[
+			var lst = obj.form.elements['_unnamed_associations'];
+		   for (i=0; i<lst.options.length; i++)
+		        lst.options[i].selected=true
+			]]>
+		</then>
+		</if>
+		<!-- save is performed onUnload, eWebEditPro.save() is not necessory when this.actionOnUnload =EWEP_ONUNLOAD_SAVE is always there
+		if (typeof eWebEditPro == "object") eWebEditPro.save(); -->
+		return true;
+	}
+	
+</script>
+
+
+</FTCS> 

@@ -1,0 +1,221 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/TreeTabView
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<TTM.LOAD OBJVARNAME="tab" ID="Variables.tabid"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+	<TREETAB.SCATTER NAME="tab" PREFIX="View:"/>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/Treetabtitle" View:title="Variables.View:title"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	
+   <table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-50 margin-top-zero">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<tr>
+				<td class="form-label-text" colspan="3" ALIGN="LEFT">
+				<table classs="legacyAbar" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+				
+					<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="statustxt"/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urlTabView">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="View"/>
+                                          <satellite.argument name="tabid" value="Variables.tabid"/>
+                                           </SATELLITE.LINK>
+					<td><A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><img hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContentUp.gif"  border="0" alt="Variables.statustxt" REPLACEALL="Variables.cs_imagedir,Variables.statustxt"/></A></td>
+					<td><A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Inspect"/></span></A></td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="statustxt"/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urlTabView">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="Edit"/>
+                                          <satellite.argument name="tabid" value="Variables.tabid"/>
+                                           </SATELLITE.LINK>
+					<td><A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><img src="Variables.cs_imagedir/graphics/common/icon/iconEditContentUp.gif" hspace="2" border="0" alt="Variables.statustxt" REPLACEALL="Variables.cs_imagedir,Variables.statustxt"/></A></td>
+					<td><A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Edit"/></span></A></td>
+
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+					<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeTabSysCheck" >
+									<ARGUMENT NAME="tabuid" VALUE="Variables.View:uid" />
+					</CALLELEMENT>
+					<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="statustxt"/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urlTabView">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="confirmdelete"/>
+                                          <satellite.argument name="tabid" value="Variables.tabid"/>
+                                           </SATELLITE.LINK>
+					<td>
+						<IF COND="Variables.systab=false" >
+						<THEN>
+							<td>
+								<A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><img src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentUp.gif" hspace="2" border="0" alt="Variables.statustxt" REPLACEALL="Variables.cs_imagedir,Variables.statustxt"/></A>
+							</td>
+							<td>
+								<A HREF="Variables.urlTabView" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlTabView,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Delete"/></span></A>
+							</td>
+						</THEN>
+						<ELSE>
+							<td>
+								<img src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentX.gif" hspace="2" border="0" alt="Variables.statustxt" REPLACEALL="Variables.cs_imagedir,Variables.statustxt"/>
+							</td>
+							<td>
+								<span class="action-text"><XLAT.STREAM KEY="dvin/Common/Delete"/></span>
+							</td>
+						</ELSE>
+						</IF>
+					</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Title"/>:
+				</td>
+				<td class="form-inset">
+			 		<STRING.STREAM VALUE="Variables.View:title"/>
+				</td><td></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Tooltip"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.View:tooltip"/>
+				</td><td><BR /></td>
+			</tr>
+	
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text" NOWRAP="NOWRAP">
+					<XLAT.STREAM KEY="dvin/Common/Sites"/>:
+				</td>
+				<td class="form-inset">
+					<IF COND="Variables.View:sites!=Variables.empty">
+					<THEN>
+					<IF COND="Variables.View:sites=_ALL_"><!-- corresponding to Any -->
+					<THEN>
+						<XLAT.STREAM KEY="dvin/Common/AnySite"/><br/>
+					</THEN>
+					<ELSE>
+					
+						<STRINGLIST NAME="siteList" STR="Variables.View:sites" DELIM=";"/>
+						<LOOP LIST="siteList">
+							<IF COND="siteList.ITEM=0">
+							<THEN>
+								<SETVAR NAME="pubname" VALUE="Management Site"/>
+							</THEN>
+							<ELSE>
+								<PUBLICATION.LOAD NAME="pub" FIELD="id" VALUE="siteList.ITEM"/>
+								<PUBLICATION.GET NAME="pub" FIELD="name" OUTPUT="pubname"/>
+							</ELSE>
+							</IF>
+							<STRING.STREAM VALUE="Variables.pubname"/><br/>
+						</LOOP>
+					</ELSE>
+					</IF>
+					</THEN>
+					</IF>
+				</td><td></td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/RequiredRoles"/>:
+				</td>
+				<td class="form-inset">
+					<IF COND="Variables.View:roles=_ALL_">
+					<THEN>
+						<XLAT.STREAM KEY="dvin/Common/AnyRole"/><br />
+					</THEN>
+					<ELSE>
+					<SUBSTITUTE STR="Variables.View:roles" WHAT="," WITH=",%20" OUTSTR="roleStr"/>
+					<STRING.STREAM VALUE="Variables.roleStr"/>
+					</ELSE>
+					</IF>
+				</td><td></td>
+			</tr>
+         	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/TabContents"/>:
+				</td>
+				
+				<ASSETTYPE.LIST LIST="AllTypes" ORDER="description"/>
+				<HASH.CREATE NAME="typesHash" LIST="AllTypes" COLUMN="assettype"/>
+				
+				<td class="form-inset">
+					<IF COND="Variables.View:sectionTotal!=0">
+					<THEN>
+						<SETCOUNTER NAME="count" VALUE="0"/>
+						<LOOP COUNT="Variables.View:sectionTotal">
+							<SETVAR NAME="populate" VALUE="Variables.View:sectionCounters.countpopulate"/>
+							<SETVAR NAME="itemname" VALUE="Variables.View:sectionCounters.countname"/>
+							<SETVAR NAME="displayType" VALUE="Variables.itemname"/>
+
+								<HASH.CONTAINS NAME="typesHash" VALUE="Variables.itemname" VARNAME="hasit"/>
+								<IF COND="Variables.hasit=true">
+								<THEN>
+									<ASSETTYPE.LOAD NAME="type" TYPE="Variables.itemname"/>
+									<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+									<SETVAR NAME="displayType" VALUE="Variables.AssetTypeObj:description"/>
+								</THEN>
+								</IF>
+
+					<INCCOUNTER NAME="count" VALUE="1"/>
+					<IF COND="Variables.View:sectionTotal=Counters.count"><THEN><IMG src="Variables.cs_imagedir/graphics/common/icon/iconPathEnd.gif" ALIGN="top" REPLACEALL="Variables.cs_imagedir"/></THEN>
+						<ELSE><IMG src="Variables.cs_imagedir/graphics/common/icon/iconPathBranch.gif" ALIGN="top" REPLACEALL="Variables.cs_imagedir"/></ELSE>
+						</IF><STRING.STREAM VALUE="Variables.displayType"/><!-- <CSVAR NAME="Variables.itemname -- Variables.populate"/> --><br/>
+						
+						</LOOP>
+					</THEN>
+					</IF>
+				</td><td></td>
+			</tr>
+   			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>		
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/Common/ID"/>:
+				</td>
+				<td class="form-inset">
+					<INPUT TYPE="HIDDEN" NAME="id" VALUE="Variables.tabid" REPLACEALL="Variables.tabid"/>
+					<STRING.STREAM VALUE="Variables.tabid"/>
+				</td>
+			</tr>			
+		</table>
+	</td></tr>
+</table>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urlTabView">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                           </SATELLITE.LINK>
+<DIV class="width-outer-70"><A HREF="Variables.urlTabView" REPLACEALL="Variables.urlTabView"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Admin/Listalltreetabs"/></A>
+</DIV>
+
+
+</THEN>
+</IF>
+</FTCS> 

@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentForm1
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<div dojoType="dijit.layout.BorderContainer" class="bordercontainer">
+<INPUT TYPE="HIDDEN" NAME="FlexTmplsNextStep" VALUE=""/>
+ <INPUT TYPE="HIDDEN" NAME="MultiAttrVals" VALUE=""/>
+
+<if COND="Variables.ContentDetails:createddate!=Variables.empty">
+<then>
+	<callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentForm1"/>
+</then>
+<else>
+   <fgtm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+   <ASSET.GETSUBTYPE NAME="theCurrentAsset" OUTPUT="subtypeName"/>
+   <IF COND="IsVariable.subtypeName=true">
+   <THEN>
+      <SETVAR NAME="errno" VALUE="0"/>
+      <ASSET.LIST TYPE="Variables.templatetype" FIELD1="name" VALUE1="Variables.subtypeName" LIST="lCurrentSubtype"/>
+      <SETVAR NAME="TemplateChosen" VALUE="lCurrentSubtype.id"/>
+   </THEN>
+   </IF>
+		<if COND="IsVariable.TemplateChosen=false">
+		<then>
+            <ASSET.LIST TYPE="Variables.templatetype" EXCLUDEVOIDED="true" PUBID="SessionVariables.pubid" LIST="lAllDefs"/>
+             <if COND="IsList.lAllDefs=true">
+             <then>
+                <if COND="lAllDefs.#numRows=1">
+                <then>
+                    <SETVAR NAME="TemplateChosen" VALUE="lAllDefs.id"/>
+                    <callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentForm1"/>
+                </then>
+                <else>
+                    <callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexGroups/AssocTmpls"/>
+                </else>
+                </if>
+             </then>
+             <else>
+    			<callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexGroups/AssocTmpls"/>
+             </else>
+             </if>
+		</then>
+		<else>
+			<callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentForm1"/>
+		</else>
+		</if>
+</else>
+</if>
+</div>
+</FTCS> 

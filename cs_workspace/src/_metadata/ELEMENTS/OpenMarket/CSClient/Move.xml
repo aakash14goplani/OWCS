@@ -1,0 +1,229 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/Move
+-
+- INPUT
+-  SourceID is the node id of the moving asset
+-  DroppedOn is the node id of the new parent
+-
+- OUTPUT
+-
+-->
+
+<!-- a move means remove the parent the node was moved from and add the parent the node was moved to -->
+<!-- some moves may not be legal:
+   
+   moving from a required definition to a different definition may not be legal if the node has no more parents
+   of the required definition.  The target definition may also not be a legal parent.
+   
+-->
+
+<!-- make sure not moving across site or assettype -->
+<IF COND="Variables.Node1=Variables.SourcePath1">
+<THEN>
+   <IF COND="Variables.Node2=Variables.SourcePath2">
+   <THEN>
+
+<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+<SETVAR NAME="primarypubid" VALUE="Variables.Node1"/>
+<SETSSVAR NAME="pubid" VALUE="Variables.primarypubid"/>
+<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.SourceID" OBJVARNAME="workflowasset" />
+<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="edit" SITE="Variables.primarypubid" VARNAME="editLegal" MUSTBEASSIGNED="true" />
+
+<IF COND="Variables.editLegal=false">
+<THEN>
+    <XLAT.LOOKUP KEY="dvin/CSDocLink/IllegalTransition" VARNAME="_XLAT_"/>
+    <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+</THEN>
+<ELSE>
+    <SETCOUNTER NAME="currentNode" VALUE="3"/>
+    <LOOP UNTIL="IsVariable.SourcePathCounters.currentNode=false">
+    	<INCCOUNTER NAME="currentNode" VALUE="1"/>
+    </LOOP>
+    <INCCOUNTER NAME="currentNode" VALUE="-2"/>
+    
+    <ICS.RESOLVEVARIABLES NAME="$(Variables.SourcePath$(Counters.currentNode))" OUTPUT="oldParentID" DELIMITED="true"/>
+    
+    <IF COND="Variables.oldParentID!=Variables.DroppedOn">
+    <THEN>
+       
+       <FATM.GETALL ASSETTYPE="Variables.AssetType" LISTVARNAME="lFlexFamily"/>
+       <FGTM.GETALL ASSETTYPE="lFlexFamily.grouptype" LISTVARNAME="lParentFamily"/>
+       <ATM.LOCATE VARNAME="gm" TYPE="lFlexFamily.templatetype"/>
+       
+       <SETVAR NAME="errno" VALUE="0"/>
+       <IF COND="Variables.DroppedOn!=Variables.Node2">
+       <THEN>
+          <ASSET.LIST TYPE="lFlexFamily.grouptype" LIST="lCurrentParent" FIELD1="id" VALUE1="Variables.DroppedOn" EXCLUDEVOIDED="true"/>
+       </THEN>
+       </IF>
+          
+       <IF COND="Variables.errno=0">
+       <THEN>
+       
+       
+          <SETVAR NAME="removeParent" VALUE="Variables.empty"/>
+          <SETVAR NAME="addParent" VALUE="Variables.empty"/>
+          <SETVAR NAME="needToSave" VALUE="false"/>
+          
+          <ASSET.LOAD NAME="ainst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.SourceID" EDITABLE="true"/>
+		 <!-- check is added here if the asset is deleted from the server it should allow copy on the client-->
+		  <ASSET.GET NAME="ainst" FIELD="status" OUTPUT="notvoid"/>
+		  <IF COND="Variables.notvoid=VO">
+		  <THEN> <!-- message used the existing one to be changed -->
+		     <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>
+             <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+		  </THEN>
+		  <ELSE>
+
+
+          <ASSET.GET NAME="ainst" FIELD="name" OUTPUT="assetName"/>
+          <ASSET.GET NAME="ainst" FIELD="id" OUTPUT="id"/>
+          <ASSET.GET NAME="ainst" FIELD="flextemplateid" OUTPUT="defID"/>
+       
+          <IF COND="Variables.DroppedOn!=Variables.Node2">
+          <THEN>
+             <IF COND="Variables.oldParentID=Variables.Node2">
+             <THEN>
+                <!-- node is currently an orphan, move is ok if new parent is valid for nodes def -->
+                <CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+                   <ARGUMENT NAME="command" VALUE="add"/>
+                </CALLELEMENT>
+             </THEN>
+             <ELSE>
+                <!-- move from one parent to another -->
+                <!-- a switch from one parent to another of the same subtype is always valid -->
+                <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.DroppedOn" LIST="lNewParent"/>
+                <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.oldParentID" LIST="lOldParent"/>
+                <IF COND="lNewParent.flexgrouptemplateid=lOldParent.flexgrouptemplateid">
+                <THEN>
+                   <SETVAR NAME="addParent" VALUE="Variables.DroppedOn"/>
+                   <SETVAR NAME="removeParent" VALUE="Variables.oldParentID"/>
+                   <SETVAR NAME="needToSave" VALUE="true"/>
+                </THEN>
+                <ELSE>
+                   <CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+                      <ARGUMENT NAME="command" VALUE="remove"/>
+                   </CALLELEMENT>
+                   <IF COND="Variables.needToSave=true">
+                   <THEN>
+                      <CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+                         <ARGUMENT NAME="command" VALUE="add"/>
+                      </CALLELEMENT>
+                   </THEN>
+                   </IF>
+                </ELSE>
+                </IF>
+                <ASSET.LIST TYPE="lParentFamily.templatetype" FIELD1="id" VALUE1="lNewParent.flexgrouptemplateid" LIST="lParentDef"/>
+                
+                <ASSET.GET NAME="ainst" FIELD="name" OUTPUT="assetName"/>
+                <ASSET.GET NAME="ainst" FIELD="id" OUTPUT="id"/>
+                <ASSET.GET NAME="ainst" FIELD="flextemplateid" OUTPUT="defID"/>
+                <ASSET.LOAD NAME="defInst" TYPE="lFlexFamily.templatetype" FIELD="id" VALUE="Variables.defID"/>
+                <ASSET.GET NAME="defInst" FIELD="name" OUTPUT="defName"/>
+             </ELSE>
+             </IF>
+          </THEN>
+          <ELSE>
+             <!-- dropped onto the asset type node: means remove old parent.  Not legal if old parent is last of a required def -->
+             <!-- find def of old parent, find status of that def with regard to moving nodes def -->
+             <CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+                <ARGUMENT NAME="command" VALUE="remove"/>
+             </CALLELEMENT>
+          </ELSE>
+          </IF>
+          
+          <IF COND="Variables.needToSave=true">
+          <THEN>
+             <!-- may need to checkout if rev tracked -->
+             <CALLELEMENT NAME="OpenMarket/CSClient/CheckOut">
+                <ARGUMENT NAME="Function" VALUE="edit"/>
+             </CALLELEMENT>
+             
+             <IF COND="Variables.doproceed=true">
+             <THEN>
+                <AFFECTEDNODES>
+                   <IF COND="Variables.removeParent!=Variables.empty">
+                   <THEN>
+                      <FLEXASSET.REMOVEPARENT NAME="ainst" ID="Variables.removeParent"/>
+                      <NODE NODEID="Variables.SourceID" PARENTID="Variables.removeParent" REPLACEALL="Variables.SourceID,Variables.removeParent"/>
+                   </THEN>
+                   </IF>
+                   <IF COND="Variables.addParent!=Variables.empty">
+                   <THEN>
+                      <FLEXASSET.ADDPARENT NAME="ainst" ID="Variables.addParent"/>
+                      <NODE NODEID="Variables.SourceID" PARENTID="Variables.addParent" REPLACEALL="Variables.SourceID,Variables.addParent"/>
+                   </THEN>
+                   </IF>
+                </AFFECTEDNODES>
+                <ASSET.SET NAME="ainst" FIELD="status" VALUE="ED"/>
+             	<ASSET.SAVE NAME="ainst"/>
+             	<IF COND="Variables.errno=0">
+             	<THEN>
+                   <if COND="Variables.trackingenabled=true">
+                   <then>
+    		      <IMPLICITCHECKOUT.ISCHECKEDOUT ASSETTYPE="Variables.AssetType"
+    			       ASSETID="Variables.id" VARNAME="checkVar"/>
+    		          <IF COND="IsVariable.checkVar=true">
+                     <THEN>
+    		                <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType"
+    			          	ASSETID="Variables.id"/>
+                         <!-- CATALOGMANAGER SCOPED="STACKED">
+                           <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+                           <ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+                           <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+                         </CATALOGMANAGER -->
+						 <ASSET.UNDOCHECKOUT NAME="ainst" REVERT="false" FLUSH="true"/>
+                      </THEN>
+                      </IF>
+                     </then>
+                     </if>
+             	</THEN>
+             	<ELSE>
+                   <XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+             		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+             	</ELSE>
+             	</IF>
+             </THEN>
+             <ELSE>
+                <XLAT.LOOKUP KEY="dvin/CSDocLink/Variables.doproceed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+                <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+             </ELSE>
+             </IF>
+          </THEN>
+          </IF>
+		  </ELSE>
+		  </IF> <!-- VO else ends here Variables.notvoid=VO -->
+       </THEN>
+       <ELSE>
+          <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ParentCouldNotBeAccessed" VARNAME="_XLAT_"/>
+          <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+       </ELSE>
+       </IF>
+	 
+    </THEN>
+    <ELSE>
+       <XLAT.LOOKUP KEY="dvin/CSDocLink/Cannotmove" VARNAME="_XLAT_"/>
+       <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+    </ELSE>
+    </IF>
+       </ELSE>
+        </IF> <!-- edit legal -->
+        <REMOVESSVAR NAME="pubid"/>
+       </THEN>
+       <ELSE>
+          <!-- move across assettype -->
+          <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotMoveAcrossAssetTypes" VARNAME="_XLAT_"/>
+          <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+       </ELSE>
+       </IF>
+    </THEN>
+    <ELSE>
+       <!-- move across assettype -->
+       <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotMoveAcrossSites" VARNAME="_XLAT_"/>
+       <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+    </ELSE>
+    </IF>
+
+</FTCS> 

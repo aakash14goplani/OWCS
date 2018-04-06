@@ -1,0 +1,236 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/AssetChildrenForm.xml $ 
+$Revision: 62 $ 
+$Modtime: 8/16/04 2:27p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Children Form
+-		expects: Variables.AssetType - current Asset Type (parent)
+- 	optionally, Variables.childassettype - gives only child relations of this asset type,
+-							otherwise handle all possible child relations organized by child asset type
+-
+- NOTE: This form is based largely on the original AssetChildrenForm, which still exists and which some assets still call.
+- It just presents a different and hopefully more pleasing UI for multivalued assets.
+-
+-->
+
+<!-- Get the list of possible child associations for this asset for all children or a single child assettype  -->
+<!-- Find Any subtype associated with this asset type -->
+<ASSET.ISNEW NAME="theCurrentAsset" VARNAME="isNew"/>
+<IF COND="Variables.isNew=true">
+<THEN>
+	<!-- use the first subtype we get (we can't know if this is set to empty or not) -->
+	<ASSET.GetLegalSubtypes TYPE="Variables.AssetType" LIST="subtypes" PUBID="SessionVariables.pubid"/>
+	<SETVAR NAME="subtype" VALUE="subtypes.subtype"/>
+</THEN>
+<ELSE>
+	<ASSET.GETSUBTYPE NAME="theCurrentAsset" OUTPUT="subtype"/>
+</ELSE>
+</IF>
+<IF COND="IsVariable.childassettype=true">
+<THEN>
+	<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" CHILDTYPE="Variables.childassettype" SUBTYPE="Variables.subtype" ORDER="name desc" PUBID="SessionVariables.pubid"/>
+</THEN>
+<ELSE>
+	<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" SUBTYPE="Variables.subtype" ORDER="childassettype,name desc" PUBID="SessionVariables.pubid"/>
+</ELSE>
+</IF>
+
+<SETVAR NAME="specialElementList" VALUE="Variables.empty"/>
+
+<IF COND="IsList.associations=true">
+<THEN>
+	<IF COND="associations.#numRows!=0">
+	<THEN>
+		<SETCOUNTER NAME="currentItem" VALUE="1"/>
+		<LOOP LIST="associations">
+			<!-- For each association that is eligible, find its name and its saved value (if any), and present these in a text element.
+			    Since an association may be multivalued, depending on the kind of association this is, we may need to display multiple elements
+			    and ordinal values, and an "Add" button as well. -->
+			<SETVAR NAME="Assocname" VALUE="associations.name"/>
+			<IF COND="associations.multivalued=T">
+			<THEN>
+				<!-- Multivalued association -->
+							
+				<!-- Emit the necessary script methods -->
+				<IF COND="IsVariable.relMultiScript=false">
+				<THEN>
+					<SCRIPT TYPE="text/javascript">
+
+<![CDATA[
+
+function relSB_MultiSelect(where,validTypes)
+{     
+	var id,name,newindex,items,assettype;
+
+	if (validTypes==null) { ]]>
+	alert("<XLAT.STREAM KEY="dvin/UI/Error/Thisassethasnorelatedassettypes" ENCODE="false" ESCAPE="true"/>");
+	<![CDATA[ return; }
+
+   var pURL = "ContentServer?pagename=OpenMarket/Xcelerate/Actions/SBMultiSelectSearchFront";
+   pURL = pURL + "&validtypes=" + encodeURIComponent(validTypes);
+   pURL = pURL + "&where=" + encodeURIComponent(where);
+   pURL = pURL + "&cs_environment=popup";
+   return window.open(pURL, "SiteBuilderMultiSelectSearch", "directories=no,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no,top=20,width=650,height=680");
+}
+
+function relSelAll(lstname)
+{
+	lst = document.forms[0].elements[lstname];
+	for (i=0; i < lst.options.length; i++)
+	{
+		if (lst.options[i].value == -1)
+			lst.options[i].selected = false;
+		else
+			lst.options[i].selected = true;
+	}
+}
+
+function relXfer(srcname,targetname)
+{
+	src = document.forms[0].elements[srcname];
+	target = document.forms[0].elements[targetname];
+	
+	var sc, itemText, i, newIndex, listy;
+	target.selectedIndex = -1;
+	for (i=0; i < src.options.length; i++)
+	{
+		if (src.options[i].selected && src.options[i].value != -1)
+		{
+			var sc=i;
+			var o=src.options[sc];
+			items=new Option(o.text,o.value);
+			newIndex=target.options.length;
+			target.options[newIndex]=items;
+			target.options[newIndex].selected=true;
+			var typeNid = new String(o.value);
+			var descNname = new String(o.text);
+			var typeNidArray =  typeNid.split(",");
+			var lp = descNname.indexOf("(");
+			var assetName = descNname.slice(0,lp);
+			parent.parent.XcelBanner.addToHistory(typeNidArray[0],typeNidArray[1],assetName);
+		}
+        }
+	i = 0;
+	while (i < src.options.length)
+	{
+		if (src.options[i].selected && src.options[i].value != -1)
+			src.options[i]=null;
+		else
+			i = i + 1;
+	}
+	relDelNul(srcname);
+	relDelNul(targetname);
+}
+
+function relDelNul(lstname)
+{
+	lst = document.forms[0].elements[lstname];
+	i = 0;
+	while (i < lst.options.length)
+	{
+		if (lst.options[i].value==-1)
+			lst.options[i]=null;
+		else
+			i = i + 1;
+	}
+}
+
+function relPromoteRank(lstname)
+{
+	lst = document.forms[0].elements[lstname];
+	sel = lst.selectedIndex;
+	if (sel == -1 ) return true;
+	if (sel == 0 ) return true;
+
+	orig = new Option(lst.options[sel].text,lst.options[sel].value);
+	prev = new Option(lst.options[sel-1].text,lst.options[sel-1].value);
+	lst.options[sel]=prev;
+	lst.options[sel-1]=orig;
+	lst.selectedIndex=sel-1;
+}
+
+function relDemoteRank(lstname)
+{
+	lst = document.forms[0].elements[lstname];
+	sel = lst.selectedIndex;
+	if (sel == -1 ) return true;
+	if (sel == lst.options.length-1 ) return true;
+
+	orig = new Option(lst.options[sel].text,lst.options[sel].value);
+	prev = new Option(lst.options[sel+1].text,lst.options[sel+1].value);
+	lst.options[sel]=prev;
+	lst.options[sel+1]=orig;
+	lst.selectedIndex=sel+1;
+}
+
+function relRemove(lstname)
+{
+	src = document.forms[0].elements[lstname];
+	var i=0;
+	while (i < src.options.length)
+	{
+		if (src.options[i].selected && src.options[i].value != -1)
+			src.options[i]=null;
+		else
+			i = i + 1;
+	}
+	relDelNul(lstname);
+}
+
+]]>
+
+					</SCRIPT>
+					<SETVAR NAME="relMultiScript" VALUE="true"/>
+				</THEN>
+				</IF>
+				
+				<!-- For each one, add the element for it to the list -->
+				<SETVAR NAME="specialElementList" VALUE="Variables.specialElementListrelMultiTagCounters.currentItem,"/>
+				
+			</THEN>
+			<ELSE>
+				<!-- Single valued association -->
+				<!-- Nothing needed here at this time -->
+			</ELSE>
+			</IF>
+			<INCCOUNTER NAME="currentItem" VALUE="1"/>
+		</LOOP>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<!-- This final script function must be called prior to submitting the form, or the existing contents will not be brought along -->
+<SCRIPT LANGUAGE="Javascript">
+<REPLACEALL LIST="Variables.specialElementList">
+<![CDATA[
+function relPrepareForSubmit()
+{
+	// Commented After Adding TypeAhead Widget which has drag and drop implementation
+	// Since below function is needed for <select> HTML Tag which is no longer used
+	/*var listOfElements = "Variables.specialElementList";
+	var index = 0;
+	while (true)
+	{
+		var nextComma = listOfElements.indexOf(",",index);
+		if (nextComma == -1)
+			break;
+		var lstname = listOfElements.substring(index,nextComma);
+		relSelAll(lstname);
+		index = nextComma + 1;
+	}*/
+}
+]]>
+
+</REPLACEALL>
+</SCRIPT>
+</FTCS>

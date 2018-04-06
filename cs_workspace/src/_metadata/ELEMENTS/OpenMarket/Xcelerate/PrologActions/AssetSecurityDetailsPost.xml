@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/AssetSecurityDetailsPost
+-
+- INPUT
+-	Variables.upcommand	= cancel or submit
+-  Variables.id
+-  Variables.AssetType
+- OUTPUT
+-
+-->
+
+<IF COND="IsVariable.upcommand=true">
+<THEN>
+	<IF COND="Variables.upcommand!=cancel">
+	<THEN>
+		<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theCurrentAsset"/>
+		<!-- check whether we can perform this function on this asset (access right may have changed since the front page was displayed) -->
+	    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+	        <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+	        <ARGUMENT NAME="assetObjectName" VALUE="theCurrentAsset"/>
+	        <ARGUMENT NAME="Function" VALUE="authorize"/>
+	    </CALLELEMENT>
+		<IF COND="Variables.PrivsFailed=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<ARGUMENT NAME="error" VALUE="Variables.PrivsFailedReason"/>
+			</CALLELEMENT>
+			<SETVAR NAME="errorAlreadyDisplayed" VALUE="true"/>
+			<SETVAR NAME="upcommand" VALUE="cancel"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	<IF COND="Variables.upcommand!=cancel">
+	<THEN>
+		<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+		<WORKFLOWENGINE.CREATENEWPRIVS OBJVARNAME="wfprivs"/>
+		
+		<!-- fieldnames = rolename-functionid and is set to true=grant, false=deny or not present -->
+		
+		<!-- Get all the roles -->
+		<ROLEMANAGER.GETALLROLES PREFIX="role:"/>
+		<WORKFLOWENGINE.GETALLFUNCTIONS PREFIX="functions:"/>
+		<SETCOUNTER NAME="nthRole" VALUE="0"/>
+		<LOOP COUNT="Variables.role:Total">
+			<ROLE.GETNAME NAME="role:Counters.nthRole" VARNAME="role:name"/>
+			<SETCOUNTER NAME="nthFunction" VALUE="0"/>
+			<LOOP COUNT="Variables.functions:Total">
+				<WORKFLOWFUNCTION.GETID NAME="functions:Counters.nthFunction" VARNAME="functions:id"/>
+				<ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.role:name)-$(Variables.functions:id))" DELIMITED="true" OUTPUT="allowed"/>
+				<IF COND="Variables.allowed=true">
+				<THEN>
+					<WORKFLOWPRIVS.CREATE NAME="wfprivs" OBJVARNAME="priv"/>
+					<WORKFLOWPRIV.SETALLOWED NAME="priv" ALLOWED="true"/>
+					<WORKFLOWPRIV.SETFUNCTIONID NAME="priv" VALUE="Variables.functions:id"/>
+					<WORKFLOWPRIV.SETROLE NAME="priv" ROLE="Variables.role:name"/>
+					<WORKFLOWPRIVS.ADD NAME="wfprivs" OBJECT="priv"/>
+				</THEN>
+				<ELSE>
+					<IF COND="Variables.allowed=false">
+					<THEN>
+						<WORKFLOWPRIVS.CREATE NAME="wfprivs" OBJVARNAME="priv"/>
+						<WORKFLOWPRIV.SETALLOWED NAME="priv" ALLOWED="false"/>
+						<WORKFLOWPRIV.SETFUNCTIONID NAME="priv" VALUE="Variables.functions:id"/>
+						<WORKFLOWPRIV.SETROLE NAME="priv" ROLE="Variables.role:name"/>
+						<WORKFLOWPRIVS.ADD NAME="wfprivs" OBJECT="priv"/>
+					</THEN>
+					</IF>
+				</ELSE>
+				</IF>
+				<INCCOUNTER NAME="nthFunction" VALUE="1"/>
+			</LOOP>
+			<INCCOUNTER NAME="nthRole" VALUE="1"/>
+		</LOOP>
+		
+		<WORKFLOWENGINE.SETOBJECTPRIVS OBJECT="workflowasset" PRIVS="wfprivs"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+</ftcs>

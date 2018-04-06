@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/ShowWorkListFront.xml $ 
+$Revision: 40 $ 
+$Modtime: 8/10/04 11:22a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- ShowWorkListFront.xml
+-
+- DESCRIPTION
+-    - display the list of items current associated with the user
+-
+- HISTORY 
+-->
+<STRING.ENCODE VARIABLE="AssetTypeObj:description" VARNAME="AssetTypeObj:description"/> 
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/> 
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/> 
+
+<table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span style="font-size: 12px;font-weight: bold;"><XLAT.STREAM KEY="dvin/UI/MyAssignments"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<!-- display all the task assignments for this user -->
+<USERMANAGER.GETLOGINUSER VARNAME="theCurrentUser"/>
+<USERMANAGER.GETLOGINUSERNAME VARNAME="theCurrentUserName"/>
+<STRINGLIST STR="Variables.theCurrentUser" NAME="theCurrentUserList" DELIM=";"/>
+<!-- See if the user has ANY current assignments -->
+<WORKFLOWENGINE.GETFILTEREDASSIGNMENTS PREFIX="allAssignments:" SITE="SessionVariables.pubid" STATUS="active" ASSIGNEDTO="theCurrentUserList" LIMITASSIGNEEROLES="true" EXCLUDECOMMENTS="true" SORTSTYLE="deadline"/>
+<setvar NAME="ResultLimit" VALUE="10000"/>
+<setvar NAME="report_assets" VALUE="all"/>
+<XLAT.LOOKUP KEY="dvin/UI/AssetsAssigned" VARNAME="_XLAT_"/>
+<setvar NAME="TileText" VALUE="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/UI/NoAssetsAssigned" VARNAME="_XLAT_" ENCODE="false" />
+<setvar NAME="NoTileText" VALUE="Variables._XLAT_"/>
+ <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/GroupedTileReportAssignments">
+    <argument NAME="showSelect" VALUE="false"/>
+    <argument NAME="showType" VALUE="true"/>
+    <argument NAME="showKey" VALUE="true"/>
+    <argument NAME="showDescription" VALUE="true"/>
+    <argument NAME="showId" VALUE="false"/>
+    <argument NAME="showAssignedBy" VALUE="false"/>
+    <argument NAME="showAssignedDate" VALUE="false"/>
+    <argument NAME="showAssignedTo" VALUE="false"/>
+    <argument NAME="showClearedBy" VALUE="false"/>
+    <argument NAME="showClearedDate" VALUE="false"/>
+    <argument NAME="showDueDate" VALUE="true"/>
+    <argument NAME="showProcessDeadline" VALUE="false"/>
+    <argument NAME="showActionTaken" VALUE="false"/>
+    <argument NAME="showActionToTake" VALUE="false"/>
+    <argument NAME="showCheckout" VALUE="false"/>
+    <argument NAME="showWorkflowStatus" VALUE="true"/>
+    <argument NAME="showIsActive" VALUE="false"/>
+    <argument NAME="showDeadlocked" VALUE="true"/>
+    <argument NAME="showStepTaken" VALUE="false"/>
+    <argument NAME="showClearAssignment" VALUE="false"/>
+    <argument NAME="TileText" VALUE="Variables.TileText"/>
+    <argument NAME="NoTileText" VALUE="Variables.NoTileText"/>
+</callelement>
+
+<IF COND="Variables.pending=true">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/PrologActions/PendingAssignments"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/PendingAssignments"/>
+</THEN>
+<ELSE>
+<XLAT.LOOKUP KEY="dvin/UI/Showmycompletedassignmentsstillpending" VARNAME="_XLAT_" ESCAPE="true"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PendingAssignments" outstring="urlpendassgnt">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="report_assignto" value="user"/>
+                                          <satellite.argument name="users" value="Variables.theCurrentUser"/>
+                                          <satellite.argument name="report_assets" value="all"/>
+                                          <satellite.argument name="report_state" value="all"/>
+                                           </SATELLITE.LINK>
+	<A HREF="Variables.urlpendassgnt" onmouseover="window.status='Variables._XLAT_';return true" onmouseout="window.status='';return true" REPLACEALL="Variables.urlpendassgnt,Variables._XLAT_,Variables.AssetTypeObj:description,Variables.AssetType"><span class="small-text"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Showmycompletedassignmentsstillpending"/></span></A>
+</ELSE>
+</IF>
+</FTCS>

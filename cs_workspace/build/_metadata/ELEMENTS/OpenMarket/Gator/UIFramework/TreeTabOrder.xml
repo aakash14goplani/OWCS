@@ -1,0 +1,142 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/TreeTabOrder
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SCRIPT>
+<![CDATA[
+function moveup(src)
+{
+	var i, temp;
+	for (i=0; i<src.options.length; i++)
+	{
+		if (src.options[i].selected)
+		{
+			if (i!=0)
+			{
+				temp = src.options[i-1];
+				items=new Option(temp.text,temp.value);
+				otheritem=new Option(src.options[i].text,src.options[i].value);
+				otheritem.selected=1;
+				var j=i-1;
+				src.options[j]=otheritem;
+				src.options[i]=items;
+			}
+		}
+	}
+}
+
+function movedown(src)
+{
+	var i, temp;
+	for (i=src.options.length-1; i>=0; i--)
+	{
+		if (src.options[i].selected)
+		{
+			if (i!=src.options.length-1)
+			{
+				temp = src.options[i+1];
+				items=new Option(temp.text,temp.value);
+				otheritem=new Option(src.options[i].text,src.options[i].value);
+				otheritem.selected=1;
+				var j=i+1;
+				src.options[j]=otheritem;
+				src.options[i]=items;
+			}
+		}
+	}
+}
+
+function selAll(lst){
+	if (!lst) return;
+	for (i=0; i<lst.options.length; i++)
+		lst.options[i].selected=true
+}
+
+function selAllAll(){
+   selAll(document.forms[0].elements['Order']);
+}
+]]>
+</SCRIPT>
+
+<TTM.GETALLORDEREDTABS LISTVARNAME="tabs"/>
+<IF COND="Variables.errno=-101">
+<THEN>
+	<tr><td>
+		<XLAT.STREAM KEY="dvin/UI/Notabsfound"/>
+	</td></tr>
+</THEN>
+<ELSE>
+   <IF COND="Variables.errno=0">
+	<THEN>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/OrderTreeTabs"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+        <table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-30">
+		<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/TabOrder"/>:
+				</td>
+				<td class="form-inset">
+		            <table border="0" >
+           			<tr>
+					<td>
+						<DIV >
+							<SELECT NAME="Order" SIZE="32" MULTIPLE="yes">
+								<LOOP LIST="tabs">
+									<OPTION VALUE="tabs.id" REPLACEALL="tabs.id"><STRING.STREAM VALUE="tabs.title"/></OPTION>
+								</LOOP>
+							</SELECT>
+						</DIV>
+					</td>
+					<td>
+						<span class="table-header-small-text">
+							<XLAT.STREAM KEY="dvin/UI/Admin/DisplayOrder" ESCAPE="false" ENCODE="false"/>
+						</span><BR/>
+						<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/Moveup" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/Moveup" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="moveup(document.forms[0].elements['Order']);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+							<IMG src="Variables.cs_imagedir/graphics/common/screen/moveup.gif" HSPACE="4" VSPACE="4" TITLE="Variables._ALT_" ALT="Variables._ALT_" BORDER="0" REPLACEALL="Variables.cs_imagedir,Variables._ALT_,SessionVariables.locale"/><BR/>
+						</A>
+						<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/Movedown" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/Movedown" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="movedown(document.forms[0].elements['Order']);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;"  REPLACEALL="Variables._XLAT_">
+							<IMG src="Variables.cs_imagedir/graphics/common/screen/movedn.gif" HSPACE="4" VSPACE="4" BORDER="0" TITLE="Variables._ALT_" ALT="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_,SessionVariables.locale"/>
+						</A>
+					</td>
+					</tr>
+					</table>
+				</td><td></td>
+			</tr>
+		</table>
+	</td></tr>
+</table>
+
+<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_XLAT_" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_status_" ESCAPE="true"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="TabViewURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                           </SATELLITE.LINK>
+ <div class="width-outer-70">                                          
+<A HREF="Variables.TabViewURL" onmouseover="window.status='Variables._status_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._status_,Variables.TabViewURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+<A HREF="javascript:void(0);" onClick="selAllAll();if(Fixpagename('TreeTabManager','SaveOrder')!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+</div>
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+
+</FTCS> 

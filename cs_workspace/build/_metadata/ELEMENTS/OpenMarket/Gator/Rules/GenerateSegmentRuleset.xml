@@ -1,0 +1,154 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/Rules/GenerateSegmentRuleset
+--
+-- INPUT
+--
+--
+--
+-- OUTPUT
+--
+-->
+
+<SETVAR NAME="segid" VALUE="$(this?:x)"/>
+
+<!-- Variables coming in are presumed to be: hintstring, segid, targetxml -->
+<!-- First, build the empty ruleset to contain the results -->
+<RULESETDEF.CREATE NAME="myruleset"/>
+<RULESETDEF.SETNAME NAME="myruleset" RULESETNAME="Rating_Variables.segid"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.gator.ruleobjects.*"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.visitor.ruleobjects.*"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.visitor.interfaces.IAttributeValue"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.visitor.interfaces.IHistoryAttributeValue"/>
+
+<!-- Unpack hint string -->
+<NVOBJECT.CREATE NAME="myhintobject"/>
+<NVOBJECT.FROMSTRING NAME="myhintobject" VALUE="Variables.hintstring"/>
+<!-- Need error check!! -->
+
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="DEFAULTRATING"
+	VARNAME="defaultrating"/>
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="RATING"
+	VARNAME="truerating"/>
+
+<!-- Loop through AND clauses -->
+<SETCOUNTER NAME="andcounter" VALUE="0"/>
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="NUMAND" VARNAME="rsnumrows"/>
+<LOOP UNTIL="Counters.andcounter=Variables.rsnumrows">
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="ANDCLAUSECounters.andcounter"
+		VARNAME="thisandclause"/>
+	<!-- Unpack the or clause -->
+	<NVOBJECT.CREATE NAME="andhintobject"/>
+	<NVOBJECT.FROMSTRING NAME="andhintobject" VALUE="Variables.thisandclause"/>
+	<!-- Need error check!! -->
+
+	<!-- Loop through OR clauses -->
+	<SETCOUNTER NAME="orcounter" VALUE="0"/>
+	<NVOBJECT.GETVALUE NAME="andhintobject" VALUENAME="NUMCOL" VARNAME="rsnumcols"/>
+	<LOOP UNTIL="Counters.orcounter=Variables.rsnumcols">
+		<NVOBJECT.GETVALUE NAME="andhintobject" VALUENAME="ORCLAUSECounters.orcounter"
+			VARNAME="thisleafclause"/>
+		<!-- We need to generate the leaf rule -->
+
+		<!-- Create the rule to add -->
+		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="LeafCounters.andcounter_Counters.orcounter_Variables.segid"/>
+
+		<CALLELEMENT NAME="OpenMarket/Gator/Rules/GenerateSegmentLeafCondition">
+			<ARGUMENT NAME="leafhint" VALUE="Variables.thisleafclause"/>
+			<ARGUMENT NAME="ruleobject" VALUE="myrule"/>
+			<ARGUMENT NAME="rulesetobject" VALUE="myruleset"/>
+		</CALLELEMENT>
+
+		<!-- Pop in action -->
+		<RULEDEF.ADDASSERT NAME="myrule"
+			CLASS="Signal" KEY="Counters.andcounter_Counters.orcounter_Variables.segid"/>
+		<!-- Add rule to ruleset -->
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+		<INCCOUNTER NAME="orcounter" VALUE="1"/>
+	</LOOP>
+
+	<!-- Generate terminating rulesets for the or clause series just emitted -->
+	<!-- These are rulesets 'n-x' and 'not n-x' (where n is the and clause number) -->
+	<RULEDEF.CREATE NAME="myrule"/>
+	<RULEDEF.SETNAME NAME="myrule" RULENAME="EndCounters.andcounter_x_Variables.segid"/>
+	<SETCOUNTER NAME="orcounter" VALUE="0"/>
+	
+	<LOOP UNTIL="Counters.orcounter=Variables.rsnumcols">
+		<NVOBJECT.GETVALUE NAME="andhintobject" VALUENAME="ORCLAUSECounters.orcounter"
+			VARNAME="thisleafclause"/>
+		<!-- Unpack the clause, just for whether it is 'include' or 'exclude' -->
+		<NVOBJECT.CREATE NAME="leafhintobject"/>
+		<NVOBJECT.FROMSTRING NAME="leafhintobject" VALUE="Variables.thisleafclause"/>
+		<NVOBJECT.GETVALUE NAME="leafhintobject" VALUENAME="RULEOP"
+				VARNAME="ruleop"/>
+		<IF COND="Variables.ruleop=include">
+		<THEN>
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+				ID="Signal:Counters.andcounter_Counters.orcounter_Variables.segid"/>
+		</THEN>
+		<ELSE>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="Signal:Counters.andcounter_Counters.orcounter_Variables.segid"/>
+		</ELSE>
+		</IF>
+		<INCCOUNTER NAME="orcounter" VALUE="1"/>
+	</LOOP>
+
+	<RULEDEF.ADDASSERT NAME="myrule"
+		CLASS="Signal" KEY="notor_Counters.andcounter-x_Variables.segid"/>
+	<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+	<!-- Now, do the 'not' side -->
+	<RULEDEF.CREATE NAME="myrule"/>
+	<RULEDEF.SETNAME NAME="myrule" RULENAME="notEndCounters.andcounter_x_Variables.segid"/>
+	<RULEDEF.ADDNOTEXISTS NAME="myrule"
+		ID="Signal:notor_Counters.andcounter-x_Variables.segid"/>
+	<RULEDEF.ADDASSERT NAME="myrule"
+		CLASS="Signal" KEY="or_Counters.andcounter_Variables.segid"/>
+	<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+	<INCCOUNTER NAME="andcounter" VALUE="1"/>
+</LOOP>
+
+<!-- Generate final ruleset -->
+<RULEDEF.CREATE NAME="myrule"/>
+<RULEDEF.SETNAME NAME="myrule" RULENAME="and_Variables.segid"/>
+<SETCOUNTER NAME="andcounter" VALUE="0"/>
+<LOOP UNTIL="Counters.andcounter=Variables.rsnumrows">
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="ANDCLAUSECounters.andcounter"
+		VARNAME="thisandclause"/>
+	<RULEDEF.ADDEXISTS NAME="myrule"
+		ID="Signal:or_Counters.andcounter_Variables.segid"/>
+	<INCCOUNTER NAME="andcounter" VALUE="1"/>
+</LOOP>
+<RULEDEF.ADDEXISTS NAME="myrule"
+    ID="RatingResults:Segments(Variables.segid)"
+    CLASS="RatingResults" VARIABLE="a"/>
+<RULEDEF.APPENDACTION NAME="myrule"
+    VALUE='a.setRating("seg",Variables.truerating)'/>
+<RULEDEF.APPENDUNDOACTION NAME="myrule"
+    VALUE='a.clearRating("seg")'/>
+<RULEDEF.ADDASSERT NAME="myrule"
+    CLASS="Signal" KEY="and_Variables.segid"/>
+<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+<!-- Generate default ruleset -->
+<RULEDEF.CREATE NAME="myrule"/>
+<RULEDEF.SETNAME NAME="myrule" RULENAME="default_Variables.segid"/>
+<RULEDEF.ADDNOTEXISTS NAME="myrule"
+    ID="Signal:and_Variables.segid"/>
+<RULEDEF.ADDEXISTS NAME="myrule"
+    ID="RatingResults:Segments(Variables.segid)"
+    CLASS="RatingResults" VARIABLE="a"/>
+<RULEDEF.APPENDACTION NAME="myrule"
+    VALUE='a.setRating("default",Variables.defaultrating)'/>
+<RULEDEF.APPENDUNDOACTION NAME="myrule"
+    VALUE='a.clearRating("default")'/>
+<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+<RULESETDEF.SETENCODING NAME="myruleset" VALUE="Variables.hintstring"/>
+<RULESETDEF.TOXML NAME="myruleset" VARNAME="Variables.targetxml"/>
+</FTCS>

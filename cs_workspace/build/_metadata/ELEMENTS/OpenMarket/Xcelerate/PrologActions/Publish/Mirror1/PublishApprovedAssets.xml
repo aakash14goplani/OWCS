@@ -1,0 +1,221 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/PublishApprovedAssets
+-
+- INPUT
+-
+-  Variables.PREFIX  - prefix of loaded publishkeys of publisahable assets
+-  pubsess - name of PubSession object
+-  Variables.target  - publish target id
+-
+- OUTPUT
+-
+-->
+
+    <TIME.SET NAME="publishTime" />
+<PUBSESSION.GETID NAME="pubsess" VARNAME="pubsess:id" />
+    <!-- Invoke the publishing strategy Begin method -->
+    <if COND="IsElement.OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/Begin=true">
+<then>
+    <callelement NAME="OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/Begin">
+    	<argument NAME="PREFIX" VALUE="Variables.PREFIX" />
+    </callelement>
+	<if COND="IsError.Variables.errno=true">
+	<then>
+	    <setvar NAME="pub:errno" VALUE="Variables.errno" />
+	</then>
+	</if>
+</then>
+</if>
+
+    <!-- Mirror everything -->
+    <if COND="IsError.Variables.pub:errno=false">
+<then>
+	<SETVAR NAME="count" VALUE="Variables.Variables.PREFIXTotal" />
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1PublishApprovedAssets-numAssets" VARNAME="msg" />
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.msg" />
+	</then>
+	</if>
+
+    <!-- mirror the EmbeddedReference table  entries -->
+    <setvar NAME="errno" VALUE="0" />
+	<setvar NAME="tablename" VALUE="EmbeddedReference" />
+	<EXECSQL
+            SQL="SELECT id FROM EmbeddedReference WHERE cs_assetid IN (SELECT AssetPublishList.assetid as cs_assetid FROM AssetPublishList WHERE AssetPublishList.pubsession=Variables.pubsess:id)"
+            LIST="embeddedReferences" />
+	<IF COND="IsList.embeddedReferences=true">
+	<THEN>
+		<LOOP LIST="embeddedReferences">
+			<MIRRORQUEUE.SENDROW NAME="pubMirrorQ" TABLENAME="EmbeddedReference" OBJECTID="embeddedReferences.id" />
+			<if COND="Variables.pubfact:VERBOSE=true">
+			<then>
+				<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                              VALUE="Adding EmbeddedReference embeddedReferences.id to the mirror queue" />
+			</then>
+			</if>
+
+		</LOOP>
+	</THEN>
+	</IF>
+
+    <!-- mirror the LocaleTree table  entries -->
+    <setvar NAME="errno" VALUE="0" />
+	<setvar NAME="tablename" VALUE="LocaleTree" />
+	<EXECSQL SQL="SELECT nid FROM LocaleTree" LIST="localeTreeEntries" />
+	<IF COND="IsList.localeTreeEntries=true">
+		<THEN>
+			<LOOP LIST="localeTreeEntries">
+				<MIRRORQUEUE.SENDROW NAME="pubMirrorQ" TABLENAME="LocaleTree" OBJECTID="localeTreeEntries.nid"
+                                     IDFIELD="nid" />
+			</LOOP>
+		</THEN>
+	</IF>
+
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                      VALUE="Starting to send Variables.count assets to the target at CS.Date" />
+	</then>
+	</if>
+
+	<!-- Mirror the Associations -->
+	<setvar NAME="errno" VALUE="0" />
+	<setvar NAME="tablename" VALUE="AssocNamed" />
+	<EXECSQL
+            SQL="SELECT id FROM AssocNamed WHERE assettype IN (SELECT AssetPublishList.assettype as assettype FROM AssetPublishList WHERE AssetPublishList.pubsession=Variables.pubsess:id)"
+            LIST="assocNamed" />
+	<IF COND="IsList.assocNamed=true">
+	<THEN>
+		<LOOP LIST="assocNamed">
+			<MIRRORQUEUE.SENDROW NAME="pubMirrorQ" TABLENAME="AssocNamed" OBJECTID="assocNamed.id" />
+			<if COND="Variables.pubfact:VERBOSE=true">
+			<then>
+				<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                              VALUE="Adding Association assocNamed.id to the mirror queue" />
+			</then>
+			</if>
+
+		</LOOP>
+	</THEN>
+	</IF>
+	
+	<setvar NAME="errno" VALUE="0" />
+	<setvar NAME="pub:strategyBegun" VALUE="true" />
+	<TIME.SET NAME="sendAllTime" />
+	<MIRRORQUEUE.SENDALL NAME="pubMirrorQ" PREFIX="Variables.PREFIX" COUNT="Variables.count" />
+	<if COND="IsError.Variables.errno=true">
+	<then>
+	    <setvar NAME="pub:errno" VALUE="Variables.errno" />
+		 <XLAT.STREAM KEY="dvin/UI/Error/fromsendallerrno" errno="Variables.errno" EVALALL="false" />
+	</then>
+	</if>
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+	   <TIME.GET NAME="sendAllTime" OUTPUT="elapsed" />
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                      VALUE="[TIME]Done sending assets to the target in Variables.elapsed ms." />
+	</then>
+	</if>
+
+</then>
+</if>
+
+    <!-- Invoke the End method -->
+    <if COND="Variables.pub:strategyBegun=true">
+<then>
+	<if COND="IsElement.OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/End=true">
+	<then>
+	    <setvar NAME="Variables.errno" VALUE="0" />
+	    <callelement NAME="OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/End" />
+	    <if COND="IsError.Variables.pub:endErrno=true">
+	    <then>
+			<if COND="IsError.Variables.pub:errno=false">
+			<then>
+			    <setvar NAME="pub:errno" VALUE="Variables.pub:endErrno" />
+			</then>
+			</if>
+	    </then>
+	    </if>
+	</then>
+	</if>
+</then>
+</if>
+
+<if COND="IsError.Variables.pub:errno=true">
+<then>
+	<PUBSESSIONMANAGER.FAIL ID="Variables.pubsess:id" />
+    <!-- Regardless of whether we could end and save, preserve original error -->
+    <setvar NAME="errno" VALUE="Variables.pub:errno" />
+</then>
+<else>
+
+	<!-- log a record of what was published -->
+    <PUBSESSION.GETSTARTDATE NAME="pubsess" VARNAME="publishdate" />
+	<PUBSESSION.GETUSER NAME="pubsess" VARNAME="publishedby" />
+	<PUBSESSION.GETPUBLISHED NAME="pubsess" LISTVARNAME="assetspublished" />
+	<IF COND="assetspublished.#numRows=1">
+	<THEN>
+		<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1PublishApprovedAssets-assetPublished" VARNAME="numpublishedmsg" />
+	</THEN>
+	<ELSE>
+		<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1PublishApprovedAssets-assetsPublished" VARNAME="numpublishedmsg" />
+	</ELSE>
+	</IF>
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.numpublishedmsg" />
+	</then>
+	</if>
+	<SETVAR NAME="numassetspublished" VALUE="assetspublished.#numRows" />
+	<SETVAR NAME="numpublishedmsg" VALUE="Variables.numpublishedmsg%0a" />
+	<CSVAR NAME="Variables.numpublishedmsg" />
+
+	<LOOP LIST="assetspublished">
+		<SETVAR NAME="publishedAssetString" VALUE="assetspublished.otype assetspublished.oid%0a" />
+		<if COND="Variables.pubfact:VERBOSE=true">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1PublishApprovedAssets-assetPublished2" VARNAME="msg" />
+			<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                          VALUE="#mirroring assetspublished.otype assetspublished.oid" />
+		</then>
+		</if>
+        <!-- this string should not be localized as it it used to parse the output -->        #mirroring <CSVAR
+            NAME="Variables.publishedAssetString" />
+
+
+	</LOOP>
+		<if COND="Variables.pubfact:VERBOSE=true">
+		<then>
+		   <TIME.SET NAME="timenotepub" />
+
+			<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Starting NotePublish at CS.Date." />
+		</then>
+		</if>			
+
+	<APPROVEDASSETS.NOTEPUBLISH TARGET="Variables.target" />
+    <PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.count" STATUS="__ASSTS_PUBLISHD__" />
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<TIME.GET NAME="timenotepub" OUTPUT="elapsed" />
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                      VALUE="[TIME]Done with NotePublish in Variables.elapsed ms." />
+	</then>
+	</if>			
+
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<TIME.GET NAME="publishTime" OUTPUT="elapsed" />
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id"
+                                      VALUE="[TIME]Publishing took Variables.elapsed ms for Variables.numassetspublished assets." />
+	</then>
+	</if>			
+	<PUBSESSIONMANAGER.DONE ID="Variables.pubsess:id" />
+
+</else>
+</if>
+   		
+
+</FTCS> 

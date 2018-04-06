@@ -1,0 +1,207 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/Rules/GenerateRatingRuleset
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<SETVAR NAME="ratedassetid" VALUE="$(this?:x)"/>
+<SETVAR NAME="ratedassettype" VALUE="$(this?x:)"/>
+
+<!-- Variables coming in are presumed to be: hintstring, assettype, assetid, targetxml -->
+<!-- First, build the empty ruleset to contain the results -->
+<RULESETDEF.CREATE NAME="myruleset"/>
+<RULESETDEF.SETNAME NAME="myruleset" RULESETNAME="Rating_Variables.ratedassetid"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.gator.ruleobjects.*"/>
+
+<!-- Unpack hint string -->
+<NVOBJECT.CREATE NAME="myhintobject"/>
+<NVOBJECT.FROMSTRING NAME="myhintobject" VALUE="Variables.hintstring"/>
+
+<!-- Need error check!! -->
+
+<!-- Grab the default rating -->
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="DEFAULTRATING" VARNAME="defaultrating"/>
+
+<!-- Loop through all the potential conditions -->
+
+
+<SETCOUNTER NAME="mycounter" VALUE="0"/>
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="NUMSEGS" VARNAME="hsnumsegs"/>
+<LOOP UNTIL="Counters.mycounter=Variables.hsnumsegs">
+	<setvar NAME="segidvar"  VALUE="SEGIDCounters.mycounter"/>
+	<setvar NAME="segkeyvar" VALUE="SEGKEYCounters.mycounter"/>
+
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="Variables.segidvar" VARNAME="thissegid"/>
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="Variables.segkeyvar" VARNAME="thissegkey"/>
+
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="RATINGCounters.mycounter" VARNAME="thisrating"/>
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="NOTRATINGCounters.mycounter" VARNAME="thisnotrating"/>
+
+	<IF COND="IsVariable.thissegkey=true">
+	<THEN>
+		<SETVAR NAME="segidvar" VALUE="$(Variables.segkeyvar?:x)"/>
+		<RULESETDEF.ADDDEPENDENCY NAME="myruleset" TYPE="Segments" ID="$(Variables.thissegkey?:x)"/>
+		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="SegCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+			ID="EffectiveSegments" CLASS="EffectiveSegments"
+			VARIABLE="es"/>
+		<SUBSTRING.CREATE NAME="mysubstring"/>
+		<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='es.member("'/>
+		<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="Variables.thissegkey?:x"/>
+		<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='")'/>
+		<RULEDEF.APPENDCONDITION NAME="myrule"
+		    SUBSTRING="mysubstring"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+			ID="RatingResults:Variables.ratedassettype(Variables.ratedassetid)"
+			CLASS="RatingResults" VARIABLE="a"/>
+		<IF COND="Variables.thisrating!=Variables.empty">
+		<THEN>
+			<RULEDEF.APPENDACTION NAME="myrule"
+			    VALUE='a.setRating("segCounters.mycounter",Variables.thisrating)'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+			    VALUE='a.clearRating("segCounters.mycounter")'/>
+			<RULEDEF.ADDASSERT NAME="myrule"
+			    CLASS="Signal" KEY="segruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+		<RULEDEF.ADDASSERT NAME="myrule"
+		    CLASS="Signal" KEY="segCounters.mycounter_Variables.ratedassetid"/>
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+ 		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="notSegCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDNOTEXISTS NAME="myrule"
+		    ID="Signal:segCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+		    ID="RatingResults:Variables.ratedassettype(Variables.ratedassetid)"
+		    CLASS="RatingResults" VARIABLE="a"/>
+		<IF COND="Variables.thisnotrating!=Variables.empty">
+		<THEN>
+			<RULEDEF.APPENDACTION NAME="myrule"
+			    VALUE='a.setRating("notsegCounters.mycounter",Variables.thisnotrating)'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+			    VALUE='a.clearRating("notsegCounters.mycounter")'/>
+			<RULEDEF.ADDASSERT NAME="myrule"
+			    CLASS="Signal" KEY="segnotruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+ 	</THEN>
+	</IF>
+
+	<IF COND="IsVariable.thissegid=true">
+	<THEN>
+		<RULESETDEF.ADDDEPENDENCY NAME="myruleset" TYPE="Segments" ID="Variables.thissegid"/>
+		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="SegCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+			ID="EffectiveSegments" CLASS="EffectiveSegments"
+			VARIABLE="es"/>
+		<RULEDEF.APPENDCONDITION NAME="myrule"
+		    VALUE='es.member("Variables.thissegid")'/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+			ID="RatingResults:Variables.ratedassettype(Variables.ratedassetid)"
+			CLASS="RatingResults" VARIABLE="a"/>
+		<IF COND="Variables.thisrating!=Variables.empty">
+		<THEN>
+			<RULEDEF.APPENDACTION NAME="myrule"
+			    VALUE='a.setRating("segCounters.mycounter",Variables.thisrating)'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+			    VALUE='a.clearRating("segCounters.mycounter")'/>
+			<RULEDEF.ADDASSERT NAME="myrule"
+			    CLASS="Signal" KEY="segruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+		<RULEDEF.ADDASSERT NAME="myrule"
+		    CLASS="Signal" KEY="segCounters.mycounter_Variables.ratedassetid"/>
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+ 		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="notSegCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDNOTEXISTS NAME="myrule"
+		    ID="Signal:segCounters.mycounter_Variables.ratedassetid"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+		    ID="RatingResults:Variables.ratedassettype(Variables.ratedassetid)"
+		    CLASS="RatingResults" VARIABLE="a"/>
+		<IF COND="Variables.thisnotrating!=Variables.empty">
+		<THEN>
+			<RULEDEF.APPENDACTION NAME="myrule"
+			    VALUE='a.setRating("notsegCounters.mycounter",Variables.thisnotrating)'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+			    VALUE='a.clearRating("notsegCounters.mycounter")'/>
+			<RULEDEF.ADDASSERT NAME="myrule"
+			    CLASS="Signal" KEY="segnotruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+ 	</THEN>
+	</IF>
+
+
+	<INCCOUNTER NAME="mycounter" VALUE="1"/>
+	
+</LOOP>
+ 
+<!-- Build the default rating rule -->
+
+<IF COND="IsVariable.defaultrating=true">
+<THEN>
+	<RULEDEF.CREATE NAME="myrule"/>
+	<RULEDEF.SETNAME NAME="myrule" RULENAME="default_Variables.ratedassetid"/>
+	<SETCOUNTER NAME="mycounter" VALUE="0"/>
+
+	<LOOP UNTIL="Counters.mycounter=Variables.hsnumsegs">
+		<setvar NAME="segidvar"   VALUE="SEGIDCounters.mycounter"/>
+		<setvar NAME="segkeyvar"  VALUE="SEGKEYCounters.mycounter"/>
+		<setvar NAME="thissegid"  VALUE="Variables.empty"/>
+		<setvar NAME="thissegkey" VALUE="Variables.empty"/>
+
+		<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="Variables.segidvar" VARNAME="thissegid"/>
+		<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="Variables.segkeyvar" VARNAME="thissegkey"/>
+
+		<IF COND="Variables.thissegkey!=Variables.empty">
+		<THEN>
+		
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+			    ID="Signal:segruleCounters.mycounter_Variables.ratedassetid"/>
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+			    ID="Signal:segnotruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.thissegid!=Variables.empty">
+		<THEN>
+		
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+			    ID="Signal:segruleCounters.mycounter_Variables.ratedassetid"/>
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+			    ID="Signal:segnotruleCounters.mycounter_Variables.ratedassetid"/>
+		</THEN>
+		</IF>
+
+		<INCCOUNTER NAME="mycounter" VALUE="1"/>
+	</LOOP>
+
+	<RULEDEF.ADDEXISTS NAME="myrule"
+	    ID="RatingResults:Variables.ratedassettype(Variables.ratedassetid)"
+	    CLASS="RatingResults" VARIABLE="a"/>
+	<RULEDEF.APPENDACTION NAME="myrule"
+	    VALUE='a.setRating("default",Variables.defaultrating)'/>
+	<RULEDEF.APPENDUNDOACTION NAME="myrule"
+	    VALUE='a.clearRating("default")'/>
+	<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+</THEN>
+</IF>
+
+<RULESETDEF.SETENCODING NAME="myruleset" VALUE="Variables.hintstring"/>
+<RULESETDEF.TOXML NAME="myruleset" VARNAME="Variables.targetxml"/>
+
+</FTCS> 

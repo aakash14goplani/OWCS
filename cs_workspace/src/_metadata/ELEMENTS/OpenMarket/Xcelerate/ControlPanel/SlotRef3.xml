@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/SlotRef3
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<replaceall LIST="Variables.beginrefid,Variables.sb_url,Variables.tid, Variables.lockenabled">
+<![CDATA[   
+    <button class="sb_slot" border="0" id="slot_Variables.beginrefid" title="Slot" onclick="openSlotConsole('Variables.sb_url','Variables.tid', Variables.lockenabled);" ></button>
+    <br/>
+]]>
+</replaceall>
+
+</FTCS>

@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+	<!-- 
+	$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs.xml $ 
+	$Revision: 50 $ 
+	$Modtime: 9/17/04 3:50p $ 
+	-->
+
+	<!--
+	- Confidential and Proprietary Information of Open Market Inc.
+	-					All Rights Reserved.
+	-
+	- DESCRIPTION
+	-      This elements checks priviledges for operation.
+	- It is called for when creating an asset, as well as
+	- editing, deleting, etc.
+	-
+	- INPUT
+	- 		Variables.assetObjectName - name of asset on the object pool
+	- 		OR Variables.assetid - name of asset on the object poid of asset
+	-     OR Variables.id
+	-		Variables.AssetType
+	-		Variables.Function
+	- OUTPUT
+	-       Variables.PrivsFailed - true/false
+	-->
+	<IF COND="IsVariable.id=false">
+		<THEN>
+			<SETVAR NAME="id"  VALUE="Variables.empty"/>
+		</THEN>
+	</IF>
+	
+	<SETVAR NAME="idbak" VALUE="Variables.id"/>
+	<SETVAR NAME="PrivsFailed" VALUE="false"/>
+	<IF COND="IsVariable.assetObjectName=true">
+		<THEN>
+			<ASSET.GET NAME="Variables.assetObjectName" FIELD="id" OUTPUT="id"/>
+			<IF COND="IsError.Variables.errno=true">
+				<THEN>
+					<SETVAR NAME="saveErrno" VALUE="Variables.errno"/>
+					<XLAT.LOOKUP VARNAME="sAlloyErrorMessage" KEY="dvin/AT/Common/AssetGetFailed" EVALALL="false" errno="Variables.errno"/>
+					<BR/>CheckPrivs - <XLAT.STREAM KEY="dvin/AT/Common/AssetGetFailed" errno="Variables.errno" EVALALL="false"/>
+					<LOGMSG STR="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs - ASSET.GET failed with error Variables.saveErrno using Variables.assetObjectName"/>
+				</THEN>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="IsVariable.assetid=true">
+				<THEN>
+					<SETVAR NAME="id" VALUE="Variables.assetid"/>
+				</THEN>
+			</IF>
+		</ELSE>
+	</IF>
+
+	<IF COND="Variables.id!=Variables.empty">
+		<THEN>
+			<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset"/>
+  		<SETVAR NAME="errno" VALUE="0"/>
+			<ISINLIST STR="share,abstainfromvoting,delegate,edit,delete,checkout,rollback,placepage,makeroot,build,approve" ITEM="Variables.Function"/>
+			<IF COND="Variables.errno=1">
+      <THEN>
+    		<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="Variables.Function" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="true" REASONVARNAME="denialreason"/>
+      </THEN>
+      <ELSE>
+    		<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="Variables.Function" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="false" REASONVARNAME="denialreason"/>
+      </ELSE>
+      </IF>
+      <SETVAR NAME="functionname" VALUE="Variables.Function"/>
+      
+			<IF COND="Variables.isLegal!=true">
+			<THEN>
+				<SETVAR NAME="PrivsFailed" VALUE="true"/>
+				<SETVAR NAME="PrivsFailedReason" VALUE="IllegalTransition"/>
+			</THEN>
+			</IF>
+		</THEN>
+	</IF>
+	<SETVAR NAME="id" VALUE="Variables.idbak"/>
+</FTCS>
+
+

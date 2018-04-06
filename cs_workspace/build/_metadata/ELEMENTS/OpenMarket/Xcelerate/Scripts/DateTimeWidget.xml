@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Scripts/CalendarWidget.xml
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetUpDateFormat"/>
+<SETVAR NAME="acceptedDateFormat" VALUE='yyyy-MM-dd HH:mm:ss.SSS'/>
+<IF COND="IsVariable.inputDivId!=true">
+<THEN>
+	<SETVAR NAME="inputDivId" VALUE="Variables.inputFieldIdDiv"/>
+</THEN>
+</IF>
+<IF COND="IsVariable.convertedDate!=true">
+<THEN>
+	<SETVAR NAME="convertedDate" VALUE="CS.Empty"/>
+</THEN>
+</IF>
+
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+	<ARGUMENT NAME="inputDate" VALUE="now"/>
+	<ARGUMENT NAME="fromTimeZone" VALUE="server" />
+	<ARGUMENT NAME="toTimeZone" VALUE="client" />
+</CALLELEMENT>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GetLocalizedDate">
+	<ARGUMENT NAME="inputDate" VALUE="Variables.outputDate" />
+	<ARGUMENT NAME="outputVar" VALUE="nowDate" />
+</CALLELEMENT>
+
+
+<REPLACEALL LIST="Variables.inputFieldId,Variables.genDateId,Variables.inputDivId,Variables.dateFormatPattern,Variables.cs_imagedir,Variables.pickADateString,Variables.datePickerString,Variables.acceptedDateFormat,Variables.nowDate">
+<div class="calButton" id="Variables.inputFieldId_dd"></div>
+<script type="text/javascript">
+	var inputWgt_Variables.genDateId;
+	dojo.ready(function(){
+		inputWgt_Variables.genDateId = dijit.byId('Variables.inputFieldId');
+		inputWgt_Variables.genDateId.onClearInput = function() {
+			if(dojo.byId('Variables.inputDivId'))
+				dojo.byId('Variables.inputDivId').innerHTML='';
+		};
+	});
+	var _ddbutton_Variables.genDateId = new dijit.form.DropDownButton({
+		label: '<img alt="Variables.datePickerString" title="Variables.pickADateString" src="Variables.cs_imagedir/../wemresources/images/ui/ui/toolbar/calendarButton.png" border="0"/>',
+		dropDown: null,
+		beginTime: (new Date()).getTime(),
+		onClick: function() {
+			if(!this.dropDown) {
+				var _tstampwgt = new fw.ui.dijit.TimestampPicker({
+					timePicker: true,
+					onTimeStampSelect: function(timeStamp) {
+						inputWgt_Variables.genDateId.set('value', dojo.date.locale.format(this.timeStamp,{selector: 'date',datePattern: 'Variables.dateFormatPattern'}));
+						if(dojo.byId('Variables.inputDivId')){
+							dojo.byId('Variables.inputDivId').innerHTML= dojo.date.locale.format(this.timeStamp,{selector: 'date',datePattern: 'Variables.acceptedDateFormat'});
+						}
+					},
+					timeStamp: null
+				});
+				this.dropDown = _tstampwgt;
+			}
+			
+			var val =  inputWgt_Variables.genDateId.get('value');
+			var formatObject = {selector: 'date', datePattern: 'Variables.dateFormatPattern'};
+			var tempDate = val!== '' ? 
+				dojo.date.locale.parse(val,formatObject ) :
+				dojo.date.add(dojo.date.locale.parse('Variables.nowDate', formatObject), "second" ,((new Date()).getTime() - this.beginTime)/1000);
+			this.dropDown.set('timeStamp', tempDate );
+			this.dropDown.set('currentFocus', this.dropDown.get('timeStamp'));
+			this.openDropDown();
+		}
+	});
+	_ddbutton_Variables.genDateId.placeAt(dojo.byId('Variables.inputFieldId_dd'));
+	_ddbutton_Variables.genDateId.startup();
+</script>
+</REPLACEALL>
+<REMOVEVAR NAME="inputDivId"/>
+<REMOVEVAR NAME="inputFieldId"/>
+<REMOVEVAR NAME="convertedDate" />
+<REMOVEVAR NAME="nowDate" />
+<REMOVEVAR NAME="outputDate"/>
+</ftcs>
+

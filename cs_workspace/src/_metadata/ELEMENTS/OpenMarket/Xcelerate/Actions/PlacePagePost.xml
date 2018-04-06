@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/PlacePagePost.xml $
+$Revision: 10 $
+$Modtime: 6/27/02 11:08a $
+-->
+
+<!-- OpenMarket/Xcelerate/Actions/PlacePagePost
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+    <if COND="Counters.numfailed!=0">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="elem" VALUE="PlacePageFailures"/>
+			<argument NAME="severity" VALUE="info"/>
+			<argument NAME="numfailed" VALUE="Counters.numfailed"/>
+		</callelement>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="elem" VALUE="Variables.failurereason"/>
+			<argument NAME="severity" VALUE="info"/>
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		</callelement>
+	</then>
+	</if>
+
+	<SITEPLAN.LOAD NAME="parentnode" NODEID="Variables.parentnodeid"/>
+	<SITEPLAN.GET NAME="parentnode" FIELD="oid" OUTPUT="_oid"/>
+	<ASSET.LOAD NAME="parent" TYPE="Variables.AssetType" OBJECTID="Variables._oid"/>
+	<ASSET.GET NAME="parent" FIELD="name" OUTPUT="name" />
+	<EXECSQL SQL="SELECT name,description,updateddate,nrank FROM SitePlanTree, Page WHERE SitePlanTree.otype='Page' AND SitePlanTree.oid=Page.id AND SitePlanTree.nparentid=Variables.parentnodeid AND SitePlanTree.ncode='Placed' ORDER BY nrank" LIST="PlacedPages" TABLE="SitePlanTree, Page" />
+
+	<!-- <SITEPLAN.CHILDREN NAME="parentNode" OBJECTTYPE="Variables.AssetType" LIST="PlacedPages" CODE="Placed" ORDER="nrank"/>
+	<SITEPLAN.GET NAME="parentNode" FIELD="oid" OUTPUT="parentid"/>
+	<SITEPLAN.GET NAME="parentNode" FIELD="otype" OUTPUT="parenttype"/>
+	<IF COND="Variables.parenttype=Variables.AssetType">
+		<THEN>
+			<ASSET.LOAD NAME="parent" TYPE="Variables.AssetType" OBJECTID="Variables.parentid"/>
+			<ASSET.GET NAME="parent" FIELD="name"/>
+		</THEN>
+		<ELSE>
+			<PUBLICATION.LOAD NAME="parent" OBJECTID="Variables.parentid"/>
+			<PUBLICATION.GET NAME="parent" FIELD="name"/>
+		</ELSE>
+	</IF> -->
+
+<!-- Display the current children -->
+	<P>
+	<span class="title-text">
+	<XLAT.STREAM KEY="dvin/UI/PagesPlacedUnderName"/>:
+	</span>
+	</P>
+
+	<IF COND="IsList.PlacedPages=true">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/PlacePagesTile">
+			<ARGUMENT NAME="list" VALUE="PlacedPages"/>
+			<ARGUMENT NAME="showRank" VALUE="true"/>
+			<ARGUMENT NAME="showRemove" VALUE="false"/>
+			<ARGUMENT NAME="linkToPlacePages" VALUE="false"/>
+		</CALLELEMENT>
+	</THEN>
+	<ELSE>
+		<span class="small-text">
+		<XLAT.STREAM KEY="dvin/UI/NoPagesPlacedThisPageBelowParentname"/>
+		</span>
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/PlacePage-Cancel" VARNAME="_xlat_cancel"/>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="msgtext" VALUE="Variables._xlat_cancel"/>
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>		
+
+</ELSE>
+</IF>
+</FTCS> 

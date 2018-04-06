@@ -1,0 +1,80 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/ShowMyActiveListFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<ics.literal table="ActiveList" column="userid" string="SessionVariables.userid" output="literal"/>     
+<SETVAR NAME="tablename" VALUE="ActiveList"/>
+<EXECSQL LIST="ActiveList" SQL="SELECT * FROM ActiveList WHERE userid=Variables.literal"/>
+
+<IF COND="Variables.report=Remove">
+<THEN>
+	<IF COND="IsVariable.RemoveAsset=true">
+	<THEN>
+		<STRINGLIST NAME="AssetsToRemove" STR="Variables.RemoveAsset" DELIM=";"/>
+		<IF COND="IsList.AssetsToRemove=true">
+		<THEN>
+			<LOOP LIST="AssetsToRemove">
+				<ACTIVELIST.DELETE ID="AssetsToRemove.ITEM"/>
+				<SETVAR NAME="__NeedRefresh__" VALUE="yes"/>
+			</LOOP>
+			<IF COND="IsVariable.__NeedRefresh__=true">
+			<THEN>
+				<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+				<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+					<then>
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+							<argument NAME="__TreeRefreshKeys__" VALUE="Root:ActiveList"/>
+						</callelement>		
+					</then>
+				</if>	
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+	<SETVAR NAME="errno" VALUE="0"/>
+	<SETVAR NAME="doProceed" VALUE="false"/>
+	
+	<USERMANAGER.GETLOGINUSER VARNAME="userID"/>
+	
+	<ACTIVELIST.GETUSERLIST USER="Variables.userID" SITE="SessionVariables.pubid" PREFIX="AL:"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+		<IF COND="Variables.AL:Total!=0">
+		<THEN>
+		<SETVAR NAME="doProceed" VALUE="true"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+
+<!-- check whther user is allowed to edit SiteCatalog or ElementCatalog -->
+<SETVAR NAME="hasEditACL" VALUE="true"/>
+<USERISMEMBER GROUP="PageEditor"/>
+<if COND="Variables.errno=0">
+<then>
+	<setvar NAME="hasEditACL" VALUE="WrongACLToEditAsset"/>
+</then>
+<else>
+	<USERISMEMBER GROUP="ElementEditor"/>
+	<if COND="Variables.errno=0">
+	<then>
+		<setvar NAME="hasEditACL" VALUE="WrongACLToEditAsset"/>
+	</then>
+	</if>
+</else>
+</if>     
+
+
+</FTCS> 

@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/externalclientRemoteElement
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<EXTERNALCLIENTSMANAGER.SAVEOBJECTS SESSIONID="Variables.sessionid"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="saveerrno" VALUE="Variables.errno"/>
+	<XLAT.LOOKUP VARNAME="result" KEY="dvin/UI/Error/externalclientmanager.saveobjects" errno="Variables.errno" sessionid="Variables.sessionid" errdetail1="Variables.errdetail1" EVALALL="false"/>
+	<setvar NAME="errno" VALUE="Variables.saveerrno"/>
+	<logmsg STR="Error from EXTERNALCLIENTMANAGER.SAVEOBJECTS for session Variables.sessionid Error Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+
+</ftcs>

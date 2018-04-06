@@ -1,0 +1,314 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Search/SearchCommon.xml $ 
+$Revision: 52 $ 
+$Modtime: 5/14/04 3:25p $ 
+--> 
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- SearchCommon.xml
+-
+- DESCRIPTION
+-	Common search fields
+-
+- HISTORY
+-	8 May 00		Ward	Add Gator standard formatting and terminology (e.g., "modified").
+-->
+	<script>
+	<![CDATA[
+	function validateID()
+	{
+		var regex = /^\d{0,}$/;
+		if (document.forms[0].elements['Id'].value.search(regex) == -1) 
+		{
+		]]>
+			alert('<XLAT.STREAM KEY="dvin/UI/Search/InvalidID"/>');
+		<![CDATA[
+			return false;
+		}
+		return true;
+	}
+	]]>
+	</script>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Search/IDis"/>:</td>
+        <td></td>
+        <td class="form-inset">
+              <IF COND="IsVariable.Id=true">
+              <THEN>
+                    <INPUT NAME="Id" SIZE="32" MAXLENGTH="16"  VALUE="Variables.Id"  REPLACEALL="Variables.Id"/>
+              </THEN>
+              <ELSE>
+                   <INPUT NAME="Id" SIZE="32" MAXLENGTH="16"/>
+              </ELSE>
+              </IF>
+        </td>
+    </tr>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Search/FWUIDis"/>:</td>
+        <td></td>
+        <td class="form-inset">
+              <IF COND="IsVariable.uId=true">
+              <THEN>
+                    <INPUT NAME="uId" SIZE="32" VALUE="Variables.uId"  REPLACEALL="Variables.uId"/>
+              </THEN>
+              <ELSE>
+                   <INPUT NAME="uId" SIZE="32" />
+              </ELSE>
+              </IF>
+        </td>
+    </tr>
+
+    <tr>
+        <td></td>
+        <td></td>
+        <!--[03.20.08] a bit of history...AV and Verity format is old stuff, no longer supported. remove code? -->
+         <td class="small-text">
+				<if COND="Variables.AssetTypeObj:usesearchindex=1">
+	    		<then>
+						<if COND="Variables.seNickname=AV">
+						<then>
+						</then>
+						<else>
+							<if COND="Variables.seNickname=Verity">
+							<then>
+							</then>
+							<else>							
+   								 <XLAT.STREAM KEY="dvin/UI/Search/NoSearchEngineInstalled"/>
+                            </else>
+							</if>
+						</else>
+					</if>
+					</then>
+					<else>
+						<!--	Do not show format. Date picker is localized as of Nov 14th 2008 
+							-->
+					</else>
+					</if>
+				</td>
+    </tr>
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<ICS.GETPROPERTY NAME="ft.cgipath" OUTPUT="cgipath"/>									           						
+	<XLAT.LOOKUP KEY="fatwire/Alloy/UI/PickADate" VARNAME="pickADateString" />
+	<XLAT.LOOKUP KEY="fatwire/Alloy/UI/DatePicker" VARNAME="datePickerString" />                                 	            
+	<tr>
+        <td class="form-label-text">
+					<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+					<then>
+							<XLAT.STREAM KEY="dvin/UI/Search/ModifiedOnorAfter"/>:
+					</then>
+					<else>
+							<XLAT.STREAM KEY="dvin/UI/Search/Modifiedafter"/>:
+					</else>
+					</if>
+				</td>
+        <td></td>
+        <td class="form-inset" nowrap="nowrap"><INPUT TYPE="hidden" NAME="UpdatedAfter" VALUE=""/>
+        <div style="display: table;">
+            <IF COND="IsVariable.UpdatedAfterText=true">
+            <THEN>
+				<div id="UpdatedAfterText" name="UpdatedAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.UpdatedAfterText"  REPLACEALL="Variables.UpdatedAfterText"></div>
+				<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+					<argument NAME="inputDate" value="Variables.UpdatedAfterText"/>
+					<argument NAME="outputVar" value="outValue"/>
+				</callelement>
+				<DIV ID="updatedAfterFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue"/></DIV>
+				<removevar NAME="outValue" />
+				<SETVAR NAME="convertedDate" VALUE="Variables.UpdatedAfterText" />
+            </THEN>
+            <ELSE>
+               <div id="UpdatedAfterText" name="UpdatedAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true"></div>
+			   <DIV ID="updatedAfterFieldIdDiv" STYLE="display:none"></DIV>
+            </ELSE>
+            </IF>
+			
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="UpdatedAfterText"/>
+				<ARGUMENT NAME="inputDivId" value="updatedAfterFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+     </tr>
+
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+					<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+					<then>
+							<XLAT.STREAM KEY="dvin/UI/Search/ModifiedOnorBefore"/>:
+					</then>
+					<else>
+							<XLAT.STREAM KEY="dvin/UI/Search/Modifiedbefore"/>:
+					</else>
+					</if>
+				</td>
+        <td></td>
+        <td class="form-inset" nowrap="nowrap"><INPUT TYPE="hidden" NAME="UpdatedBefore" VALUE=""/>
+        <div style="display: table;">
+             <IF COND="IsVariable.UpdatedBeforeText=true">
+            <THEN>
+				<div id="UpdatedBeforeText" name="UpdatedBeforeText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.UpdatedBeforeText"  REPLACEALL="Variables.UpdatedBeforeText"></div>
+				<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+					<argument NAME="inputDate" value="Variables.UpdatedBeforeText"/>
+					<argument NAME="outputVar" value="outValue"/>
+				</callelement>
+				<DIV ID="updatedBeforeFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue" /></DIV>
+				<removevar NAME="outValue" />
+				<SETVAR NAME="convertedDate" VALUE="Variables.UpdatedBeforeText" />
+			</THEN>
+            <ELSE>
+               <div id="UpdatedBeforeText" name="UpdatedBeforeText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true"></div>
+			   <DIV ID="updatedBeforeFieldIdDiv" STYLE="display:none"></DIV>
+            </ELSE>
+            </IF>
+			
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="UpdatedBeforeText"/>
+				<ARGUMENT NAME="inputDivId" value="updatedBeforeFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+    </tr>
+
+    
+		<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+		<callelement NAME="Variables.propmanageuserpub">
+			<argument NAME="upcommand" VALUE="GetPubUsers"/>
+               <argument NAME="pubid"  VALUE="SessionVariables.pubid"/>
+			<argument NAME="name" VALUE="SessionVariables.PublicationName"/>
+			<argument NAME="qryprefix" VALUE="UpdatedBy"/>
+		</callelement> 
+		<IF COND="IsList.UpdatedBy=true">
+		<THEN>
+    		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+	        <td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Search/Modifiedby"/>:</td>
+	        <td></td>
+	        <td class="form-inset">
+					<setvar NAME="UpdatedBy_qrycol"  VALUE="ITEM"/>           
+					<SELECT Name="UpdatedBy">
+						<if COND="IsVariable.UpdatedBy=true">
+						<then>
+							<IF COND="UpdatedBy.#numRows!=0">
+							<THEN>
+								<loop LIST="UpdatedBy">
+									<setvar NAME="UBqrycol" VALUE="UpdatedBy.Variables.UpdatedBy_qrycol"/>
+									<IF COND="Variables.UpdatedBy=Variables.UBqrycol">
+									<THEN>
+										<OPTION VALUE="Variables.UBqrycol" SELECTED="" REPLACEALL="Variables.UBqrycol"/><STRING.STREAM VALUE="Variables.UBqrycol"/>
+									</THEN>
+									<ELSE>
+										<OPTION VALUE="Variables.UBqrycol" REPLACEALL="Variables.UBqrycol"/><STRING.STREAM VALUE="Variables.UBqrycol"/>
+									</ELSE>
+									</IF>
+								</loop>
+							</THEN>
+							</IF>
+							<OPTION VALUE=""/>-- <XLAT.STREAM KEY="dvin/UI/Search/chooseuser"/> --
+						</then>
+						<else>
+							<OPTION VALUE=""/>-- <XLAT.STREAM KEY="dvin/UI/Search/chooseuser"/> --
+							<IF COND="UpdatedBy.#numRows!=0">
+							<THEN>
+								<loop LIST="UpdatedBy">
+									<setvar NAME="UBqrycol" VALUE="UpdatedBy.Variables.UpdatedBy_qrycol"/>
+									<OPTION VALUE="Variables.UBqrycol" REPLACEALL="Variables.UBqrycol"/><STRING.STREAM VALUE="Variables.UBqrycol"/>
+								</loop>
+							</THEN>
+							</IF>
+						</else>
+						</if>
+					</SELECT>
+	        </td>
+	    </tr>
+	 </THEN>
+	 </IF>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+			<td class="form-label-text"> <XLAT.STREAM KEY="dvin/UI/ItemsperPageUC"/>:</td>
+			<td></td>
+			<td class="form-inset"><XLAT.STREAM KEY="dvin/Common/ShowUpTo"/>    &nbsp;
+					<SELECT Name="ResultLimit">
+                        <if COND="IsVariable.ResultLimit=true">
+                        <then>
+                            <IF COND="Variables.ResultLimit=10">
+                            <THEN>
+                         	    <OPTION VALUE="10" SELECTED=""/>10
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="10"/>10
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=20">
+                            <THEN>
+                         	    <OPTION VALUE="20" SELECTED=""/>20
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="20"/>20
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=30">
+                            <THEN>
+                         	    <OPTION VALUE="30" SELECTED=""/>30
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="30"/>30
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=50">
+                            <THEN>
+                         	    <OPTION VALUE="50" SELECTED=""/>50
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="50"/>50
+                            </ELSE>
+                            </IF>
+                             <IF COND="Variables.ResultLimit=100">
+                            <THEN>
+                         	    <OPTION VALUE="100" SELECTED=""/>100
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="100"/>100
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=200">
+                            <THEN>
+                         	    <OPTION VALUE="200" SELECTED=""/>200
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="200"/>200
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=300">
+                            <THEN>
+                         	    <OPTION VALUE="300" SELECTED=""/>300
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="300"/>300
+                            </ELSE>
+                            </IF>
+                        </then>
+                        <else>
+							<OPTION VALUE="10"/>10
+							<OPTION VALUE="20" SELECTED=""/>20
+							<OPTION VALUE="30"/>30
+							<OPTION VALUE="50"/>50
+							<OPTION VALUE="100"/>100
+							<OPTION VALUE="200"/>200
+							<OPTION VALUE="300"/>300
+                        </else>
+                        </if>
+					</SELECT>
+					</td>
+    </tr>
+
+</FTCS>

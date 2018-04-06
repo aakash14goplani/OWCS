@@ -1,0 +1,392 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Search/ManageSaveSearch
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!--
+ [2007-09-18 KG]
+ * changed definitions of 'obj' to just forms[0] (not .elements[0])
+ [2007-10-09 KG]
+ * Added STRING.ENCODE before some REPLACEALLs
+-->
+<Script Language="Javascript">
+
+var ShowWindow;
+
+  
+function savethisSearch(user)
+{
+    var obj = document.forms[0];
+    var loginUser =  obj.elements['LoginuserName'].value;  
+    var sysuser = obj.elements['IsSystemAdmin'].value;
+
+    if(sysuser == 'true')
+    {
+        obj.pagename.value='OpenMarket/Xcelerate/Actions/SaveSearch';
+        
+        if(obj.frontpage.value=='SimpleSearchFront')
+        {
+          doSearch();
+        }
+        obj.submit();
+    	return false;
+    }
+    else
+    {
+        if (loginUser==user)
+        { 
+            obj.pagename.value='OpenMarket/Xcelerate/Actions/SaveSearch';
+            
+            if(obj.frontpage.value=='SimpleSearchFront')
+            {
+              doSearch();
+            }
+            obj.submit();
+        	return false;
+         }
+        else
+        {
+ 		   alert("<XLAT.STREAM KEY="dvin/UI/Search/YoudonothavepermissiontooverrideSavedSearch" ESCAPE="true" ENCODE="false"/>" );
+        }
+     }
+
+}
+
+function editSearch(user,pagename)
+{
+    
+	var obj = document.forms[0];
+    var loginUser =  obj.elements['LoginuserName'].value; 
+	if (document.forms[0].elements['SScmd']) { document.forms[0].elements['SScmd'].value = 'edit'; }
+    var sysuser = obj.elements['IsSystemAdmin'].value;
+
+    if(sysuser == 'true')
+    { 
+        obj.pagename.value='OpenMarket/Xcelerate/Actions/EditSearchFront' ;
+        obj.submit();
+	    return false;
+     }
+     else
+     {
+        if (loginUser==user)
+        { 
+            obj.pagename.value='OpenMarket/Xcelerate/Actions/EditSearchFront' ;
+            obj.submit();
+    	    return false;
+        }
+        else
+        {  
+ 		  alert("<XLAT.STREAM KEY="dvin/UI/Search/YouarenotallowedtoeditthisSearch"/>" );
+        }
+      }
+  }
+</Script>
+
+<USERMANAGER.GETLOGINUSER  VARNAME="cuserid"/>
+
+<USERMANAGER.GETLOGINUSERNAME  VARNAME="LoginuserName"/>
+ 
+<INPUT TYPE="hidden" NAME="LoginuserName"  VALUE="Variables.LoginuserName"  REPLACEALL="Variables.LoginuserName"/>
+
+<SETVAR NAME="savecommand"  VALUE="Variables.upcommand"/><br/>
+
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<callelement NAME="Variables.propmanageuserpub">
+    <argument NAME="upcommand" VALUE="IsSystemAdmin"/>
+    <argument NAME="username"  VALUE="SessionVariables.username"/>
+</callelement>
+ <STRING.ENCODE VARNAME="IsSystemAdmin" VARIABLE="IsSystemAdmin" />  
+<INPUT TYPE="hidden" NAME="IsSystemAdmin"  VALUE="Variables.IsSystemAdmin"  REPLACEALL="Variables.IsSystemAdmin"/>
+<IF COND="Variables.paginate=searchpaginate">
+<THEN>     
+     <IF COND="IsVariable.SCritSTR=true">
+    <THEN>
+           <SAVESEARCHMANAGER.CREATE OBJVARNAME="SSS"/>
+           <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.SCritSTR"/>
+			<SETVAR NAME="ResLimBak" VALUE="Variables.ResultLimit"/>
+           <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+            <SETVAR NAME="ResultLimit" VALUE="Variables.ResLimBak"/>
+            <STRING.ENCODE VARNAME="encSCritSTR" VARIABLE="SCritSTR" />
+            <INPUT type="hidden" name="SCritSTR" value="Variables.encSCritSTR" REPLACEALL="Variables.encSCritSTR"/>
+     </THEN>
+    </IF>
+
+</THEN>
+<ELSE> 
+ <IF COND="Variables.frompage=SaveSearch">
+<THEN>
+     <STRING.ENCODE VARNAME="encssurlCritSTR" VARIABLE="ssurlCritSTR" />
+     <INPUT type="hidden" name="SCritSTR" value="Variables.encssurlCritSTR" REPLACEALL="Variables.encssurlCritSTR"/>
+         <IF COND="IsVariable.searchid=true">
+         <THEN>
+               <SAVESEARCHMANAGER.LOAD OBJVARNAME="ssss" ID="Variables.searchid"/>
+         </THEN>
+         <ELSE>
+             <SAVESEARCHMANAGER.CREATE   OBJVARNAME="ssss"/>
+         
+         </ELSE>
+         </IF>
+         <SAVESEARCH.setUserName NAME="ssss"  VALUE="SessionVariables.username"/>
+         <SAVESEARCH.setAssetType NAME="ssss"    VALUE="Variables.AssetType"/>
+         <SAVESEARCH.setFrontPage NAME="ssss"    VALUE="Variables.frontpage"/>
+         <SAVESEARCH.setPostPage NAME="ssss"    VALUE="Variables.postpage"/>
+         <SAVESEARCH.setURLCritSTR NAME="ssss"     VALUE="Variables.ssurlCritSTR"/>
+         <SAVESEARCH.FROMSTRING NAME="ssss"  VALUE="Variables.ssurlCritSTR"/>
+         <SAVESEARCH.getUserName NAME="ssss"  VARNAME="savedUserName"/>
+         
+         <SAVESEARCH.getFrontPage NAME="ssss"    VARNAME="sfrontpage"/>
+         
+ 
+      <if COND="Variables.savecommand!=cancel">
+     <then>
+         <SAVESEARCH.setCritName NAME="ssss"    VALUE="Variables.criterianame"/>
+           
+         <removevar NAME="sharedOrPrivate"/>
+           <!-- setting Roles-->
+          <SAVESEARCH.GETROLES NAME="ssss" OBJVARNAME="sroles"/>
+           <IF COND="Variables.Shared=some">
+          <THEN>
+               <SAVESEARCH.setAcl NAME="ssss"   VALUE="shared"/>
+               <!--input type="hidden"  name="sharedOrPrivate"   VALUE="shared"/-->
+               <setvar NAME="sharedOrPrivate"   VALUE="shared"/>
+              <!--SAVESEARCH.setAcl NAME="ssss"   VALUE="None"/-->
+           	  <STRINGLIST NAME="selectedRoles" STR="Variables.sharedRoles" DELIM=";"/>
+              <setvar NAME="firstrole"  VALUE="false"/>
+              <ROLELIST.CLEAR NAME="sroles"/>
+              <LOOP LIST="selectedRoles">
+             	  <ROLELIST.ADD NAME="sroles" ROLE="selectedRoles.ITEM"/>
+               
+                  
+              </LOOP>
+              <SAVESEARCH.setAcl NAME="ssss"   VALUE="shared"/>
+           </THEN>
+          <ELSE>
+          <!-- by default all the users with this role will be able to access this query -->
+             <SAVESEARCH.setAcl NAME="ssss"   VALUE="private"/>  
+              
+               <setvar NAME="sharedOrPrivate"   VALUE="private"/>
+               <!--clearing roles .....-->
+              <ROLELIST.CLEAR NAME="sroles"/>
+              <removevar NAME="sharedRoles"/>               
+              <removevar NAME="Shared"/>
+              <removevar NAME="sharedOrPrivate"/>
+    
+            </ELSE>
+          </IF>
+          <SAVESEARCH.SETROLES NAME="ssss" OBJECT="sroles"/>
+            <!-- setting  Sites -->
+          
+          <SAVESEARCH.GETSITES NAME="ssss" OBJVARNAME="ssites"/>
+          
+ 		  <SITELIST.CLEAR NAME="ssites"/>
+          
+       	  <SITELIST.ADD NAME="ssites" PUBID="SessionVariables.pubid"/>
+          <IF   COND="IsVariable.sSiteList=true">
+          <THEN>
+            <STRINGLIST NAME="slist" STR="Variables.sSiteList" DELIM=";"/>
+            <LOOP LIST="slist">   
+        	        <SITELIST.ADD NAME="ssites" PUBID="slist.ITEM"/>
+             </LOOP>
+          </THEN>
+          </IF>
+      	  <SAVESEARCH.SETSITES NAME="ssss" OBJECT="ssites"/>
+          
+             
+           <SETVAR NAME="SelectedSites"  VALUE="Variables.sSiteList"/><br/>
+          <setvar NAME="errno"  VALUE="0"/>
+          <SAVESEARCHMANAGER.SAVE OBJECT="ssss"/> 
+          <if COND="Variables.errno!=0">
+          <then>
+            <setvar NAME="SaveSearchErrno"  VALUE="Variables.errno"/>
+          </then>
+          <else>
+            <div class="width-outer-70">
+      	 	<XLAT.LOOKUP KEY="dvin/UI/Search/SearchnameSavedSuccessfullyclickview" VARNAME="_XLAT_"/>
+      		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+       			<argument NAME="severity" VALUE="info"/>
+       			<argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+        	</callelement>
+        	</div>
+          </else>
+          </if>
+          
+      </then>
+      </if>
+			<!--  now setting variables --->
+
+			<SAVESEARCH.GETID NAME="ssss"  VARNAME="SSID"/> 
+			<SETVAR NAME="ResLimBak" VALUE="Variables.ResultLimit"/>
+			<SAVESEARCH.SETVARIABLES NAME="ssss" VALUE="junk"/>
+			<SETVAR NAME="ResultLimit" VALUE="Variables.ResLimBak"/>
+ </THEN>
+<ELSE> 
+    <if COND="Variables.frompage=Delete">
+    <then>
+       <IF COND="Variables.delcan!=canceldel">
+       <THEN>
+           <SAVESEARCH.DELETE ID="Variables.searchid"/>
+        </THEN>
+       </IF>
+    </then>
+    <else>
+         <!-- Set a hidden variable so that the right frontpage is set -->
+        <if COND="Variables.SScmd=execute">
+        <then>
+                <!-- Visiting ManageSaveSearch from Execute ... -->
+        
+                <!-- This is  'execute command'  -->
+                <SAVESEARCHMANAGER.LOAD OBJVARNAME="SSS" ID="Variables.searchid"/>
+                <SAVESEARCH.GETURLCRITSTR NAME="SSS" VARNAME="ssCritSTR"/>  
+                  <SAVESEARCH.GETURLCRITSTR_FILE NAME="SSS" VARNAME="ssCritSTR_file"/>
+    
+                 <SAVESEARCH.GETFRONTPAGE  NAME="SSS" VARNAME="frontpage"/>
+                 <SAVESEARCH.GetCritName  NAME="SSS" VARNAME="criterianame"/>
+                 <SAVESEARCH.GetAcl  NAME="SSS"  VARNAME="sharedOrPrivate"/>
+                 <SAVESEARCH.GETROLES NAME="SSS" OBJVARNAME="sroles"/>
+                 
+                  
+                 <SAVESEARCH.GETUSERNAME NAME="SSS" VARNAME="suser"/>
+                  
+                 <ROLELIST.GETALL NAME="sroles"  VARNAME="s_comma_roles"/>
+                 
+ 			     <SUBSTITUTE STR="Variables.s_comma_roles" OUTSTR="sharedRoles" WHAT="," WITH=";"/>
+                 
+                 <SAVESEARCH.GETSITES NAME="SSS" OBJVARNAME="ssites"/>
+                 
+		         <SiteList.GetAll NAME="ssites" VARNAME="SelectedSites"/>
+                 
+ 
+                <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.ssCritSTR"/>
+ 
+                <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+                
+                 <STRING.ENCODE VARNAME="encssCritSTR" VARIABLE="ssCritSTR" />
+                 <INPUT type="hidden" name="SCritSTR" value="Variables.encssCritSTR" REPLACEALL="Variables.encssCritSTR"/>
+          </then>
+         <else>
+                <!-- this must be from 'Search' on the SimpleSearch front or 'New Search' on the 
+                SearchPost page or Edit --> 
+             <IF COND="IsVariable.sMyTmplAttributes=true">
+            <THEN>
+                <STRINGLIST NAME="alist" STR="Variables.sMyTmplAttributes" DELIM=";"/>
+        		<if COND="IsList.alist=true">
+        		<then>
+         				<loop  LIST="alist">
+        					<if COND="IsVariable.foundany=false">
+        					<then>
+        						<setvar NAME="foundany" VALUE="true"/>
+        						<setvar NAME="SelectedAttrs" VALUE="alist.ITEM"/>
+        					</then>
+        					<else>
+        						<setvar NAME="SelectedAttrs" VALUE="Variables.SelectedAttrs,alist.ITEM"/>
+        					</else>
+        					</if>
+        				</loop>
+        		</then>
+        		</if>
+                <removevar NAME="sMyTmplAttributes"/>
+            </THEN>
+            </IF>
+            <setvar NAME="excluded"  VALUE="SScmd;pagenum;HTTP;SERVER;WebLogic;excluded;null;SearchNextStep;sharedRoles;Shared;SearchCritSTR;REMOTE;criterianame;SCritSTR;sharedOrPrivate;"/>
+              <SAVESEARCHMANAGER.CREATE OBJVARNAME="SSS"/>
+            <setvar  NAME="errno"  VALUE="0"/>
+            <removevar NAME="CritSTR"/>
+            <removevar NAME="SCritSTR"/>
+ 
+            <SAVESEARCH.READVARIABLES  NAME="SSS"  VARNAME="CritSTR" excludestr="Variables.excluded"/>
+             <STRING.ENCODE VARNAME="encCritSTR" VARIABLE="CritSTR" />
+             <INPUT type="hidden" name="SCritSTR" value="Variables.encCritSTR" REPLACEALL="Variables.encCritSTR"/>
+          </else>
+         </if>
+     </else>
+    </if>
+</ELSE>
+</IF> 
+</ELSE>
+</IF>
+ 
+<!--  searchid will be true if we are coming from edit -->
+<IF COND="IsVariable.searchid=true">
+<THEN>
+	  <STRING.ENCODE VARIABLE="searchid" VARNAME="searchid"/>	
+      <input type="hidden"  name="searchid"   VALUE="Variables.searchid"  REPLACEALL="Variables.searchid"/>
+</THEN>
+</IF> 
+
+
+<IF COND="IsVariable.Shared=true">
+<THEN>
+
+    <IF COND="IsVariable.sharedRoles=true">
+    <THEN>
+		  <STRING.ENCODE VARIABLE="sharedRoles" VARNAME="sharedRoles"/>
+          <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+          <input type="hidden"  name="sharedOrPrivate"   VALUE="shared"/>
+          <removevar NAME="Shared"/>
+          <input type="hidden"  name="Shared"   VALUE="some"/>
+     </THEN>
+     <ELSE>
+           <input type="hidden"  name="Shared"   VALUE="none"/>
+     </ELSE>
+    </IF> 
+    <!-- this is from the SaveSearch page -->
+</THEN>
+<ELSE>
+    <IF COND="IsVariable.sharedOrPrivate=true">
+    <THEN>
+		  <STRING.ENCODE VARIABLE="sharedOrPrivate" VARNAME="sharedOrPrivate"/>
+          <input type="hidden"  name="sharedOrPrivate"   VALUE="Variables.sharedOrPrivate"  REPLACEALL="Variables.sharedOrPrivate"/>
+          <IF COND="Variables.sharedOrPrivate=shared">
+          <THEN>
+                <removevar NAME="Shared"/>
+                <input type="hidden"  name="Shared"   VALUE="some"/>
+				 <STRING.ENCODE VARIABLE="sharedRoles" VARNAME="sharedRoles"/>
+                <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+          </THEN>
+          <ELSE>
+                <input type="hidden"  name="Shared"   VALUE="none"/>
+          </ELSE>
+          </IF>
+     </THEN>
+     <ELSE>
+          <input type="hidden"  name="Shared"   VALUE="none"/>
+     </ELSE>
+    </IF> 
+</ELSE>
+</IF>
+
+
+
+ 
+  
+<INPUT type="hidden"  name="frompage"  value="searchpost"/>
+<STRING.ENCODE VARIABLE="frontpage" VARNAME="frontpage"/>
+<INPUT type="hidden"  name="frontpage"  value="Variables.frontpage"  REPLACEALL="Variables.frontpage"/>
+<STRING.ENCODE VARIABLE="postpage" VARNAME="postpage"/>
+<INPUT type="hidden"  name="postpage"  value="Variables.postpage"  REPLACEALL="Variables.postpage"/>
+
+<IF COND="IsVariable.criterianame=true">
+<THEN>
+    <![CDATA[<input type="hidden"  name="criterianame"  VALUE="]]><STRING.STREAM VALUE="Variables.criterianame"/><![CDATA["/>]]>
+</THEN>
+</IF>
+
+<IF COND="IsVariable.SelectedSites=true">
+<THEN>
+	<STRING.ENCODE VARIABLE="SelectedSites" VARNAME="SelectedSites"/>
+    <input type="hidden"  name="SelectedSites"  VALUE="Variables.SelectedSites"  REPLACEALL="Variables.SelectedSites"/>
+
+</THEN>
+</IF>
+    
+ 
+
+ 
+
+
+</FTCS> 

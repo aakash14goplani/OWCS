@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/PreviewWithTemplates.xml $ 
+$Revision: 47 $ 
+$Modtime: 9/08/04 4:27p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/PreviewWithTemplates
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<html>
+<head>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/SetStylesheet"/>
+	<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Util/ConvertDateTZByXhr" OUTSTRING="convertTZURL"/>
+	<style>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/Stylesheet"/>
+    </style>
+    <script>
+	<![CDATA[
+	
+		function convertDateToServerTZ(dateValue) {
+			dojo.require("fw.xhr");
+			var xhrArgs = {
+					url: ']]><CSVAR NAME="Variables.convertTZURL"/>',
+			<![CDATA[
+				content: {"date": dateValue},
+				  handleAs: "text",
+				sync: true,
+				error: function(error){
+				  }
+				};
+			
+			var retVal ;
+			var deferred = dojo.xhrGet(xhrArgs);
+			deferred.then(function(result) {
+				retVal =  dojo.trim(result);
+			}
+			);
+			return retVal;
+		}
+    	function getLink() {
+    		var url = parent.frames['ControlPanel'].fw.controlPanel.getPreviewURL();
+    		if (window.clipboardData) {
+    			window.clipboardData.setData('Text', url);				
+				alert(']]>
+				<XLAT.STREAM KEY="dvin/Common/HyperlinkCopiedToClipboard"/>
+				<![CDATA[');
+				
+    		} else {
+    			prompt("]]><XLAT.STREAM KEY="dvin/Common/LinkToCurrentPreviewScreen"/><![CDATA[:", url);
+    		}
+    		
+    		return false;
+    	}
+		
+		function checkDateValidity(inputDate)
+		{
+			var inputDateInMillis, serverDateInMillis;
+			
+			//Check if the given date is entered in the right format
+			var cDate = dateToObject(inputDate);
+			inputDateInMillis = cDate.getTime();
+			
+			var serverDateComponent= dojo.byId("__iDateDiv");
+			var serverDate;
+			if(serverDateComponent)
+			{
+				serverDate = dateToObject(serverDateComponent.innerHTML);
+				serverDateInMillis = serverDate.getTime();
+			}
+			else
+				return false;	//Server date is not set, do not allow processing 
+			
+			//If the user passes in the current date on the server, ignore the time and allow previewing.
+			if((cDate.getMonth() == serverDate.getMonth()) && (cDate.getDate() == serverDate.getDate()) && (cDate.getYear() == serverDate.getYear()))
+				return true;	
+			
+			//Preview date is not the same as current server date, compare and return accordingly
+			if(inputDateInMillis > serverDateInMillis)
+				return true;
+			else 
+				return false;
+		}
+		
+		function getdata()
+		{
+			var selectedValue = dijit.byId("templateSelect").get('value');
+			if(selectedValue == 'None')
+			{
+				return false;
+			}
+			var enteredDate = dojo.byId("__insiteDate");
+			
+			//Use the OpenMarket/Xcelerate/Scripts/FormatDate javascript methods to validate date
+			if(checkDate(enteredDate.value))
+			{
+				]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/Common/PleaseEnterDateInFormat" ESCAPE="true" ENCODE="false"/>");
+				<![CDATA[			
+				return false;
+			}
+			
+			//Check if the entered date is a future date
+			if(enteredDate.value && enteredDate.value.length > 0 && checkDateValidity(enteredDate.value))
+			{
+				//ensure date is in full YYYY-MM-DD HH:mm:ss form to prevent errors
+				padDate(enteredDate);
+				//Set the URL of the target page as the form action. It is obtained from the template drop down's value
+				enteredDate.value = convertDateToServerTZ(enteredDate.value);
+				document.getElementById("dateSelectionForm").action = selectedValue;
+				return true;
+			}
+			else
+			{
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/Common/PleaseEnterAFutureDate" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+				return false;
+			}
+		}
+	]]>		
+    </script>
+
+</head>
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+	<ics.getproperty name="ft.cgipath" output="cgipath"/>
+	<callelement NAME="OpenMarket/Xcelerate/Scripts/FormatDate"/>	
+		<div class="previewTemplateLeft">
+			<satellite.form method="post" id="dateSelectionForm" target="Work" style="padding: 0; margin: 0;">
+			<div class="rowspace">
+				<label class="form-label-text" style="display: inline;">Template:</label>
+				<span><SELECT dojoType="fw.dijit.UISimpleSelect" showErrors="false" SIZE="1" id="templateSelect" NAME="theTemplate" class="PrevTempHeader_select"></SELECT></span>
+			</div>
+			<div class="rowspace">
+				<label class="form-label-text" style="display: inline;">Wrapper:</label>
+				<span id="wrapperArea"><SELECT dojoType="fw.dijit.UISimpleSelect" showErrors="false" SIZE="1" id="wrapperSelect" class="PrevTempHeader_select" NAME="wrappers"></SELECT></span>
+			</div>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/PreviewWithTemplatesDate">
+			</callelement>
+			<div class="rowspace" style="margin-left:10px;">
+			<XLAT.LOOKUP KEY="fatwire/Alloy/UI/Go" VARNAME="_XLAT_" /> 
+			<A onClick='javascript:copyDate();if(getdata()){document.forms[0].submit();}' HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="fatwire/Alloy/UI/Go"/></CALLELEMENT></A> 
+			<XLAT.LOOKUP KEY="dvin/Common/GetLinkToThisInsitePage" VARNAME="getLinkToThisInsite" />
+			<span style="line-height: 2em;"><a href="javascript:void(0);" onclick="javascript:getLink();" title="Variables.getLinkToThisInsite" REPLACEALL="Variables.getLinkToThisInsite">
+			<XLAT.STREAM KEY="dvin/Common/Getlink"/>
+			</a></span>
+	</div>
+	</satellite.form>
+		</div>
+		
+</body></html>
+</FTCS>
+

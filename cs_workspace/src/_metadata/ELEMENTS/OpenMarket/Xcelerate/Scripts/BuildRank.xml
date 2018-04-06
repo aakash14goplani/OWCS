@@ -1,0 +1,173 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/BuildRank.xml $ 
+$Revision: 8 $ 
+$Modtime: 11/05/02 7:05p $ 
+-->
+<!-- OpenMarket/Xcelerate/Scripts/BuildRank
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<![CDATA[
+<SCRIPT LANGUAGE="JavaScript">
+var rank = new Array();
+
+/* This function is called to load the currently ranked items */
+function loadRank() {
+var formCnt = document.forms[0].elements.length;
+var rankValue=0;
+for (i=0; i < formCnt; i++) {
+	if (document.forms[0].elements[i].name.substring(0,5) == "Rank-") {
+		if (document.forms[0].elements[i].value!="") {
+		rankValue = Math.round(document.forms[0].elements[i].value);
+		rank[rankValue] = document.forms[0].elements[i].name;
+		}
+		}
+	}
+
+} //end loadRank
+
+function copyRank() {
+var formCnt = document.forms[0].elements.length;
+var rankCnt = rank.length;
+for (i=0; i < rankCnt; i++) {
+	if (rank[i]) {
+		for (j=0; j  < formCnt; j++) {
+		   	if (document.forms[0].elements[j].name == rank[i]) document.forms[0].elements[j].value=i;
+		}
+	}	
+}
+
+}
+
+
+/* This function is called by the onClick handler of the Clear all button */
+function clearAllRank() {
+var formCnt = document.forms[0].elements.length;
+for (i=0; i < formCnt; i++) {
+	if (document.forms[0].elements[i].name.substring(0,5) == "Rank-") {
+		rank[Math.round(document.forms[0].elements[i].value)] = "";
+		document.forms[0].elements[i].value = "";
+		}
+	}
+} // end clearAllRank
+
+function removeRank(obj,field) 
+{
+var len = rank.length;
+var formCnt = document.forms[0].elements.length;
+if (obj.checked == true) {
+for (i=0; i < formCnt; i++) {
+	if (document.forms[0].elements[i].name == field) {
+		obj.value = document.forms[0].elements[i].value;
+		document.forms[0].elements[i].value="";
+	//  we need to remove this entry from the ranking list
+	        for (k=0; k < len; k++) {
+	                if (rank[k]==document.forms[0].elements[i].name) rank[k]="";              //if it is in there, set it to null
+	        }
+		}
+	}
+}
+else
+{
+    
+for (i=0; i < formCnt; i++) {
+	if (document.forms[0].elements[i].name == field) {
+		document.forms[0].elements[i].value = obj.value;
+		}
+	}
+}
+
+}
+
+
+/* This function is called by the onChange handler for each ranking text field. */
+function setRank(obj)
+{
+	var idx;
+	var formCnt = obj.form.elements.length;
+	if ( obj.value!="") {
+		var n = parseInt(obj.value);
+		if (isNaN(n)) {
+            ]]>
+            alert("<XLAT.STREAM KEY="dvin/AT/Common/Rankvaluemustbenumeric" ESCAPE="true" ENCODE="false"/>");
+            <![CDATA[
+			return false;
+		}
+	}
+
+	// copy this value to any other instances of this asset
+	for (i=0; i  < formCnt; i++) {
+        if (obj.form.elements[i].name == obj.name) obj.form.elements[i].value=obj.value;
+	}
+	var len = rank.length;
+
+	// If null, then we need to remove this entry from the ranking list
+	if (obj.value=="") { 
+	        for (i=0; i < len; i++) {
+	                if (rank[i]==obj.name) { 
+	                    remName = 'Remove'+rank[i].substring(4);
+						rank[i]="";              //if it is in there, set it to null
+	                    if (obj.form.elements[remName]) { obj.form.elements[remName].checked=true; }
+						
+					}
+        }
+	}
+	else {
+	// is this item already in the list?
+
+	for (i = 0; i < len; i++)
+	{ if (rank[i]==obj.name) rank[i] = ""; }
+        
+        
+    if (rank[obj.value]) // if there is already an entry in the array at this position, move the others down
+    { 
+            idx = obj.value;
+
+            while (rank[idx]) {
+                    if (rank[idx]=="") continue;
+                    idx++;          // increment the index to look for the next undefined slot
+                    }
+            // at this point, idx should be the index of the next empty slot in the array
+            while (idx > obj.value) {
+                    rank[idx] = rank[--idx];
+                    }
+    }
+
+	rank[obj.value] = obj.name;             // save the asset id in the array
+
+	len = rank.length;
+	for (i=0; i < len; i++) 
+	{
+        if (rank[i]) {
+          // if there is an entry in this ranking, we need to update the form
+                for (j=0; j  < formCnt; j++) {
+                        if (obj.form.elements[j].name == rank[i]) {
+                        obj.form.elements[j].value=i;
+                        remName = 'Remove'+rank[i].substring(4);
+                        if (obj.form.elements[remName]) { obj.form.elements[remName].checked=false; }
+                        }
+                }
+			} // end if
+	}  // end for
+	} // end else
+
+	// fix for Netscape 
+	if (obj.value=="") { 
+		obj.form.elements[remName].checked=true; 
+						
+	}
+
+} // end setRank
+
+
+</SCRIPT>
+]]>
+
+</FTCS> 

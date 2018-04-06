@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Errors/CommitFailed.xml $ 
+$Revision: 5 $ 
+$Modtime: 11/04/02 11:37a $ 
+-->
+<!--
+- Confidential and Proprietary Information of divine, Inc.
+-					All Rights Reserved.
+-->
+<XLAT.STREAM KEY="dvin/UI/Error/CommitFailed" ESCAPE="false" ENCODE="false"/>
+</FTCS>

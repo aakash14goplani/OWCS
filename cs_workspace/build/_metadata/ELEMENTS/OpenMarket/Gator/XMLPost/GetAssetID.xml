@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+   $Logfile: /VerticalApps/XcelerateC/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/XMLPost/GetAssetID.xml $ 
+   $Revision: 9 $ 
+   $Modtime: 3/30/04 6:12p $ 
+-->
+
+<!-- OpenMarket/Gator/XMLPost/GetAssetID
+--
+-- INPUT
+--		myType - AssetType (Products, ProductTmpls, etc.)
+--		myPub - pubid
+--		myName - name of asset
+--
+-- OUTPUT
+--		myID - id of asset if found or Variables.empty if not found
+--
+-->
+<ics.literal table="AssetPublication" column="assettype" string="Variables.theName"
+output="literal"/>
+
+ 
+<setvar NAME="myID" VALUE="Variables.empty"/>
+<setvar NAME="tablename" VALUE="Variables.theType"/>
+
+<setvar NAME="sql" VALUE="SELECT Variables.theType.id FROM Variables.theType,"/>
+<setvar NAME="sql" VALUE="Variables.sqlAssetPublication WHERE Variables.theType.name"/>
+<setvar NAME="sql" VALUE="Variables.sql=Variables.literal AND (AssetPublication.pubid"/>
+<setvar NAME="sql" VALUE="Variables.sql=Variables.thePub OR AssetPublication.pubid=0) AND AssetPublication.assetid=Variables.theType.id"/>
+<!-- added theFlexGroupTempId so that if there are 2 parent with name it works correctly  and get the correct parent-->
+<IF COND="IsVariable.theFlexGroupTempId=true">
+<THEN>
+	<setvar NAME="sql" VALUE="Variables.sql AND Variables.theType.flexgrouptemplateid=Variables.theFlexGroupTempId"/>
+</THEN>
+</IF>
+<setvar NAME="errno" VALUE="0"/>
+<execsql SQL="Variables.sql" LIST="Asset" TABLE="Variables.theType,AssetPublication"/>
+
+<IF COND="Variables.errno=0">
+<THEN>
+	<setvar NAME="myID" VALUE="Asset.id"/>
+</THEN>
+</IF>
+
+</FTCS> 

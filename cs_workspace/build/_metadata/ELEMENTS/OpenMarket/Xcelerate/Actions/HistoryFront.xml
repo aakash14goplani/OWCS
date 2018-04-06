@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/HistoryFront.xml $ 
+$Revision: 24 $ 
+$Modtime: 5/09/03 11:44a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- HistoryFront.xml
+-
+- DESCRIPTION
+-	Get the revision history of this element
+-
+- HISTORY 
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/> 
+<STRING.ENCODE VARIABLE="PrivsFailedReason" VARNAME="PrivsFailedReason"/>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+    <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+</callelement>
+
+<setvar NAME="assetname" VALUE="theAsset"/> <!--This line will go away after wards-->
+<setvar NAME="assetObjectName" VALUE="theAsset"/>
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetObjectName"/>
+<ASSET.GET NAME="Variables.assetObjectName" FIELD="id" OUTPUT="id"/>
+<ASSET.GET NAME="Variables.assetObjectName" FIELD="name" OUTPUT="TempAssetName"/>
+
+<ASSETTYPE.LOAD NAME="tmpAssetTypeInstance" FIELD="assettype" VALUE="Variables.AssetType"/>
+<ASSETTYPE.GET NAME="tmpAssetTypeInstance" FIELD="description" OUTPUT="AssetTypeDescription"/>
+<if COND='Variables.AssetTypeDescription=Variables.empty'>
+<then>
+	<setvar NAME='Variables.AssetTypeDescription' VALUE='Variables.AssetType' />
+</then>
+</if>
+
+<if COND="Variables.trackingenabled=true">
+<then>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    	<argument NAME="assetObjectName" VALUE="Variables.assetObjectName"/>
+        <argument NAME="Function" VALUE="showversion"/>
+    </callelement>
+
+    <if COND="Variables.PrivsFailed=true">
+    <then>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+            <argument NAME="error" VALUE="Variables.PrivsFailedReason"/>
+        </callelement>
+    </then>
+    <else>
+		<if COND="Variables.cs_environment!=ucform">
+		<then>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ContentDetailsFront" outstring="InspectURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+				<satellite.argument name="AssetType" value="Variables.AssetType"/>
+				<satellite.argument name="id" value="Variables.id"/>
+			</SATELLITE.LINK>
+			<div>
+				<div class='toolbarContent'>
+					<TABLE><tr>
+						<td align="left">
+							<XLAT.LOOKUP KEY="UI/Forms/Back" VARNAME="_XLAT_" ESCAPE="true"/>
+							<XLAT.LOOKUP KEY="UI/Forms/Back" VARNAME="_ALT_"/>
+							<A HREF="Variables.InspectURL" onclick="" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.InspectURL">
+								<IMG  onclick="this.src='Variables.cs_imagedir/../js/fw/images/ui/ui/toolbar/goBackClick.png';return true;" onmouseover="this.src='Variables.cs_imagedir/../js/fw/images/ui/ui/toolbar/goBackHover.png';return true;" onmouseout="this.src='Variables.cs_imagedir/../js/fw/images/ui/ui/toolbar/goBack.png'" src="Variables.cs_imagedir/../js/fw/images/ui/ui/toolbar/goBack.png" TITLE="Variables._ALT_" ALT="Variables._ALT_" BORDER="0" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._ALT_"/>
+							</A>						
+						</td>
+					</tr></TABLE>
+				</div>
+				<div id="msgArea"></div>
+				<div class="toolbarBorder"></div>
+			</div>
+		</then>
+		</if>
+		<history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+		<TABLE CELLPADDING="0" CELLSPACING="1" BORDER="0" CLASS="width-outer-70">
+		<TR>
+		<TD>
+		<span class="title-text"><XLAT.STREAM KEY="UI/Forms/VersionsOfAssetType"/> </span>		
+		</TD>
+		</TR>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		<TR>
+		<TD>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/ShowTrackedHistory">
+				<argument NAME="dorollback" VALUE="false"/>
+			</callelement>
+		</TD>
+		</TR>
+		</TABLE>	
+	</else>
+    </if>
+</then>
+<else>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+        <argument NAME="error" VALUE="HistoryFailed"/>
+    </callelement>
+</else>
+</if>
+
+<REMOVEVAR NAME='TempAssetName'/>
+<REMOVEVAR NAME='tmpAssetTypeInstance' />
+<REMOVEVAR NAME='AssetTypeDescription' />
+
+<P/>
+</FTCS>

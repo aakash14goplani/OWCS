@@ -1,0 +1,174 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/TemplateElementDetailsFront
+-
+- INPUT
+-	Variables.atdescription = Template
+-	Variables.AssetType = Template
+-  Variables.id	= asset id
+-  Variables.theme = theme of the element to inspect
+-   Variables.revisionInspect - present and true only if we are looking at rev track history
+-   Variables.revision - present and set to revision number we are viewing if looking at rev track history
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/> 
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/> 
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/> 
+
+<if COND="IsVariable.theme=false">
+<then>
+	<setvar NAME="theme" VALUE="Variables.empty"/>
+</then>
+</if>
+
+<setvar NAME="ContentDetails:element:Total" VALUE="0"/>
+<if COND="IsVariable.revisionInspect=true">
+<then>
+	<ASSET.LOADREVISION TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theCurrentAsset" REVISION="Variables.revision"/>
+</then>
+<else>
+	<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theCurrentAsset"/>
+</else>
+</if>
+<ASSET.SCATTER NAME="theCurrentAsset" PREFIX="ContentDetails" FIELDLIST="name,description,element,elementname,elementdescription,theme,url,url_file,url_folder,resdetails1,resdetails2"/>
+
+<if COND="Variables.ContentDetails:element:Total!=0">
+<then>
+	<SETCOUNTER NAME="nthElement" VALUE="0"/>
+	<LOOP COUNT="Variables.ContentDetails:element:Total">
+		<setvar NAME="value" VALUE="Variables.ContentDetails:element:Counters.nthElement:theme"/>
+		<if COND="Variables.value=Variables.theme">
+		<then>
+			<SETVAR NAME="numElement" VALUE="Counters.nthElement"/>
+		</then>
+		</if>
+		<INCCOUNTER NAME="nthElement" VALUE="1"/>
+	</LOOP>
+</then>
+</if>
+
+ <table border="0" cellpadding="0" cellspacing="0">
+ 
+ <!-- Template page title with asset name -->
+<tr>
+	<td><span class="title-text"><STRING.STREAM VALUE="Variables.atdescription"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.ContentDetails:name"/></span></td>
+</tr>
+
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+	<argument NAME="SpaceBelow" VALUE="No"/>
+</callelement>
+<tr>
+	<td>
+		<table border="0" cellpadding="0" cellspacing="0">
+
+			<!-- The beginning of Group 1  name, description -->
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer">
+				<argument NAME="SpaceAbove" VALUE="No"/>
+			</callelement>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Name"/>:</td>
+				<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.ContentDetails:name"/></td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Description"/>:</td>
+				<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				<td class="form-inset"><STRING.STREAM VARIABLE="ContentDetails:description"/></td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.id"/></td>
+			</tr>
+
+			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Variant"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VARIABLE="ContentDetails:element:Variables.numElement:elementname"/></td>
+			</tr>
+
+			<!-- The beginning of Group 4 - element catalog info -->
+			<if COND="IsVariable.numElement=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+	        	<tr>
+			      <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/ElementCatalogDescription"/>:</td>
+			      <td></td>
+               <td class="form-inset"><STRING.STREAM VARIABLE="ContentDetails:element:Variables.numElement:elementdescription"/></td>
+           	</tr>
+                     
+           <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	        <tr>
+		      <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/ElementCatalogEntryStorPathFn"/>:</td>
+		      <td></td>
+            <td class="form-inset"><STRING.STREAM VALUE="Variables.ContentDetails:element:Variables.numElement:urlspec"/></td>
+           </tr>
+
+           <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	        <tr>
+		      <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/ElementParameters"/>:</td>
+		      <td></td>
+            <td class="form-inset"><STRING.STREAM VALUE="Variables.ContentDetails:element:Variables.numElement:resdetails1"/></td>
+           </tr>
+	        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+	        <tr>
+		      <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/AdditionalElementParameters"/>:</td>
+		      <td></td>
+        		<td class="form-inset"><STRING.STREAM VALUE="Variables.ContentDetails:element:Variables.numElement:resdetails2"/>
+					<SETVAR NAME="errno" VALUE="0"/>
+					<setvar NAME="value" VALUE="Variables.ContentDetails:element:Variables.numElement:resdetails1"/>
+					<INDEXOF STR="Variables.value" WHAT="tid=" OUTSTR="dontcare" />
+					<IF COND="Variables.errno=0">
+					<THEN>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<setvar NAME="value" VALUE="Variables.ContentDetails:element:Variables.numElement:resdetails2"/>
+						<INDEXOF STR="Variables.value" WHAT="tid=" OUTSTR="dontcare" />
+						<IF COND="Variables.errno=0">  <!-- missing tid -->
+						<THEN>
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowCellMessage">
+							<ARGUMENT NAME="severity" VALUE="warning"/>
+							<ARGUMENT NAME="elem" VALUE="TidMissingInElement"/>
+				    			</CALLELEMENT>
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+				</td>
+	         </tr>
+
+			  <!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+	        <tr>
+		      <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/ElementLogic"/>: </td>
+		      <td></td>
+				<td class="form-inset">    <!-- XMP><STRING.STREAM VALUE="ecentry.@url"/>  </XMP   -->
+				<pre style="border:1px solid #E6E6E6;overflow:auto;width:580px;padding:20px;">
+				<STRING.STREAM VARIABLE="ContentDetails:element:Variables.numElement:url"/>
+				</pre>
+				</td>
+				</tr>
+
+			</then>
+			</if>
+
+			</table>
+			<!-- End of body -->
+		</td>
+	</tr>
+
+ 	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<tr>
+		<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+ </table>
+
+
+
+</FTCS>

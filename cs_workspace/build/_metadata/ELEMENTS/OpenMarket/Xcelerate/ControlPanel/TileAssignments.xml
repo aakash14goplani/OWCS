@@ -1,0 +1,364 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/ControlPanel/TileAssignments.xml $ 
+$Revision: 26 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- TileAssignments.xml 
+-
+- DESCRIPTION
+-    - Tile the given list of assignments
+-
+- HISTORY 
+-->
+
+<IF COND="IsSessionVariable.locale=true">
+    <THEN>
+        <LOCALE.CREATE VARNAME="LocaleName" LOCALENAME="SessionVariables.locale"/>
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName"/>
+    </THEN>
+    <ELSE>
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT"/>
+    </ELSE>
+</IF>
+<PROPERTY.GET PARAM="xcelelem.tileassignments" INIFILE="futuretense_xcel.ini" VARNAME="proptileassignments"/>
+<if COND="Variables.proptileassignments!=Variables.empty"><then>
+	<!-- use customized element -->
+  <callelement NAME="Variables.proptileassignments"/>
+
+</then><else>
+    
+    <CALCULATOR.GO VALUE="Variables.ResultLimit Variables.start +" VARNAME="next"/>
+    <CALCULATOR.GO VALUE="Variables.start Variables.ResultLimit -" VARNAME="prev"/>
+    
+    <CALCULATOR.GO VALUE="Variables.next Variables.allAssignments:Total LT" VARNAME="isNext"/>
+	<CALCULATOR.GO VALUE="Variables.prev 0 GTE" VARNAME="isPrev"/>
+
+    <if COND="Variables.isNext!=1">
+    <then>
+        <CALCULATOR.GO VALUE="Variables.allAssignments:Total Variables.start -" VARNAME="countLimit"/>
+    </then>
+    <else>
+        <SETVAR NAME="countLimit" VALUE="Variables.ResultLimit"/>
+    </else>
+    </if>
+    
+    <if COND="Variables.countLimit!=0"><then>
+		<setcounter NAME="colspan_count" VALUE="2"/>
+
+		<if COND="Variables.showType=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showId=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showKey=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showCPHref=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+		
+		<if COND="Variables.showCPFinish=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showDescription=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showAssignedTo=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showAssignedBy=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showAssignedDate=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+									
+		<if COND="Variables.showActionToTake=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+			
+		<if COND="Variables.showClearedBy=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showClearedDate=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showDueDate=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showActionTaken=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showWorkflowStatus=true"><then>
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<if COND="Variables.showIsActive=true"><then>                    
+			<inccounter NAME="colspan_count" VALUE="2"/>
+		</then></if>
+	
+		<!-- <SETVAR NAME="ShowWorkListURL" VALUE="CS.Property.ft.approot"/>
+		<SETVAR NAME="ShowWorkListURL" VALUE="Variables.ShowWorkListURLContentServer?pagename=OpenMarket/Xcelerate/Actions/ShowWorkListFront"/> -->
+        
+		<table WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			<!--setcounter NAME="assignment_count" VALUE="0"/-->
+            <setcounter NAME="assignment_count" VALUE="Variables.start"/>
+			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+
+			<LOOP COUNT="Variables.countLimit">     
+				<WorkflowAssignment.GetID NAME="allAssignments:Counters.assignment_count" VARNAME="assignmentid"/>
+				<WorkflowAssignment.GetAssignedObject NAME="allAssignments:Counters.assignment_count" OBJVARNAME="workflowObject"/>
+                <WorkflowAssignment.GetAssignmentComment NAME="allAssignments:Counters.assignment_count" VARNAME="assigncomment" />
+                <if COND="IsVariable.assigncomment!=true">
+                <then>
+                    <XLAT.LOOKUP KEY="dvin/UI/Wf/Nocomment" VARNAME="_XLAT_"/>
+                    <setvar NAME="assigncomment" VALUE="Variables._XLAT_" />
+                </then>
+                </if>
+                
+				<WorkflowAsset.GetAssetId OBJECT="workflowObject" VARNAME="workflow_assetid" />
+				<WorkflowAsset.GetAssetType OBJECT="workflowObject" VARNAME="workflow_assettype" />
+				<SETVAR NAME="errno" VALUE="0"/>
+	
+				<IF COND="Counters.assignment_count!=0"><THEN>
+					<tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+				</THEN></IF>
+				
+				<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+					<td><BR /></td>
+					<if COND="Variables.showType=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM VARIABLE="workflow_assettype"/><BR />
+							</DIV>
+						</TD>  
+					</then></if>
+	
+					<if COND="Variables.showId=true"><then>
+						 <TD><BR /></TD><TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							 <DIV class="small-text-inset">
+								 <STRING.STREAM VARIABLE="workflow_assetid"/><BR />
+							 </DIV>
+						</TD> 
+				 </then></if>               
+									
+				 <if COND="Variables.showCPHref=true"><then>
+						<ASSET.LIST TYPE="Variables.workflow_assettype" FIELD1="id" VALUE1="Variables.workflow_assetid" LIST="theAssetList"/>
+						<IF COND="theAssetList.description=Variables.empty"><THEN>
+							<SETVAR NAME="workflow_assetdescription" VALUE="theAssetList.name"/>
+						</THEN><ELSE>
+							<SETVAR NAME="workflow_assetdescription" VALUE="theAssetList.description"/>
+						</ELSE></IF>
+						
+						<TD><BR /></TD><TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">                                        
+                                            <setvar NAME="externaldoc" VALUE="yes" />
+                                            <if COND="theAssetList.externaldoctype!=Variables.empty">
+                                            <then>
+                                                  <setvar NAME="externaldoc" VALUE="no" />
+                                            </then>                                          
+                                            </if>
+                                            
+                                            <A HREF="javascript:showContent('Variables.workflow_assetid','Variables.workflow_assettype','Variables.externaldoc');"
+														 OnMouseOver=""
+														 OnMouseOut="" 
+														 TITLE="Variables.assigncomment" 
+														 REPLACEALL="Variables.assigncomment,Variables.workflow_assetid,Variables.workflow_assettype,Variables.externaldoc">
+											<STRING.STREAM VARIABLE="workflow_assetdescription"/>
+										</A><BR />
+								</DIV>
+						</TD> 
+					</then></if>               
+									
+					<if COND="Variables.showKey=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT"></TD> 
+					</then></if>               
+	
+					<if COND="Variables.showDescription=true"><then>
+						<ASSET.GET NAME="asset" FIELD="description" OUTPUT="workflow_assetdescription"/>
+						<TD><BR /></TD><TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM VARIABLE="workflow_assetdescription"/><BR />
+							</DIV>
+						</TD> 
+					</then></if>               
+									
+					<if COND="Variables.showAssignedTo=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<if COND="Assignments.groupid=Variables.empty"><then>
+									<img src="Variables.cs_imagedir/data/AssignUser.gif" REPLACEALL="Variables.cs_imagedir"/>
+								</then><else>
+									<img src="Variables.cs_imagedir/data/AssignFolder.gif" REPLACEALL="Variables.cs_imagedir"/>
+								</else></if>
+	
+								<STRING.STREAM LIST="Assignments" COLUMN="assignedto"/><BR />
+							</DIV>
+						</TD>
+					</then></if>
+	
+					<if COND="Variables.showAssignedBy=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM LIST="Assignments" COLUMN="assignedby" /><BR />
+							</DIV>
+						</TD>
+					</then></if>
+	
+					<if COND="Variables.showAssignedDate=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+                                <DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Assignments.assigndate" VALUETYPE="jdbcdate"  VARNAME="niceDate"/>
+								<STRING.STREAM VARIABLE="niceDate"/><BR />
+							</DIV>
+						</TD>      
+					</then></if>
+	
+					<if COND="Variables.showActionToTake=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM LIST="Assignments" COLUMN="assigncomment"/><BR />
+							</DIV>
+						</TD>
+					</then></if>
+		
+					<if COND="Variables.showClearedBy=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM LIST="Assignments" COLUMN="clearedby"/><BR />
+							</DIV>
+						</TD>      
+					</then></if>
+		
+					<if COND="Variables.showClearedDate=true"><then>
+						<TD><BR /></TD>
+						<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+                                <DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Assignments.cleardate" VALUETYPE="jdbcdate"  VARNAME="niceClearDate"/>
+								<STRING.STREAM VARIABLE="niceClearDate"/><BR />
+							</DIV>
+						</TD>      
+					</then></if>
+		
+					<if COND="Variables.showDueDate=true"><then>
+						<TD><BR /></TD><TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Assignments.deadline" VALUETYPE="jdbcdate"  VARNAME="niceDueDate"/>
+								<STRING.STREAM VARIABLE="niceDueDate"/><BR />
+							</DIV>
+						</TD>      
+					</then></if>
+		
+					<if COND="Variables.showActionTaken=true"><then>
+						<TD><BR /></TD><TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<STRING.STREAM LIST="Assignments" COLUMN="clearcomment"/><BR />
+							</DIV>
+						</TD>      
+					</then></if>          
+		
+					<if COND="Variables.showCPFinish=true"><then>
+						<TD><BR /></TD><TD NOWRAP="NOWRAP" VALIGN="middle" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<A 
+									HREF="ContentServer?pagename=OpenMarket/Xcelerate/ControlPanel/ControlPanel&#38;finishAssignment=true&#38;id=Variables.workflow_assetid&#38;AssetType=Variables.workflow_assettype"
+									REPLACEALL="Variables.workflow_assetid,Variables.workflow_assettype"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Finish"/></CALLELEMENT></A>
+							</DIV>
+						</TD>
+					</then></if>
+					
+					<if COND="Variables.showWorkflowStatus=true"><then>
+						<TD><BR /></TD><TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<if COND="Assignments.workflowstatus!=Variables.empty"><then>
+									<WorkflowEngine.GetStateID ID="Assignments.workflowstatus" OBJVARNAME="workflow_state" />
+									<WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="workflow_statedescription" />
+									<STRING.STREAM VARIABLE="workflow_statedescription"/>
+								</then></if><BR />
+							</DIV>
+						</TD>
+					</then></if>
+		
+					<if COND="Variables.showIsActive=true"><then>
+						<TD><BR /></TD><TD VALIGN="TOP" ALIGN="LEFT">
+							<DIV class="small-text-inset">
+								<if COND="Assignments.isactive=y"><then>
+									<XLAT.STREAM KEY="dvin/Common/Active"/>
+								</then><else>
+									<if COND="Assignments.isactive=q"><then>
+										<XLAT.STREAM KEY="dvin/Common/Done"/>
+									</then><else>
+										<XLAT.STREAM KEY="dvin/Common/Cancelled"/>
+									</else></if>
+								</else></if>
+								<BR />
+							</DIV>
+						</TD>      
+					</then></if>
+					<td><BR /></td>
+				</TR>
+							
+				<inccounter NAME="assignment_count" VALUE="1"/>
+				<IF COND="Variables.rowStyle=tile-row-normal"><THEN>
+					<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+				</THEN><ELSE>
+					<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+				</ELSE></IF>
+			</LOOP>
+  
+			<if COND="Counters.assignment_count=0"><then>
+				<TR><TD><STRING.STREAM VARIABLE="NoTileText"/></TD></TR>
+			</then></if>
+                        
+            <SETVAR NAME="url" VALUE="ContentServer?pagename=OpenMarket/Xcelerate/ControlPanel/ControlPanel&#38;c=Variables.c&#38;cid=Variables.cid"/>   
+            <tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+				<td align="right" colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count">
+                <DIV class="small-text-inset">
+					<IF COND="Variables.isPrev=1"><THEN>
+						<a TITLE="Previous" HREF="Variables.url&#38;start=Variables.prev" REPLACEALL="Variables.url,Variables.prev">&lt;&lt;</a>
+					</THEN>
+					</IF>
+					&nbsp;
+					<IF COND="Variables.isNext=1"><THEN>
+						<a TITLE="Next" HREF="Variables.url&#38;start=Variables.next" REPLACEALL="Variables.url,Variables.next">&gt;&gt;</a>
+					</THEN>
+                    </IF>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+				</DIV></td>
+			</tr>
+            
+		</table>
+	</then></if> 
+</else></if>
+
+</FTCS>
+
+

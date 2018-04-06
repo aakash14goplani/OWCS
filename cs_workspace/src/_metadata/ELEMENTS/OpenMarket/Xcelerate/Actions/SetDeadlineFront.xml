@@ -1,0 +1,468 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/SetDeadlineFront
+-
+- INPUT                                                                           
+-
+- OUTPUT
+-
+COMMENTS:
+		This element is used to display the screen when the user selects "Set Assignment Deadline" from the drop down 
+		in the Workflow Status screen.
+		
+		The page displays the asset name, asset description, the asset type, workflow process name, current workflow state
+		current deadline (if any) and option to set deadline of the current assignment to EITHER default or specify a deadline
+		date and time that is greater/later than the current time.
+		
+		When the user selects the DEFAULT deadline option, the current workflow state definition is consulted to see if any
+		estimated time/deadline for the assignment is specified there. That value simply means that the asset can be in that specific
+		state for that amount of time.
+		
+		If a NON ZERO estimated time is specified in the workflow state definition, then we add the current time with that value
+		and set that as the deadline for the assignment. This means that, from the current instant, we have 'X' amount of time to complete
+		the assignment/move the assignment to the next state, where X is the NON ZERO amount of time specified in the workflow state defn.
+		If the estimated time specified in the workflow state defn. is ZERO then we set the deadline to be ZERO, meaning there is NO deadline
+		for the asset and that one can take however long as desired to complete the assignment.
+		
+		The estimated time is obtained using the tag WORKFLOWSTATE.GETESTIMATEDSTATETIME (after a couple of loading etc).		
+		The logic where we compute the deadline is implemented in the Javascript function "SaveDeadline()". 
+		
+		If we specify a user-defined dd/mm/yyyy and time, then we also need to parse out the values from the drop down boxes and check if this
+		time specified is valid and is later than the current instant (it sure doesnt make sense to set a deadline that is already gone long ago).
+		This checking is also done in the JavaScript function "SaveDeadline()"
+		
+		This element is called from OpenMarket/Xcelerate/Actions/AssetMgt/StatusDetails.xml.
+		
+		Input to this element include:
+		AssetType 
+		id (asset id)
+		
+		The element OpenMarket/Xcelerate/Actions/SetDeadlinePost.xml is called to do the actual setting of the dealine
+		
+		An important convention to be noted here is that the INPUT radio buttons are named "setpdeadline" and they are given values
+			false - for the Default deadline option
+			yes - for the deadline option that lets you set your own mm/dd/yyyy and time values.
+			
+		Typically	this is the convention that is used in most XML elements that handle input from the user and call other XML elements to do some
+		processing. The HTML component is itself given a name that is referred in the processing XML element. Often these values are set like
+		<INPUT TYPE="HIDDEN" NAME="abcde" VALUE="Variables.some_component_value" ...>
+		
+		and then this hidden element is directly referred using its name as in "Variables.abcde". Hope this helps!  
+		
+		- Sathish Paul Leo.
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/FormatDate" />
+<callelement NAME="OpenMarket/Xcelerate/Util/ClientoffsetInMillis"/>
+<SCRIPT type="text/javascript">
+var clientOffset = <CSVAR NAME="Variables.clientOffset" />
+<![CDATA[
+
+function SaveDeadline() 
+{ 
+
+    var obj = document.forms[0].elements[0];
+    var pdeadlineVal = 0;
+    var now = new Date();
+    var cur_date = new Date(now.getTime() + clientOffset + now.getTimezoneOffset()*60*1000 );
+    
+    if (document.getElementById('setstepdeadline').checked )
+    {
+        if (obj.form.elements['deadlineaction'].value=="Process")
+        {
+            pdeadlineVal = 0;
+        }
+        if (obj.form.elements['deadlineaction'].value=="Assignment")
+        {
+            var etime = obj.form.elements['estimatedtime'].value;
+            if(parseInt(etime)==0)
+            	pdeadlineVal = parseInt(etime);
+            else
+            	pdeadlineVal = cur_date.valueOf() + parseInt(etime);
+        }
+    } else { 
+        var deadline_date = document.getElementById('deadlineFieldDiv').innerHTML;
+        if (deadline_date == "")
+        {
+            ]]>
+            if (obj.form.elements['deadlineaction'].value=="Process")
+            {
+                alert("<XLAT.STREAM KEY="dvin/UI/Error/processdeadlineenterednotvaliddate" ESCAPE="true" ENCODE="false"/>");
+            }
+            if (obj.form.elements['deadlineaction'].value=="Assignment")
+            {
+                alert("<XLAT.STREAM KEY="dvin/UI/Error/assignmentdeadlineenterednotvaliddate" ESCAPE="true" ENCODE="false"/>");
+            }
+            <![CDATA[
+            return false;
+        }
+        pdeadlineVal = dateToObject(deadline_date).valueOf();
+        if (pdeadlineVal < cur_date.valueOf())
+        {
+           ]]>
+            if (obj.form.elements['deadlineaction'].value=="Process")
+            {           
+                alert("<XLAT.STREAM KEY="dvin/UI/Error/processdeadlineearliercurrenttime" ESCAPE="true" ENCODE="false"/>");
+            }
+            if (obj.form.elements['deadlineaction'].value=="Assignment")
+            {
+                alert("<XLAT.STREAM KEY="dvin/UI/Error/AssignmentDeadlineEarlierThanCurrentTime" ESCAPE="true" ENCODE="false"/>");
+            }
+            
+           <![CDATA[
+           return false;
+        }
+    }
+    
+    obj.form.elements['pdeadline'].value = pdeadlineVal;
+	obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/SetDeadlinePost";
+	obj.form.submit();
+}
+function setDefaultDeadline()
+{
+    var obj = document.getElementById('deadline_div');
+    obj.style.visibility='hidden';
+}
+
+function setDeadline()
+{
+    var obj = document.getElementById('deadline_div');
+    obj.style.visibility='visible';
+}
+]]>
+</SCRIPT>
+
+
+
+
+
+	<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+	<WorkflowAsset.GetObjectName OBJECT="workflowasset" VARNAME="objectname" />
+
+	<!-- Load the asset type information -->
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+	<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+	<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+	<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+
+        <!-- load workflow information -->
+	<WorkflowEngine.GetObjectWorkflowProcess OBJECT="workflowasset" VARNAME="workflowid" />
+     <if COND="IsVariable.workflowid!=true">
+     <then>
+          <SETVAR NAME="AbortFlag" VALUE="true"/>
+          <SETVAR NAME="ErrorName" VALUE="AssetNotInWorkflow"/>
+          <SETVAR NAME="severity" VALUE="info"/>
+     </then>
+     </if>
+<IF COND="Variables.AbortFlag!=true">
+<THEN>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Common/SetVariables.deadlineactionDeadline"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+    <WORKFLOWENGINE.GETPROCESSID ID="Variables.workflowid" OBJVARNAME="processobj"/>
+	<WORKFLOWPROCESS.GETPROCESSNAME NAME="processobj" VARNAME="processname"/>
+
+
+	<SETVAR NAME="canSetDeadline" VALUE="false"/>
+	<IF COND="Variables.deadlineaction=Assignment">
+	<THEN>
+	    <WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="setstepdeadline" VARNAME="canSetDeadline" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+	</THEN>
+	<ELSE>
+		<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="setprocessdeadline" VARNAME="canSetDeadline" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+	</ELSE>
+	</IF>
+	<WORKFLOWPROCESS.GETADMINROLES NAME="processobj" OBJVARNAME="adminrolesobj"/>
+	<ROLELIST.ISALL NAME="adminrolesobj" VARNAME="roleisall"/>
+	<!-- roleisall=true means Any role -->
+	<IF COND="Variables.roleisall=true">
+	<THEN>
+		<SETVAR NAME="canSetDeadline" VALUE="true"/>
+	</THEN>
+	<ELSE>
+		<ROLELIST.GETALL NAME="adminrolesobj" VARNAME="admnroles"/>
+		<IF COND="Variables.admnroles!=Variables.empty">
+		<THEN>
+			<STRINGLIST NAME="rlist" STR="Variables.admnroles" DELIM=","/>
+			<LOOP LIST="rlist">
+				<SETVAR NAME="errno" VALUE="0"/>
+				<ISINLIST STR="SessionVariables.currentpubACLs" ITEM="rlist.ITEM"/>
+				<IF COND="Variables.errno=1">
+				<THEN>
+					<SETVAR NAME="canSetDeadline" VALUE="true"/>
+				</THEN>
+				</IF>
+			</LOOP>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+
+	
+<IF COND="Variables.canSetDeadline=true">
+<THEN>
+	
+	<!-- Load Assignment information -->
+	<WorkflowAsset.GetAssetId OBJECT="workflowasset" VARNAME="objectid" />
+        <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" STATUS="active" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+	
+	<IF COND="Variables.workflow_assignmentsTotal!=1">
+	<THEN>
+		<setcounter NAME="assignmentCount" VALUE="1"/>
+		<WorkflowAssignment.GetId NAME="workflow_assignments0" VARNAME="assignmentid"/>
+		<CALCULATOR.GO VALUE="Variables.workflow_assignmentsTotal 1 -" VARNAME="count"/> 
+		
+		<LOOP COUNT="Variables.count">
+			<WorkflowAssignment.GetId NAME="workflow_assignmentsCounters.assignmentCount" VARNAME="currentId"/>
+			<!-- Use % to delimit the different assignment ids. This is parsed out in SetDeadlinePost.xml -->
+			<SETVAR NAME="assignmentid" VALUE="Variables.assignmentid%Variables.currentId" />
+			<inccounter NAME="assignmentCount" VALUE="1"/>
+		</LOOP>
+		<REMOVECOUNTER NAME="assignmentCount"/>
+	</THEN>
+	<ELSE>
+		<WorkflowAssignment.GetId NAME="workflow_assignments0" VARNAME="assignmentid"/>		
+	</ELSE>
+	</IF>
+	
+	<!-- Load state information -->
+	<WorkflowAssignment.GetStateID NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+	<WorkflowEngine.GetStateID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+	<WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="workflow_statedescription" />
+	<WorkflowState.GetEstimatedStateTime NAME="workflow_state" VARNAME="workflow_estimatedtime" />
+
+
+	<!-- Code for Alloy UI -->
+		<SETVAR NAME="assignmentId_for_AlloyUI" VALUE="Variables.assignmentid" />
+		<SETVAR NAME="stateEstimatedTime_for_AlloyUI" VALUE="Variables.workflow_estimatedtime" />
+	<!-- Code for Alloy UI -->
+
+
+
+  	<if COND="Variables.deadlineaction=Process">
+	<then>
+		<WorkflowEngine.GetAbsDeadline OBJECT="workflowasset" VARNAME="stored_deadline"/>
+	</then>
+	</if>
+	<if COND="Variables.deadlineaction=Assignment">
+	<then>
+		<WorkflowAssignment.GetDeadline NAME="workflow_assignments0" VARNAME="stored_deadline"/>
+	</then>
+	</if>
+
+    <!-- stored_deadline is the date in milliseconds, this block converts date to jdbc date format and set in pdeadline -->
+    <IF COND="Variables.stored_deadline!=0">
+    <THEN>	
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+		  		<ARGUMENT NAME="inputDate" VALUE="Variables.stored_deadline" />
+				<ARGUMENT NAME="inputDateType" VALUE="millis"/>
+		  		<ARGUMENT NAME="fromTimeZone" VALUE="server"/>
+		  		<ARGUMENT NAME="toTimeZone" VALUE="client"/>
+		  </CALLELEMENT>
+		  
+		   <SETVAR NAME="pdeadline" VALUE="Variables.outputDate"/>
+		
+    </THEN>
+    </IF>
+
+<if COND="IsVariable.workflowid=true">
+<then>
+     <setvar NAME="foundworkflow" VALUE="true"/>
+</then>
+<else>
+     <setvar NAME="foundworkflow" VALUE="false"/>     
+</else>
+</if>
+
+	
+<!-- Table header -->
+<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.assetname"/> 
+					<!-- Code for Alloy UI -->
+					<SETVAR NAME="assetName_for_AlloyUI" VALUE="Variables.assetname" />
+					<!-- Code for Alloy UI -->
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.assetdesc"/> 
+					<!-- Code for Alloy UI -->
+						<SETVAR NAME="assetDesc_for_AlloyUI" VALUE="Variables.assetdesc" />
+					<!-- Code for Alloy UI -->						
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/AssetType"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.AssetTypeObj:description"/>
+					<!-- Code for alloy UI -->
+						<SETVAR NAME="assetTypeDesc_for_AlloyUI" VALUE="Variables.AssetTypeObj:description" />
+					<!-- Code for alloy UI -->
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.processname"/>
+					<!-- Code for Alloy UI -->
+						<SETVAR NAME="workflowProcessName_for_AlloyUI" VALUE="Variables.processname" />
+						<SETVAR NAME="workflowStateDesc_for_AlloyUI" VALUE="Variables.workflow_statedescription" />
+					<!-- Code for Alloy UI -->						
+				</td>
+			</tr>
+
+			<if COND="Variables.deadlineaction=Assignment">
+			<then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/State"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.workflow_statedescription"/>
+				</td>
+			</tr>
+	</then>
+	</if>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Common/CurrentVariables.deadlineactionDeadline"/>:
+				</td>
+				<td class="form-inset">
+					<if COND="Variables.stored_deadline!=0">
+					<then>
+                        <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.stored_deadline" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion" TIMEZONEID=		"SessionVariables.time.zone"/>
+                        <STRING.STREAM VALUE="Variables.formatteddateFullVersion"/>
+						<!-- Code for Alloy UI -->
+							<SETVAR NAME="currentDeadline_for_AlloyUI" VALUE="Variables.pdeadline" />
+						<!-- Code for Alloy UI -->										
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/UI/Common/NotSet"/>
+						<!-- Code for Alloy UI -->
+							<XLAT.LOOKUP KEY="dvin/UI/Common/NotSet" VARNAME="deadlineNotSet" ENCODE="false"/>
+							<SETVAR NAME="currentDeadline_for_AlloyUI" VALUE="Variables.deadlineNotSet" />
+						<!-- Code for Alloy UI -->										
+					</else>
+					</if>
+				</td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Common/SetVariables.deadlineactionDeadline"/>:
+				</td>
+				<td class="form-inset" nowrap="nowrap">
+					<if COND="Variables.deadlineaction=Assignment">
+					<then>
+						<INPUT style="margin-left:0px" TYPE="radio" id="setstepdeadline" NAME="setpdeadline" VALUE="false" OnClick="setDefaultDeadline()"/><label for="setstepdeadline"><XLAT.STREAM KEY="dvin/Common/Usedefault"/> </label>
+					</then>
+					</if>
+					<if COND="Variables.deadlineaction=Process">
+					<then>
+						<INPUT style="margin-left:0px" TYPE="radio" id="setstepdeadline" NAME="setpdeadline" VALUE="false" OnClick="setDefaultDeadline()"/><label for="setstepdeadline"><XLAT.STREAM KEY="dvin/Common/None"/></label>
+					</then>
+					</if>
+					<br/>
+	
+					<INPUT style="margin-left:0px; vertical-align: top;" TYPE="radio" id="setpdeadline" NAME="setpdeadline" VALUE="yes" checked="checked" OnClick="setDeadline()"/><label for="setpdeadline" style="vertical-align: top;"><XLAT.STREAM KEY="dvin/Common/Due"/></label>
+	                  		
+	                 <XLAT.LOOKUP KEY="fatwire/Alloy/UI/PickADate" VARNAME="pickADateString" />
+					 <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GetLocalizedDate">
+	                     <ARGUMENT NAME="inputDate" VALUE="Variables.pdeadline" />
+	                     <ARGUMENT NAME="outputVar" VALUE="localizedDeadlineValue" />
+	                 </CALLELEMENT>
+                   <div ID="deadline_div" style="visibility:visible; display: inline-table;">
+						<STRING.ENCODE VARIABLE="localizedDeadlineValue" VARNAME="localizedDeadlineValue"/>
+                       <div id="deadlineFieldId" name="deadline" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.localizedDeadlineValue" REPLACEALL="Variables.localizedDeadlineValue"></div>
+						<DIV ID="deadlineFieldDiv" STYLE="display:none"><STRING.STREAM VALUE="Variables.pdeadline"/></DIV>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+							<ARGUMENT NAME="inputFieldId" value="deadlineFieldId"/>
+							<ARGUMENT NAME="inputDivId" value="deadlineFieldDiv"/>
+						</CALLELEMENT>
+					</div>
+				</td>
+			</tr>  
+	<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+	<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+		<INPUT TYPE="hidden" NAME="pdeadline" VALUE="0" />
+		<INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+		<INPUT TYPE="hidden" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+		<STRING.ENCODE VARIABLE="assignmentid" VARNAME="assignmentid"/>
+		<INPUT TYPE="hidden" NAME="assignmentid" VALUE="Variables.assignmentid" REPLACEALL="Variables.assignmentid"/>
+		<INPUT TYPE="hidden" NAME="estimatedtime" VALUE="Variables.workflow_estimatedtime" REPLACEALL="Variables.workflow_estimatedtime"/>
+		<INPUT TYPE="hidden" NAME="action" VALUE="save"/>
+		<STRING.ENCODE VARIABLE="deadlineaction" VARNAME="deadlineaction"/>
+		<INPUT TYPE="hidden" NAME="deadlineaction" VALUE="Variables.deadlineaction"  REPLACEALL="Variables.deadlineaction"/>
+		<ics.encode base="ContentServer" session="true" output="href">
+			<ics.argument name="pagename" value="OpenMarket/Xcelerate/Actions/StatusDetailsFront"/>
+			<ics.argument name="AssetType" value="Variables.AssetType"/>
+			<ics.argument name="id" value="Variables.id"/>
+			<ics.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			<ics.argument name="cs_environment" value="Variables.cs_environment"/>
+			<ics.argument name="docId" value="Variables.docId"/>
+		</ics.encode>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr><td></td><td>
+    <A HREF="Variables.href" REPLACEALL="Variables.href"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+	<XLAT.LOOKUP KEY="dvin/UI/Common/SetVariables.deadlineactionDeadline" VARNAME="_XLAT_" ESCAPE="true"/>
+	<A HREF="javascript:void(0);" onClick="if(SaveDeadline()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+    </td></tr>
+		
+		</table>
+
+
+
+</THEN>
+<ELSE>
+     <setvar NAME="AbortFlag" VALUE="true"/>
+     <setvar NAME="ErrorName" VALUE="IllegalTransition"/>
+     <setvar NAME="severity" VALUE="info"/>
+</ELSE>
+</IF>
+
+</THEN><!-- AbortFlag != true -->
+</IF>
+
+<IF COND="Variables.AbortFlag=true">
+<THEN>
+     <XLAT.LOOKUP KEY="dvin/UI/SetVariables.deadlineactionDeadline" VARNAME="functionname"/>
+     <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="elem" VALUE="Variables.ErrorName"/>
+        <argument NAME="severity" VALUE="Variables.severity"/>
+     </callelement>
+     <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        <argument NAME="id"        VALUE="Variables.id"/>
+     </callelement>
+     <br/>       
+
+</THEN>
+</IF>
+
+</FTCS> 

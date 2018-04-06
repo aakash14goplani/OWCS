@@ -1,0 +1,179 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Scripts/AddRealObjectEmbeddedLink
+-
+- INPUT
+-eop.instances
+- OUTPUT
+-
+-->
+<if COND="Variables.showSiteTree=true">
+<then>
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function addEmbeddedLink(assetname, AssetType, fieldname, fielddesc, embedtype, iseop)
+{
+   var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+   var eop = document.getElementById('myId'+fieldname);
+   if ( EncodedString!=null )
+   {
+	   var idArray = EncodedString.split(',');
+	   var assetcheck = unescape(idArray[0]);
+	   if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	   {
+	       var test = new String(EncodedString);
+	       var nameVal = test.split(",");
+	       if (nameVal.length!=2) {
+	           ]]>
+	           alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ESCAPE="true" ENCODE="false"/>");
+	           <![CDATA[
+	           return false;
+	       }
+
+	       var treeid = unescape(nameVal[0]);
+	       var splitid = treeid.split(',');
+	       if (splitid.length==1)
+	       {
+	           ]]>
+	           alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ESCAPE="true" ENCODE="false"/>");
+	           <![CDATA[
+	           return false;
+	       }
+
+	       var splitpair = splitid[0].split("=");
+	       var tn_id = splitpair[1];
+	       splitpair = splitid[1].split("=");
+	       var tn_AssetType = splitpair[1];
+	       if (iseop) {
+	           // using eop
+	           if (eop.getSelectedHTMLData() == "") {
+	               ]]>
+	               alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+	               <![CDATA[
+	               return false;
+	           }
+	       } else {
+	           var textrange;
+	           if (document.selection && document.selection.createRange) {
+	                textrange = document.selection.createRange();
+	                if (textrange.parentElement().name != fieldname) {
+	                   ]]>
+	                   alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+	                   <![CDATA[
+	                   return false;
+	                }
+	           } else {
+	               ]]>
+	               alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+	               <![CDATA[
+	               return false;
+	           }
+	       }
+
+
+	       var pURL = "ContentServer?pagename=OpenMarket/Xcelerate/Actions/";
+	       if (embedtype=="link") {
+	       	pURL = pURL + "EmbeddedLink";
+	           height = 285;
+	       } else {
+	       	pURL = pURL + "AddInclusion";
+	           height = 225;
+	       }
+
+	      pURL = pURL + "&tn_id=" + tn_id;
+	      pURL = pURL + "&tn_AssetType=" + tn_AssetType;
+	      pURL = pURL + "&name=" + encodeURIComponent(assetname);
+	      pURL = pURL + "&AssetType=" + AssetType;
+	      pURL = pURL + "&fieldname=" + encodeURIComponent(fieldname);
+	      pURL = pURL + "&fielddesc=" + encodeURIComponent(fielddesc);
+
+	       return window.open(pURL, "EmbeddedLinkControl", "directories=no,left=700,location=no,menubar=no,resizable=yes,toolbar=no,top=50,width=250,height=" + height);
+	   }
+	   else
+	   {
+	      ]]>
+	      alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/>");
+	      <![CDATA[
+	   }
+	}
+   else
+   {
+      ]]>
+      alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/>");
+      <![CDATA[
+   }
+}
+
+]]>
+</SCRIPT>
+
+</then>
+<else>
+    <SCRIPT LANGUAGE="JavaScript">
+
+    <![CDATA[
+
+    function addEmbeddedLink(assetname, AssetType, fieldname, fielddesc, embedtype, iseop)
+    {
+    	var eop = document.getElementById('myId'+fieldname);
+       if (iseop) {
+	              // using eopro
+           if (eop.getSelectedHTMLData() == "") {
+               ]]>
+               alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+               <![CDATA[
+               return false;
+           }
+       } else {
+           var textrange;
+           if (document.selection && document.selection.createRange) {
+                textrange = document.selection.createRange();
+                if (textrange.parentElement().name != fieldname) {
+                   ]]>
+                   alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+                   <![CDATA[
+                   return false;
+                }
+           } else {
+               ]]>
+               alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectLinkTextFrom" ESCAPE="true" ENCODE="false"/>".replace('Variables.assetType',AssetType).replace('Variables.fielddesc',fielddesc);
+               <![CDATA[
+               return false;
+           }
+       }
+
+       var pURL = "ContentServer?pagename=OpenMarket/Xcelerate/Actions/SelectAssetForEmbeddedLink";
+
+       var i=0, histString='', currentVal;
+       if (parent.parent['XcelBanner'])
+       {
+           for(i=0;i<parent.parent['XcelBanner'].hist.length;i++)
+           {
+                currentVal = parent.parent['XcelBanner'].hist[i];
+                if (i==0)
+                    histString=currentVal.id;
+                else
+                    histString=histString+","+currentVal.id;
+           }
+       }
+
+       pURL = pURL + "&name=" + encodeURIComponent(assetname);
+       pURL = pURL + "&AssetType=" + AssetType;
+       pURL = pURL + "&embedtype=" + embedtype;
+       pURL = pURL + "&fieldname=" + encodeURIComponent(fieldname);
+       pURL = pURL + "&fielddesc=" + encodeURIComponent(fielddesc);
+       pURL = pURL + "&history=" + encodeURIComponent(histString);
+
+       return window.open(pURL, "EmbeddedLinkControl", "directories=no,left=700,location=no,menubar=no,toolbar=no,top=50,width=250,height=250");
+   }
+
+    ]]>
+    </SCRIPT>
+</else>
+</if>
+
+</FTCS>

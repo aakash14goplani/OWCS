@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Monitor/ShowTasks.xml $ 
+$Revision: 22 $ 
+$Modtime: 7/10/02 12:13p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Tasks pull down menu
+-->
+
+
+<!-- Assignments -->
+<if COND="Variables.ClearTarget=ShowAssignments">
+<then>
+    <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+    <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.userid" />
+    <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+    <WorkflowEngine.GetFilteredAssignments ASSIGNEDTO="assignlist" NOTSTATUS="notactive" PREFIX="allAssignments:" EXCLUDECOMMENTS="true" LIMITASSIGNEEROLES="true"/>    
+    <if COND="Variables.allAssignments:Total!=0">
+    <then>
+        <callelement NAME="OpenMarket/Xcelerate/Admin/Monitor/ClearAssignments">
+            <argument NAME="ClearTarget" VALUE="Variables.ClearTarget"/>
+        </callelement>
+    </then>
+    <else>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+            <argument NAME="error" VALUE="FindAssignmentFailed"/>
+            <argument NAME="ClearTarget" VALUE="Variables.ClearTarget"/>
+        </callelement>
+    </else>
+	</if>
+</then>
+</if> 
+<!-- ASSIGNMENT -->
+
+<!-- Checkouts -->
+<if COND="Variables.ClearTarget=ShowCheckouts">
+<then>
+	<setvar NAME="CheckoutFound" VALUE="no"/>
+	<setvar NAME="TrckdAssets" VALUE="Variables.empty"/>
+	<!-- Get a list of asset types -->
+ 	<ASSETTYPE.LIST LIST="TheAssetType" ORDER="assettype"/>
+	<loop LIST="TheAssetType">
+		<if COND="IsTracked.TheAssetType.assettype=true">
+		<then>
+			<setvar NAME="nohistory" VALUE="no"/>
+			<history TABLE="TheAssetType.assettype" LIST="mylist" LOCKER="Variables.username"/>
+			<if COND="mylist.#numRows!=0">
+			<then>
+				<setvar NAME="CheckoutFound" VALUE="yes"/>
+				<loop LIST="mylist">
+					<setvar NAME="TrckdAssets" VALUE="Variables.TrckdAssets,mylist.asset;TheAssetType.assettype"/>
+				</loop>
+				<flush LIST="mylist"/>
+			</then>
+			</if>
+		</then>
+		</if>
+	</loop>
+		<if COND="Variables.TrckdAssets!=Variables.empty">
+		<then>
+			<substring STR="Variables.TrckdAssets" INDEX="1" OUTSTR="TrackedAssets"/>
+			<callelement NAME="OpenMarket/Xcelerate/Admin/Monitor/ClearAssignments">
+    				<argument NAME="ClearTarget" VALUE="Variables.ClearTarget"/>
+    				<argument NAME="TrackedAssets" VALUE="Variables.TrackedAssets"/>
+  			</callelement>
+		</then>
+		<else>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<argument NAME="error" VALUE="FindCheckoutsFailed"/>
+				<argument NAME="nohistory" VALUE="yes"/>
+  			</callelement>
+			<throwexception/>
+		</else>
+		</if>
+	<if COND="Variables.CheckoutFound=no">
+	<then>
+	  	<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<argument NAME="error" VALUE="FindCheckoutsFailed"/>
+			<argument NAME="nohistory" VALUE="yes"/>
+  		</callelement>
+		<throwexception/>
+	</then>
+	</if>
+</then>
+</if> <!-- CHECKOUT -->
+</FTCS>

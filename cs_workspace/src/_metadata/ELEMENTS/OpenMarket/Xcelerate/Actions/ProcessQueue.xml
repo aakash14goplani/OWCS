@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- OpenMarket/Xcelerate/PrologActions/ProcessQueue
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<HTML>
+<HEAD>
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+
+</HEAD>
+
+
+<BODY BGCOLOR="#FFFFFF">
+<PROPERTY.GET PARAM="xcelerate.batchuser" INIFILE="futuretense_xcel.ini" VARNAME="batchuser"/>
+<PROPERTY.GET PARAM="xcelerate.batchpass" INIFILE="futuretense_xcel.ini" VARNAME="batchpass"/>
+
+<USERMANAGER.LOGINUSER USERNAME="Variables.batchuser" PASSWORD="Variables.batchpass" VARNAME="loggedIn"/>
+<IF COND="Variables.loggedIn=true">
+<THEN>
+	<APPROVEDASSETS.PROCESSQUEUE/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<LOGMSG STR="ProcessQueue: Error processing approval queue: Variables.errno(Variables.errdetail1)"/>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<LOGMSG STR="ProcessQueue: Could not log in with the xcelerate.batchuser and xcelerate.batchpass"/>
+</ELSE>
+</IF>
+
+<USERMANAGER.LOGOUT/>
+
+</BODY>
+</HTML>
+</FTCS>

@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/AssetMaker/ContentDetailsCustomTab</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/AssetMaker/ContentDetailsCustomTab</string>
+        <string>Given a list of field names, creates a tab in inspect mode with these fields</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/AssetMaker/ContentDetailsCustomTab.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/AssetMaker/ContentDetailsCustomTab.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FAssetMaker%2FContentDetailsCustomTab.xml
+@hashval=2060824815
+key=@ELEMENTCATALOG-OpenMarket/AssetMaker/ContentDetailsCustomTab
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

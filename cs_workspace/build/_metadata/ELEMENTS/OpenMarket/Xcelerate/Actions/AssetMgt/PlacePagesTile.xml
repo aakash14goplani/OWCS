@@ -1,0 +1,191 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/PlacePagesTile.xml $
+$Revision: 20 $
+$Modtime: 3/03/04 4:35p $
+-->
+
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/PlacePagesTile
+--
+-- INPUT
+--		"list" - name of list to loop through
+--		"editCurrentRank" - true if Rank is to be editable field and display existing rank
+-- 	"editRank" - true if Rank is to be displayed (does not display existing rank)
+--		"showRank" - true 
+--		"showRemove" - true if Remove column is to be added
+--		"linkToPlacePages" - true if links to the PlacePage function should be on id field
+-- OUTPUT
+--
+-->
+
+<IF COND="Variables.editCurrentRank=true">
+<THEN>
+	<SETVAR NAME="showRank" VALUE="true"/>
+	<SETVAR NAME="editRank" VALUE="true"/>
+</THEN>
+</IF>
+<IF COND="Variables.editRank=true">
+<THEN>
+	<SETVAR NAME="showRank" VALUE="true"/>
+</THEN>
+</IF>
+
+     <setcounter NAME="colspan_count" VALUE="8"/>
+
+<IF COND="Variables.showRank=true">
+<THEN>
+		<inccounter NAME="colspan_count" VALUE="2"/>
+</THEN>
+</IF>
+<IF COND="Variables.showRemove=true">
+<THEN>
+		<inccounter NAME="colspan_count" VALUE="2"/>
+</THEN>
+</IF>
+
+     <table class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+     <tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	<td >
+	<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<IF COND="Variables.showRank=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Rank"/></DIV></td>
+		</THEN>
+		</IF>
+		<IF COND="Variables.showRemove=true">
+		<THEN>
+		    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/RemoveQ"/></DIV></td>
+		</THEN>
+		</IF>
+		    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Modified"/></DIV></td>
+			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		</tr>
+
+<tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+     <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+	<setvar NAME="separatorLine" VALUE="0"/>
+<!-- body of table -->
+    <HASH.CREATE NAME="idPlacedRanks"/>
+    <HASH.CREATE NAME="idUnPlacedRanks"/>
+    <LOOP LIST="Variables.list">
+		<IF COND="Variables.separatorLine=1">
+		<THEN>
+			<tr>
+				<!--<td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+		</THEN>
+		</IF>
+		<setvar NAME="separatorLine" VALUE="1"/>
+
+<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+		<IF COND="Variables.editCurrentRank=true">
+		<THEN>
+			<td><BR /></td><td VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<INPUT NAME="Rank-Variables.list.id" TYPE="TEXT" SIZE="3" MAXLENGTH="3" VALUE="Variables.list.nrank" REPLACEALL="Variables.list.id,Variables.list.nrank"/>
+                <INPUT TYPE="hidden" NAME="OldRank-Variables.list.id" VALUE="Variables.list.nrank" REPLACEALL="Variables.list.id,Variables.list.nrank"/>
+                <HASH.ADD NAME="idPlacedRanks" VALUE="Rank-Variables.list.id"/>
+            </td>
+		</THEN>
+		<ELSE>
+			<IF COND="Variables.editRank=true">
+			<THEN>
+						<td><BR /></td><td VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+
+				<INPUT NAME="Rank-Variables.list.id" TYPE="TEXT" SIZE="3" MAXLENGTH="3" REPLACEALL="Variables.list.id"/>
+                <HASH.ADD NAME="idUnPlacedRanks" VALUE="Rank-Variables.list.id"/>
+                    </td>
+	        </THEN>
+			<ELSE>
+				<IF COND="Variables.showRank=true">
+				<THEN>
+							<td><BR /></td><td VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+<DIV class="small-text-inset">
+						<STRING.STREAM VALUE="Variables.list.nrank"/>
+						</DIV>
+						</td>
+	            </THEN>
+				</IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+		
+			<IF COND="Variables.showRemove=true">
+		<THEN>
+							<td><BR /></td><td VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<INPUT TYPE="CHECKBOX" NAME="Remove-Variables.list.id" REPLACEALL="Variables.list.id"/>
+			</td>
+		</THEN>
+		</IF>		
+		<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                 <DIV class="small-text-inset">
+		    <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_" ESCAPE="true"/>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+				<ARGUMENT NAME="assettype" VALUE="Page"/>
+				<ARGUMENT NAME="assetid" VALUE="Variables.list.oid"/>
+				<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+				<ARGUMENT NAME="function" VALUE="inspect"/>
+			</CALLELEMENT>
+		    <A HREF="Variables.urlInspectItem"
+		       OnMouseOver="window.status='Variables._XLAT_'; return true"
+		       OnMouseOut="return window.status='';"  REPLACEALL="Variables.urlInspectItem,Variables._XLAT_">
+		    <STRING.STREAM LIST="Variables.list" COLUMN="name"/>
+		    </A>
+		    </DIV>
+		</td>
+
+		<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+		    <DIV class="small-text-inset">
+		    <STRING.STREAM LIST="Variables.list" COLUMN="description"/>
+		    </DIV>
+		</td>
+
+		<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+		    <DIV class="small-text-inset">
+             <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+             <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.list.updateddate" VALUETYPE="jdbcdate"  VARNAME="updateddate"/>
+			 <STRING.STREAM VALUE="Variables.updateddate"/>
+		    </DIV>
+		</td>
+		
+		 <td><BR /></td></tr>
+            <IF COND="Variables.rowStyle=tile-row-normal">
+            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+            </THEN>
+            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+            </ELSE>
+            </IF>
+	</LOOP>
+  	
+    <IF COND="Variables.editCurrentRank=true">
+        <THEN>
+            <HASH.TOSTRING NAME="idPlacedRanks" VARNAME="idPlacedRankList" DELIM=","/>
+            <INPUT TYPE="hidden" NAME="idRankPlacedSubmit" VALUE="Variables.idPlacedRankList" REPLACEALL="Variables.idPlacedRankList"/>
+        </THEN>
+        <ELSE>
+            <HASH.TOSTRING NAME="idUnPlacedRanks" VARNAME="idUnPlacedRankList" DELIM=","/>
+            <INPUT TYPE="hidden" NAME="idRankUnPlacedSubmit" VALUE="Variables.idUnPlacedRankList" REPLACEALL="Variables.idUnPlacedRankList"/>
+        </ELSE>
+    </IF>
+</table>
+</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		</tr>
+<tr>
+<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+</table>
+
+</FTCS> 

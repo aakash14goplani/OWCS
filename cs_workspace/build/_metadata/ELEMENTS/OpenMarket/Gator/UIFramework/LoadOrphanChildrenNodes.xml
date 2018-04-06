@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/LoadOrphanChildrenNodes
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+
+    <IF COND="Variables.AssetType!=Page">
+	<THEN>
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/GetDefaultNodeBehavior" />
+	<ATM.LOCATE TYPE="Variables.AssetType" VARNAME="OrphanAtm"/>
+	
+	<flexgroups.countroots SITE="SessionVariables.pubid" NAME="OrphanAtm" VARNAME="rootCount"/>
+			
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadProperty">
+		<argument NAME="property" VALUE="xcelerate.treeMaxNodes"/>
+		<argument NAME="ini" VALUE="futuretense_xcel.ini"/>
+		<argument NAME="varname" VALUE="TOOMANY"/>
+	</callelement>
+			
+	<!-- compare rootCount and TooMany, return dummy node if COUNT is larger-->
+	<CALCULATOR.GO VALUE="Variables.rootCount Variables.TOOMANY GT" VARNAME="ANS"/>
+	
+	<if COND="Variables.ANS=1">
+	<then>
+		<setvar NAME="FETCH" VALUE="Variables.TOOMANY"/>	
+		<!-- Set the reached max nodes indicator parameter  --> 
+		<setvar NAME="maxNodes" VALUE="yes"/>	
+	</then>
+	</if>
+	
+	<flexgroups.getroots SITE="SessionVariables.pubid" NAME="OrphanAtm" LISTVARNAME="PList"/>
+	
+	<COMPLEXASSETS.GETSORTEDLIST NAME="OrphanAtm" LISTVARNAME="PList" LIST="PList"/>
+	<if COND="Variables.errno=0">
+	<then>
+			<if COND="IsList.PList=true">
+			<then>
+				<if COND="PList.#numRows!=0">
+				<then>					
+					<loop LIST="PList">
+						<callelement NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID">
+							<argument NAME="ID" VALUE="PList.assetid"/>
+						</callelement>
+						
+						<REMOVEVAR NAME="LoadURL"/>
+											
+						<ASSET.GETSUBTYPE TYPE="Variables.AssetType" OBJECTID="PList.assetid" OUTPUT="stype" />
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/FindAssetImage">
+							<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+							<ARGUMENT NAME="AssetDef" VALUE="Variables.stype"/>
+						</CALLELEMENT>
+						
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+							<ARGUMENT NAME="Label" VALUE="PList.name"/>							
+							<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>							
+							<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+							<ARGUMENT NAME="Image" VALUE="Variables.imageUsed"/>
+							<ARGUMENT NAME="RefreshKeys" VALUE="PList.assetid"/>											   
+							<ARGUMENT NAME="okFunctions" VALUE="edit;delete;treerefresh" />														
+							<ARGUMENT NAME="executeFunction" VALUE="Variables.cs_defaultFunctionChild" />
+						</CALLELEMENT>
+					</loop>
+				</then>
+				</if>
+			</then>
+			</if>
+	</then>
+	</if>
+</THEN>
+</IF>
+
+</FTCS>

@@ -1,0 +1,727 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Security/AccessUserPublication.xml $ 
+$Revision: 63 $ 
+$Modtime: 4/27/04 2:24p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-   All functions to deal with access to the UserPublication
+-   table
+-
+-   Inputs:
+-       upcommand:      name of the command
+-->
+
+<PROPERTY.GET PARAM="xcelerate.adminacl" INIFILE="futuretense_xcel.ini" VARNAME="propadminacl"/>
+
+<if COND="Variables.upcommand=GetManager">
+<then>
+    <!--
+         Return the name of the user list manager into the variable
+	 "UserManager".  Possible values are:
+	     SQL
+	     LDAP
+	 Callers will make decisions about what admin interfaces
+	 to offer based on this information.
+    -->
+    <setvar NAME="UserManager" VALUE="SQL"/>
+</then>
+</if>
+
+<if COND="Variables.upcommand=GetUsers">
+<then>
+    <!-- 
+         Given a pubid, return a list
+         of users associated with that
+         publication
+         
+         params
+         name:     name of the publication
+                   for which to get users
+    -->
+    <ics.literal table="Publication" column="name" string="Variables.name"
+    output="literal"/>
+
+    <setvar NAME="tablename" VALUE="UserPublication"/>
+    <setvar NAME="errno" VALUE="0"/>
+	<execsql LIST="Variables.qryprefix" SQL="SELECT DISTINCT UserPublication.username FROM UserPublication,Publication
+        WHERE UserPublication.pubid=Publication.id AND Publication.name=Variables.literal ORDER BY UserPublication.username" TABLE="UserPublication,Publication"/>
+	<setvar NAME="Variables.qryprefix_qrycol" VALUE="username"/>
+</then>
+</if>
+
+<if COND="Variables.upcommand=GetPublications">
+<then>
+    <!--
+        Given a username, return a list of
+        publications that the user is authorized
+        to work on
+
+        params
+        username:   username for which we want
+                    to get publications
+    -->
+    
+    <!--
+    	check user site role if coming from login page
+    -->
+    <IF COND="Variables.isLogin=true" > 
+    <THEN>
+	<SETVAR NAME="pubidList" VALUE="Variables.empty" />
+	<SETVAR NAME="userIsAdvancedUser" VALUE="false" />
+
+		<USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="userObject"/>				
+    <CCUSER.GETSITES NAME="userObject" OBJVARNAME="siteList"/>
+    <SITELIST.GETALL NAME="siteList" VARNAME="listOfSites" />
+    <STRINGLIST NAME="userSiteList" DELIM="," STR="Variables.listOfSites"/>
+
+    <LOOP LIST="userSiteList">
+        <CCUSER.GETSITEROLES NAME="userObject" SITE="userSiteList.ITEM" OBJVARNAME="roleobject"/>
+		<ROLELIST.HASROLE NAME="roleobject" ROLE="AdvancedUser" VARNAME="roleexists"/> 
+		<IF COND="Variables.roleexists=true"> 
+		<THEN> 
+			<SETVAR NAME="userIsAdvancedUser" VALUE="true" />
+			<if COND="Variables.pubidList=Variables.empty" >
+				<then>
+                <SETVAR NAME="pubidList" VALUE="userSiteList.ITEM" />
+				</then>
+				<else>
+                <SETVAR NAME="pubidList" VALUE="Variables.pubidList,userSiteList.ITEM" />
+				</else>
+				</if>
+		</THEN> 
+		</IF>	
+	</LOOP>
+    
+    </THEN>
+    <ELSE>
+    	<USERMANAGER.GETUSER OBJVARNAME="myUserObj" USER="Variables.username"/>
+ 	<CCUSER.GETSITES NAME="myUserObj" OBJVARNAME="siteList"/>	 	
+	<SITELIST.GETALL NAME="siteList" VARNAME="pubidList"/>    
+    </ELSE>
+    </IF>
+    
+    <setvar NAME="numrows" VALUE="0"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="tablename" VALUE="UserPublication"/>
+    
+    <if COND="Variables.pubidList!=Variables.empty" >
+    <then>
+		<SETVAR NAME="validatedstatus" VALUE="true" />
+		<STRINGLIST NAME="stringpubidList" STR="Variables.pubidList" DELIM=","/>
+		<LOOP LIST="stringpubidList">
+			<IF COND="Variables.validatedstatus=true" >
+			<THEN>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<ARGUMENT NAME="columnvalue" VALUE="stringpubidList.ITEM"/>
+					<ARGUMENT NAME="type" VALUE="Long"/>
+				</CALLELEMENT>
+			</THEN>
+			</IF>
+		</LOOP>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<execsql LIST="Variables.qryprefix" SQL="SELECT id AS pubid, name, description
+                FROM Publication WHERE id IN (Variables.pubidList)
+				ORDER BY Publication.name" TABLE="Publication"/>
+		</THEN>
+		</IF>
+	</then>
+	<else>
+ 		<setvar NAME="numrows" VALUE="0"/>
+		<setvar NAME="errno" VALUE="-1"/>
+	</else>
+    </if>
+
+    <if COND="IsError.Variables.errno=false">
+    	<then>
+		    <setvar NAME="numrows" VALUE="Variables.qryprefix.#numRows"/>
+    	</then>
+    </if>
+</then>    
+</if>
+
+
+<if COND="Variables.upcommand=GetPubsEnabledforAsset">
+<then>
+    <!--
+        Given an  assetid , return a list of
+        publications  
+                
+        params
+        assetid:    assetid for which we want
+                    to get publications
+        qryprefex:  The list to populate the pubs with
+        numrows:  Number of pubs .
+    -->
+    
+    <setvar NAME="numrows" VALUE="0"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="tablename" VALUE="AssetPublication"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.assetid"/>
+		<ARGUMENT NAME="type" VALUE="Long"/>
+	</CALLELEMENT>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<execsql LIST="Variables.qryprefix" 
+		SQL="SELECT pubid FROM AssetPublication WHERE AssetPublication.assetid=Variables.assetid and AssetPublication.pubid!=SessionVariables.pubid and AssetPublication.pubid!=0"/>
+	</THEN>
+	</IF>
+       
+     <if COND="IsError.Variables.errno=false">
+    	<then>
+		    <setvar NAME="numrows" VALUE="Variables.qryprefix.#numRows"/>
+    	</then>
+    </if>
+</then>    
+</if>
+
+                                             
+                                             
+
+ <if COND="Variables.upcommand=RevokeRole">
+<then>
+    <!--
+        Given a username Role (acl) and pubid,  this deletes  the role for this user
+        from the USerPublication Table.     
+     -->
+    <USERMANAGER.GETUSER OBJVARNAME="userobj" USER="Variables.username"/>
+ 	<CCUSER.GETSITEROLES  NAME="userobj"  SITE="Variables.pubid" OBJVARNAME="rolelist"/>
+    <ROLELIST.HASROLE    NAME="rolelist" ROLE="Variables.acl" VARNAME="roleexists"/>
+  	<IF COND="Variables.roleexists=true">
+    <THEN>
+		    <ROLELIST.DELETE NAME="rolelist" ROLE="Variables.acl"/> 
+         	<CCUSER.SETSITEROLES NAME="userobj"  SITE="Variables.pubid" OBJECT="rolelist"/>
+         	<USERMANAGER.SETUSER 	OBJECT="userobj"/>
+    </THEN>
+    </IF>
+
+</then>    
+</if>
+
+
+
+
+<if COND="Variables.upcommand=GetDepartments">
+<then>
+    <!--
+        Given a username, return a list of
+        departments that the user is authorized
+        to administrate.
+
+        params
+        username:   username for which we want
+                    to get publications
+    -->
+
+    <setvar NAME="numrows" VALUE="0"/>
+	<setvar NAME="errno" VALUE="0"/>
+    <USERISMEMBER GROUP="Variables.propadminacl"/>
+    <if COND="Variables.errno=1">
+    	<then>
+			<stringlist NAME="Variables.qryprefix" STR="Xcelerate" DELIM=","/>
+			<setvar NAME="Variables.qryprefix_qrycol" VALUE="ITEM"/>
+		    <setvar NAME="numrows" VALUE="1"/>
+		</then>
+    </if>
+    
+<!--
+	Once we have the real department tables, use this code instead of the above
+	
+    <setvar NAME="numrows" VALUE="0"/>
+	<setvar NAME="errno" VALUE="0"/>
+	<setvar NAME="tablename" VALUE="UserDepartment"/>
+    <execsql LIST="Variables.qryprefix" SQL="SELECT Department.name, Department.description, Department.id
+                                             FROM UserDepartment, Department
+                                             WHERE Department.id=UserDepartment.deptid
+                                             AND UserDepartment.username='Variables.username'"/>
+    <if COND="IsError.Variables.errno=false">
+    	<then>
+		    <setvar NAME="numrows" VALUE="Variables.qryprefix.#numRows"/>
+    	</then>
+    </if>
+-->    
+</then>    
+</if>
+
+<if COND="Variables.upcommand=IsUserAuthorized">
+<then>
+    <!-- 
+        Given a username and a pubid, set the
+        value of the IsAuthorized to true
+        or false
+
+        params
+
+        username:       name of the user
+        pubid:          pubid of the user        
+    -->
+    <!--<setvar NAME="tablename" VALUE="UserPublication"/>-->
+    <!--<setvar NAME="errno" VALUE="0"/>-->
+    <!--<SELECTTO LIST="Authorized" FROM="UserPublication" WHAT="*" WHERE="username,pubid"/>-->
+    <USERMANAGER.GETUSERROLES SITE="Variables.pubid" USER="Variables.username" OBJVARNAME="userrolelist"/>
+    <ROLELIST.GETALL NAME="userrolelist" VARNAME="roles"/>
+    <if COND="Variables.roles=Variables.empty">
+    <then>
+        <setvar NAME="IsAuthorized" VALUE="false"/>
+    </then>
+    <else>
+        <setvar NAME="IsAuthorized" VALUE="true"/>
+    </else>
+    </if>
+</then>
+</if>
+
+<if COND="Variables.upcommand=GetACLs">
+<then>
+    <!--
+        Given a username and a publication, return a list of
+        acls for the user
+
+        params in:
+        username:   username for whom we want
+                    to get acls
+        publication:   publication for which we want
+                    to get acls
+        aclname: name of variable to store the comma separted list of ACLs
+        forceACLFetch: true to always fetch ACLs
+    -->
+    <setvar NAME="AUPFetch" VALUE="true"/>
+	<USERMANAGER.GETLOGINUSER VARNAME="loginuserid"/>
+    <if COND="Variables.username=Variables.loginuserid">
+    	<then>
+    		<if COND="Variables.forceACLFetch!=true">
+    			<then>
+				    <setvar NAME="AUPFetch" VALUE="false"/>
+    				<setvar NAME="Variables.aclname" VALUE="SessionVariables.currentpubACLs"/>
+    			</then>
+    		</if>
+    	</then>
+    </if>
+    <if COND="Variables.AUPFetch=true">
+    	<then>
+        
+        <ics.literal table="Publication" column="name" string="Variables.publication"
+        output="literal"/>
+     	<setvar NAME="errno" VALUE="0"/>
+		<SETVAR NAME="tablename" VALUE="Publication"/>
+		<execsql LIST="publ" SQL="SELECT id FROM Publication WHERE name=Variables.literal"/>
+		<USERMANAGER.GETUSERROLES OBJVARNAME="rolelist" USER="Variables.username" SITE="publ.id"/>
+    		<ROLELIST.GETALL NAME="rolelist" VARNAME="Variables.aclname"/>
+        </then>
+    </if>
+</then>    
+</if>
+
+<if COND="Variables.upcommand=GetAllUsers">
+<then>
+    <!-- 
+    	Get all users
+    -->
+    <!--
+    <setvar NAME="tablename" VALUE="SystemUsers"/>
+    <execsql LIST="Variables.qryprefix" 
+             SQL="SELECT username FROM SystemUsers 
+                  WHERE username != 'DefaultReader' AND
+                        username != 'ContentServer' AND
+                        username != 'Quick'
+		  ORDER BY username"/>
+	<setvar NAME="Variables.qryprefix_qrycol" VALUE="username"/>
+    -->
+    
+    
+    <setvar NAME="errno" VALUE="0"/>
+    <!--execsql LIST="pubID" SQL="SELECT id FROM Publication WHERE name='Variables.publication'"/-->
+    <!-- Now, get all users with that publication -->
+    <USERMANAGER.GETUSERS SITE="SessionVariables.pubid"  PREFIX="user:"/>
+ 
+    <setvar NAME="AUPUSERS" VALUE="Variables.empty"/>
+    <if COND="Variables.errno=0">
+    <then>
+      <SETCOUNTER NAME="index" VALUE="0"/>
+      <if COND="Variables.user:Total!=0">
+      <then>
+         <loop COUNT="Variables.user:Total">
+		<CCUSER.GETDISPLAYABLENAME NAME="user:Counters.index" VARNAME="username"/>
+		<setvar NAME="AUPUSERS" VALUE="Variables.AUPUSERS, Variables.username"/>
+		<INCCOUNTER NAME="index" VALUE="1"/>
+	  </loop>
+      </then>
+      </if>
+       <if COND="Variables.AUPUSERS!=Variables.empty">
+      <then>
+	      <substring STR="Variables.AUPUSERS" INDEX="2" OUTSTR="outname"/>
+	  </then>
+      <else>
+	      <setvar NAME="outname" VALUE="Variables.empty"/>
+      </else>
+      </if>
+      
+      <STRINGLIST NAME="Variables.qryprefix" STR="Variables.outname" DELIM=","/>
+      <setvar NAME="Variables.qryprefix_qrycol" VALUE="ITEM"/>
+	</then>
+	</if>
+
+</then>
+</if>
+
+<if COND="Variables.upcommand=GetPubUsers">
+<then>
+    <!-- 
+    	Get all users
+    -->
+    <!--
+    <setvar NAME="tablename" VALUE="SystemUsers"/>
+    <execsql LIST="Variables.qryprefix" 
+             SQL="SELECT username FROM SystemUsers 
+                  WHERE username != 'DefaultReader' AND
+                        username != 'ContentServer' AND
+                        username != 'Quick'
+		  ORDER BY username"/>
+	<setvar NAME="Variables.qryprefix_qrycol" VALUE="username"/>
+    -->
+    
+    
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="tablename" VALUE="Publication"/>
+    <!--execsql LIST="pubID" SQL="SELECT id FROM Publication WHERE name='Variables.publication'"/-->
+    <!-- Now, get all users with that publication -->
+    <USERMANAGER.GETUSERS SITE="Variables.pubid"  PREFIX="user:"/>
+  
+    <setvar NAME="AUPUSERS" VALUE="Variables.empty"/>
+    <if COND="Variables.errno=0">
+    <then>
+      <SETCOUNTER NAME="index" VALUE="0"/>
+      <if COND="Variables.user:Total!=0">
+      <then>
+        <loop COUNT="Variables.user:Total">
+		
+		<IF COND="IsVariable.getusername=true" >
+		<THEN>
+		    <CCUSER.GETNAME NAME="user:Counters.index" VARNAME="username"/>
+		</THEN>
+		<ELSE>
+		    <CCUSER.GETDISPLAYABLENAME NAME="user:Counters.index" VARNAME="username"/>
+		</ELSE>
+		</IF>
+		
+		<setvar NAME="AUPUSERS" VALUE="Variables.AUPUSERS, Variables.username"/>
+		<INCCOUNTER NAME="index" VALUE="1"/>
+	  </loop>
+      </then>
+      </if>
+
+       <if COND="Variables.AUPUSERS!=Variables.empty">
+      <then>
+	      <substring STR="Variables.AUPUSERS" INDEX="2" OUTSTR="outname"/>
+	  </then>
+      <else>
+	      <setvar NAME="outname" VALUE="Variables.empty"/>
+      </else>
+      </if>
+      
+       
+      <STRINGLIST NAME="Variables.qryprefix" STR="Variables.outname" DELIM=","/>
+      <setvar NAME="Variables.qryprefix_qrycol" VALUE="ITEM"/>
+	</then>
+	</if>
+
+</then>
+</if>
+
+<if COND="Variables.upcommand=AddPublication">
+<then>
+    <!--
+        Given a publication and department,
+        add a publication to the Publication
+        table
+
+        params
+        name:			name of the publication
+        description:	description for the publication
+        department:     name of the department
+    -->
+        <setvar NAME="errno" VALUE="0"/>
+        <CATALOGMANAGER>
+            <ARGUMENT NAME="tablename" VALUE="Publication"/>
+            <ARGUMENT NAME="name" VALUE="Variables.name"/>
+            <ARGUMENT NAME="description" VALUE="Variables.description"/>
+            <ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+        </CATALOGMANAGER>
+        <SETVAR NAME="pubid" VALUE="Variables.newid"/>
+
+</then>
+</if>
+
+<if COND="Variables.upcommand=AddUser">
+<then>
+    <!--
+        Given a username and a pubid,
+        add a user to the UserPublication
+        table
+
+        params
+        username:       name of the user
+        pubid:          pubid of the user
+	acl:            acl for the role we are granting        
+    -->
+
+	<SETVAR NAME="id" VALUE="CS.UniqueID"/>
+
+    <setvar NAME="errno" VALUE="0"/>
+    <CATALOGMANAGER>
+        <ARGUMENT NAME="tablename" VALUE="UserPublication"/>
+        <ARGUMENT NAME="id" VALUE="Variables.id"/>
+        <ARGUMENT NAME="username" VALUE="Variables.username"/>
+        <ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+        <ARGUMENT NAME="acl" VALUE="Variables.acl"/>
+        <ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+    </CATALOGMANAGER>
+
+
+</then>
+</if>
+
+<if COND="Variables.upcommand=AddRole">
+<then>
+    <!--
+        Given a username and a pubid,
+        add a user to the UserPublication
+        table
+
+        params
+        username:       name of the user
+        pubid:          pubid of the user
+	acl:            acl for the role we are granting        
+    -->
+ 	 
+        
+       
+   <USERMANAGER.GETUSER OBJVARNAME="userobj" USER="Variables.username"/>
+   <CCUSER.GETSITEROLES  NAME="userobj"  SITE="Variables.pubid" OBJVARNAME="rolelist"/>
+   <ROLELIST.HASROLE    NAME="rolelist" ROLE="Variables.acl" VARNAME="roleexists"/>
+  	    <IF COND="Variables.roleexists!=true">
+		<THEN>
+				<ROLELIST.ADD NAME="rolelist" ROLE="Variables.acl"/> 
+                <CCUSER.SETSITEROLES NAME="userobj"  SITE="Variables.pubid" OBJECT="rolelist"/>
+  	            <USERMANAGER.SETUSER 	OBJECT="userobj"/>
+   		</THEN>
+		</IF>
+
+</then>
+</if>
+
+
+<if COND="Variables.upcommand=AclUsers">
+<then>
+    <!-- 
+        Given an ACL, return a string containing a list of the
+	users in the ACL separated by comma-space (", ").  The space
+	makes the string directly usable for display, and disappears
+	when processed by STRINGLIST.
+
+        On input
+        acl:			name of the acl
+        publication:	name of publication
+		outname:		name of the output variable
+    -->
+    <!-- First look up the publication id given the name -->
+    
+    <ics.literal table="Publication" column="name" string="Variables.publication"
+        output="literal"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="tablename" VALUE="Publication"/>
+	<execsql LIST="pubID" SQL="SELECT id FROM Publication WHERE name=Variables.literal"/>
+    <!-- Now, get all users with that publication -->
+    <USERMANAGER.GETUSERS SITE="pubID.id" ROLE="Variables.acl" PREFIX="user:"/>
+
+    <setvar NAME="AUPUSERS" VALUE="Variables.empty"/>
+    <if COND="Variables.errno=0">
+    <then>
+      <SETCOUNTER NAME="index" VALUE="0"/>
+      <if COND="Variables.user:Total!=0">
+      <then>
+          <loop COUNT="Variables.user:Total">
+		<CCUSER.GETDISPLAYABLENAME NAME="user:Counters.index" VARNAME="username"/>
+		<setvar NAME="AUPUSERS" VALUE="Variables.AUPUSERS, Variables.username"/>
+		<INCCOUNTER NAME="index" VALUE="1"/>
+	  </loop>
+      </then>
+      </if>
+
+      <if COND="Variables.AUPUSERS!=Variables.empty">
+      <then>
+	      <substring STR="Variables.AUPUSERS" INDEX="2" OUTSTR="Variables.outname"/>
+	  </then>
+      <else>
+	      <setvar NAME="Variables.outname" VALUE="Variables.empty"/>
+      </else>
+      </if>
+	</then>
+	</if>
+</then>
+</if>
+
+<if COND="Variables.upcommand=AclUserIDs">
+<then>
+    <!-- 
+        Given an ACL, return a string containing an ilist of the
+	users in the ACL.
+
+        On input
+        acl:			name of the acl
+        publication:	name of publication
+		outname:		name of the output list
+    -->
+    <!-- First look up the publication id given the name -->
+    
+    <ics.literal table="Publication" column="name" string="Variables.publication"
+        output="literal"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="tablename" VALUE="Publication"/>
+	<execsql LIST="pubID" SQL="SELECT id FROM Publication WHERE name=Variables.literal"/>
+	<!-- Now, get all users with that publication -->
+    <listobject.create NAME="myListObject" COLUMNS="ITEM"/>
+    <USERMANAGER.GETUSERS SITE="pubID.id" ROLE="Variables.acl" PREFIX="user:"/>
+    <if COND="Variables.errno=0">
+    <then>
+	<if COND="Variables.user:Total!=0">
+	<then>
+	      <SETCOUNTER NAME="index" VALUE="0"/>
+	      <loop COUNT="Variables.user:Total">
+		<CCUSER.GETID NAME="user:Counters.index" VARNAME="username"/>
+		<listobject.addrow NAME="myListObject" ITEM="Variables.username"/>
+		<INCCOUNTER NAME="index" VALUE="1"/>
+	      </loop>
+	</then>
+	</if>
+    </then>
+    </if>
+	<listobject.tolist NAME="myListObject" LISTVARNAME="Variables.outname"/>
+
+</then>
+</if>
+
+<if COND="Variables.upcommand=DeleteUser">
+<then>
+    <!-- 
+        Given a username, role, and a pubid,
+        revoke that user's role from the publication.
+
+        params
+        username:       name of the user
+	pubid:		id of the publication
+	acl:		acl of the role to delete
+    -->
+    <!-- Do nothing now that users are managed in user manager
+    <setvar NAME="errno" VALUE="0"/>
+    <selectto LIST="AUP" FROM="UserPublication" WHERE="username, pubid, acl"
+            WHAT="id"/>
+    <if COND="Variables.errno=0">
+    <then>
+	<CATALOGMANAGER>
+	    <ARGUMENT NAME="tablename" VALUE="UserPublication"/>
+	    <ARGUMENT NAME="id" VALUE="AUP.id"/>
+	    <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+	</CATALOGMANAGER>
+
+    </then>
+    </if>
+    -->
+</then>
+</if>
+
+
+<if COND="Variables.upcommand=DeleteAcl">
+<then>
+    <!-- 
+        Given a username, role, and a pubid,
+        revoke that user's role from the publication.
+
+        params
+        username:       name of the user
+	pubid:		id of the publication
+	acl:		acl of the role to delete
+    -->
+     <setvar NAME="errno" VALUE="0"/>
+    <selectto LIST="AUP" FROM="UserPublication" WHERE="username, pubid, acl"
+            WHAT="id"/>
+    <if COND="Variables.errno=0">
+    <then>
+	<CATALOGMANAGER>
+	    <ARGUMENT NAME="tablename" VALUE="UserPublication"/>
+	    <ARGUMENT NAME="id" VALUE="AUP.id"/>
+	    <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+	</CATALOGMANAGER>
+
+    </then>
+    </if>
+</then>
+</if>
+
+
+<if COND="Variables.upcommand=GetEMailUsers">
+<then>
+    <!-- 
+         Given a publication, return a list
+         of users associated with that
+         publication with valid email addresses
+
+         params
+         name:     name of the publication
+                   for which to get users
+    -->
+    <!-- Do nothing - this should not be used anymore
+    <setvar NAME="tablename" VALUE="UserPublication"/>
+    <execsql LIST="Variables.qryprefix" SQL="SELECT DISTINCT UserPublication.username FROM UserPublication,Publication,UserProfile
+                                             WHERE UserPublication.pubid=Publication.id AND
+                                                   Publication.name='Variables.name' AND
+												   UserPublication.username=UserProfile.username 
+                                                   ORDER BY UserPublication.username"/>
+    <setvar NAME="Variables.qryprefix_qrycol" VALUE="username"/>
+    -->
+</then>
+</if>
+
+<if COND="Variables.upcommand=GetUserEMail">
+<then>
+    <!-- 
+         Given a username, return the email address
+
+         params
+         username:     name of the user for whom to get the email address
+    -->
+	<USERMANAGER.GETUSER OBJVARNAME="myUserObj" USER="Variables.username"/>
+	<CCUSER.GETEMAIL NAME="myUserObj" VARNAME="Variables.outname"/>
+</then>
+</if>
+
+<if COND="Variables.upcommand=IsSystemAdmin">
+<then>
+    <!-- 
+         Given a username, set variable IsSystemAdmin to true if this user is a system administrator
+
+         params
+         username:     name of the user to check
+    -->
+	<setvar NAME="IsSystemAdmin" VALUE="false"/>
+	<setvar NAME="errno" VALUE="0"/>
+    <USERISMEMBER GROUP="Variables.propadminacl"/>
+    <if COND="Variables.errno=1">
+		<then>
+			<setvar NAME="IsSystemAdmin" VALUE="true"/>	
+		</then>
+	</if>	
+</then>
+</if>
+
+</FTCS>

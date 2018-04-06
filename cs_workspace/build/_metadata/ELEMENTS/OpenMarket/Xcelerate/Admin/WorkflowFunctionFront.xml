@@ -1,0 +1,511 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/WorkflowFunctionFront
+
+ INPUT
+
+ OUTPUT
+
+-->
+
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function checkfields()
+{
+var obj = document.forms[0].elements[0];
+	if (obj.form.elements['name'].value.search(/\S/) == -1)
+	{
+		]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/specifyfunction" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+		obj.form.elements['name'].focus();
+
+		return false;
+	}
+	if (obj.form.elements['description'].value=="")
+	{
+		]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/specifyfunctiondescription" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+		obj.form.elements['description'].focus();
+		return false;
+	}
+	return true;
+}
+
+]]>
+</SCRIPT>
+
+<!-- type is either front or post -->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+    <setvar NAME="doform" VALUE="false"/>
+<IF COND="Variables.action=list">
+<THEN>
+
+	<IF COND="IsVariable.orderby!=true">
+	<THEN>
+		<SETVAR NAME="orderby" VALUE="description"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showtitle!=false">
+	<THEN>                                          
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/Functions"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+	</THEN>
+	</IF>  
+	
+	<SELECTTO LIST="WfFuncs" FROM="CCFunction" WHAT="*" ORDERBY="Variables.orderby"/>
+
+	<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		<tr>
+			<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+			<td >
+				<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="list"/>
+                                                         <satellite.argument name="orderby" value="description"/>
+                                                          </SATELLITE.LINK>
+                                        <A HREF="Variables.urlwffuncfront" REPLACEALL="Variables.urlwffuncfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></A></td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="list"/>
+                                                         <satellite.argument name="orderby" value="ccfunction"/>
+                                                          </SATELLITE.LINK>
+                                        <A HREF="Variables.urlwffuncfront" REPLACEALL="Variables.urlwffuncfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Admin/Function"/></DIV></A></td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+					<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<!-- Loop over all search results. -->
+			   			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETVAR NAME="separatorLine" VALUE="0"/>
+						<LOOP LIST="WfFuncs">
+
+							<IF COND="Variables.separatorLine=1">
+							<THEN>
+								<tr>
+									<!--<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+								</tr>
+							</THEN>
+							</IF>
+							<SETVAR NAME="separatorLine" VALUE="1"/>
+			
+						<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisFunction" VARNAME="_alt_"/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="id" value="WfFuncs.id"/>
+                                                          </SATELLITE.LINK>
+                            <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisFunction" VARNAME="_alt_"/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="edit"/>
+                                                         <satellite.argument name="id" value="WfFuncs.id"/>
+                                                          </SATELLITE.LINK>
+                            <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisFunction" VARNAME="_alt_"/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="confirmdelete"/>
+                                                         <satellite.argument name="id" value="WfFuncs.id"/>
+                                                          </SATELLITE.LINK>
+                            <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							
+							</td><td><BR /></td>
+							<td VALIGN="TOP" ALIGN="LEFT">
+								<DIV class="small-text-inset">
+                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="id" value="WfFuncs.id"/>
+                                                          </SATELLITE.LINK>
+                                    <!-- start #10517 Use locale string label if avaiable -->
+                                    <WORKFLOWENGINE.GETFUNCTIONID ID="WfFuncs.id" OBJVARNAME="functionObject" />
+                                    <WORKFLOWFUNCTION.GETNAME NAME="functionObject" VARNAME="funcName"/>
+									<XLAT.LOOKUP KEY="dvin/UI/Security/CCFunction/Variables.funcName" VARNAME="funcDesc" ENCODE="false"/>
+                                    <A HREF="Variables.urlwffuncfront" REPLACEALL="Variables.urlwffuncfront"><STRING.STREAM VALUE="Variables.funcDesc"/></A>
+                                    <!-- end #10517 -->
+                                </DIV>
+							</td>
+							<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+								<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="WfFuncs.ccfunction"/>
+								</DIV>
+							</td>
+							<td><BR /></td>
+						</tr>
+			            <IF COND="Variables.rowStyle=tile-row-normal">
+				            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/></THEN>
+							<ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/></ELSE>
+			            </IF>
+						</LOOP>
+					</table>
+					</td>
+					<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+				</tr>
+				<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+			</table> 
+   		
+	</THEN>
+	</IF> <!-- end action=list -->
+
+    <if COND="Variables.action=details">
+    <then>
+	  <setvar NAME="existingaction" VALUE="true"/>
+	  <STRING.ENCODE VARIABLE="existingaction" VARNAME="existingaction"/>
+	  <INPUT TYPE="HIDDEN" NAME="existingaction" VALUE="Variables.existingaction" REPLACEALL="Variables.existingaction"/> 
+  	  <setvar NAME="errno" VALUE="0"/>
+	  <substitute STR="Variables.name" WITH="%20" WHAT="/XCEL-SEP/" OUTSTR="sanefunction"/>
+	  <setvar NAME="name" VALUE="Variables.sanefunction"/>
+
+	  <WORKFLOWENGINE.GETFUNCTIONID OBJVARNAME="afunction" ID="Variables.id"/>
+	  <WORKFLOWFUNCTION.SCATTER PREFIX="wfunction:" NAME="afunction"/>
+	  <XLAT.LOOKUP KEY="dvin/UI/Security/CCFunction/Variables.wfunction:name" VARNAME="wfunction:description" ENCODE="false"/>
+
+	<IF COND="Variables.showtitle!=false">
+	<THEN>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/FunctionDesc" funcdesc="Variables.wfunction:description" EVALALL="false"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+	</THEN>
+	</IF>
+
+    <table class="width-outer-30 margin-top-zero" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+		<tr><td>
+				<table class="legacyAbar" border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td><XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisFunction" VARNAME="_alt_"/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="id" value="Variables.id"/>
+                                                          </SATELLITE.LINK>
+                    <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContentUp.gif"  border="0" alt="Variables._alt_" REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+					<td>
+					<A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Inspect"/></span></A></td>
+
+					<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+					<td><XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisFunction" VARNAME="_alt_"/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="edit"/>
+                                                         <satellite.argument name="id" value="Variables.id"/>
+                                                          </SATELLITE.LINK>
+                    <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentUp.gif" hspace="2" border="0" alt="Variables._alt_" REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+					<td>
+					<A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Edit"/></span></A></td>
+
+					<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+					<td><XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisFunction" VARNAME="_alt_"/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="confirmdelete"/>
+                                                         <satellite.argument name="id" value="Variables.id"/>
+                                                          </SATELLITE.LINK>
+                    <A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentUp.gif" hspace="2" border="0" alt="Variables._alt_" REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+					<td>
+					<A HREF="Variables.urlwffuncfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwffuncfront,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Delete"/></span></A></td>
+					<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+				</tr>
+				</table>
+			</td>
+			</tr></table>
+			<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text" WIDTH="30%"><XLAT.STREAM KEY="dvin/Common/Description"/>:</td>
+				<td class="form-inset" WIDTH="70%">
+					<NOBR><STRING.STREAM VALUE="Variables.wfunction:description"/></NOBR>
+				</td>
+			</tr>
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Admin/Function"/>:</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.wfunction:name"/>
+				</td>
+			</tr>
+		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.wfunction:id"/>
+				</td>
+			</tr>
+
+		</table>
+		</td></tr>
+</table>
+<DIV class="width-outer-70">
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="list"/>
+                                                          </SATELLITE.LINK>
+    <A HREF="Variables.urlwffuncfront" REPLACEALL="Variables.urlwffuncfront"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Admin/Listallfunctions"/></A>
+</DIV>
+
+    </then>
+    <else>
+        <setvar NAME="doform" VALUE="true"/>
+    </else>
+    </if>
+
+	<if COND="Variables.doform=true">
+	<then>
+		<if COND="Variables.action=new">
+		<then>
+			<IF COND="Variables.showtitle!=false">
+			<THEN>                                          
+				<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+					<tr><td>
+						<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewFunction"/></span>
+					</td></tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+				</table>                                  
+			</THEN>
+			</IF>                                   
+
+	        <table class="width-outer-30" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	        <tr><td>
+			<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text" NOWRAP="NOWRAP">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+                  	   <INPUT TYPE="TEXT" SIZE="32" MAXLENGTH="40" NAME="description" VALUE=""/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Admin/Function"/>:
+				</td>
+				<td class="form-inset">
+						<INPUT TYPE="TEXT" SIZE="32" MAXLENGTH="40" NAME="name" VALUE=""/>
+				</td><td><BR /></td>
+			</tr>
+				<INPUT TYPE="HIDDEN" NAME="existingaction" VALUE="false"/> 
+				<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowFunctionPost"/>                
+				<INPUT TYPE="HIDDEN" NAME="action" VALUE="new"/>
+
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="WorkflowFunctionFrontURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+																	 <satellite.argument name="action" value="list"/>
+																	  </SATELLITE.LINK>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+				<A HREF="Variables.WorkflowFunctionFrontURL" REPLACEALL="Variables.WorkflowFunctionFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><XLAT.LOOKUP KEY="dvin/UI/AddFunction" VARNAME="_XLAT_" ESCAPE="true"/>
+				<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit();return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewFunction"/></CALLELEMENT></A>
+				</TD>
+			</TR>
+		</table>
+		</td></tr>
+	</table>
+	</then>
+	</if>    
+
+
+
+<!-- ************** edit ****************-->
+	<if COND="Variables.action=edit">
+	<then>
+
+	  		<WORKFLOWENGINE.GETFUNCTIONID OBJVARNAME="anaction" ID="Variables.id"/>
+	  		<WORKFLOWFUNCTION.SCATTER PREFIX="wfunction:" NAME="anaction"/>
+	  		<XLAT.LOOKUP KEY="dvin/UI/Security/CCFunction/Variables.wfunction:name" VARNAME="wfunction:description" ENCODE="false"/>
+	  		<INPUT TYPE="HIDDEN" NAME="existingaction" VALUE="true"/> 
+
+		<IF COND="Variables.showtitle!=false">
+        <THEN>                                          
+			<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+				<tr><td>
+					<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/EditFunctionDesc" funcdesc="Variables.wfunction:description" EVALALL="false"/></span>
+				</td></tr>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+			</table>
+		</THEN>
+		</IF>    
+
+    <table class="width-outer-30" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.ENCODE VARIABLE="wfunction:description" VARNAME="wfunction:description"/>
+						<INPUT TYPE="TEXT" SIZE="32" MAXLENGTH="40" NAME="description" VALUE="Variables.wfunction:description" REPLACEALL="Variables.wfunction:description"/>
+				</td><td><BR /></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text" NOWRAP="NOWRAP">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Admin/Function"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.ENCODE VARIABLE="wfunction:name" VARNAME="wfunction:name"/>
+					<CSVAR NAME="Variables.wfunction:name"/>
+	            	<INPUT TYPE="HIDDEN" NAME="name" VALUE="Variables.wfunction:name" REPLACEALL="Variables.wfunction:name"/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text" NOWRAP="NOWRAP">
+					<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.ENCODE VARIABLE="wfunction:id" VARNAME="wfunction:id"/>
+					<CSVAR NAME="Variables.wfunction:id"/>
+	            	<INPUT TYPE="HIDDEN" NAME="id" VALUE="Variables.wfunction:id" REPLACEALL="Variables.wfunction:id"/>
+				</td>
+			</tr>
+				<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowFunctionPost"/>                
+				<INPUT TYPE="HIDDEN" NAME="action" VALUE="new"/>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="WorkflowFunctionFrontURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					 <satellite.argument name="action" value="details"/>
+					 <satellite.argument name="id" value="Variables.id"/>
+				</SATELLITE.LINK>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+				<A HREF="Variables.WorkflowFunctionFrontURL" REPLACEALL="Variables.WorkflowFunctionFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><XLAT.LOOKUP KEY="dvin/UI/SaveRole" VARNAME="_XLAT_" ESCAPE="true"/>
+				<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit();return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+				</TD>
+			</TR>
+			</table>
+			</td></tr>
+	</table>
+	
+    	</then>
+    	</if>    
+
+   	</then>
+   	</if>    
+    	
+	<IF COND="Variables.action=confirmdelete">
+	<THEN>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/DeleteFunction"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+		
+		<WORKFLOWENGINE.GETFUNCTIONID OBJVARNAME="afunction" ID="Variables.id"/>
+		<WORKFLOWFUNCTION.SCATTER PREFIX="wfunction:" NAME="afunction"/>
+		<XLAT.LOOKUP KEY="dvin/UI/Security/CCFunction/Variables.wfunction:name" VARNAME="wfunction:description" ENCODE="false"/>
+	<div class="width-outer-70">		
+    	<XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteWfFunctionWarning" ENCODE="false" VARNAME="deletemessage"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="msgtext" VALUE="Variables.deletemessage"/>
+			<argument NAME="severity" VALUE="warning"/>
+		</callelement>	
+	</div>						
+							
+	<table class="width-outer-30" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.wfunction:description"/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Function"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.wfunction:name"/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+						<INPUT TYPE="HIDDEN" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+						<STRING.STREAM VALUE="Variables.wfunction:id"/>
+				</td>
+			</tr>
+			<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowFunctionPost"/>
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="delete"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="WorkflowFunctionFrontURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+				 <satellite.argument name="action" value="details"/>
+				 <satellite.argument name="id" value="Variables.id"/>
+				  </SATELLITE.LINK>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+				<A HREF="Variables.WorkflowFunctionFrontURL" REPLACEALL="Variables.WorkflowFunctionFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteFunction" VARNAME="_XLAT_" ESCAPE="true"/>
+				<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit();return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/DeleteFunction"/></CALLELEMENT></A>
+				</TD>
+			</TR>
+			</table>
+		</td></tr>
+</table>
+        </THEN>
+        </IF>
+
+
+</FTCS> 

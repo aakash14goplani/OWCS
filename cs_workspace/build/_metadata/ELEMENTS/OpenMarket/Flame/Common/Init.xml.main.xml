@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Flame/Common/Init</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Flame/Common/Init</string>
+        <string>Common init element for Flame/Spark portlets</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Flame/Common/Init.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Flame/Common/Init.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FFlame%2FCommon%2FInit.xml
+@hashval=1819767268
+key=@ELEMENTCATALOG-OpenMarket/Flame/Common/Init
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

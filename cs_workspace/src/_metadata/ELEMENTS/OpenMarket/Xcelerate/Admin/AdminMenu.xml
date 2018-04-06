@@ -1,0 +1,1200 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/AdminMenu
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/UI/AdministrationTools"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<tr>
+				<td VALIGN="TOP" >
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/siteplan.png" VSPACE="2" HSPACE="7" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left">
+					<XLAT.STREAM KEY="dvin/TreeApplet/Sites"/>
+				</td>
+				<td WIDTH="40"><BR />
+				</td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="urlsitefrontlist">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    	<satellite.argument name="action" value="list"/>
+                     </SATELLITE.LINK>
+					<A HREF="Variables.urlsitefrontlist" REPLACEALL="Variables.urlsitefrontlist"><XLAT.STREAM KEY="dvin/UI/Admin/Listallsites"/></A>
+					<PUBLICATION.ALLOWEDTOADD VARNAME="checkvar"/>
+					<IF COND="Variables.checkvar=true">
+					<THEN>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="AddSiteFrontURL">
+							<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+							<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          		<satellite.argument name="action" value="new"/>
+                                           	</SATELLITE.LINK>
+						<UL><LI/><A HREF="Variables.AddSiteFrontURL" REPLACEALL="Variables.AddSiteFrontURL"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewSite"/></A>
+						</UL>
+					</THEN>
+					</IF>
+				</td>
+				<td ><BR />
+				</td>				
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/Memo.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/AssetTypes"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttypefront">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                  		<satellite.argument name="action" value="list"/>
+                   </SATELLITE.LINK>
+					<A HREF="Variables.urlasttypefront" REPLACEALL="Variables.urlasttypefront"><XLAT.STREAM KEY="dvin/UI/Admin/Listallassettypes"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/Memo.png" VSPACE="2" HSPACE="7" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td  class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/AssetMaker"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetMakerFront" outstring="urlAMlist">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                         <satellite.argument name="action" value="list"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlAMlist" REPLACEALL="Variables.urlAMlist"><XLAT.STREAM KEY="dvin/UI/Admin/ListallAssetMakerAssetTypes"/></A>
+					<XLAT.LOOKUP KEY="dvin/Assetmaker/AddNewAssetMakerAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetMakerFront" outstring="addAMURL">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	                    <satellite.argument name="action" value="new"/>
+	                    <satellite.argument name="am" value="AssetMakerFront"/>
+                     </SATELLITE.LINK>
+					<UL><LI/><A HREF="Variables.addAMURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addAMURL"><XLAT.STREAM KEY="dvin/Assetmaker/AddNewAssetMakerAssetType"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+
+            <IF COND="IsElement.OpenMarket/Gator/FlexibleAssets/AssetMaker/complexassetmaker=true">
+			<THEN>
+    			<tr>
+    				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+    			</tr>
+    			<tr>
+    				<td VALIGN="TOP">
+    					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/Memo.png" VSPACE="2" HSPACE="7" REPLACEALL="Variables.cs_imagedir"/>
+    				</td>
+    				<td class="form-label-text" style="text-align:left"><NOWRAP><XLAT.STREAM KEY="dvin/TreeApplet/FlexFamilyMaker"/></NOWRAP></td>
+    				<td WIDTH="40"></td>
+    				<td class="form-inset">
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexAssetMakerFront" outstring="urlflexastmkfront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                              <satellite.argument name="action" value="list"/>
+                                               </SATELLITE.LINK>
+    						<A HREF="Variables.urlflexastmkfront" REPLACEALL="Variables.urlflexastmkfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallFlexFamilyAssetTypes"/></A>
+    						<XLAT.LOOKUP KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+    						 <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexAssetMakerFront" outstring="addFlexURL">
+                                 <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                              <satellite.argument name="action" value="new"/>
+                                               </SATELLITE.LINK>
+    						<UL>
+    						<LI/><A HREF="Variables.addFlexURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addFlexURL"><XLAT.STREAM KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexFamily"/></A>
+    						
+    						<!-- now show any existing FlexAttributes -->
+    						<ATM.GETASSETS FILTER="com.openmarket.gator.interfaces.IAttributeManager" LISTVARNAME="currentTypes"/>
+    						<SETVAR NAME="canAddFlexFilter" VALUE="false"/>
+    						<IF COND="IsList.currentTypes=true">
+    						<THEN>
+    							<IF COND="currentTypes.#numRows!=0">
+    							<THEN>
+    							<LOOP LIST="currentTypes">
+    								<ASSETTYPE.LIST LIST="currentType" FIELD1="assettype" VALUE1="currentTypes.assettype"/>
+    								<SETVAR NAME="tablename" VALUE="FlexFilterTypes"/>
+									<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+										<ARGUMENT NAME="columnvalue" VALUE="currentTypes.assettype"/>
+										<ARGUMENT NAME="type" VALUE="String"/>
+									</CALLELEMENT>
+									<IF COND="Variables.validatedstatus=true">
+									<THEN>
+										<EXECSQL SQL="SELECT * FROM Variables.tablename WHERE filterattr='currentTypes.assettype'" LIST="lFilterType"/>
+									</THEN>
+									</IF>
+									
+    								<IF COND="lFilterType.#numRows=0">
+    								<THEN>
+    									<SETVAR NAME="canAddFlexFilter" VALUE="true"/>
+    								</THEN>
+    								</IF>
+    							</LOOP>
+    						
+    							</THEN>
+    							</IF>
+    						</THEN>
+    						</IF>
+    						
+    						<IF COND="Variables.canAddFlexFilter=true">
+    						<THEN>
+    							<XLAT.LOOKUP KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexFilter" VARNAME="_XLAT_" ESCAPE="true"/>
+                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexFamilyFront" outstring="addFlexURL">
+                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                              <satellite.argument name="op" value="make"/>
+                                              <satellite.argument name="member" value="filter"/>
+                                               </SATELLITE.LINK>
+    							<LI/><A HREF="Variables.addFlexURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addFlexURL"><XLAT.STREAM KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexFilter"/></A>
+    						</THEN>
+    						</IF>
+    					</UL>
+    				</td>
+    				<td ><BR />
+    				</td>
+    			</tr>
+            </THEN>
+            </IF>
+			<!--  Proxy Asset Type Maker -->
+			<tr></tr>
+			<tr>
+			<td valign="TOP">
+				<img src="Variables.cs_imagedir/OMTree/TreeImages/Memo.png" vspace="2" hspace="7" REPLACEALL="Variables.cs_imagedir"/>
+			</td>
+			<td class="form-label-text" style="text-align:left"><nowrap>Proxy Asset Maker</nowrap></td>
+			<td width="40"></td>
+			<td class="form-inset">
+				<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/Admin/ProxyAssetMakerFront" outstring="urlproxymakerfront">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="action" value="list"/>
+				</satellite.link>
+				<a href="Variables.urlproxymakerfront" REPLACEALL="Variables.urlproxymakerfront">List all Proxy Asset Types</a>
+				
+				<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/Admin/ProxyAssetMakerFront" outstring="urladdproxy">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="action" value="new"/>
+				</satellite.link>
+				<ul>
+					<li><a href="Variables.urladdproxy" REPLACEALL="Variables.urladdproxy">Add New Proxy Asset Type</a></li>
+				</ul>
+			</td>
+			<td><br/></td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/Delivery.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Publishing" /></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Publish/DestEdit" outstring="urlpubdestedit">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                  		<satellite.argument name="action" value="list"/>
+                   </SATELLITE.LINK>
+					<A HREF="Variables.urlpubdestedit" REPLACEALL="Variables.urlpubdestedit"><XLAT.STREAM KEY="dvin/UI/Admin/Listallpublishdestinations"/></A>
+					<UL>
+					    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Publish/DestEdit" outstring="urlpubdestedit">
+					        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+		                 	<satellite.argument name="action" value="new"/>
+		                 </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlpubdestedit" REPLACEALL="Variables.urlpubdestedit"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewPublishDestination"/></A>
+					</UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Publish/DelivTypeEdit" outstring="urlpubdlvtpedit">
+					    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                 	 	<satellite.argument name="action" value="list"/>
+                  	</SATELLITE.LINK>
+					<A HREF="Variables.urlpubdlvtpedit" REPLACEALL="Variables.urlpubdlvtpedit"><XLAT.STREAM KEY="dvin/UI/Admin/Listalldeliverytypes"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/search.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Search"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Search/EnableEvent" outstring="urlsearchstart">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlsearchstart" REPLACEALL="Variables.urlsearchstart"><XLAT.STREAM KEY="dvin/TreeApplet/EnableIndexing"/></A><br/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Search/GlobalIndexSourceConfig" outstring="urlenque">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlenque" REPLACEALL="Variables.urlenque"><XLAT.STREAM KEY="dvin/TreeApplet/EnqueueAll"/></A><br/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Search/AttributeBasedIndexSourceConfig" outstring="urlattrindexcfg">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlattrindexcfg" REPLACEALL="Variables.urlattrindexcfg"><XLAT.STREAM KEY="dvin/TreeApplet/ConfigureAssetTypeSearch"/></A><br/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Search/IndexSourceMetaDataConfig" outstring="urlindexmetadatacfg">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlindexmetadatacfg" REPLACEALL="Variables.urlindexmetadatacfg"><XLAT.STREAM KEY="dvin/TreeApplet/ConfigureIndexSourceMetaData"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/tools.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/ContentServerUserAccessManagement"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="FutureTense/Apps/AdminForms/AdminForm" outstring="urladmform">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                  <satellite.argument name="tool" value="UserMgt"/>
+                                  <satellite.argument name="form" value="main"/>
+                                   </SATELLITE.LINK>
+                    <A HREF="Variables.urladmform" REPLACEALL="Variables.urladmform"><XLAT.STREAM KEY="dvin/TreeApplet/User"/></A><P/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/RolesAdminFront" outstring="urlroleadmfront">
+						<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+						<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+						<satellite.argument name="action" value="list"/>
+					 </SATELLITE.LINK>
+					<A HREF="Variables.urlroleadmfront" REPLACEALL="Variables.urlroleadmfront"><XLAT.STREAM KEY="dvin/TreeApplet/Roles"/></A><P/>
+					<UL>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/RolesAdminFront" outstring="urlroleadmfront">
+							<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+							<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+							<satellite.argument name="action" value="new"/>
+						  </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlroleadmfront" REPLACEALL="Variables.urlroleadmfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewRole"/></A><P/>
+					</UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="FutureTense/Apps/AdminForms/AdminForm" outstring="urladmform">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                  <satellite.argument name="tool" value="ACLMgt"/>
+                                  <satellite.argument name="form" value="main"/>
+                                   </SATELLITE.LINK>
+                    <A HREF="Variables.urladmform" REPLACEALL="Variables.urladmform"><XLAT.STREAM KEY="dvin/TreeApplet/ACLs"/></A><P/>
+					
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/List" outstring="urluserlist">
+						<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+						<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+						<satellite.argument name="action" value="ask"/>
+						<satellite.argument name="_profilemgmt_" value="users"/>
+					</SATELLITE.LINK>
+					<A HREF="Variables.urluserlist" REPLACEALL="Variables.urluserlist"><XLAT.STREAM KEY="dvin/TreeApplet/UserProfiles"/></A><P/>
+					
+					<!-- Security -->
+					<!--For 7.5 Patch3 release security is enabled for only wem so make sure wem is enabled before showing security.This will be enabled by default from falcon release-->
+					<PROPERTY.GET PARAM="wem.enabled" INIFILE="futuretense_xcel.ini" VARNAME="wemenabled"/>
+					<if  COND="Variables.wemenabled=true">
+					<then>		
+						<XLAT.STREAM KEY="dvin/TreeApplet/RESTSecurity"/>
+						<ul><li>						
+							<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/GroupsFront" outstring="urlsecgrps">
+								<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+								<satellite.argument name="cs_imagedir" value="Variables.cs_imagedir"/>
+								<satellite.argument name="action" value="list"/>
+							</SATELLITE.LINK>
+							<A HREF="Variables.urlsecgrps" REPLACEALL="Variables.urlsecgrps"><XLAT.STREAM KEY="dvin/UI/Admin/Security/Listallgroups"/></A>														
+							<UL>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/GroupsFront" outstring="urlsecgrps">
+								<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+								<satellite.argument name="action" value="new"/>
+							   </SATELLITE.LINK>
+							<LI/><A HREF="Variables.urlsecgrps" REPLACEALL="Variables.urlsecgrps"><XLAT.STREAM KEY="dvin/UI/Admin/Security/AddNewGroup"/></A>
+							</UL>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/UserGroupsFront" outstring="urlsecusrgrps">
+									<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+									<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+									<satellite.argument name="action" value="list"/>
+							   </SATELLITE.LINK>
+						</li></ul>
+						<ul><li>   
+							<A HREF="Variables.urlsecusrgrps" REPLACEALL="Variables.urlsecusrgrps"><XLAT.STREAM KEY="dvin/UI/Admin/Security/Listallusergroups"/></A>						
+							<UL>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/UserGroupsFront" outstring="urlsecusrgrps">
+								<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+								<satellite.argument name="action" value="new"/>
+							   </SATELLITE.LINK>
+							<LI/><A HREF="Variables.urlsecusrgrps" REPLACEALL="Variables.urlsecusrgrps"><XLAT.STREAM KEY="dvin/UI/Admin/Security/AddUserToGroup"/></A>
+							</UL>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/SecurityConfigsFront" outstring="urlsecurityconfigs">
+									<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+									<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+									<satellite.argument name="action" value="list"/>
+							   </SATELLITE.LINK>
+						</li></ul>
+						<ul><li>
+							<A HREF="Variables.urlsecurityconfigs" REPLACEALL="Variables.urlsecurityconfigs"><XLAT.STREAM KEY="dvin/UI/Admin/Security/Listallsecurityconfigs"/></A>						
+							<UL>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/security/SecurityConfigsFront" outstring="urlsecurityconfigs">
+								<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+								<satellite.argument name="action" value="new"/>
+							   </SATELLITE.LINK>
+							<LI/><A HREF="Variables.urlsecurityconfigs" REPLACEALL="Variables.urlsecurityconfigs"><XLAT.STREAM KEY="dvin/UI/Admin/Security/AddNewSecurityConfig"/></A>
+							</UL>
+						</li></ul>
+					</then>
+					</if>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/tools.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/WebRoots"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WebRootList" outstring="urlwebrootlist">
+                       <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+              			<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                     </SATELLITE.LINK>
+					<A HREF="Variables.urlwebrootlist" REPLACEALL="Variables.urlwebrootlist"><XLAT.STREAM KEY="dvin/Common/List"/></A>
+					<UL>
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="urlWebRootfront">
+							<satellite.argument name="cs_formmode" value="WCM"/>
+							<satellite.argument name="cs_formmode" value="WCM"/>
+							<satellite.argument name="cs_enviroment" value="standard"/>
+							<satellite.argument name="AssetType" value="WebRoot"/>
+						</SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlWebRootfront" REPLACEALL="Variables.urlWebRootfront"><XLAT.STREAM KEY="dvin/TreeApplet/AddNew"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/startmenu.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/StartMenu"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/StartMenuFront" outstring="urlstartmenufront">
+                       <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+              			<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    	<satellite.argument name="op" value="list"/>
+                     </SATELLITE.LINK>
+					<A HREF="Variables.urlstartmenufront" REPLACEALL="Variables.urlstartmenufront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallStartMenuItems"/></A>
+					<UL>
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/StartMenuFront" outstring="urlstartmenufront">
+                		<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                		<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                     	 <satellite.argument name="op" value="new"/>
+                      </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlstartmenufront" REPLACEALL="Variables.urlstartmenufront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewStartMenuItem"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>	
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/TreeTabs.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Tree"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urltreetabman">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                       <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                     	<satellite.argument name="action" value="list"/>
+                      </SATELLITE.LINK>
+					<A HREF="Variables.urltreetabman" REPLACEALL="Variables.urltreetabman"><XLAT.STREAM KEY="dvin/UI/Admin/Listalltreetabs"/></A>
+					<UL>
+                       <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urltreetabman">
+                           <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                           <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                         	<satellite.argument name="action" value="Add"/>
+                          </SATELLITE.LINK>
+					<LI/><A HREF="Variables.urltreetabman" REPLACEALL="Variables.urltreetabman"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewTreeTab"/></A>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/TreeTabManager" outstring="urltreetabman">
+                           <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                           <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                         	<satellite.argument name="action" value="Order"/>
+                          </SATELLITE.LINK>
+                        <LI/><A HREF="Variables.urltreetabman" REPLACEALL="Variables.urltreetabman"><XLAT.STREAM KEY="dvin/UI/Admin/OrderTreeTabs"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/tools.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Locale"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/LocaleFront" outstring="urllocfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                         <satellite.argument name="action" value="details"/>
+                     </SATELLITE.LINK>
+					<A HREF="Variables.urllocfront" REPLACEALL="Variables.urllocfront"><XLAT.STREAM KEY="dvin/UI/Admin/Locale"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			
+			<!-- Add link for System Tools-->
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/CheckIsUserAdmin">
+				<ARGUMENT NAME="adminRoleToCheck" VALUE="GeneralAdmin"/>
+			</CALLELEMENT>
+			<IF COND="Variables.userIsGeneralAdmin=true">
+			<THEN>
+				<tr>
+					<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+				</tr>
+				<tr>
+					<td VALIGN="TOP" WIDTH="30">
+						<IMG src="Variables.cs_imagedir/OMTree/TreeImages/tools.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+					</td>
+					<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemTools"/></td>
+					<td WIDTH="40"></td>
+					<td class="form-inset">
+						<CALLELEMENT NAME="fatwire/systemtools/Log4J/CheckLog4J" />
+						<CALLELEMENT NAME="fatwire/systemtools/CheckCacheTool" />
+						<IF COND="Variables.Log4J=true">
+						<THEN>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/Log4J/Log4J" outstring="urllog4j">
+							</SATELLITE.LINK>
+							<A HREF="Variables.urllog4j" REPLACEALL="Variables.urllog4j"><XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/ConfigureLog4J"/></A>
+							<br/>
+						</THEN>
+						</IF>
+
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/SysInfoDownload" outstring="sysInfoDownload">
+							<satellite.argument name="op" value="Download"/>
+						</SATELLITE.LINK>
+							
+						<XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/SystemDetails" ENCODE="false" VARNAME="_XLAT_"/>
+						
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/SysInfoDownload" outstring="sysDetailsDownload">
+							<satellite.argument name="op" value="Variables._XLAT_"/>
+						</SATELLITE.LINK>
+							
+						<REMOVEVAR NAME="_XLAT_"/>
+						
+						<XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemInformation/SystemInformation"/>										 
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/CSInfo" outstring="csInfo">
+							</SATELLITE.LINK>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/DBInfo" outstring="dbInfo">
+							</SATELLITE.LINK>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/ThreadInfo" outstring="threadInfo">
+							</SATELLITE.LINK>
+						 <ul>
+							<li>
+								<A HREF="Variables.sysInfoDownload" REPLACEALL="Variables.sysInfoDownload">
+									<XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemInformation/DownloadSysInfo"/>
+								</A>
+							</li>
+							<li>
+								<A HREF="Variables.csInfo" REPLACEALL="Variables.csInfo">
+									<XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemInformation/CSInfo/CSInfo"/>
+								</A>
+							</li>
+							<li>
+								<a href="Variables.dbInfo" REPLACEALL="Variables.dbInfo">
+									<XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemInformation/DBInfo/DBInfo"/>
+								</a>
+							</li>
+							<li>
+								<a href="Variables.threadInfo" REPLACEALL="Variables.threadInfo">
+									<XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/SystemInformation/ThreadDump/thread"/>
+								</a>
+							</li>
+						 </ul>
+
+						<IF COND="Variables.isCacheManagerEnabled=true">
+						<THEN>
+							<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/cacheManagement"/>
+							
+							<BR/>
+							<IF COND="Variables.isCasCacheEnabled=true">
+							<THEN>
+							<ul>
+								<li>
+									<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/casCache" />
+									<ul>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cas_Cache_summary">
+												<satellite.argument name="page" value="summary"/>
+												<satellite.argument name="cachename" value="cas-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_cas_Cache_summary" REPLACEALL="Variables.manageCache_cas_Cache_summary">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/summary" />
+											</A>
+										</li>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query"
+												pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cas_Cache">
+												<satellite.argument name="page" value="clusterInfo" />
+												<satellite.argument name="cachename" value="cas-cache" />
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_cas_Cache" REPLACEALL="Variables.manageCache_cas_Cache">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/clusterInfo" />
+											</A>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</THEN>
+						</IF>
+									
+						<IF COND="Variables.isLinkedCacheEnabled=true">
+						<THEN>
+						<ul>
+							<li>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_linkedCache">
+									<satellite.argument name="page" value="linkedcache"/>
+									<satellite.argument name="cachename" value="cs-cache"/>
+								</SATELLITE.LINK>
+								<A HREF="Variables.manageCache_cs_linkedCache" REPLACEALL="Variables.manageCache_cs_linkedCache">
+									<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/linkedCache" />
+								</A>
+								<ul>
+									<li>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_linkedCache_clusterInfo">
+												<satellite.argument name="page" value="clusterInfo"/>
+												<satellite.argument name="cachename" value="linked-cache"/>
+										</SATELLITE.LINK>
+										<A HREF="Variables.manageCache_linkedCache_clusterInfo" REPLACEALL="Variables.manageCache_linkedCache_clusterInfo">
+											<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/clusterInfo" />
+										</A>
+									</li>
+								</ul>
+							</li>
+						</ul>
+						</THEN>
+						</IF>
+
+
+						
+						<ul>
+							<li>
+							<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/csCache"/>
+							<ul>
+								<li>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_summary">
+									<satellite.argument name="page" value="summary"/>
+									<satellite.argument name="cachename" value="cs-cache"/>
+								</SATELLITE.LINK>
+								<A HREF="Variables.manageCache_cs_summary" REPLACEALL="Variables.manageCache_cs_summary">
+									<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/summary" />
+								</A>
+								</li>
+								<IF COND="Variables.isPageCacheEnabled=true">
+								<THEN>
+									<li>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_page">
+											<satellite.argument name="page" value="page"/>
+											<satellite.argument name="cachename" value="cs-cache"/>
+										</SATELLITE.LINK>
+										<A HREF="Variables.manageCache_cs_page" REPLACEALL="Variables.manageCache_cs_page">
+											<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/pageCache" />
+										</A>
+									</li>
+								</THEN>
+								</IF>
+								<li>
+									<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_dep">
+										<satellite.argument name="page" value="dep"/>
+										<satellite.argument name="cachename" value="cs-cache"/>
+									</SATELLITE.LINK>
+									<A HREF="Variables.manageCache_cs_dep" REPLACEALL="Variables.manageCache_cs_dep">
+										<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/dependency" />
+									</A>
+								</li>
+								<IF COND="Variables.isAssetCacheEnabled=true">
+								<THEN>
+								<li>
+									<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_assetCache">
+										<satellite.argument name="page" value="assetCache"/>
+										<satellite.argument name="cachename" value="cs-cache"/>
+									</SATELLITE.LINK>
+									<A HREF="Variables.manageCache_cs_assetCache" REPLACEALL="Variables.manageCache_cs_assetCache">
+										<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/assetCache" />
+									</A>
+								</li>
+								</THEN>
+								</IF>
+								<IF COND="Variables.isURLCacheEnabled=true">
+								<THEN>
+								<li>
+									<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_urlCache">
+										<satellite.argument name="page" value="urlCache"/>
+										<satellite.argument name="cachename" value="cs-cache"/>
+									</SATELLITE.LINK>
+									<A HREF="Variables.manageCache_cs_urlCache" REPLACEALL="Variables.manageCache_cs_urlCache">
+										<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/urlCache" />
+									</A>
+								</li>
+								</THEN>
+								</IF>
+								<li>
+									<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_cs_clusterInfo">
+										<satellite.argument name="page" value="clusterInfo"/>
+										<satellite.argument name="cachename" value="cs-cache"/>
+									</SATELLITE.LINK>
+									<A HREF="Variables.manageCache_cs_clusterInfo" REPLACEALL="Variables.manageCache_cs_clusterInfo">
+									<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/clusterInfo" />
+									</A>
+								</li>
+							</ul>
+							</li>
+						</ul>
+
+
+
+						<IF COND="Variables.isPageCacheEnabled=true">
+						<THEN>
+						<ul>
+							<li>
+								<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/ssCache"/>
+								<ul>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_ss_summary">
+												<satellite.argument name="page" value="summary"/>
+												<satellite.argument name="cachename" value="ss-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_ss_summary" REPLACEALL="Variables.manageCache_ss_summary">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/summary" />
+											</A>
+										</li>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_ss_page">
+												<satellite.argument name="page" value="page"/>
+												<satellite.argument name="cachename" value="ss-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_ss_page" REPLACEALL="Variables.manageCache_ss_page">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/pageCache" />
+											</A>
+										</li>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_ss_dep">
+												<satellite.argument name="page" value="dep"/>
+												<satellite.argument name="cachename" value="ss-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_ss_dep" REPLACEALL="Variables.manageCache_ss_dep">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/dependency" />
+											</A>
+										</li>
+										<IF COND="Variables.isURLCacheEnabled=true">
+										<THEN>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_ss_urlCache">
+												<satellite.argument name="page" value="urlCache"/>
+												<satellite.argument name="cachename" value="ss-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_ss_urlCache" REPLACEALL="Variables.manageCache_ss_urlCache">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/urlCache" />
+											</A>
+										</li>
+										</THEN>
+										</IF>
+										<li>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="manageCache_ss_clusterInfo">
+												<satellite.argument name="page" value="clusterInfo"/>
+												<satellite.argument name="cachename" value="ss-cache"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.manageCache_ss_clusterInfo" REPLACEALL="Variables.manageCache_ss_clusterInfo">
+												<XLAT.STREAM KEY="fatwire/SystemTools/ManageCache/clusterInfo" />
+											</A>
+										</li>
+								</ul>
+							</li>
+						</ul>
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+						
+					<!-- Log viewer node -->
+					<CALLELEMENT NAME="fatwire/systemtools/logs/activate" />
+					<IF COND="Variables.logOK=true">
+						<THEN>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/logs/logViewerHome" outstring="lvhome" />
+						<A HREF="Variables.lvhome" REPLACEALL="Variables.lvhome"><XLAT.STREAM KEY="dvin/TreeApplet/SystemTools/Logs/LogViewer/LogViewerName"/></A>
+						<BR/>
+						</THEN>
+					</IF>
+					<!-- End of Log viewer node -->
+					<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/FSTest/TestFS" outstring="fileSystemTest" />
+					<A HREF="Variables.fileSystemTest" REPLACEALL="Variables.fileSystemTest"><XLAT.STREAM KEY="fatwire/SystemTools/FSTest/fsTest"/></A>
+					<BR/>
+					<!-- Added the code for slot assets -->
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Slots" outstring="urlSlots">
+					  <satellite.argument name="op" value="load"/>
+					</SATELLITE.LINK>
+					<A HREF="Variables.urlSlots" REPLACEALL="Variables.urlSlots"><XLAT.STREAM KEY="dvin/TreeApplet/SlotsTools/Slots"/></A>
+					<BR/>
+					<!--  Added code for URL  -->
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WebReferences" outstring="urlUrls">
+						<satellite.argument name="op" value="load"/>
+						<satellite.argument name="sort" value="asc"/>
+					</SATELLITE.LINK>
+					<A HREF="Variables.urlUrls" REPLACEALL="Variables.urlUrls"><XLAT.STREAM KEY="UI/Forms/VanityUrl"/></A>
+					<BR/>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeleteAssets" outstring="delassets" />
+					<A HREF="Variables.delassets" REPLACEALL="Variables.delassets"><XLAT.STREAM KEY="fatwire/SystemTools/DeleteAssets/Heading"/></A>
+					</td>
+				</tr>
+			</THEN>
+			</IF>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/clear.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/ClearCheckouts"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Monitor/ShowAdminWorkListFront" outstring="urlshadmwkltfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                        <satellite.argument name="ClearTarget" value="ShowCheckouts"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlshadmwkltfront" REPLACEALL="Variables.urlshadmwkltfront"><XLAT.STREAM KEY="dvin/UI/Admin/ClearCheckouts"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wffunction.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Functions"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFunctionFront" outstring="urlwffuncfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                 	  <satellite.argument name="action" value="list"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlwffuncfront" REPLACEALL="Variables.urlwffuncfront"><XLAT.STREAM KEY="dvin/UI/Admin/Listallfunctions"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr><td colspan="5" ><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>			
+			<tr><td colspan="5" ><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td colspan="5" ><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td colspan="5" ><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		
+			<USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="userObject"/>
+			<CCUSER.GETSITEROLES NAME="userObject" SITE="SessionVariables.pubid" OBJVARNAME="roleObject"/>
+			<ROLELIST.HASROLE NAME="roleObject" ROLE="MobileSitesDeveloper" VARNAME="roleExists"/>
+			<IF COND="Variables.roleExists=true">
+			<THEN>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/AssetTypes/DeviceGroup.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/MobilitySolution" /></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset" VALIGN="TOP">
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupForm" outstring="urldevicegrouplist">
+					<satellite.argument name="AssetType" value="DeviceGroup"/>
+				</SATELLITE.LINK>
+					<A HREF="Variables.urldevicegrouplist" REPLACEALL="Variables.urldevicegrouplist"><XLAT.STREAM KEY="dvin/UI/MobilitySolution/DeviceGroupList"/></A>
+				
+				<UL>
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="addDeviceGroupURL">
+						<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+						<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					    <satellite.argument name="action" value="new"/>
+					    <satellite.argument name="AssetType" value="DeviceGroup"/>
+					</SATELLITE.LINK>
+					<LI/><A HREF="Variables.addDeviceGroupURL" REPLACEALL="Variables.addDeviceGroupURL"><XLAT.STREAM KEY="dvin/AdminForms/AddDeviceGroup"/></A>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm" outstring="reorderDeviceGroupURL">
+						<satellite.argument name="tool" value="DeviceGroupMgt"/>
+						<satellite.argument name="form" value="main"/>
+						<satellite.argument name="inifile" value="Variables.inifile"/>
+					</SATELLITE.LINK>
+					<LI/><A HREF="Variables.reorderDeviceGroupURL" REPLACEALL="Variables.reorderDeviceGroupURL"><XLAT.STREAM KEY="fatwire/admin/ReorderDeviceGroupsMsg"/></A>
+					
+				</UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceImageForm" outstring="urldeviceimagelist">
+						<satellite.argument name="AssetType" value="Device"/>
+					</SATELLITE.LINK>
+					<A HREF="Variables.urldeviceimagelist" REPLACEALL="Variables.urldeviceimagelist"><XLAT.STREAM KEY="fatwire/admin/ListAllDeviceImages"/></A>
+				<UL>
+				   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="addDeviceImageURL">
+						<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+						<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					    <satellite.argument name="action" value="new"/>
+					    <satellite.argument name="AssetType" value="Device"/>
+					</SATELLITE.LINK>
+				   <LI/><A HREF="Variables.addDeviceImageURL" REPLACEALL="Variables.addDeviceImageURL"><XLAT.STREAM KEY="fatwire/admin/AddDeviceImage"/></A>
+				</UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DeviceRepositoryFront" outstring="urldevicerepositoryurl">
+						<satellite.argument name="pubid" value="SessionVariables.pubid"/>
+					</SATELLITE.LINK>
+					<A HREF="Variables.urldevicerepositoryurl" REPLACEALL="Variables.urldevicerepositoryurl"><XLAT.STREAM KEY="fatwire/admin/mobility/DeviceRepository/DeviceRepository"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+			</THEN>
+			</IF>
+			<REMOVEVAR NAME="roleExists"/>
+<SETVAR NAME="errno" VALUE="0"/>
+<STRINGLIST STR="SessionVariables.currentpubACLs" NAME="cACLs" DELIM=","/>
+<ISINLIST ITEM="WorkflowAdmin" LIST="cACLs"/>
+<IF COND="Variables.errno=1">
+<THEN> 
+
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wfstate.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/States"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                  	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowStatusCodeFront" outstring="urlwkstatcodefront">
+                      <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                      <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    	<satellite.argument name="action" value="list"/>
+                     </SATELLITE.LINK>
+					<A HREF="Variables.urlwkstatcodefront" REPLACEALL="Variables.urlwkstatcodefront"><XLAT.STREAM KEY="dvin/UI/Admin/Listallworkflowstates"/></A>
+					<UL>
+                      <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowStatusCodeFront" outstring="urlwkstatcodefront">
+                          <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                          <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                      		<satellite.argument name="action" value="new"/>
+                       </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlwkstatcodefront" REPLACEALL="Variables.urlwkstatcodefront"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewWorkflowState"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>			
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wfprocess.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Processes"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowProcessListFront" outstring="urlwkprlistfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                    </SATELLITE.LINK>
+					<A HREF="Variables.urlwkprlistfront" REPLACEALL="Variables.urlwkprlistfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallWorkflowProcesses"/></A>
+					<UL>
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowFront" outstring="urlwkfront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                          <satellite.argument name="action" value="new"/>
+                           </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlwkfront" REPLACEALL="Variables.urlwkfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewWorkflowProcess"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wfaction.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Actions"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Step"/>
+                               </SATELLITE.LINK>
+					<A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallStepActions"/></A><BR/>
+                    <UL>
+                     <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                         <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Step"/>
+                               </SATELLITE.LINK>
+                    <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewStepAction"/></A><P/>
+					</UL>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Condition"/>
+                               </SATELLITE.LINK>
+					<A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallConditionActions"/></A><BR/>
+                    <UL>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Condition"/>
+                               </SATELLITE.LINK>
+                   <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewConditionAction"/></A><P/>
+					</UL>
+					
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                       <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Timed"/>
+                               </SATELLITE.LINK>
+					<A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallTimedActions"/></A><BR/>
+					<UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Timed"/>
+                               </SATELLITE.LINK>
+                    <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewTimedAction"/></A><P/>
+					</UL>
+					
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Delegate"/>
+                               </SATELLITE.LINK>
+                    <A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallDelegateActions"/></A><BR/>
+					<UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Delegate"/>
+                               </SATELLITE.LINK>
+                    <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewDelegateAction"/></A><P/>
+					</UL>
+					
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Deadlock"/>
+                               </SATELLITE.LINK>
+                    <A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallDeadlockActions"/></A><BR/>
+					<UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Deadlock"/>
+                               </SATELLITE.LINK>
+                    <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewDeadlockAction"/></A><P/>
+					</UL>
+					
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="list"/>
+                              <satellite.argument name="acttype" value="Group"/>
+                               </SATELLITE.LINK>
+                    <A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/ListallGroupDeadlockActions"/></A><BR/>
+					 <UL>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowActionsFront" outstring="urlwfactfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                              <satellite.argument name="action" value="new"/>
+                              <satellite.argument name="acttype" value="Group"/>
+                               </SATELLITE.LINK>
+                    <LI/><A HREF="Variables.urlwfactfront" REPLACEALL="Variables.urlwfactfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewGroupDeadlockAction"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>			
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wftimed.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/TimedActionEvent"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                 <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowTimedActionEventFront" outstring="urlwftmactevfront">
+                     <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                     <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+               		<satellite.argument name="action" value="view"/>
+                  </SATELLITE.LINK>
+					<A HREF="Variables.urlwftmactevfront" REPLACEALL="Variables.urlwftmactevfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddnewTimedActionEvent"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>			
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/wfemail.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/Emails"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowSubjectFront" outstring="urlwfsubjfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                       <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                             <satellite.argument name="action" value="list"/>
+                              </SATELLITE.LINK>
+					<A HREF="Variables.urlwfsubjfront" REPLACEALL="Variables.urlwfsubjfront"><XLAT.STREAM KEY="dvin/UI/Admin/Listallworkflowemails"/></A>
+					<UL>
+                       <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowSubjectFront" outstring="urlwfsubjfront">
+                           <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                           <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                             <satellite.argument name="action" value="new"/>
+                              </SATELLITE.LINK>
+						<LI/><A HREF="Variables.urlwfsubjfront" REPLACEALL="Variables.urlwfsubjfront"><XLAT.STREAM KEY="dvin/UI/Admin/AddNewWorkflowEmail"/></A>
+					</UL>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>							
+			<tr>
+				<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td VALIGN="TOP">
+					<IMG src="Variables.cs_imagedir/OMTree/TreeImages/clear.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+				</td>
+				<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="dvin/TreeApplet/ClearAssignments"/></td>
+				<td WIDTH="40"></td>
+				<td class="form-inset">
+                     <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Monitor/ShowAdminWorkListFront" outstring="urlshadmwkltfront">
+                         <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                         <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+                      		<satellite.argument name="ClearTarget" value="ShowAssignments"/>
+                       </SATELLITE.LINK>
+					<A HREF="Variables.urlshadmwkltfront" REPLACEALL="Variables.urlshadmwkltfront"><XLAT.STREAM KEY="dvin/UI/Admin/ClearAssignments"/></A>
+				</td>
+				<td ><BR />
+				</td>
+			</tr>
+		</THEN>
+	</IF>
+			<PROPERTY.GET PARAM="WCCIntegration" INIFILE="futuretense_xcel.ini" VARNAME="wccenabled"/>
+			<if COND="Variables.wccenabled=true">
+			<then>
+				<SETVAR NAME="errno" VALUE="0"/>
+				<ISINLIST ITEM="ConnectorAdmin" LIST="cACLs"/>
+				<IF COND="Variables.errno=1">
+				<THEN> 
+					<tr>
+						<td VALIGN="TOP">
+							<IMG src="Variables.cs_imagedir/OMTree/TreeImages/tools.png" HSPACE="7" VSPACE="2" REPLACEALL="Variables.cs_imagedir"/>
+						</td>
+						<td class="form-label-text" style="text-align:left"><XLAT.STREAM KEY="wcc/common/connectoradmin"/></td>
+						<td WIDTH="40"></td>
+						<td class="form-inset">
+							<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/Console" outstring="wccConsole">
+							    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+							</SATELLITE.LINK>
+							<A HREF="Variables.wccConsole" REPLACEALL="Variables.wccConsole"><XLAT.STREAM KEY="wcc/menu/console"/></A><br/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/History" outstring="wccHistory">
+							    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+							</SATELLITE.LINK>
+							<A HREF="Variables.wccHistory" REPLACEALL="Variables.wccHistory"><XLAT.STREAM KEY="wcc/menu/history"/></A><br/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/OrphanDetail" outstring="wccOrphan">
+							    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+							</SATELLITE.LINK>
+							<A HREF="Variables.wccOrphan" REPLACEALL="Variables.wccOrphan"><XLAT.STREAM KEY="wcc/menu/orphan"/></A><br/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/Configuration" outstring="wccConfig">
+							    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+							</SATELLITE.LINK>
+							<A HREF="Variables.wccConfig" REPLACEALL="Variables.wccConfig"><XLAT.STREAM KEY="wcc/menu/config"/></A><br/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/RuleList" outstring="wccRules">
+							    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+								<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+							</SATELLITE.LINK>
+							<A HREF="Variables.wccRules" REPLACEALL="Variables.wccRules"><XLAT.STREAM KEY="wcc/menu/rules"/></A>
+						</td>
+						<td ><BR />
+						</td>
+					</tr>	
+				</THEN>		  
+			</IF>
+			</then>
+			</if>
+			
+			</table>
+	</td></tr>
+</table>
+
+</FTCS> 

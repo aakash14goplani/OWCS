@@ -1,0 +1,404 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/AttributeTypes/PULLDOWN
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!--
+  - The PULLDOWN attribute editor can be used with all attribute types except url.
+  - Single valued attributes will be displayed in a pulldown while multi valued
+  - attributes will be displayed in a multi select box.
+  -
+  - Note for asset type attributes:  This type of attribute can only be populated
+  - by a Query asset and that Query must return both a 'value' column and an
+  - 'assetid' column which is the id of the asset.
+-->
+
+<IF COND="Variables.MultiValueEntry=no">
+<THEN>
+       	<tr>
+            <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+        <td></td>
+
+        <if COND="Variables.RequiredAttr=true">
+		<then>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqTrue*Variables.AttrType*text!"/>
+		</then>
+		<else>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqFalse*Variables.AttrType*text!"/>
+		</else>
+		</if>
+		<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="FONTSIZE" VARNAME="size"/>
+        <presentation.getprimarychildvalues NAME="Variables.PresInst" ELEMENT="QUERYASSETNAME" LISTVARNAME="queryasset"/>
+
+		<IF COND="IsVariable.size=false">
+		<THEN>
+			<SETVAR NAME="size" VALUE="1"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="size" VALUE="Variables.size"/>
+		</ELSE>
+		</IF>
+		<td>
+		<setvar NAME="doDefaultDisplay" VALUE="no"/>
+		<IF COND="IsList.queryasset=true">
+		<THEN>
+			<IF COND="queryasset.#numRows!=0">
+			<THEN>
+				<setvar NAME="errno" VALUE="0"/>
+				<SETVAR NAME="assetnameOrg" VALUE="Variables.assetname"/>
+				<if COND="IsError.Variables.errno=false">
+				<then>
+					<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownQueryImpl">
+						<ARGUMENT NAME="queryAssetName" VALUE="queryasset.value"/>
+					</CALLELEMENT>
+					<SETVAR NAME="assetname" VALUE="Variables.assetnameOrg"/>
+					<REMOVEVAR NAME="queryAssetName"/>
+				</then>
+				<else>
+					<br/><XLAT.STREAM KEY="dvin/AT/Forms/ErrorOnLoad" errno="Variables.errno"  queryassetvalue="queryasset.value" EVALALL="false"/>
+				</else>
+				</if>
+			</THEN>
+			<ELSE>
+				<presentation.getvalues NAME="Variables.PresInst" LISTVARNAME="PulldownValues"/>
+				<if COND="IsList.PulldownValues=true">
+				<then>
+					<if COND="PulldownValues.#numRows!=0">
+					<then>
+						<SELECT NAME="Variables.cs_SingleInputName" id="Variables.cs_SingleInputName" REPLACEALL="Variables.cs_SingleInputName" dojoType="fw.dijit.UISimpleSelect" showErrors="false" clearButton="true" size="1"> 
+							<if COND="Variables.defaultFormStyle=true">
+							<then>
+								<script event='startup' type='dojo/connect'>
+								<![CDATA[
+									dojo.addClass(this.domNode, 'defaultFormStyle');
+								]]>
+								</script>
+							</then>
+							</if>	
+							<if COND="Variables.RequiredAttr!=true">
+							<then>
+								<OPTION VALUE="Variables.empty" REPLACEALL="Variables.empty"/>
+							</then>
+							</if>
+							<IF COND="Variables.AttrType=asset">
+							<THEN>
+								<loop LIST="PulldownValues">
+									<if COND="PulldownValues.assetid=Variables.MyAttrVal">
+									<then>
+										<OPTION VALUE="PulldownValues.assetid"  SELECTED="yes" REPLACEALL="PulldownValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="PulldownValues.value"/></FONT>
+									</then>
+									<else>
+										<OPTION VALUE="PulldownValues.assetid"  REPLACEALL="PulldownValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="PulldownValues.value"/></FONT>
+									</else>
+									</if>                            
+								</loop>   
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.AttrType=float">
+								<THEN>
+									<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues"/>
+																	
+								</THEN>
+								<ELSE>
+									<IF COND="Variables.AttrType=money">
+									<THEN>
+										<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues"/>								
+									</THEN>
+									<ELSE>
+										<IF COND="Variables.AttrType=date">
+										<THEN>
+											<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues"/>	
+										</THEN>
+										<ELSE>
+											<loop LIST="PulldownValues">
+												<STRING.ENCODE VARNAME="encodedString" VALUE="PulldownValues.value"/>
+												<if COND="PulldownValues.value=Variables.MyAttrVal">
+												<then>
+													<OPTION VALUE="Variables.encodedString"  SELECTED="yes" REPLACEALL="Variables.encodedString"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="PulldownValues.value"/></FONT>
+												</then>
+												<else>
+													<OPTION VALUE="Variables.encodedString"  REPLACEALL="Variables.encodedString"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="PulldownValues.value"/></FONT>
+												</else>
+												</if>                            
+											</loop>
+										</ELSE>
+										</IF>
+									</ELSE>
+									</IF>
+								</ELSE>
+								</IF>								 
+							</ELSE>
+							</IF>
+						</SELECT>
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/AT/Forms/NoValuesAvailable"/>
+					</else>
+					</if>
+				</then>
+				</if>
+			</ELSE>
+			</IF>
+		</THEN>
+		</IF>		
+		</td>
+		</tr> 
+</THEN>
+<ELSE>
+		<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="FONTSIZE" VARNAME="size"/>
+		<presentation.getprimarychildvalues NAME="Variables.PresInst" ELEMENT="QUERYASSETNAME" LISTVARNAME="queryasset"/>
+		
+		<IF COND="IsVariable.size=false">
+		<THEN>
+			<SETVAR NAME="size" VALUE="1"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="size" VALUE="Variables.size"/>
+		</ELSE>
+		</IF>		
+		
+		<tr>
+			<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+			<if COND="Variables.RequiredAttr=true">
+			<then>
+				<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqTrue*Variables.AttrType*text!"/>
+			</then>
+			<else>
+				<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqFalse*Variables.AttrType*text!"/>
+			</else>
+			</if>
+         <td></td>
+			<td> 
+				<setvar NAME="doDefaultDisplay" VALUE="no"/>
+				<IF COND="IsList.queryasset=true">
+				<THEN>
+					<IF COND="queryasset.#numRows!=0">
+					<THEN>
+						<setvar NAME="errno" VALUE="0"/>
+						<SETVAR NAME="assetnameOrg" VALUE="Variables.assetname"/>
+						<if COND="IsError.Variables.errno=false">
+						<then>
+							<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownQueryImpl">
+								<ARGUMENT NAME="queryAssetName" VALUE="queryasset.value"/>
+							</CALLELEMENT>
+							<SETVAR NAME="assetname" VALUE="Variables.assetnameOrg"/>
+							<REMOVEVAR NAME="queryAssetName"/>
+							<INPUT TYPE="hidden" NAME="MSVariables.AttrName" VALUE="yes" REPLACEALL="Variables.AttrName"/>
+						</then>
+						<else>
+							<br/><XLAT.STREAM KEY="dvin/AT/Forms/ErrorOnLoad" errno="Variables.errno"  queryassetvalue="queryasset.value" EVALALL="false"/>
+						</else>
+						</if>
+				 </THEN>
+					<ELSE>
+						<presentation.getvalues NAME="Variables.PresInst" LISTVARNAME="PulldownValues"/>
+						<if COND="IsList.PulldownValues=true">
+						<then>
+							<if COND="PulldownValues.#numRows!=0">
+							<then>
+								<setvar NAME="MyAttrVals"  VALUE="Variables.empty"/>
+								<setvar NAME="firsttime"  VALUE="true"/>
+								<if COND="IsList.AttrValueList=true">
+								<then>
+									<loop LIST="AttrValueList">
+										<if COND="Variables.firsttime=true">
+										<then>
+											<setvar NAME="firsttime"  VALUE="false"/>
+											<setvar NAME="MyAttrVals"  VALUE="AttrValueList.value"/>
+										</then>
+										<else>
+											<setvar NAME="MyAttrVals"  VALUE="Variables.MyAttrVals,AttrValueList.value"/>
+										</else>
+										</if>
+									</loop>
+								</then>
+								</if>
+								<REPLACEALL LIST="Variables.AttrID" >
+								<script type='text/javascript'>
+									var avialableItems_Variables.AttrID = [];
+								</script>
+								</REPLACEALL>
+								<IF COND="Variables.AttrType=asset">
+								<THEN>
+									<REPLACEALL LIST="Variables.AttrID" >
+									<script type='text/javascript'>
+										var storeStructure_Variables.AttrID = {title: 'value', value: 'assetid'};
+									</script>
+									</REPLACEALL>
+									<loop LIST="PulldownValues">
+										<REPLACEALL LIST="Variables.AttrID,PulldownValues.assetid,PulldownValues.value" >
+										<script type='text/javascript'>
+											avialableItems_Variables.AttrID.push({assetid:'PulldownValues.assetid', value:'PulldownValues.value'});
+										</script>
+										</REPLACEALL>										
+									</loop>
+								</THEN>
+								<ELSE>
+									<IF COND="Variables.AttrType=float">
+									<THEN>										
+										<REPLACEALL LIST="Variables.AttrID" >
+										<script type='text/javascript'>
+											var storeStructure_Variables.AttrID = {title: 'name', value: 'value'};
+										</script>
+										</REPLACEALL>
+										<loop LIST="PulldownValues">
+											<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues">
+												<ARGUMENT NAME="currFloatval" VALUE="PulldownValues.value"/>
+											</CALLELEMENT>
+											<REPLACEALL LIST="Variables.AttrID,PulldownValues.value,Variables.currFloatval" >
+											<script type='text/javascript'>
+												avialableItems_Variables.AttrID.push({name:'PulldownValues.value', value:'Variables.currFloatval'});
+											</script>
+											</REPLACEALL>
+										</loop>			
+									</THEN>
+									<ELSE>
+										<IF COND="Variables.AttrType=money">
+										<THEN>											
+											<REPLACEALL LIST="Variables.AttrID" >
+											<script type='text/javascript'>
+												var storeStructure_Variables.AttrID = {title: 'name', value: 'value'};
+											</script>
+											</REPLACEALL>
+											<loop LIST="PulldownValues">
+												<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues">
+													<ARGUMENT NAME="currFloatval" VALUE="PulldownValues.value"/>
+												</CALLELEMENT>
+												<REPLACEALL LIST="Variables.AttrID,PulldownValues.value,Variables.currFloatval" >
+												<script type='text/javascript'>
+													avialableItems_Variables.AttrID.push({name:'PulldownValues.value', value:'Variables.currFloatval'});
+												</script>
+												</REPLACEALL>
+											</loop>		
+										</THEN>
+										<ELSE>
+											<IF COND="Variables.AttrType=date">
+											<THEN>
+												<REPLACEALL LIST="Variables.AttrID" >
+												<script type='text/javascript'>
+													var storeStructure_Variables.AttrID = {title: 'name', value: 'value'};
+												</script>
+												</REPLACEALL>
+												<loop LIST="PulldownValues">
+													<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/PullDownCompareValues">
+														<ARGUMENT NAME="currDateval" VALUE="PulldownValues.value"/>
+													</CALLELEMENT>
+													<REPLACEALL LIST="Variables.AttrID,PulldownValues.value,Variables.currDateval" >
+													<script type='text/javascript'>
+														avialableItems_Variables.AttrID.push({name:'PulldownValues.value', value:'Variables.currDateval'});
+													</script>
+													</REPLACEALL>
+												</loop>
+											</THEN>
+											<ELSE>
+												<REPLACEALL LIST="Variables.AttrID" >
+												<script type='text/javascript'>
+													var storeStructure_Variables.AttrID = {title: 'value', value: 'value'};
+												</script>
+												</REPLACEALL>
+												<loop LIST="PulldownValues">
+													<REPLACEALL LIST="Variables.AttrID,PulldownValues.value" >
+													<script type='text/javascript'>
+														avialableItems_Variables.AttrID.push({value:'PulldownValues.value'});
+													</script>
+													</REPLACEALL>
+												</loop>
+											</ELSE>
+											</IF>
+										</ELSE>
+										</IF>
+									</ELSE>
+									</IF>
+								</ELSE>
+								</IF>
+								<REPLACEALL LIST="Variables.id,Variables.AttrName,Variables.AttrID,Variables.cs_SingleInputName,Variables.MyAttrVals" >
+								<div>
+									<div id='PullDown_Variables.AttrID'></div>
+								</div>
+								<script type='text/javascript'>
+									<![CDATA[
+										dojo.addOnLoad(function() {
+											var nodeName = 'Variables.cs_SingleInputName';
+											var transferBoxStore_Variables.AttrID = new dojo.data.ItemFileReadStore ({
+													data: { items: avialableItems_Variables.AttrID }
+												});
+											var pullDownNode = dojo.byId('PullDown_Variables.AttrID'),
+												pullDownWid_Variables.AttrID = new fw.dijit.UITransferBox({
+													value: 'Variables.MyAttrVals',
+													store: transferBoxStore_Variables.AttrID,
+													size: 10,
+													cs_environment: '',
+													maxVals: -1,
+													storeStructure: storeStructure_Variables.AttrID,
+													name: "_" + nodeName,
+													id:"MultiVal_Variables.AttrName_Variables.id",
+													title1: fw.util.getString('fatwire/wem/admin/common/Available'),
+													title2: fw.util.getString('fatwire/wem/admin/common/Selected'),
+													queryExpr: '${0}',
+													onChange: function(){															
+														var	divNode = dojo.byId('pullDownInputWrapper_Variables.AttrID'),
+															valueStr = "",
+															i = 0,
+															values = this.get('value');
+															
+														dojo.query("input[name=" + nodeName + "]").forEach(dojo.destroy);
+														
+														if (values.length === 0) values = [''];
+														
+														var pullDownVCNode = dojo.query("input[name=Variables.AttrNameVC]")[0];
+														pullDownVCNode = values.length;
+														
+														dojo.forEach(values,function(v){
+															dojo.create('input', { type: 'hidden', name: nodeName, value: v}, divNode);
+														});
+													} 	
+												}, pullDownNode);
+											dojo.safeMixin(pullDownWid_Variables.AttrID, {
+												startup: function(){
+													this.inherited(arguments);						
+													var	divNode = dojo.byId('pullDownInputWrapper_Variables.AttrID'),
+														valueStr = "",
+														i = 0,
+														values = this.get('value');
+														
+													dojo.query("input[name=" + nodeName + "]").forEach(dojo.destroy);
+													
+													if (values.length === 0) values = [''];
+													
+													var pullDownVCNode = dojo.query("input[name=Variables.AttrNameVC]")[0];
+													pullDownVCNode = values.length;
+													dojo.forEach(values,function(v){
+														dojo.create('input', { type: 'hidden', name: nodeName, value: v}, divNode);
+													});													
+												}
+											});	
+											pullDownWid_Variables.AttrID.startup();
+										});
+									]]>	
+								</script>
+								<div id="pullDownInputWrapper_Variables.AttrID"></div>
+								</REPLACEALL>
+								<INPUT TYPE="hidden" NAME="MSVariables.AttrName" VALUE="yes" REPLACEALL="Variables.AttrName"/>
+							</then>
+							<else>
+								<XLAT.STREAM KEY="dvin/AT/Forms/NoValuesAvailable"/>
+							</else>
+							</if>
+						</then>
+						</if>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+				
+			</td>
+		</tr>
+</ELSE>
+</IF>
+</FTCS> 

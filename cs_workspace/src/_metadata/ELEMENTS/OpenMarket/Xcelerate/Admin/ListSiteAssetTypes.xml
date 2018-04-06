@@ -1,0 +1,210 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/ListSiteAssetTypes
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Loop through the list of enabled asset types -->
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+		<ARGUMENT NAME="upcommand" VALUE="ListEnabledAssetTypes"/>
+		<ARGUMENT NAME="list" VALUE="EnabledAssetTypes"/>
+	</CALLELEMENT>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/ListAvailableAssetType">
+			<ARGUMENT NAME="listname" VALUE="AssetType"/>
+			<ARGUMENT NAME="showSitePlan" VALUE="true" />
+			<ARGUMENT NAME="showWebRoot" VALUE="true" />
+	</CALLELEMENT>
+	<IF COND="Variables.action!=grant">
+	<THEN>
+		<IF COND="IsList.EnabledAssetTypes!=true">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/UI/Admin/Noassettypesenabledforthissite"/><BR/>
+			<SETVAR NAME="showTable" VALUE="false"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	<IF COND="Variables.action=grant">
+	<THEN>
+		<IF COND="EnabledAssetTypes.#numRows=AssetType.#numRows">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/UI/Admin/Allassettypesenabledforthissite"/>
+			<SETVAR NAME="showTable" VALUE="false"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	<IF COND="IsList.AssetType=true">
+	<THEN>
+		<IF COND="Variables.showTable!=false">
+		<THEN>
+			<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-inner-100">
+				<tr>
+					<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+				<tr>
+					<td class="tile-dark" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td >
+						<table  class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+							<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Name"/></DIV></td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+								<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+							</tr>
+							<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+							<!-- Loop over all search results. -->
+					   			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+								<SETVAR NAME="separatorLine" VALUE="0"/>
+	
+
+							<LOOP LIST="AssetType">
+						<!-- check to see if the AssetType is already authorized -->
+						<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+							<argument NAME="upcommand" VALUE="IsAssetTypeEnabled"/>
+							<argument NAME="assettype" VALUE="AssetType.assettype"/>
+							<argument NAME="pubid" VALUE="Variables.pubid"/>
+						</callelement>
+						<if COND="Variables.IsAuthorized=true">
+							<then>
+								<IF COND="Variables.action=revoke">
+									<THEN>
+									<IF COND="Variables.separatorLine=1">
+									<THEN>
+										<tr>
+											<!--<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+										</tr>
+									</THEN>
+									</IF>
+									<SETVAR NAME="separatorLine" VALUE="1"/>
+			
+							<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td>
+							
+							<SETVAR NAME="systemAssetTypes" VALUE="WebRoot,Device,DeviceGroup,SitePlan" />
+							<SETVAR NAME="errno"  VALUE="0"/>
+							<ISINLIST ITEM="AssetType.assettype" STR="Variables.systemAssetTypes" />
+							<IF COND="Variables.errno=1">
+								<THEN>
+									<SETVAR NAME="doDisable" VALUE="true" />
+								</THEN>
+							</IF>
+							
+							<IF COND="Variables.doCheck!=false">
+							<THEN>
+								<IF COND="Variables.doDisable=true">
+								<THEN>
+									<INPUT TYPE="Checkbox" DISABLED="true" NAME="ContCategory" VALUE="AssetType.assettype" REPLACEALL="AssetType.assettype"/>
+								</THEN>
+								<ELSE>
+									<INPUT TYPE="Checkbox" NAME="ContCategory" VALUE="AssetType.assettype" REPLACEALL="AssetType.assettype"/>
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+								<BR />
+							</ELSE>
+							</IF>
+							<REMOVEVAR NAME="doDisable" />
+							</td>
+					                <td><BR /></td><td NOWRAP="NOWRAP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+                                         <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                             <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                         <satellite.argument name="action" value="details"/>
+                                         <satellite.argument name="assettype" value="AssetType.assettype"/>
+                                          </SATELLITE.LINK>
+										<A HREF="Variables.urlassettypefront" REPLACEALL="Variables.urlassettypefront"><STRING.STREAM VALUE="AssetType.assettype"/></A>
+										</DIV>
+									</td>
+									<td><BR /></td><td ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+					                    <STRING.STREAM VALUE="AssetType.description"/>
+					                    </DIV>
+					                 </td>
+					                 	<td><BR /></td></tr>
+															<IF COND="Variables.rowStyle=tile-row-normal">
+					            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					            </THEN>
+					            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					            </ELSE>
+					            </IF>
+					            </THEN>
+								</IF>
+
+					            </then>
+							<else>
+								<IF COND="Variables.action=grant">
+									<THEN>
+									<IF COND="Variables.separatorLine=1">
+									<THEN>
+										<tr>
+											<!--<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+										</tr>
+									</THEN>
+									</IF>
+									<SETVAR NAME="separatorLine" VALUE="1"/>
+			
+							<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td style="vertical-align:middle;text-align:center;"><INPUT TYPE="Checkbox" NAME="ContCategory" VALUE="AssetType.assettype" REPLACEALL="AssetType.assettype"/></td>
+					                <td><BR /></td><td NOWRAP="NOWRAP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+					                    <XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                         <satellite.argument name="action" value="details"/>
+                                         <satellite.argument name="assettype" value="AssetType.assettype"/>
+                                          </SATELLITE.LINK>
+										<A HREF="Variables.urlassettypefront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true"  REPLACEALL="Variables.urlassettypefront,Variables._XLAT_"><STRING.STREAM VALUE="AssetType.assettype"/></A>
+										</DIV>
+									</td>
+									<td><BR /></td><td ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+					                    <STRING.STREAM VALUE="AssetType.description"/>
+					                    </DIV>
+					                 </td>
+					                 	<td><BR /></td></tr>
+						            <IF COND="Variables.rowStyle=tile-row-normal">
+					            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					            </THEN>
+					            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					            </ELSE>
+					            </IF>		
+					            </THEN>
+								</IF>
+
+					            </else>
+						</if>
+
+
+							</LOOP>
+							</table>
+						</td>
+						<td class="tile-dark" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table> 
+					</THEN>
+					</IF>
+					</THEN>
+					<ELSE>
+				
+					</ELSE>
+					
+					</IF>
+					
+					
+</FTCS> 

@@ -1,0 +1,867 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/StatusDetails.xml $ 
+$Revision: 65 $ 
+$Modtime: 9/17/04 2:48p $ 
+-->
+
+<!-- OpenMarket/Xcelerate/AssetType/Article/StatusDetails
+--   Confidential and Proprietary Information of Open Market, Inc.
+--					All Rights Reserved.
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<!--
+ [2007-10-09 KG]
+ * XSS: changed CSVARs to STRING.STREAM
+-->
+
+<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<WORKFLOWASSET.GETOBJECTNAME OBJECT="workflowasset" VARNAME="objectname" />
+
+<!-- Load the asset type information -->
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+<!--Load used by CheckPrivs-->
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+
+<WORKFLOWENGINE.GETOBJECTWORKFLOWPROCESS OBJECT="workflowasset" VARNAME="workflowid" />
+
+
+
+<SETVAR NAME="SetWorkflow" VALUE="true"/>
+<IF COND="IsVariable.workflowid=true">
+    <THEN>
+        <SETVAR NAME="foundworkflow" VALUE="true"/>
+        <!-- Check Function Privs for set process deadline  -->
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+            <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+            <ARGUMENT NAME="assetObjectName" VALUE="theAsset"/>
+            <ARGUMENT NAME="Function" VALUE="setnestedworkflow"/>
+        </CALLELEMENT>
+        <IF COND="Variables.PrivsFailed=true">
+            <THEN>
+                <SETVAR NAME="SetWorkflow" VALUE="false"/>
+            </THEN>
+        </IF>
+    </THEN>
+    <ELSE>
+        <SETVAR NAME="foundworkflow" VALUE="false"/>
+    </ELSE>
+</IF>
+<!-- Action bar -->
+    <IF COND="IsVariable.alloyFlag=false">
+    <THEN>
+	    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">
+	        <ARGUMENT NAME="Screen" VALUE="Status"/>
+	    </CALLELEMENT>
+	</THEN>
+	</IF>
+
+<TABLE CLASS="width-outer-70" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+    <TR>
+        <TD>
+            <SPAN CLASS="title-text"><STRING.STREAM VARIABLE="AssetTypeObj:description"/>:</SPAN>&nbsp;
+            <SPAN CLASS="title-value-text"><STRING.STREAM VARIABLE="ContentDetails:name"/></SPAN>
+        </TD>
+    </TR>
+
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+        <ARGUMENT NAME="SpaceBelow" VALUE="No"/>
+    </CALLELEMENT>
+
+    <!-- Workflow menu -->
+
+    <TR>
+        <TD>
+            <TABLE CLASS="inner" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<TR>
+                    <TD CLASS="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</TD>
+                    <TD><IMG HEIGHT="1" WIDTH="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></TD>
+                    <TD class="form-inset">
+                        <STRING.STREAM VARIABLE="ContentDetails:name"/>
+                    </TD>
+                </TR>
+
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <TR>
+                    <TD CLASS="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Description"/>:</TD>
+                    <TD></TD>
+                    <TD class="form-inset">
+                        <STRING.STREAM VARIABLE="ContentDetails:description"/>
+                    </TD>
+                </TR>
+
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <TR>
+                    <TD CLASS="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Status"/>:</TD>
+                    <TD></TD>
+                    <TD class="form-inset">
+                        <XLAT.STREAM KEY="dvin/AT/Common/StatusCode-Variables.ContentDetails:status"/>
+                    </TD>
+                </TR>
+                <!-- Analyics Performance indicator -->
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/form/ShowAnalyticsKPI"/>
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Created"/>:</td>
+					<td></td>
+					<td class="form-inset">
+						<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.ContentDetails:createddate" VALUETYPE="jdbcdate"  VARNAME="ContentDetails:createddate"/>
+						<XLAT.STREAM KEY="dvin/UI/ContentDetailscreateddatebycreatedby"/>
+					</td>
+				</tr>
+			
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <TR>
+                    <TD CLASS="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Modified"/>:</TD>
+                    <TD></TD>
+                    <TD class="form-inset">
+				    <IF COND="IsVariable.alloyFlag=false">
+				    <THEN>
+	                        <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.ContentDetails:updateddate" VALUETYPE="jdbcdate"  VARNAME="ContentDetails:updateddate"/>
+	                        <XLAT.STREAM KEY="dvin/UI/ContentDetailsupdateddatebyupdatedby"/>
+	                   </THEN>
+	                  	</IF>
+                    </TD>
+                </TR>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <TR>
+                    <TD CLASS="form-label-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/Workflowcommands"/>:</TD>
+                    <TD></TD>
+                    <TD class="form-inset">
+                    	<!-- 
+                    		Create a list for storing the workflow commands (filtered by role requirements) for ALLOY UI 
+                    		We create a new column called command id to represent the value in the drop down for each workflow command
+                    	
+                    		Following are the mapping between the workflow command and their integer values
+                    		
+                    		START WORKFLOW					WORKFLOW_COMMAND_ID_1
+                    		FINISH ASSIGNMENT				WORKFLOW_COMMAND_ID_2
+                    		DELEGATE ASSIGNMENT				WORKFLOW_COMMAND_ID_3
+                    		ABSTAIN FROM VOTING				WORKFLOW_COMMAND_ID_4
+                    		SET PARTICIPANTS FOR ASSET IN WORKFLOW		WORKFLOW_COMMAND_ID_5
+                    		SET ASSIGNMENT DEADLINE				WORKFLOW_COMMAND_ID_6
+                    		SET PROCESS DEADLINE				WORKFLOW_COMMAND_ID_7
+                    		SHOW PARTICIPANTS				WORKFLOW_COMMAND_ID_8
+ 				REMOVE FROM WORKFLOW                   		WORKFLOW_COMMAND_ID_9
+
+ 				ADD TO WORKFLOW GROUP				WORKFLOW_COMMAND_ID_10
+ 				REMOVE FROM WORKFLOW GROUP			WORKFLOW_COMMAND_ID_11
+ 				As of CS 7.0.1 patch 1 release workflow groups are not yet supported for dash UI                    		
+                    	-->
+                    	<LISTOBJECT.CREATE NAME="list_of_workflow_commands" COLUMNS="command_name,command_id" />
+                    	
+                        	<SELECT NAME="AssignFunctions" ONCHANGE="assetHandler(this.form, AssignFunctions)">
+                            	<OPTION VALUE="*"/>&lt;<XLAT.STREAM KEY="dvin/UI/AssetMgt/SelectWorkflowAction"/>&gt;
+
+                                <!-- determine if user is workflowadmin -->
+                                <SETVAR NAME="userisworkflowadmin" VALUE="false"/>
+                                <IF COND="Variables.foundworkflow=true">
+                                <THEN>
+                                	<WORKFLOWENGINE.GETPROCESSID ID="Variables.workflowid" OBJVARNAME="workflowobj" />
+                                    <WORKFLOWPROCESS.GETADMINROLES NAME="workflowobj" OBJVARNAME="adminrolesobj"/>
+                                    <WORKFLOWPROCESS.GETDEADLINETYPE NAME="workflowobj" VARNAME="pdlinetype"/>
+    
+                                    <SETVAR NAME="userisworkflowadmin" VALUE="false"/>
+                                    <WORKFLOWPROCESS.GETADMINROLES NAME="workflowobj" OBJVARNAME="adminrolesobj"/>
+                                    <ROLELIST.ISALL NAME="adminrolesobj" VARNAME="roleisall"/>
+                                    <!-- roleisall=true means Any role -->
+                                    <IF COND="Variables.roleisall=true">
+                                    <THEN>
+                                        <SETVAR NAME="userisworkflowadmin" VALUE="true"/>
+                                    </THEN>
+                                    <ELSE>
+                                        <ROLELIST.GETALL NAME="adminrolesobj" VARNAME="admnroles"/>
+                                        <IF COND="Variables.admnroles!=Variables.empty">
+                                        <THEN>
+                                        	<STRINGLIST NAME="rlist" STR="Variables.admnroles" DELIM=","/>
+                                            <LOOP LIST="rlist">
+                                                <SETVAR NAME="errno" VALUE="0"/>
+                                                <ISINLIST STR="SessionVariables.currentpubACLs" ITEM="rlist.ITEM"/>
+                                                <IF COND="Variables.errno=1">
+                                                <THEN>
+                                                    <SETVAR NAME="userisworkflowadmin" VALUE="true"/>
+                                                </THEN>
+                                                </IF>
+                                            </LOOP>
+                                        </THEN>
+                                        </IF>
+                                    </ELSE>
+                                    </IF>
+                                    <!-- user is workflowadmin -->
+                                    
+                                    
+                                    
+		                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetStatusFront" outstring="urlsetstatusfront">
+				                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        				                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+                					    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                            			<satellite.argument name="id" value="Variables.id"/>
+                                    </SATELLITE.LINK>
+
+                                    <!-- For further use check if assigned to no one -->
+                                    <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+                                    <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.empty" />
+                                    <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+                                    <WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active" PREFIX="workflow_nobodyassigns" />
+							<IF COND="Variables.workflow_nobodyassignsTotal=0">
+                                    <THEN>
+                                       	<!-- check if active assignment of current user -->
+                                   	    <USERMANAGER.GETLOGINUSER VARNAME="loginUser"/>
+                                       	<LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+	                                    <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.loginUser" />
+                                        <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+       	                                <WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active,queued,abstain" PREFIX="workflow_assignments" />
+										<IF COND="Variables.workflow_assignmentsTotal!=0">
+                                        <THEN>
+											<WorkflowAssignment.GetAssignedUserRole NAME="workflow_assignments0" VARNAME="assignrole"/>
+											<if COND="IsVariable.assignrole=true">
+											<then>
+												<WorkflowEngine.GetLegalNextWorkflowSteps OBJECT="workflowasset" ROLE="Variables.assignrole" SITE="SessionVariables.pubid" PREFIX="nextsteps" />
+											</then>
+											<else>
+												<WorkflowEngine.GetLegalNextWorkflowSteps OBJECT="workflowasset" SITE="SessionVariables.pubid" PREFIX="nextsteps" />
+											</else>
+											</if>
+											<if COND="Variables.nextstepsTotal!=0">
+											<then>
+		                                       	<OPTION VALUE="Variables.urlsetstatusfront" REPLACEALL="Variables.urlsetstatusfront"/>
+        			                    		<XLAT.STREAM KEY="dvin/UI/AssetMgt/FinishMyAssignment"/>
+        			                    		<!-- Code for Alloy UI, Add Finish Assignment to the list of workflow commands -->
+	        			                    		<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="finish_assignment_for_AlloyUI" ENCODE="false"/>
+	        			                    		<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.finish_assignment_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_2"/>
+        			                    		<!-- Code for Alloy UI -->
+											</then>
+											</if>
+                                        </THEN>
+                                        </IF>
+                                    </THEN>
+                                    <ELSE>
+                                    	<!-- assigned to nobody -->
+							            <WorkflowEngine.GetLegalNextWorkflowSteps OBJECT="workflowasset" SITE="SessionVariables.pubid" PREFIX="nextsteps" />
+										<if COND="Variables.nextstepsTotal!=0">
+										<then>
+                                        	<OPTION VALUE="Variables.urlsetstatusfront" REPLACEALL="Variables.urlsetstatusfront"/>
+        		                    		<XLAT.STREAM KEY="dvin/UI/AssetMgt/FinishMyAssignment"/>
+										<!-- Code for Alloy UI, Add Finish Assignment to the list of workflow commands -->
+	        			                    		<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="finish_assignment_for_AlloyUI" ENCODE="false"/>
+	        			                    		<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.finish_assignment_for_AlloyUI"  command_id="WORKFLOW_COMMAND_ID_2"/>
+        			                    		<!-- Code for Alloy UI -->
+
+										</then>
+										</if>
+                                    </ELSE>
+                                    </IF>
+
+                                    <!-- delegate assignment option is available to admin, 
+                                        or to a user who has the asset as active assignment
+                                        excluding the case of 'not assigned to anyone'  -->
+					  
+                                    <IF COND="Variables.userisworkflowadmin=true">
+                                    <THEN>
+				  	                        <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" STATUS="active" PREFIX="workflow_assignments" />
+											<WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+											<SETVAR NAME="nodelegateuser" VALUE="true" />
+										 
+										    <WorkflowAssignment.GetAssignedUserRole NAME="workflow_assignments0" VARNAME="assignmentrole" />
+											<!--Delegate candidates is not applicable if there is no assigned user role. -->
+											<IF COND="IsVariable.assignmentrole=true">
+											<THEN>
+											<WorkflowEngine.GetDelegateeCandidates SITE="SessionVariables.pubid" ID="Variables.assignmentid" LISTVARNAME="delegateusers"/>
+											</THEN>
+											</IF>
+
+											<IF COND="IsList.delegateusers=true">
+											<THEN>
+												<IF COND="delegateusers.#numRows!=0">
+												<THEN>											     
+													<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DelegateAssignmentFront" outstring="urldelassgnfront">
+														<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+														<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+														<satellite.argument name="AssetType" value="Variables.AssetType"/>
+														<satellite.argument name="id" value="Variables.id"/>
+													</SATELLITE.LINK>
+													<OPTION VALUE="Variables.urldelassgnfront" REPLACEALL="Variables.urldelassgnfront"/>
+													<XLAT.STREAM KEY="dvin/UI/AssetMgt/DelegateAssignment"/>
+													<!-- Code for Alloy UI, Add Delegate Assignment to the list of workflow commands -->
+	        			                    					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/DelegateAssignment" VARNAME="delegate_assignment_for_AlloyUI" ENCODE="false"/>
+	        			                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.delegate_assignment_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_3"/>
+        			                    					<!-- Code for Alloy UI -->
+
+												</THEN>
+												</IF>
+											</THEN>
+											</IF>
+
+                                    </THEN>
+                                    <ELSE>
+										<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="delegate" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="true"/>
+										<if COND="Variables.isLegal=true">
+										<then>
+	                                    	<!-- check if assigned to no one. Delegation makes no sense in this case -->
+	                                        <IF COND="Variables.workflow_nobodyassignsTotal=0">
+	                                        <THEN>
+		                                       	<!-- check if active assignment of current user -->
+        		                           	    <USERMANAGER.GETLOGINUSER VARNAME="loginUser"/>
+                		                       	<LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+	                    		                <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.loginUser" />
+                                		        <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+       	                                		<WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active" PREFIX="workflow_assignments" />
+	                                        	<IF COND="Variables.workflow_assignmentsTotal!=0">
+	                                            <THEN>
+													<WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+													<SETVAR NAME="nodelegateuser" VALUE="true" />
+
+		                                            <WorkflowAssignment.GetAssignedUserRole NAME="workflow_assignments0" VARNAME="assignmentrole" />
+													<!--Delegate candidates is not applicable if there is no assigned user role. -->
+													<IF COND="IsVariable.assignmentrole=true">
+													<THEN>
+													<WorkflowEngine.GetDelegateeCandidates SITE="SessionVariables.pubid" ID="Variables.assignmentid" LISTVARNAME="delegateusers"/>
+													</THEN>
+													</IF>
+
+													<if COND="IsList.delegateusers=true">
+													<then>
+														<if COND="delegateusers.#numRows!=0">
+														<then>
+															<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DelegateAssignmentFront" outstring="urldelassgnfront">
+	                    	                            		<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+		                        	                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	    	                        		                    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+	        	                            		            <satellite.argument name="id" value="Variables.id"/>
+	            	                                	    </SATELLITE.LINK>
+	                	                                	<OPTION VALUE="Variables.urldelassgnfront" REPLACEALL="Variables.urldelassgnfront"/>
+	                    	                                <XLAT.STREAM KEY="dvin/UI/AssetMgt/DelegateAssignment"/>
+													<!-- Code for Alloy UI, Add Delegate Assignment to the list of workflow commands -->
+	        			                    					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/DelegateAssignment" VARNAME="delegate_assignment_for_AlloyUI" ENCODE="false"/>
+	        			                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.delegate_assignment_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_3"/>
+        			                    					<!-- Code for Alloy UI -->
+
+											            </then>
+											            </if>
+											        </then>
+											        </if>
+	                                            </THEN>
+	                                            </IF>
+	                                        </THEN>
+	                                        </IF>
+	                                    </then>
+	                                    </if>
+                                    </ELSE>
+                                    </IF>
+
+
+									<!-- workflowadmin -->
+									<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="abstainfromvoting" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+									<if COND="Variables.isLegal=true">
+									<then>
+										<!-- Abstain from voting does not make sense for assigned to nobody -->
+										<IF COND="Variables.workflow_nobodyassignsTotal=0">
+										<THEN>
+	                                       	<!-- check if active assignment of current user -->
+    	                               	    <USERMANAGER.GETLOGINUSER VARNAME="loginUser"/>
+        	                               	<LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+	        	                            <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.loginUser" />
+                	                        <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+       	            	                    <WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active,queued" PREFIX="workflow_assignments" />
+
+											<IF COND="Variables.workflow_assignmentsTotal!=0">
+											<THEN>
+												<WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" STATUS="active,queued" PREFIX="allassigns" />
+												<if COND="Variables.allassignsTotal!=1">
+												<then>
+													<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/AbstainFromVotingFront" outstring="urlabsvotefront">
+														<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+														<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+														<satellite.argument name="AssetType" value="Variables.AssetType"/>
+														<satellite.argument name="id" value="Variables.id"/>
+													</SATELLITE.LINK>
+													<OPTION VALUE="Variables.urlabsvotefront" REPLACEALL="Variables.urlabsvotefront"/>
+													<XLAT.STREAM KEY="dvin/UI/AssetMgt/AbstainfromVoting"/>
+													<!-- Code for Alloy UI, Add Abstain from voting to the list of workflow commands -->
+	        			                    					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/AbstainfromVoting" VARNAME="abstain_from_voting_for_AlloyUI" ENCODE="false"/>
+	        			                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.abstain_from_voting_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_4"/>
+        			                    					<!-- Code for Alloy UI -->
+													
+												</then>
+												</if>
+											</THEN>
+											</IF>
+										</THEN>
+										</IF>
+									</then>
+									</if>
+									<OPTION VALUE="*"/>________________
+						  </THEN>
+						  </IF>
+                                        
+
+								<IF COND="Variables.foundworkflow=true">
+								<THEN>
+									<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="showparticipants" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+									<if COND="Variables.isLegal=true">
+									<then>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowWorkflowParticipantsFront" outstring="urlshowwfpartfront">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+											<satellite.argument name="AssetType" value="Variables.AssetType"/>
+											<satellite.argument name="id" value="Variables.id"/>
+
+										</SATELLITE.LINK>
+										<OPTION VALUE="Variables.urlshowwfpartfront" REPLACEALL="Variables.urlshowwfpartfront"/>
+										<XLAT.STREAM KEY="dvin/UI/ShowParticipants"/>
+										<!-- Code for Alloy UI, Show participants to the list of workflow commands -->
+		                    					<XLAT.LOOKUP KEY="dvin/UI/ShowParticipants" VARNAME="showParticipants_for_AlloyUI" ENCODE="false"/>
+		                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.showParticipants_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_8"/>
+	                    					<!-- Code for Alloy UI -->
+										
+									</then>
+									</if>
+
+									<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="setparticipants" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+									<if COND="Variables.isLegal=true">
+									<then>
+
+										<WORKFLOWPROCESS.CHECKPROCESSREQUIRESPARTICIPANTS NAME="workflowobj" VARNAME="requiresParticipants"/>
+										<IF COND="Variables.requiresParticipants=true">
+										<THEN>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetWorkflowParticipantsFront" outstring="urlsetwfpartfront">
+												<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="AssetType" value="Variables.AssetType"/>
+												<satellite.argument name="id" value="Variables.id"/>
+												<satellite.argument name="command" value="setparticipants"/>
+											</SATELLITE.LINK>
+											<OPTION VALUE="Variables.urlsetwfpartfront" REPLACEALL="Variables.urlsetwfpartfront"/>
+											<XLAT.STREAM KEY="dvin/UI/SetParticipants"/>
+										<!-- Code for Alloy UI, Set participants to the list of workflow commands -->
+		                    					<XLAT.LOOKUP KEY="dvin/UI/SetParticipants" VARNAME="setParticipants_for_AlloyUI" ENCODE="false"/>
+		                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.setParticipants_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_5"/>
+	                    					<!-- Code for Alloy UI -->
+											
+										</THEN>
+										</IF>
+									</then>
+									</if>
+									<OPTION VALUE="*"/>________________
+									
+									<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="removefromworkflow" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+									<if COND="Variables.isLegal=true">
+									<then>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RemoveFromWorkflowFront" outstring="urlremfromwffront">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+											<satellite.argument name="AssetType" value="Variables.AssetType"/>
+											<satellite.argument name="id" value="Variables.id"/>
+										</SATELLITE.LINK>
+										<OPTION VALUE="Variables.urlremfromwffront" REPLACEALL="Variables.urlremfromwffront"/>
+										<XLAT.STREAM KEY="dvin/UI/AssetMgt/RemovefromWorkflow"/>
+										<!-- Code for Alloy UI, Remove from workflow to the list of workflow commands -->
+		                    					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/RemovefromWorkflow" VARNAME="removeFromWorkflow_for_AlloyUI" ENCODE="false"/>
+		                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.removeFromWorkflow_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_9"/>
+	                    					<!-- Code for Alloy UI -->
+
+									</then>
+									</if>
+								</THEN>
+								</IF>
+
+								
+								<!-- only offer to remove from WF group if it is IN a WF group -->
+								<WORKFLOWENGINE.GETGROUPMEMBERSHIP OBJECT="workflowasset" VARNAME="groupid" />
+								<IF COND="IsVariable.groupid=true">
+								<THEN>
+									<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RemoveFromGroupFront" outstring="urlremfromgrpfront">
+										<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+										<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+										<satellite.argument name="AssetType" value="Variables.AssetType"/>
+										<satellite.argument name="id" value="Variables.id"/>
+									</SATELLITE.LINK>
+									<OPTION VALUE="Variables.urlremfromgrpfront" REPLACEALL="Variables.urlremfromgrpfront"/>
+									<XLAT.STREAM KEY="dvin/UI/AssetMgt/RemovefromWorkflowGroup"/>
+									<!-- Code for Alloy UI, remove from workflow group to the list of workflow commands -->
+									<!-- Workflow groups are not yet implemented in Alloy/CS 7.0, commment them as of now -->
+			                    				<!--	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/RemovefromWorkflowGroup" VARNAME="RemoveFromWorkflowGroup_for_AlloyUI" ENCODE="false"/>  -->
+			                    				<!--	<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.RemoveFromWorkflowGroup_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_11"/> -->
+                    					<!-- Code for Alloy UI -->									
+								</THEN>
+								</IF>
+								<IF COND="Variables.foundworkflow=true">
+								<THEN>
+									<!-- following two options are available to workflow admin roles, otherwise to whom privs allow -->
+									<!-- Process deadline can be changed only if the process deadlinetype is ask -->
+									<IF COND="Variables.pdlinetype=ask">
+									<THEN>
+										<!-- if deadlinetype is ask, we do not need to check privs if the user is workflow admin -->
+										<IF COND="Variables.userisworkflowadmin=true">
+										<THEN>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetDeadlineFront" outstring="urlsetdeadlnfront">
+												<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="AssetType" value="Variables.AssetType"/>
+												<satellite.argument name="id" value="Variables.id"/>
+												<satellite.argument name="deadlineaction" value="Process"/>
+											</SATELLITE.LINK>
+											<OPTION VALUE="Variables.urlsetdeadlnfront" REPLACEALL="Variables.urlsetdeadlnfront"/>
+											<XLAT.STREAM KEY="dvin/UI/Common/SetProcessDeadline"/>
+									<!-- Code for Alloy UI, Set Process deadline to the list of workflow commands -->
+	                    					<XLAT.LOOKUP KEY="dvin/UI/Common/SetProcessDeadline" VARNAME="SetProcessDeadline_for_AlloyUI" ENCODE="false"/>
+	                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.SetProcessDeadline_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_7"/>
+                    					<!-- Code for Alloy UI -->																				
+										</THEN>
+										<ELSE>
+											<!-- otherwise check privs -->
+											<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="setprocessdeadline" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+											<if COND="Variables.isLegal=true">
+											<then>
+												<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetDeadlineFront" outstring="urlsetdeadlnfront">
+													<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+													<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+													<satellite.argument name="AssetType" value="Variables.AssetType"/>
+													<satellite.argument name="id" value="Variables.id"/>
+													<satellite.argument name="deadlineaction" value="Process"/>
+												</SATELLITE.LINK>
+												<OPTION VALUE="Variables.urlsetdeadlnfront" REPLACEALL="Variables.urlsetdeadlnfront"/>
+												<XLAT.STREAM KEY="dvin/UI/Common/SetProcessDeadline"/>
+												<!-- Code for Alloy UI, Set Process deadline to the list of workflow commands -->
+				                    					<XLAT.LOOKUP KEY="dvin/UI/Common/SetProcessDeadline" VARNAME="SetProcessDeadline_for_AlloyUI" ENCODE="false"/>
+				                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.SetProcessDeadline_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_7"/>
+			                    					<!-- Code for Alloy UI -->																				
+												
+											</then>
+											</if>
+										</ELSE>
+										</IF>	<!-- if userisworkflowadmin=true -->
+									</THEN>
+									</IF><!-- ask -->
+
+									<!-- For assignment deadline, check if user is workflow admin -->
+									<IF COND="Variables.userisworkflowadmin=true">
+									<THEN>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetDeadlineFront" outstring="urlsetdeadlnfront">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+											<satellite.argument name="AssetType" value="Variables.AssetType"/>
+											<satellite.argument name="id" value="Variables.id"/>
+											<satellite.argument name="deadlineaction" value="Assignment"/>
+										</SATELLITE.LINK>
+										<OPTION VALUE="Variables.urlsetdeadlnfront" REPLACEALL="Variables.urlsetdeadlnfront"/>
+										<XLAT.STREAM KEY="dvin/UI/Common/SetAssignmentDeadline"/>
+									<!-- Code for Alloy UI, Set Assignment Deadline to the list of workflow commands -->
+	                    					<XLAT.LOOKUP KEY="dvin/UI/Common/SetAssignmentDeadline" VARNAME="SetAssignmentDeadline_for_AlloyUI" ENCODE="false"/>
+	                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.SetAssignmentDeadline_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_6"/>
+                    					<!-- Code for Alloy UI -->																				
+
+									</THEN>
+									<ELSE>
+										<!-- check privs -->
+										<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="setstepdeadline" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+										<if COND="Variables.isLegal=true">
+										<then>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetDeadlineFront" outstring="urlsetdeadlnfront">
+												<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="AssetType" value="Variables.AssetType"/>
+												<satellite.argument name="id" value="Variables.id"/>
+												<satellite.argument name="deadlineaction" value="Assignment"/>
+											</SATELLITE.LINK>
+											<OPTION VALUE="Variables.urlsetdeadlnfront" REPLACEALL="Variables.urlsetdeadlnfront"/>
+											<XLAT.STREAM KEY="dvin/UI/Common/SetAssignmentDeadline"/>
+											<!-- Code for Alloy UI, Set Assignment Deadline to the list of workflow commands -->
+			                    					<XLAT.LOOKUP KEY="dvin/UI/Common/SetAssignmentDeadline" VARNAME="SetAssignmentDeadline_for_AlloyUI" ENCODE="false"/>
+			                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.SetAssignmentDeadline_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_6"/>
+		                    					<!-- Code for Alloy UI -->																				
+											
+										</then>
+										</if>
+									</ELSE>
+									</IF><!-- userisworkflowadmin=true -->
+								</THEN>
+								</IF>
+								<IF COND="Variables.SetWorkflow=true">
+								<THEN>
+									<IF COND="Variables.foundworkflow!=true">
+									<THEN>
+									<WorkflowEngine.GetAllProcesses ASSETTYPE="Variables.AssetType" PUBID="SessionVariables.pubid" PREFIX="wfe:" />
+									<if COND="Variables.wfe:Total!=0">
+									<then>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SetWorkflowFront" outstring="urlsetwffront">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+											<satellite.argument name="AssetType" value="Variables.AssetType"/>
+											<satellite.argument name="id" value="Variables.id"/>
+										</SATELLITE.LINK>
+										<OPTION VALUE="Variables.urlsetwffront"  REPLACEALL="Variables.urlsetwffront"/>
+										<XLAT.STREAM KEY="dvin/UI/AssetMgt/SelectWorkflow"/>
+									<!-- Code for Alloy UI, Set Workflow to the list of workflow commands -->
+	                    					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/SelectWorkflow" VARNAME="SetWorkflow_for_AlloyUI" ENCODE="false"/>
+	                    					<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.SetWorkflow_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_1"/>
+                    					<!-- Code for Alloy UI -->																				
+
+									</then>
+									</if>                     
+                                                
+									<WorkflowEngine.GetAvailableGroups PREFIX="groups" PUBID="SessionVariables.pubid"/>
+									<if COND="Variables.groupsTotal!=0">
+									<then>
+										<setcounter NAME="count" VALUE="0"/>
+										<setvar NAME="appgroups" VALUE="Variables.empty"/>
+										<loop UNTIL="Counters.count=Variables.groupsTotal">
+											<WorkflowGroup.GetID NAME="groupsCounters.count" VARNAME="groupid" />
+											<WorkflowGroup.GetWorkflowProcessID NAME="groupsCounters.count" VARNAME="workflowid" />
+											<WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+											<WorkflowProcess.GetTypes NAME="workflow" OBJVARNAME="typesobj"/>
+											<TypeList.GetAllAssetTypes NAME="typesobj" VARNAME="types"/>
+											<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+											<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+											<WorkflowStep.GetAuthorizationRoles NAME="stepobj" OBJVARNAME="rolesobj"/>
+											<RoleList.GetAll NAME="rolesobj" VARNAME="aroles"/>
+											<WorkflowEngine.CanEditGroup SITE="SessionVariables.pubid" ID="Variables.groupid" VARNAME="canedit"/>
+											<WorkflowGroup.GetSites NAME="groupsCounters.count" OBJVARNAME="sitesobj"/>
+											<SiteList.GetAll NAME="sitesobj" VARNAME="sites"/>
+											<stringlist NAME="rolesofcurrentuser" STR="SessionVariables.currentpubACLs" DELIM=","/>
+											<!-- If current user can add to this group -->
+											<if COND="Variables.canedit=true">
+											<then>
+												<!-- If this group is for current site -->
+												<if COND="SessionVariables.pubid=Variables.sites">
+												<then>
+													<!-- if the process of this group allows this assettype -->
+													<setvar NAME="errno" VALUE="0"/>
+													<if COND="IsVariable.types=true">
+													<then>
+														<ISINLIST ITEM="Variables.AssetType" STR="Variables.types"/>
+													</then>
+													<else>
+														<!-- workflow is ANY AssetType -->
+														<setvar NAME="errno" VALUE="1" />
+													</else>
+													</if>
+													<if COND="Variables.errno=1">
+													<then>
+														<!-- if roles of curent user can take the statrt step in the process of the group --->
+														<setvar NAME="userallowedtotakestep" VALUE="false"/>
+														<loop LIST="rolesofcurrentuser">
+															<setvar NAME="errno" VALUE="0"/>
+															<ISINLIST ITEM="rolesofcurrentuser.ITEM" STR="Variables.aroles"/>
+															<if COND="Variables.errno=1">
+															<then>
+																<setvar NAME="userallowedtotakestep" VALUE="true"/>
+																<SETCOUNTER NAME="count" VALUE="Variables.groupsTotal"/>
+																<INCCOUNTER NAME="count" VALUE="-1"/>
+															</then>
+															</if>	
+														</loop>
+														<if COND="Variables.userallowedtotakestep=true">
+														<then>
+															<setvar NAME="appgroups" VALUE="Variables.appgroups,Variables.groupid"/>
+														</then>
+														</if>
+													</then>
+													</if>
+												</then>
+												</if>
+											</then>
+											</if>
+									        <inccounter NAME="count" VALUE="1"/>
+										</loop>
+										<if COND="Variables.appgroups=Variables.empty">
+										<then>
+											<SETVAR NAME="ErrorName" VALUE="NoAppropriateWorkflowGroups"/>
+										</then>
+										<else>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/AddToGroupFront" outstring="urladdtogrpfront">
+    											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="AssetType" value="Variables.AssetType"/>
+												<satellite.argument name="id" value="Variables.id"/>
+											</SATELLITE.LINK>
+											<OPTION VALUE="Variables.urladdtogrpfront"  REPLACEALL="Variables.urladdtogrpfront"/>
+											<XLAT.STREAM KEY="dvin/UI/AssetMgt/AddToWorkflowGroup"/>
+											<!-- Code for Alloy UI, Set Workflow to the list of workflow commands -->
+											<!-- Workflow groups are not yet implemented in Alloy/CS 7.0, commment them as of now -->
+					                    				<!--	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/AddToWorkflowGroup" VARNAME="AddToWorkflowGroup_for_AlloyUI" ENCODE="false"/> -->
+					                    				<!--	<LISTOBJECT.ADDROW NAME="list_of_workflow_commands" command_name="Variables.AddToWorkflowGroup_for_AlloyUI" command_id="WORKFLOW_COMMAND_ID_10"/> -->
+		                    							<!-- Code for Alloy UI -->																				
+											
+										</else>
+										</if>
+									</then>
+									</if>
+									</THEN>
+									</IF>
+								</THEN>
+								</IF>
+							</SELECT>
+							<!-- Code for Alloy UI , convert the list object to result set -->
+							<LISTOBJECT.TOLIST NAME="list_of_workflow_commands" LISTVARNAME="workflowCommands" />
+                    </TD>
+                </TR>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+                <!-- Workflow menu ends -->
+
+                <WORKFLOWENGINE.GETGROUPMEMBERSHIP OBJECT="workflowasset" VARNAME="groupid" />
+                <IF COND="IsVariable.groupid=true">
+                    <THEN>
+                        <WORKFLOWENGINE.GETGROUPID ID="Variables.groupid" OBJVARNAME="groupobj" />
+                        <WORKFLOWGROUP.GETNAME NAME="groupobj" VARNAME="groupname" />
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                        <TR>
+                            <TD CLASS="form-label-text">
+                                <XLAT.STREAM KEY="dvin/UI/AssetMgt/Workflowgroup"/>:
+                            </TD>
+                            <TD></TD>
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront" outstring="urlwfgrpdetfront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                               <satellite.argument name="action" value="contents"/>
+                                                              <satellite.argument name="id" value="Variables.groupid"/>
+                                                               </SATELLITE.LINK>
+                            <TD class="form-inset"><XLAT.STREAM KEY="dvin/UI/AssetMgt/AssetTypeisingroup"/>&nbsp;<A HREF="Variables.urlwfgrpdetfront" REPLACEALL="Variables.urlwfgrpdetfront"><STRING.STREAM VARIABLE="groupname"/></A></TD>
+                        </TR>
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                    </THEN>
+                </IF>
+
+                <TR>
+                    <TD CLASS="form-label-text">
+                        <XLAT.STREAM KEY="dvin/UI/AssetMgt/Workflowprocess"/>:
+                    </TD>
+                    <TD></TD>
+                    <TD class="form-inset">
+                        <IF COND="Variables.foundworkflow=true">
+                            <THEN>
+                                <WORKFLOWENGINE.GETPROCESSID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+                                <WORKFLOWPROCESS.GETPROCESSNAME NAME="workflow" VARNAME="workflowname" />
+                                <WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECT="workflowasset" STATUS="active" PREFIX="workflow_assignments" />
+
+                                <IF COND="Variables.workflow_assignmentsTotal=0">
+                                    <THEN>
+                                        <SETVAR NAME="wfstate" VALUE=" "/>
+                                    </THEN>
+                                    <ELSE>
+                                        <WORKFLOWASSIGNMENT.GETSTATEID NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+                                        <WORKFLOWENGINE.GETSTATEID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+                                        <WORKFLOWSTATE.GETSTATEDESCRIPTION NAME="workflow_state" VARNAME="workflow_statedescription" />
+                                        <SETVAR NAME="wfstate" VALUE=" - Variables.workflow_statedescription"/>
+                                    </ELSE>
+                                </IF>
+
+                                <STRING.STREAM VARIABLE="workflowname"/>
+                                <STRING.STREAM VARIABLE="wfstate"/>
+                                <BR/>
+                            </THEN>
+                            <ELSE>
+                                <XLAT.STREAM KEY="dvin/UI/AssetMgt/Notinworkflow"/>
+                                <BR/>
+                            </ELSE>
+                        </IF>
+                    </TD>
+                </TR>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+                <TR>
+				<TD CLASS="form-label-text">
+                     <XLAT.STREAM KEY="dvin/UI/AssetMgt/Workflowstate"/>:
+                </TD>
+                <TD></TD>
+                <TD class="form-inset">
+
+                        <SETVAR NAME="SD-ID" VALUE="Variables.id"/>	<!-- preserve it for later use -->
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/ShowAssignFront">
+                            <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+                            <ARGUMENT NAME="id" VALUE="Variables.id"/>
+                        </CALLELEMENT>
+                        <SETVAR NAME="id" VALUE="Variables.SD-ID"/>
+
+                    </TD>
+                </TR>
+
+                <!-- Workflow History -->
+                <IF COND="IsVariable.alloyFlag=false">
+                <THEN>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+                <TR>
+				<TD CLASS="form-label-text">
+                     <XLAT.STREAM KEY="dvin/UI/AssetMgt/Workflowhistory"/>:
+                </TD>
+                   <TD></TD>
+                    <TD class="form-inset">
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/IAssignHistoryFront">
+                            <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+                            <ARGUMENT NAME="id" VALUE="Variables.id"/>
+                        </CALLELEMENT>
+
+                    </TD>
+                </TR>
+                </THEN>
+                </IF>
+
+                <!-- Contentdetails id value passed to variables.id-->
+                <IF COND="IsVariable.alloyFlag=false">
+                <THEN>
+                	<SETVAR NAME="id" VALUE="Variables.ContentDetails:id"/>
+                </THEN>
+                </IF>
+
+                <SETVAR NAME="isfolder" VALUE="false"/>
+
+                <!-- Approval for Publishing Status -->
+                <PUBTARGETMANAGER.FIND PREFIX="pbt" PUBID="SessionVariables.pubid" FILTERFORAPPROVAL="true"/>
+                <IF COND="Variables.pbtTotal!=0">
+                    <THEN>
+                        <SETCOUNTER NAME="nthTarget" VALUE="0"/>
+                        <LOOP COUNT="Variables.pbtTotal">
+                            <PUBTARGET.SCATTER NAME="pbtCounters.nthTarget" PREFIX="pubtgt:"/>
+                            <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                            <TR>
+                                <TD CLASS="form-label-text">
+                                    <STRING.STREAM VARIABLE="pubtgt:name"/>:
+								</TD>
+                                <TD></TD>
+                                <TD class="form-inset">
+                                    <DELIVERYTYPE.LOAD NAME="dt" OBJECTID="Variables.pubtgt:type"/>
+                                    <DELIVERYTYPE.GET NAME="dt" FIELD="path" OUTPUT="dt:path"/>
+                                    <IF COND="Variables.dt:path=OpenMarket/Xcelerate/PrologActions/Publish/Export">
+                                        <THEN>
+                                            <SETVAR NAME="targettype" VALUE="export"/>
+                                        </THEN>
+                                        <ELSE>
+                                            <SETVAR NAME="targettype" VALUE="mirror"/>
+                                        </ELSE>
+                                    </IF>
+            
+
+                                   <IF COND="IsVariable.alloyFlag=false">
+								    <THEN>
+										<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/PubTargetStatus">
+											<ARGUMENT NAME="target" VALUE="Variables.pubtgt:id"/>
+											<ARGUMENT NAME="targetobj" VALUE="pbtCounters.nthTarget"/>
+											<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+											<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+											<ARGUMENT NAME="assetname" VALUE="theAsset"/>
+											<ARGUMENT NAME="targettype" VALUE="Variables.targettype"/>
+										</CALLELEMENT>
+									</THEN>
+									</IF>
+                                </TD>
+                            </TR>
+                            <INCCOUNTER NAME="nthTarget" VALUE="1"/>
+                        </LOOP>
+                    </THEN>
+                </IF>
+            </TABLE>
+        </TD>
+    </TR>
+</TABLE>
+
+</FTCS>

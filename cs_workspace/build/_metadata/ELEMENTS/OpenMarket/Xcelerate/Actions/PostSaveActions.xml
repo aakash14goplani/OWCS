@@ -1,0 +1,181 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/PostSaveActions
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<if COND="Variables.cs_environment=standard">
+<then>
+	<setvar NAME="temp_cs_environment" VALUE="standard_Or_ucform"/>
+</then>
+<else>
+	<if COND="Variables.cs_environment=ucform">
+	<then>
+		<setvar NAME="temp_cs_environment" VALUE="standard_Or_ucform"/>
+	</then>
+	</if>
+</else>
+</if>
+
+<if COND="Variables.temp_cs_environment=standard_Or_ucform">
+<then>
+    <!-- Display the content details -->
+    <setvar NAME="Inid" VALUE="Variables.id"/>
+	<!--Added if condition for loading the edit screen after create for GM-->
+   	<!-- Display the details page -->
+   	<if COND="Variables.upcommand=previewflash">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/PrologActions/EditFront">
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="PostPage" VALUE="EditPost"/>
+			<argument NAME="ThisPage" VALUE="EditFront"/>
+			<argument NAME="contentfunctions" VALUE="true"/>
+		</callelement>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/EditFront">
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="PostPage" VALUE="EditPost"/>
+			<argument NAME="ThisPage" VALUE="EditFront"/>
+			<argument NAME="contentfunctions" VALUE="true"/>
+		</callelement>
+	</then>
+	<else>
+		<if COND="Variables.cs_environment=ucform">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/PrologActions/EditFront">
+				<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+				<argument NAME="id" VALUE="Variables.id"/>
+				<argument NAME="PostPage" VALUE="EditPost"/>
+				<argument NAME="ThisPage" VALUE="EditFront"/>
+				<argument NAME="contentfunctions" VALUE="true"/>
+			</callelement>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/EditFront">
+				<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+				<argument NAME="id" VALUE="Variables.id"/>
+				<argument NAME="PostPage" VALUE="EditPost"/>
+				<argument NAME="ThisPage" VALUE="EditFront"/>
+				<argument NAME="contentfunctions" VALUE="true"/>
+			</callelement>
+		</then>
+		<else>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront"/>
+		</else>
+		</if>
+	</else>
+	</if>
+</then>
+<else>
+    <if COND="Variables.cs_environment=addref">
+    <then>
+        <IF COND="IsVariable.parentid=true">
+		<THEN>
+        <asset.load TYPE="Variables.parenttype" EDITABLE="true" OBJECTID="Variables.parentid" NAME="theAsset"/>
+        <LISTOBJECT.CREATE NAME="lo" COLUMNS="membertype,memberid,ordinal"/>
+        <LISTOBJECT.ADDROW NAME="lo" membertype="Variables.AssetType" memberid="Variables.id" ordinal="0"/>
+        <LISTOBJECT.TOLIST NAME="lo" LISTVARNAME="addreflist" />
+        <ASSET.ADDMEMBERS NAME="theAsset" FIELD="Variables.parentfield" LIST="addreflist"/>
+        <ASSET.SAVE NAME="theAsset" />
+		</THEN>
+		</IF>
+		<replaceall list='Variables.IFCKEditor'>
+		<callelement NAME="OpenMarket/Xcelerate/Scripts/GetSourceWindow"/>
+        <script language="JavaScript">
+        <![CDATA[
+			/* [2008-12-4] Added new method to close only when the caller is not the fckeditor.FCKEditor uses this to create new asset on the fly and execute link/include command to add it on the editor window */
+            function reloadOpenerAndCloseWindow() {
+				if('Variables.IFCKEditor'!='true'){
+					window.opener.location.reload();
+					window.close();
+				}
+			}
+			/* [2007-09-13] using new AJAX functionality to update assignment list */
+			var sourceWindow = getSourceWindow(window.opener,'frames.ControlPanel.fw.controlPanel.getAssignments');
+			if(sourceWindow)
+			{
+				sourceWindow.frames.ControlPanel.fw.controlPanel.getAssignments();
+			}			
+			reloadOpenerAndCloseWindow();
+        ]]>
+        </script>
+		</replaceall>
+    </then>
+    <else>
+        <if COND="Variables.cs_environment=changeref">
+        <then>
+            <asset.load TYPE="Variables.parenttype" EDITABLE="true" OBJECTID="Variables.parentid" NAME="theAsset"/>
+            <LISTOBJECT.CREATE NAME="lo" COLUMNS="memberid,newmembertype,newmemberid"/>
+            <LISTOBJECT.ADDROW NAME="lo" memberid="Variables.memberid" newmembertype="Variables.AssetType" newmemberid="Variables.id"/>
+            <LISTOBJECT.TOLIST NAME="lo" LISTVARNAME="changereflist" />
+            <ASSET.CHANGEREF NAME="theAsset" FIELD="Variables.parentfield" LIST="changereflist"/>
+            <ASSET.SAVE NAME="theAsset" />
+            <script language="JavaScript">
+            <![CDATA[
+                /* [2007-09-21] using new AJAX functionality to update assignment list */
+                var cpframe = window.opener.top.frames["ControlPanel"];
+                if (cpframe && cpframe.fw.controlPanel) {
+                    cpframe.fw.controlPanel.getAssignments();
+                }
+                reloadOpenerAndCloseWindow();
+            ]]>
+            </script>
+        </then>
+        <else>
+              <if COND="Variables.cs_environment=portal">
+              <then>
+                  <callelement NAME="OpenMarket/Flame/Common/AddToPortalHistory">
+                     <argument NAME="assettype" VALUE="Variables.AssetType"/>
+                     <argument NAME="id" VALUE="Variables.id"/>
+                  </callelement>
+
+                  <callelement NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+
+              </then>
+              <else>
+
+            <ASSET.GET NAME="theCurrentAsset" FIELD="name" />
+
+            <script language="JavaScript">
+            <replaceall LIST="Variables.id,Variables.AssetType,Variables.name">
+                <![CDATA[
+                try
+                {
+                    var insiteConsole = window.opener;
+
+                    if (insiteConsole.document.forms[0])
+                    {
+                        var assetidObj = insiteConsole.document.getElementById('assetid');
+                        if (assetidObj != null && typeof assetidObj == "object") {
+                            insiteConsole.document.forms[0].elements['assetid'].value = Variables.id;
+                        } else {
+                            assetidObj = insiteConsole.document.createElement("INPUT");
+                            insiteConsole.document.forms["SlotConsole"].appendChild(assetidObj);
+                            assetidObj.name = 'assetid';
+                            assetidObj.value = Variables.id;
+                        }
+
+                        insiteConsole.document.forms[0].elements['action'].value = 'Edit';
+                        insiteConsole.document.forms[0].submit();
+						reloadOpenerAndCloseWindow();
+                    }
+                }
+                catch (exception)
+                {
+                }
+
+                ]]>
+            </replaceall>
+            </script>
+            </else>
+            </if>
+        </else>
+        </if>
+    </else>
+    </if>
+</else>
+</if>
+</ftcs>

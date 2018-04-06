@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Flame/MyActiveList/View</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Flame/MyActiveList/View</string>
+        <string>My ActiveList portlet view element</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Flame/MyActiveList/View.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Flame/MyActiveList/View.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FFlame%2FMyActiveList%2FView.jsp
+@hashval=2020575119
+key=@ELEMENTCATALOG-OpenMarket/Flame/MyActiveList/View
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/Rules/GenerateSegLeafOperation
+--
+-- INPUT
+--
+--
+--
+-- OUTPUT
+--
+-->
+
+<!-- This template generates an action comparison operation between value(s) and a
+     complex left hand side. -->
+<!-- Expected arguments: substring, operation, lowrhs, highrhs, remainder -->
+<!-- Returns: Variables.remainder updated having the right string -->
+
+
+<if COND="Variables.operation=bt">
+<then>
+	<SUBSTRING.ADDSTRING NAME="Variables.substring" VALUE='Util.isBetween('/>
+	<SETVAR NAME="remainder" VALUE=',Variables.lowrhs,Variables.highrhs)'/>
+</then>
+<else>
+	<!-- Default operation -->
+	<setvar NAME="remainder"  VALUE=' Variables.operation Variables.lowrhsVariables.remainder'/>
+</else>
+</if>
+
+</FTCS>

@@ -1,0 +1,177 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- SiteMgt/ViewList                                                        -->
+<!-- FutureTense, Inc.                                                       -->
+<!-- ####################################################################### -->
+
+<IF COND="IsVariable.key=true"><THEN>
+    <IF COND="Variables.key!=%"><THEN>
+        <SETSSVAR NAME="sitekey" VALUE="Variables.key"/>
+    </THEN></IF>
+</THEN></IF>
+<SETVAR NAME="tablename" VALUE="SiteCatalog"/>
+<SETVAR NAME="pagename" VALUE="Variables.key"/>
+<SELECTTO FROM="Variables.tablename" WHAT="*" LIST="ResultsList" WHERE="pagename" />
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/ViewPage"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>    
+<IF COND="ResultsList.#numRows=0">
+    <THEN>
+    	<!--string will display Variables.key-->
+	<div class="width-outer-70">
+		<XLAT.LOOKUP KEY="dvin/AdminForms/NoPageMatch" VARNAME="nopagematch"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables.nopagematch"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+		<br/><br/>
+		<XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_" ENCODE="false" ESCAPE="true"/>
+        <SATELLITE.FORM ASSEMBLER="query">
+        <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+		<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>   
+		<A onClick="javascript:history.go(-1);return false;" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Back"/></CALLELEMENT></A>
+		</SATELLITE.FORM>
+	</div>
+    </THEN>
+    <ELSE>
+        <SATELLITE.FORM ASSEMBLER="query" METHOD="GET">
+		<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+		<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		   
+        <TABLE class="width-outer-50" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+        	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<TR>
+        		<TD class="form-label-inset" NOWRAP="true" colspan="2">
+       				<XLAT.STREAM KEY="dvin/AdminForms/Enterarguments"/>
+        		</TD>
+        	</TR>
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<TR>
+                <TD class="form-label-text" align="left" NOWRAP="true" >
+           			<XLAT.STREAM KEY="dvin/AdminForms/Arguments1"/>:
+				</TD>	
+				<TD class="form-inset" align="left" NOWRAP="true" >
+                    <INPUT TYPE="text" NAME="resargs1" SIZE="32" VALUE=""/>
+                </TD>
+            </TR>
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<TR>
+                <TD class="form-label-text" align="left" NOWRAP="true" >
+           			<XLAT.STREAM KEY="dvin/AdminForms/Arguments2"/>:
+				</TD>
+				<TD class="form-inset" >
+                   <INPUT TYPE="text" NAME="resargs2" SIZE="32" VALUE=""/>
+				</TD>
+            </TR>
+        	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+        	<TR>
+				<TD class="form-label-inset" NOWRAP="true" COLSPAN="3">
+					<XLAT.STREAM KEY="dvin/AdminForms/Selectpageview"/>
+        		</TD>
+        	</TR>
+        	<tr><td colspan="3">
+			<TABLE width="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			<tr>
+				<td></td>
+				<td class="tile-dark" HEIGHT="1">
+					<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" 
+					REPLACEALL="Variables.cs_imagedir"/> 
+				</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+				<td> 
+					<TABLE width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+						<tr>
+							<td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</td>
+						</tr>
+						<tr>
+							<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/PageName"/></DIV></td>
+							<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Status"/></DIV></td>
+							<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/ViewQ"/></DIV></td>
+							<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						</tr>
+					
+						<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETVAR NAME="separatorLine" VALUE="0"/>		
+						<XLAT.LOOKUP KEY="dvin/AdminForms/Live" VARNAME="csstatusLive" />
+						<XLAT.LOOKUP KEY="dvin/AdminForms/Pending" VARNAME="csstatusPending" />
+						<LOOP LIST="ResultsList">
+							<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+								<TD class="small-text-inset" style="white-space: normal;" NOWRAP="NOWRAP" VALIGN="BASELINE">
+									<STRING.STREAM VALUE="ResultsList.pagename"/>
+								</TD>
+								<td><BR /></td>
+								<TD class="small-text-inset" style="vertical-align: middle;" NOWRAP="NOWRAP"  VALIGN="BASELINE">
+									<IF COND="ResultsList.csstatus=live">
+									<THEN>
+										<STRING.STREAM VALUE="Variables.csstatusLive" />
+									</THEN>
+									</IF>
+									<IF COND="ResultsList.csstatus=pending">
+									<THEN>
+										<STRING.STREAM VALUE="Variables.csstatusPending" />
+									</THEN>
+									</IF>
+								</TD>
+								<td><BR /></td>
+								<TD class="small-text-inset" style="vertical-align: middle;" NOWRAP="NOWRAP" VALIGN="BASELINE">
+									<REPLACE STR="ResultsList.pagename">
+										<INPUT type="radio" NAME="pagename" VALUE="ResultsList.pagename"/>
+									</REPLACE>
+								</TD>
+								<td><BR/></td>
+							</TR>
+							<IF COND="Variables.rowStyle=tile-row-normal">
+							<THEN>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+							</ELSE>
+							</IF>
+						</LOOP>
+					</TABLE>
+				</td><td class="tile-dark" VALIGN="top" WIDTH="1"><BR /></td>
+			</tr>
+			<tr>
+				<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			</tr>
+			<tr>
+				<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+			</tr>
+			</TABLE> 
+			</td></tr>
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD align="left" VALIGN="TOP">
+					<XLAT.LOOKUP KEY="dvin/AdminForms/View" VARNAME="_XLAT_"/>
+        			<A onClick="if(setupViewParams(document.forms[0]) != false){return document.forms[0].submit();}" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/View"/></CALLELEMENT></A>
+        		</TD>
+        	</TR>
+        </TABLE>
+        </SATELLITE.FORM>
+    </ELSE>
+</IF>
+</FTCS>

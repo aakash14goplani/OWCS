@@ -1,0 +1,398 @@
+<?xml version="1.0" ?>     
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/TranslateUsingCopy
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Copying a translated asset means asset copy and update its dimensions.  -->
+
+<!-- make sure not moving across site or assettype -->
+<IF COND="Variables.Node1=Variables.SourcePath1">
+<THEN>
+	<IF COND="Variables.Node2=Variables.SourcePath2">
+	<THEN>
+
+		<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+		<SETVAR NAME="primarypubid" VALUE="Variables.Node1"/>
+
+		<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.SourceID" OBJVARNAME="workflowasset" />
+		<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="copy" SITE="Variables.primarypubid" VARNAME="editLegal" MUSTBEASSIGNED="false"/>
+		<IF COND="Variables.editLegal=false">
+		<THEN>
+			<XLAT.LOOKUP KEY="dvin/CSDocLink/IllegalTransition" VARNAME="_XLAT_"/>
+			<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+		</THEN>
+		<ELSE>
+
+			<SETCOUNTER NAME="currentNode" VALUE="3"/>
+			<LOOP UNTIL="IsVariable.SourcePathCounters.currentNode=false">
+				<INCCOUNTER NAME="currentNode" VALUE="1"/>
+			</LOOP>
+			<INCCOUNTER NAME="currentNode" VALUE="-2"/>
+			<ICS.RESOLVEVARIABLES NAME="$(Variables.SourcePath$(Counters.currentNode))" OUTPUT="oldParentID" DELIMITED="true"/>
+
+			<FATM.GETALL ASSETTYPE="Variables.AssetType" LISTVARNAME="lFlexFamily"/>
+			<FGTM.GETALL ASSETTYPE="lFlexFamily.grouptype" LISTVARNAME="lParentFamily"/>
+
+			<SETVAR NAME="errno" VALUE="0"/>
+			<IF COND="Variables.DroppedOn!=Variables.Node2">
+			<THEN>
+				<ASSET.LIST TYPE="lFlexFamily.grouptype" LIST="lCurrentParent" FIELD1="id" VALUE1="Variables.DroppedOn" EXCLUDEVOIDED="true"/>
+			</THEN>
+			</IF>
+   
+			<IF COND="Variables.errno=0">
+			<THEN>
+				<!-- startmenu items for this guy? -->
+				<STARTMENU.GETMATCHINGSTARTITEMS ITEMTYPE="CSDocLink" PUBID="Variables.primarypubid" ASSETTYPE="Variables.AssetType" LISTVARNAME="lStartItems"/>
+   
+				<IF COND="IsVariable.new:StartMenu=true">
+				<THEN>
+					<LISTOBJECT.CREATE NAME="loMatchingSubtype" COLUMNS="name"/>
+					<LISTOBJECT.ADDROW NAME="loMatchingSubtype" name="Variables.new:StartMenu"/>
+					<LISTOBJECT.TOLIST NAME="loMatchingSubtype" LISTVARNAME="lStartItems"/>
+				</THEN>
+				</IF>
+   
+				<IF COND="IsList.lStartItems=true">
+				<THEN>
+					<IF COND="lStartItems.#numRows!=0">
+					<THEN>
+		
+						<IF COND="lStartItems.#numRows=1">
+						<THEN>
+		    
+							<IF COND="IsVariable.new:Name=false">
+							<THEN>
+								<SETVAR NAME="errno" VALUE="0"/>
+								<ASSET.LIST LIST="lSourceAsset" TYPE="Variables.AssetType" FIELD1="id" VALUE1="Variables.SourceID"/>
+								<IF COND="Variables.errno=0">
+								<THEN>
+									<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+										<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/EnterANameForCopy" VARNAME="_XLAT_"/>
+										<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+											<XLAT.LOOKUP KEY="dvin/Common/Name" VARNAME="_XLAT_"/>
+											<REQUIREDVALUE NAME="Name" DISPLAYNAME="Variables._XLAT_" REQUIRED="true" DATATYPE="String" REPLACEALL="Variables._XLAT_"/>
+										</REQUIREDINFORMATION>
+									</ERROR>
+								</THEN>
+								<ELSE>
+									<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/SourceAssetMissing" VARNAME="_XLAT_"/>
+									<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="1" REPLACEALL="Variables._XLAT_"/>
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+		      
+								<ASSET.LIST TYPE="Variables.AssetType" FIELD1="name" VALUE1="Variables.new:Name" LIST="currentAsset"/>
+
+								<!-- Apparently we used to prohibit duplicate target asset names on copy, but we no longer do -->
+								<ASSET.LOAD NAME="ainst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.SourceID" EDITABLE="true"/>
+								<!-- check is added here if the asset is deleted from the server it should allow copy on the client-->
+								<ASSET.GET NAME="ainst" FIELD="status" OUTPUT="notvoid"/>
+								<IF COND="Variables.notvoid=VO">
+								<THEN>
+									<!-- message used the existing one to be changed -->
+									<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>
+									<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+								</THEN>
+								<ELSE>
+									<ASSET.GET NAME="ainst" FIELD="name" OUTPUT="assetName"/>
+									<ASSET.GET NAME="ainst" FIELD="id" OUTPUT="id"/>
+									<ASSET.GET NAME="ainst" FIELD="flextemplateid" OUTPUT="defID"/>
+									<ASSET.SCATTER NAME="ainst" PREFIX="source"/>
+   
+									<ASSET.CREATE NAME="newinst" TYPE="Variables.AssetType"/>
+									<ASSET.GET NAME="newinst" FIELD="id" OUTPUT="newid"/>
+									<!-- Translation copy means setting the translation -->
+									<CALLELEMENT NAME="OpenMarket/CSClient/setDimension">
+										<ARGUMENT NAME="dimparentid" VALUE="Variables.id"/>
+										<ARGUMENT NAME="assetprefix" VALUE="source"/>
+									</CALLELEMENT>
+  
+									<ASSET.GATHER NAME="newinst" PREFIX="source"/>
+									<ASSET.SET NAME="newinst" FIELD="name" VALUE="Variables.new:Name"/>
+									<ASSET.SET NAME="newinst" FIELD="status" VALUE="PL"/>
+   
+									<!-- copy needs to reset the rulemap "this" pointer as well -->
+									<FLEXASSET.GETRATINGRULESETMAP NAME="newinst" OBJVARNAME="theAppMap"/> 
+									<RULESETMAP.SET NAME="theAppMap" KEY="this" TYPE="asset" VALUE="Variables.AssetType:Variables.newid"/>
+									<FLEXASSET.SETRATINGRULESETMAP NAME="newinst" OBJECT="theAppMap"/>
+
+									<ATM.LOCATE VARNAME="gm" TYPE="lFlexFamily.templatetype"/>
+                  
+									<SETVAR NAME="addParent" VALUE="Variables.empty"/>
+									<SETVAR NAME="removeParent" VALUE="Variables.empty"/>
+									<SETVAR NAME="needToSave" VALUE="false"/>
+                  
+				
+									<IF COND="Variables.oldParentID!=Variables.DroppedOn"> 
+									<THEN>
+										<!-- move from one parent to another -->
+										<!-- a switch from one parent to another of the same subtype is always valid -->
+										<ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.DroppedOn" LIST="lNewParent"/>
+										<ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.oldParentID" LIST="lOldParent"/>
+										<IF COND="lNewParent.flexgrouptemplateid=lOldParent.flexgrouptemplateid">
+										<THEN>
+											<SETVAR NAME="addParent" VALUE="Variables.DroppedOn"/>
+											<SETVAR NAME="removeParent" VALUE="Variables.oldParentID"/>
+											<SETVAR NAME="needToSave" VALUE="true"/>
+										</THEN>
+										<ELSE>
+											<CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+												<ARGUMENT NAME="command" VALUE="remove"/>
+											</CALLELEMENT>
+											<IF COND="Variables.needToSave!=error">
+											<THEN>
+												<IF COND="Variables.DroppedOn!=Variables.Node2">
+												<THEN>
+													<CALLELEMENT NAME="OpenMarket/CSClient/CheckParentChange">
+														<ARGUMENT NAME="command" VALUE="add"/>
+													</CALLELEMENT>
+												</THEN>
+												<ELSE>
+													<SETVAR NAME="needToSave" VALUE="true"/>
+												</ELSE>
+												</IF>
+											</THEN>
+											</IF>
+										</ELSE>
+										</IF>
+										<!-- Finish adjustment, if needed -->
+										<IF COND="Variables.removeParent!=Variables.empty">
+										<THEN>
+											<FLEXASSET.REMOVEPARENT NAME="newinst" ID="Variables.removeParent"/>
+										</THEN>
+										</IF>
+										<IF COND="Variables.addParent!=Variables.empty">
+										<THEN>
+											<FLEXASSET.ADDPARENT NAME="newinst" ID="Variables.addParent"/>
+										</THEN>
+										</IF>
+										
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="needToSave" VALUE="true"/>
+									</ELSE>
+									</IF>
+									
+									<IF COND="Variables.needToSave=true">
+									<THEN>
+										<!-- Whichever start menu we are using can control whether the asset can be copied or not by this user.
+											Before we allow a save, make sure that the workflow is happy. -->
+										<SETVAR NAME="saveCanProceed" VALUE="true"/>
+										
+										<!-- Hmm, I don't think this is the approved way of getting the workflow, but I'll leave this alone for now -->
+										<STARTMENU.LOAD NAME="lStartItems.name" ITEMTYPE="CSDocLink" OBJVARNAME="si"/>
+										<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+										<PROCESSLIST.GETALL NAME="currentProc" VARNAME="process"/>
+										<if COND="Variables.process!=Variables.empty">
+										<then>
+											<!-- Build a workflowable object -->
+											<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+											<!-- The workflow tags may stream status information, which the client won't like.  For now
+												I'll wrap a comment around any status info -->
+											<IGNORETHIS>
+												<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.process" SITE="Variables.primarypubid" VARNAME="canstartworkflow"/>
+											</IGNORETHIS>
+
+											<if COND="Variables.canstartworkflow!=true">
+											<then>
+												<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotStartWorkflow" VARNAME="_XLAT_"/>
+												<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+												<SETVAR NAME="saveCanProceed" VALUE="false"/>
+											</then>
+											<else>
+												<!-- Ask for assignees, if needed -->
+												<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+												<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+												<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+												<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+												<if COND="Variables.steptype=ask">
+												<then>
+													<!-- Request the assignees, if this hasn't already been done -->
+													<WORKFLOWENGINE.GETSTARTWORKFLOWCANDIDATEASSIGNEES SITE="SessionVariables.pubid" ID="Variables.process" OBJECT="workflowasset" OBJVARNAME="partsobj"/>
+													<!-- This whole thing seems to be a rather bizarre way of finding out whether we've asked already for assignees -->
+													<Participants.GetAllRoles NAME="partsobj" VARNAME="assigneeroles" />
+													<stringlist NAME="roleslist" STR="Variables.assigneeroles" DELIM="," />
+													<SETVAR NAME="errno" VALUE="0"/>
+													<ICS.RESOLVEVARIABLES NAME="$(Variables.new:ask:$(roleslist.ITEM):SET)" OUTPUT="currentVal" DELIMITED="true"/>
+													<IF COND="Variables.errno!=0">
+													<THEN>
+														<!-- Set up assignees request screen -->
+														<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+															<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/MoreInformationRequired" VARNAME="_XLAT_"/>
+															<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+																<WORKFLOWPROCESS.GETPROCESSNAME NAME="workflow" VARNAME="workflowname" />
+																<callelement NAME="OpenMarket/CSClient/AskForAssignees"/>
+															</REQUIREDINFORMATION>
+														</ERROR>
+														<SETVAR NAME="saveCanProceed" VALUE="false"/>
+													</THEN>
+													</IF>
+												</then>
+												</if>
+											</else>
+											</if>
+										</then>
+										</if>
+										
+										<if COND="Variables.saveCanProceed=true">
+										<then>
+										
+											<ASSET.SAVE NAME="newinst"/>
+											<IF COND="Variables.errno=0">
+											<THEN>
+												<if COND="Variables.process!=Variables.empty">
+												<then>
+													<!-- If we've gotten to this point, it's because all the conditions for save were favorable.  Specifically,
+														various objects and variables will already have been calculated,
+														such as "workflowasset", so don't waste time and code doing them over again -->
+
+													<STARTMENUITEM.GETPARTICIPANTS NAME="si" OBJVARNAME="currentParts"/>
+                              
+													<PARTICIPANTLIST.GETREQUIRED NAME="currentParts" OBJVARNAME="partsList"/>
+													<PARTICIPANTS.GETALLROLES NAME="partsList" VARNAME="VallRoles"/>
+													<IF COND="Variables.VallRoles!=Variables.empty">
+													<THEN>
+														<SETVAR NAME="__PARTROLES__" VALUE="Variables.VallRoles"/>
+                                 
+														<STRINGLIST STR="Variables.VallRoles" NAME="rlist" DELIM=","/>
+														<LOOP LIST="rlist">
+															<PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="partsList" ROLE="rlist.ITEM" LISTVARNAME="users"/>
+															<HASH.CREATE NAME="uhash" LIST="users" COLUMN="ITEM"/>
+															<HASH.TOSTRING NAME="uhash" VARNAME="postUsers" DELIM=";"/>
+															<SETVAR NAME="__ROLE__rlist.ITEM__" VALUE="Variables.postUsers"/>
+														</LOOP>
+													</THEN>
+													</IF>
+      
+													<STRINGLIST STR="Variables.__PARTROLES__" NAME="allRoles" DELIM=","/>
+      
+
+													<!-- Set up participants for this workflow from the start menu item -->
+													<WORKFLOWENGINE.NEWPARTICIPANTS  OBJVARNAME="myParts"/>
+													<LOOP LIST="allRoles">
+														<SETVAR NAME="users" VALUE="Variables.__ROLE__allRoles.ITEM__"/>
+														<STRINGLIST STR="Variables.users" NAME="userList" DELIM=";"/>
+														<LOOP LIST="userList">
+															<PARTICIPANTS.ADDPARTICIPANT NAME="myParts" ROLE="allRoles.ITEM" USER="userList.ITEM"/>
+														</LOOP>
+													</LOOP>
+
+													<!-- Fire off the workflow based on what we know -->
+													<if COND="Variables.steptype!=ask">
+													<then>
+														<!-- Not an ask step -->
+														<IGNORETHIS>
+															<WORKFLOWENGINE.STARTOBJECTWORKFLOWPROCESS SITE="Variables.primarypubid"
+																OBJECT="workflowasset" 
+																ID="Variables.process"
+																PARTICIPANTS="myParts"/>
+														</IGNORETHIS>
+													</then>
+													<else>
+														<!-- Ask step type -->
+														<WORKFLOWENGINE.NEWPARTICIPANTS OBJVARNAME="partobj"/> 
+														<PARTICIPANTS.CLEAR NAME="partobj"/>
+											
+														<LOOP LIST="roleslist">
+															<SETVAR NAME="users" VALUE="Variables.new:ask:roleslist.ITEM"/>
+															<STRINGLIST STR="Variables.users" NAME="userList" DELIM=","/>
+															<LOOP LIST="userList">
+																<SUBSTITUTE STR="userList.ITEM" WHAT=";" WITH="," OUTSTR="currentUser"/>
+																<PARTICIPANTS.ADDPARTICIPANT NAME="partobj" ROLE="roleslist.ITEM" USER="Variables.currentUser"/>
+															</LOOP>
+														</LOOP>
+														<IGNORETHIS>
+															<WORKFLOWENGINE.STARTOBJECTWORKFLOWPROCESS OBJECT="workflowasset" ID="Variables.process" SITE="Variables.primarypubid" ASSIGNMENTLIST="partobj" PARTICIPANTS="myParts"/>
+														</IGNORETHIS>
+													</else>
+													</if>
+												</then>
+												</if>
+												<AFFECTEDNODES>
+													<IF COND="Variables.addParent!=Variables.empty">
+													<THEN>
+														<NODE PARENTID="Variables.addParent" REPLACEALL="Variables.addParent"/>
+													</THEN>
+													<ELSE>
+														<NODE PARENTID="Variables.oldParentID" REPLACEALL="Variables.oldParentID"/>
+													</ELSE>
+													</IF>
+												</AFFECTEDNODES>
+											</THEN>
+											<ELSE>
+												<XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+												<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+											</ELSE>
+											</IF>
+										</then>
+										</if>
+									</THEN> 
+									</IF> <!-- <IF COND="Variables.oldParentID!=Variables.DroppedOn"> this ends here -->
+				   
+								</ELSE>
+								</IF> <!-- Variables.notvoid ends here -->
+							</ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+								<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ChooseAStartMenuItem" VARNAME="_XLAT_"/>
+								<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+									<XLAT.LOOKUP KEY="dvin/UI/Admin/StartMenuItem" VARNAME="_XLAT_"/>
+									<REQUIREDVALUE NAME="StartMenu" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+										<OPTIONS>
+											<LOOP LIST="lStartItems">
+												<STRING.ENCODE LIST="lStartItems" COLUMN="name" VARNAME="currentStart"/>
+												<OPTION VALUE="Variables.currentStart" SELECTED="false" DISPLAYVALUE="Variables.currentStart" REPLACEALL="Variables.currentStart"/>
+											</LOOP>
+										</OPTIONS>
+									</REQUIREDVALUE>
+								</REQUIREDINFORMATION>
+							</ERROR>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+						<XLAT.LOOKUP KEY="dvin/CSDocLink/Nostartmenuitems" VARNAME="_XLAT_"/>
+						<ERROR CODE="5" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+			</THEN>
+			<ELSE>
+				<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ParentCouldNotBeAccessed" VARNAME="_XLAT_"/>
+				<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF> <!-- copy legal -->
+	</THEN>
+    
+	<ELSE>
+		<!-- move across assettype -->
+		<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotCopyAcrossAssetTypes" VARNAME="_XLAT_"/>
+		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<!-- move across assettype -->
+	<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotCopyAcrossSites" VARNAME="_XLAT_"/>
+	<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+</ELSE>
+</IF>
+
+</FTCS> 
+
+
+   

@@ -1,0 +1,148 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ApprovalStatusPost
+-
+- INPUT
+- Variables.id
+- Variables.AssetType
+- Variables.approveIt - semicolon separated list of assettype,id to approve
+- Variables.target
+- Variables.targetname
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<STRING.ENCODE VARIABLE="targetname" VARNAME="targetname"/>
+<setvar NAME="heldAssetType" VALUE="Variables.AssetType"/>
+<setvar NAME="heldid" VALUE="Variables.id"/>
+
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+	<IF COND="IsVariable.approveIt=true">
+	<THEN>
+		<STRINGLIST STR="Variables.approveIt" DELIM=";" NAME="assetsToApprove"/>
+		<IF COND="IsList.assetsToApprove=true">
+		<THEN>
+		<!-- create an IList with column name "assetid" and 
+			     "assettype" and build the asset IList -->
+			<LISTOBJECT.CREATE NAME="listobject" COLUMNS="assetid,assettype" />
+			<LOOP LIST="assetsToApprove">
+				<STRINGLIST STR="assetsToApprove.ITEM" DELIM="," NAME="oneasset"/>
+				<SETVAR NAME="assettype" VALUE="oneasset.ITEM"/>
+				<GOTOROW LIST="oneasset" ROWNUM="2"/>
+				<SETVAR NAME="assetid" VALUE="oneasset.ITEM"/>
+			   <setvar NAME="canapprove" VALUE="true"/>
+				
+				<!-- check whether user is allowed to approve this asset -->
+			    <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+			        <argument NAME="AssetType" VALUE="Variables.assettype"/>
+			        <argument NAME="assetid" VALUE="Variables.assetid"/>
+			        <argument NAME="Function" VALUE="approve"/>
+			    </callelement>
+			    <if COND="Variables.PrivsFailed=true">
+			    <then>
+			     		<setvar NAME="canapprove" VALUE="false"/>
+			     		<ASSET.LOAD NAME="failedasset" OBJECTID="Variables.assetid" TYPE="Variables.assettype"/>
+						<ASSET.GET NAME="failedasset" FIELD="name"/>
+						<ASSET.GETASSETTYPE NAME="failedasset" OUTNAME="at"/>
+						
+						<ASSETTYPE.GET NAME="at" FIELD="description"/>
+						<XLAT.LOOKUP KEY="dvin/UI/ApprovalStatus-CannotApprove" name="Variables.name" description="Variables.description" EVALALL="false" VARNAME="_xlat_CannotApprove"/>
+				      <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	        				<argument NAME="msgtext" VALUE="Variables._xlat_CannotApprove"/>
+							<argument NAME="severity" VALUE="info"/>	
+				     	</callelement>
+				      <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	        				<argument NAME="elem" VALUE="Variables.PrivsFailedReason"/>
+							<argument NAME="severity" VALUE="info"/>	
+				     	</callelement>
+			    </then>
+			    <else>
+			     		<!-- asset must not be locked, in order to do approval -->
+						<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+						    <argument NAME="AssetType" VALUE="Variables.assettype"/>
+						</callelement>
+						<if COND="Variables.trackingenabled=true">
+						<then>
+				        	<history TABLE="Variables.assettype" ASSET="Variables.assetid" LIST="ItsHistory"/>
+						   <if COND="ItsHistory.#numRows!=0">
+						    <then>
+								<if COND="ItsHistory.lockedby!=Variables.empty">
+								<then>
+			     					<setvar NAME="canapprove" VALUE="false"/>
+						     		<ASSET.LOAD NAME="failedasset" OBJECTID="Variables.assetid" TYPE="Variables.assettype"/>
+									<ASSET.GET NAME="failedasset" FIELD="name"/>
+									<ASSET.GETASSETTYPE NAME="failedasset" OUTNAME="at"/>
+									
+									<ASSETTYPE.GET NAME="at" FIELD="description"/>
+									<XLAT.LOOKUP KEY="dvin/UI/ApprovalStatus-CannotApproveCheckedOut" name="Variables.name" description="Variables.description" EVALALL="false" VARNAME="_xlat_CannotApprove"/>
+							      <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				        				<argument NAME="msgtext" VALUE="Variables._xlat_CannotApprove"/>
+										<argument NAME="severity" VALUE="info"/>	
+							     	</callelement>
+								</then>
+								</if>
+							</then>
+							</if>
+					    </then>
+						</if>
+				</else>
+				</if>
+					
+				<!-- if we can approve this asset, add it to the list -->
+				<if COND="Variables.canapprove=true">
+				<then>
+				    <LISTOBJECT.ADDROW NAME="listobject"
+				        assetid="Variables.assetid"
+				        assettype="Variables.assettype" />
+				</then>
+				</if>
+			</LOOP>
+		
+			<LISTOBJECT.TOLIST NAME="listobject" LISTVARNAME="assetlist" />
+		
+			<callelement NAME="OpenMarket/Xcelerate/Actions/ApproveAssets">
+			     <argument NAME="list" VALUE="assetlist"/>
+			     <argument NAME="recursive" VALUE="false"/>
+			     <argument NAME="force" VALUE="false"/>
+			     <argument NAME="target" VALUE="Variables.target"/>
+			</callelement>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/ApprovalStatusFront">
+		<ARGUMENT NAME="AssetType" VALUE="Variables.heldAssetType"/>
+		<ARGUMENT NAME="id" VALUE="Variables.heldid"/>
+		<ARGUMENT NAME="target" VALUE="Variables.target"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+
+<IF COND="Variables.upcommand=cancel">
+<THEN>
+	<!-- cancel -->
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<ARGUMENT NAME="id" VALUE="Variables.id"/>
+		<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+	</CALLELEMENT>
+	<if COND="IsError.Variables.errno=true">
+		<then>
+		<if COND="Variables.errno!=-101">
+			<then>
+			<br/><XLAT.STREAM KEY="dvin/UI/Error/ContentDetailsFrontATidfailerrno" errno="Variables.errno" id="Variables.id" AssetType="Variables.AssetType" EVALALL="false"/>
+			</then>
+		</if>
+		</then>
+	</if>
+
+</THEN>
+</IF>
+
+
+
+</FTCS> 

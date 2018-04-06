@@ -1,0 +1,248 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/RevTrackControl
+-
+- INPUT
+-  id - id of asset
+-  AssetType - AssetType of asset
+-  command - (checkin,checkout)
+- OUTPUT
+-
+-->
+<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+<SETVAR NAME="pubid" VALUE="Variables.Node1"/>
+<SETSSVAR NAME="pubid" VALUE="Variables.pubid"/>
+<SETCOUNTER NAME="currentNode" VALUE="3"/>
+<LOOP UNTIL="IsVariable.NodeCounters.currentNode=false">
+	<INCCOUNTER NAME="currentNode" VALUE="1"/>
+</LOOP>
+<INCCOUNTER NAME="currentNode" VALUE="-2"/>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+   <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+</callelement>
+<if COND="Variables.trackingenabled=true">
+<then>
+   <IF COND="Variables.command=checkout">
+   <THEN>
+      <!-- 
+       Check to see if tracking is enabled on
+       the content category. If not, then
+       indicate error and get out.
+   
+       Check to see if anybody has it locked. If
+       current user has it locked, then we're all
+       done. If somebody else has it locked, then
+       we cannot lock it.
+      -->
+         <setvar NAME="assetObjectName" VALUE="theAsset"/>
+         <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetObjectName"/>
+         <ASSET.GET NAME="Variables.assetObjectName" FIELD="id" OUTPUT="id"/>
+         <ASSET.GET NAME="Variables.assetObjectName" FIELD="name" OUTPUT="assetname"/>
+		 <ASSET.GET NAME="Variables.assetObjectName" FIELD="status" OUTPUT="notvoid"/>
+	     <IF COND="Variables.notvoid=VO">
+	     <THEN> <!-- check to see if the existing asset is not deleted -->
+		    <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>  
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+		 </THEN>
+		 <ELSE>
+         <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+            <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+            <argument NAME="assetObjectName" VALUE="Variables.assetObjectName"/>
+            <argument NAME="Function" VALUE="checkout"/>
+         </callelement>
+   
+         <if COND="Variables.PrivsFailed=true">
+         <then>
+            <XLAT.LOOKUP KEY="dvin/CSDocLink/Variables.PrivsFailedReason" VARNAME="_XLAT_"/>
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+         </then>
+         <else>
+   
+            <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+            <setvar NAME="canlock" VALUE="false"/>
+            <if COND="ItsHistory.#numRows=0">
+            <then>
+               <setvar NAME="canlock" VALUE="true"/>
+            </then>
+            </if>
+            <if COND="ItsHistory.lockedby=Variables.empty">
+            <then>
+               <setvar NAME="canlock" VALUE="true"/>
+            </then>
+            </if>
+            <!-- check some more -->
+            <if COND="Variables.canlock=true">
+            <then>
+               <!-- this is when we can lock it! -->
+               <setvar NAME="errno" VALUE="0"/>
+               <ASSET.CHECKOUT OBJECTTYPE="Variables.AssetType" OBJECTID="Variables.id"/>
+               <if COND="Variables.errno=0">
+               <then>
+			   
+                  <AFFECTEDNODES>
+            			<ICS.RESOLVEVARIABLES NAME="$(Variables.Node$(Counters.currentNode))" OUTPUT="parentID" DELIMITED="true"/>
+                     <NODE NODEID="Variables.Edited" PARENTID="Variables.parentID" REPLACEALL="Variables.Edited,Variables.parentID"/>
+            		</AFFECTEDNODES>
+				</then>
+               <else>
+                  <XLAT.LOOKUP KEY="dvin/CSDocLink/LockWillFail" VARNAME="_XLAT_"/>
+                <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+				
+               </else>
+               </if>
+            </then>
+            <else>
+               <if COND="ItsHistory.lockedby=SessionVariables.username">
+               <then>
+                  <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/Lock-alreadyCheckedOut" VARNAME="_xlat_checkedout"/>
+                  <ERROR CODE="4" DESCRIPTION="Variables._xlat_checkedout" SEVERITY="2" REPLACEALL="Variables._xlat_checkedout"/>
+				
+               </then>
+               <else>
+                  <XLAT.LOOKUP KEY="dvin/CSDocLink/OtherLock" VARNAME="_XLAT_"/>
+                  <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+               </else>
+               </if>
+            </else>
+            </if>
+         </else>
+         </if>
+		 </ELSE>
+		 </IF> 
+	 </THEN>
+   <ELSE>
+      <IF COND="Variables.command=undo">
+      <THEN>
+         <!-- 
+          Check to see if tracking is enabled on
+          the content category. If not, then
+          indicate error and get out.
+      
+          Check to see if anybody has it locked. If
+          current user has it locked, then we're okay
+          to unlock. Else, report an error
+      
+          WARNING: This file is called "Unlock" for symmetry
+          with the Lock function. The actual parallel
+          for Lock in the ContentServer world is "Release".
+          This is the function that is executed.
+         -->
+         <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+         <if COND="ItsHistory.lockedby=SessionVariables.username">
+         <then>
+            <!-- this is when we can unlock it! -->
+            <!-- unlock it and report status -->
+            <setvar NAME="errno" VALUE="0"/>
+            <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>
+		    <!-- check to see if the asset is not deleted -->
+			<ASSET.GET NAME="Release-Asset" FIELD="status" OUTPUT="notvoid"/>
+	        <IF COND="Variables.notvoid=VO">
+	         <THEN>
+		    <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>  
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+		     </THEN>
+		     <ELSE>
+
+            <ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+             <if COND="Variables.errno=0">
+            <then>
+               <AFFECTEDNODES>
+                  <ICS.RESOLVEVARIABLES NAME="$(Variables.Node$(Counters.currentNode))" OUTPUT="parentID" DELIMITED="true"/>
+                  <NODE NODEID="Variables.Edited" PARENTID="Variables.parentID" REPLACEALL="Variables.Edited,Variables.parentID"/>
+               </AFFECTEDNODES>
+   
+               <!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+   	       <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType"
+			ASSETID="Variables.id"/>
+   
+            </then>
+            <else>
+               <XLAT.LOOKUP KEY="dvin/CSDocLink/UnlockFailed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+               <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+            </else>
+            </if>
+			</ELSE>
+			</IF> <!-- condtion to check if asset is still enabled ends here -->
+         </then>
+         <else>
+            <XLAT.LOOKUP KEY="dvin/CSDocLink/UnlockFailed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+         </else>
+         </if>
+      </THEN>
+      <ELSE>
+         <IF COND="Variables.command=checkin">
+         <THEN>
+             <!-- ask for checkin message if haven't already -->
+             <IF COND="Variables.checkin:Comments:SET!=true">
+             <THEN>
+                 <ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+                    <XLAT.LOOKUP KEY="dvin/Common/Comments" VARNAME="_XLAT_"/>
+                    <REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+                        <XLAT.LOOKUP KEY="dvin/Common/Comments" VARNAME="_XLAT_"/>
+                        <REQUIREDVALUE NAME="Comments" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="false" REPLACEALL="Variables._XLAT_"/>
+                        <XLAT.LOOKUP KEY="dvin/Common/KeepCheckedOut" VARNAME="_XLAT_"/>
+                        <REQUIREDVALUE NAME="KeepCheckedout" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+                            <OPTIONS>
+                                <XLAT.LOOKUP KEY="dvin/Common/No" VARNAME="_XLAT_NO"/>
+                                <XLAT.LOOKUP KEY="dvin/Common/Yes" VARNAME="_XLAT_YES"/>
+                                <OPTION VALUE="false" SELECTED="true" DISPLAYVALUE="Variables._XLAT_NO" REPLACEALL="Variables._XLAT_NO"/>
+                                <OPTION VALUE="true" SELECTED="false" DISPLAYVALUE="Variables._XLAT_YES" REPLACEALL="Variables._XLAT_YES"/>
+                            </OPTIONS>
+                        </REQUIREDVALUE>
+                    </REQUIREDINFORMATION>
+                </ERROR>
+             </THEN>
+             <ELSE>
+                <setvar NAME="errno" VALUE="0"/>
+                <IF COND="IsVariable.checkin:Comments=false">
+                <THEN>
+                    <SETVAR NAME="checkin:Comments" VALUE="Variables.empty"/>
+                </THEN>
+                </IF>
+                <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Commit-Asset"/>
+				 <!-- check to see if the asset is not deleted -->
+				<ASSET.GET NAME="Commit-Asset" FIELD="status" OUTPUT="notvoid"/>
+	            <IF COND="Variables.notvoid=VO">
+	            <THEN>
+		         <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>  
+                 <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+		        </THEN>
+		         <ELSE>
+                <ASSET.CHECKIN NAME="Commit-Asset" ANNOTATION="Variables.checkin:Comments" CHECKOUT="Variables.checkin:KeepCheckedout"/>
+                <if COND="Variables.errno=0">
+                <then>
+                   <!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+    	       <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType"
+    			ASSETID="Variables.id"/>
+                   <AFFECTEDNODES>
+                      <ICS.RESOLVEVARIABLES NAME="$(Variables.Node$(Counters.currentNode))" OUTPUT="parentID" DELIMITED="true"/>
+                      <NODE NODEID="Variables.Edited" PARENTID="Variables.parentID" REPLACEALL="Variables.Edited,Variables.parentID"/>
+                   </AFFECTEDNODES>
+                </then>
+                <else>
+                   <XLAT.LOOKUP KEY="dvin/CSDocLink/CommitFailed" VARNAME="_XLAT_"/>
+                   <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+                </else>
+                </if>
+			  </ELSE>
+             </IF> <!-- status VO is closed here -->
+             </ELSE>
+             </IF>
+         </THEN>
+         </IF>
+      </ELSE>
+      </IF>
+   </ELSE>
+   </IF>
+</then>
+<else>
+   <!-- lock is going to fail -->
+   <XLAT.LOOKUP KEY="dvin/CSDocLink/LockWillFail" VARNAME="_XLAT_"/>
+   <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+</else>
+</if>
+
+</FTCS> 

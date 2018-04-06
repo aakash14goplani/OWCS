@@ -1,0 +1,365 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/XMLPost/SetAttributes.xml $ 
+$Revision: 27 $ 
+$Modtime: 8/02/04 3:36p $ 
+-->
+
+<!-- for each attr, make sure there is post data for it -->
+<!-- parse attribute values in the form: Groupname1=val1;val2:Groupname2=valx;valy -->
+<LOOP LIST="Variables.attrlist">
+    <ASSET.LOAD NAME="ainst" TYPE="Variables.AttributeType" FIELD="id" VALUE="Variables.attrlist.assetid"/>
+	<COMPLEXASSET.GETNAME NAME="ainst" VARNAME="cs_currentAttrName"/>
+	<ATTRIBUTE.GETTYPE NAME="ainst" VARNAME="attrtype"/>
+	<ATTRIBUTE.GETVALUESTYLE NAME="ainst" VARNAME="style"/>
+	<ATTRIBUTE.GETASSETTYPE NAME="ainst" VARNAME="attrassettype"/>
+	<setvar NAME="required" VALUE="Variables.attrlist.required"/>
+	<SETVAR NAME="hasData" VALUE="false"/> 
+    <IF COND="Variables.attrtype=blob">
+    <THEN>
+        <SETVAR NAME="attrtype" VALUE="url"/>
+    </THEN>
+    </IF>
+	<IF COND="Variables.attrtype=url">
+	<THEN>
+        <setvar NAME="errno" VALUE="0"/>
+        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_file)" OUTPUT="currentValue" DELIMITED="true"/>
+        <IF COND="Variables.errno=0">
+        <THEN>
+            <SETVAR NAME="hasData" VALUE="true"/>
+        </THEN>
+        <ELSE>
+            <setvar NAME="errno" VALUE="0"/>
+            <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_1__file)" OUTPUT="currentValue" DELIMITED="true"/>
+            <IF COND="Variables.errno=0">
+            <THEN>
+                <SETVAR NAME="hasData" VALUE="true"/>
+            </THEN>
+            </IF>
+        </ELSE>
+        </IF>
+	</THEN>
+	<ELSE>
+		<setvar NAME="errno" VALUE="0"/>
+        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName))" OUTPUT="currentValue" DELIMITED="true"/>
+        <IF COND="Variables.errno=0">
+        <THEN>
+            <SETVAR NAME="hasData" VALUE="true"/>
+        </THEN>
+        </IF>
+	</ELSE>
+	</IF>
+    <setvar NAME="errno" VALUE="0"/>
+	<IF COND="Variables.hasData=true">
+   <THEN>
+		<IF COND="Variables.attrtype!=url">
+		<THEN>
+			<setvar NAME="goodvalue" VALUE="no"/>
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<STRING.STREAM VALUE="Setting product attr: Variables.cs_currentAttrName to Variables.currentValue"/>
+			</then>
+			</if>
+			<IF COND="IsVariable._xmlpostnamevaldelim_=true">
+            <THEN>
+                <SETVAR NAME="DELIM" VALUE="Variables._xmlpostnamevaldelim_"/>
+            </THEN>
+            <ELSE>
+                <SETVAR NAME="DELIM" VALUE=":"/>
+            </ELSE>
+            </IF>
+            <STRINGLIST NAME="nameval" STR="Variables.currentValue" DELIM="Variables.DELIM"/>
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<CSVAR NAME="colon delimiter list has nameval.#numRows rows."/>
+			</then>
+			</if>
+			<IF COND="IsVariable._xmlpostequaldelim_=true">
+            <THEN>
+                <SETVAR NAME="DELIM" VALUE="Variables._xmlpostequaldelim_"/>
+            </THEN>
+            <ELSE>
+                <SETVAR NAME="DELIM" VALUE="="/>
+            </ELSE>
+            </IF>
+			<IF COND="nameval.#numRows!=1">
+			<THEN>
+				<LOOP LIST="nameval">
+                    <STRINGLIST NAME="split" STR="nameval.ITEM" DELIM="Variables.DELIM"/>
+					<if COND="IsVariable.xmlpostdebug=true">
+					<then>
+					<CSVAR NAME="equals delimiter list has split.#numRows rows."/>
+					</then>
+					</if>
+					
+					<IF COND="split.#numRows!=1">
+					<THEN>
+						<LOOP LIST="split">
+							<IF COND="split.ITEM=Variables.assetname">
+							<THEN>
+								<SETROW LIST="split" ACTION="NEXT"/>
+								<setvar NAME="currentValue" VALUE="split.ITEM"/>
+								<setvar NAME="goodvalue" VALUE="yes"/>
+							</THEN>
+							</IF>
+						</LOOP>
+					</THEN>
+					<ELSE>
+						<if COND="IsVariable.xmlpostdebug=true">
+						<then>
+						Attribute (<STRING.STREAM VALUE="Variables.cs_currentAttrName"/>) value data invalid:
+						Colon delimited but no name-value pairs.
+						</then>
+						</if>
+						
+					</ELSE>
+					</IF>
+				</LOOP>
+			</THEN>
+			<ELSE>
+				<setvar NAME="goodvalue" VALUE="yes"/>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<setvar NAME="goodvalue" VALUE="yes"/>
+		</ELSE>
+		</IF>
+		<if COND="IsVariable.xmlpostdebug=true">
+		<then>
+		<STRING.STREAM VALUE="Set...value is: Variables.currentValue"/>
+		</then>
+		</if>
+		
+		
+		<IF COND="Variables.goodvalue=no">
+		<THEN>
+			<IF COND="Variables.required=T">
+			<THEN>
+				<if COND="IsVariable.xmlpostdebug=true">
+				<then>
+				<STRING.STREAM VALUE="Required attr: Variables.cs_currentAttrName not found in post data."/>
+				</then>
+				</if>
+				
+				<setvar NAME="PostDataIsOk" VALUE="no"/>
+				<THROWEXCEPTION/>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.style=single">
+		<THEN>
+			<URL.UNPACK VALUE="Variables.currentValue" VARNAME="unpacked"/>
+			<IF COND="Variables.errno!=0">
+			<THEN>
+				<THROWEXCEPTION/>	
+			</THEN>
+			</IF>
+			<IF COND="Variables.attrassettype!=Variables.empty">
+			<THEN>
+				<setvar NAME="errno" VALUE="0"/>
+				<ASSET.LIST TYPE="Variables.attrassettype" LIST="pointerList" FIELD1="name" VALUE1="Variables.unpacked"/>
+				<IF COND="Variables.errno=0">
+				<THEN>
+					<setvar NAME="unpacked" VALUE="pointerList.id"/>
+				</THEN>
+				<ELSE>
+					<if COND="IsVariable.xmlpostdebug=true">
+					<then>
+					<STRING.STREAM VALUE="Error: Variables.cs_currentAttrName could not load (Variables.attrassettype) Variables.unpacked."/>
+					</then>
+					</if>
+					
+					<setvar NAME="PostDataIsOk" VALUE="no"/>
+					<THROWEXCEPTION/>
+				</ELSE>
+				</IF>
+			</THEN>
+			</IF>
+			<IF COND="Variables.assettype=Variables._ASSET_">
+			<THEN>
+                <SETVAR NAME="errno" VALUE="0"/>
+                <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_file)" OUTPUT="theFilename" DELIMITED="true"/>
+				<if COND="Variables.errno=0">
+				<then>
+					<FlexAsset.setsingleattribute  NAME="pinst" ID="Variables.attrlist.assetid" VALUE="Variables.theFilename" CGI="Variables.cs_currentAttrName"/>
+                    <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+                        <ARGUMENT NAME="cs_InstanceName" VALUE="pinst"/>
+                        <ARGUMENT NAME="cs_FieldName" VALUE="Attribute_Variables.cs_currentAttrName"/>
+                        <ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+                    </CALLELEMENT>
+				</then>
+				<else>
+                    <SETVAR NAME="errno" VALUE="0"/>
+					<FLEXASSET.SETSINGLEATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid" VALUE="Variables.unpacked"/>
+				</else>
+				</if>
+
+			</THEN>
+			<ELSE>
+                <SETVAR NAME="errno" VALUE="0"/>
+                <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_file)" OUTPUT="theFilename" DELIMITED="true"/>
+				<if COND="Variables.errno=0">
+				<then>
+					<FlexGroup.setsingleattribute  NAME="pginst" ID="Variables.attrlist.assetid" VALUE="Variables.theFilename" CGI="Variables.cs_currentAttrName"/>
+                    <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+                        <ARGUMENT NAME="cs_InstanceName" VALUE="pginst"/>
+                        <ARGUMENT NAME="cs_FieldName" VALUE="Attribute_Variables.cs_currentAttrName"/>
+                        <ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+                    </CALLELEMENT>
+				</then>
+				<else>
+                    <SETVAR NAME="errno" VALUE="0"/>
+					<FLEXGROUP.SETSINGLEATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid" VALUE="Variables.unpacked"/>
+				</else>
+				</if>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			Multiple or multipleordered:
+            <IF COND="Variables.attrtype=url">
+            <THEN>
+                <SETCOUNTER NAME="currentFile" VALUE="1"/>
+                <LISTOBJECT.CREATE NAME="lTempObjectIDs" COLUMNS="id"/>
+                <LISTOBJECT.CREATE NAME="lEmptyList" COLUMNS="urlvalue"/>
+                <LISTOBJECT.TOLIST NAME="lEmptyList" LISTVARNAME="vallist"/>
+                <SETVAR NAME="doneVar" VALUE="no"/>
+                <LOOP UNTIL="Variables.doneVar=yes">
+                        <SETVAR NAME="errno" VALUE="0"/>
+                        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_$(Counters.currentFile)__file)" OUTPUT="theFilename" DELIMITED="true"/>
+                        <IF COND="Variables.errno!=0">
+                        <THEN>
+                                <SETVAR NAME="errno" VALUE="0"/>
+                                <SETVAR NAME="doneVar" VALUE="yes"/>
+                        </THEN>
+                        <ELSE>
+                                <TEMPOBJECTS.SET BINVARNAME="Variables.cs_currentAttrName_Counters.currentFile_" FILE="Variables.theFilename" VARNAME="tempid"/>
+                                <LISTOBJECT.ADDROW NAME="lTempObjectIDs" id="Variables.tempid"/>
+                                <INCCOUNTER NAME="currentFile" VALUE="1"/>
+                        </ELSE>
+                        </IF>
+                </LOOP>
+                <LISTOBJECT.TOLIST NAME="lTempObjectIDs" LISTVARNAME="tempObjectIDs"/>
+                <IF COND="tempObjectIDs.#numRows!=0">
+                <THEN>
+                    <TEMPOBJECTS.GETLIST LISTVARNAME="vallist" COLUMN="urlvalue" LIST="tempObjectIDs"/>
+                    <IF COND="Variables.style=multipleordered">
+                    <THEN>
+                        <setvar name="EditingStyle" value="O"/>
+                    </THEN>
+                    </IF>
+                    <CALLELEMENT NAME="OpenMarket/Gator/Util/FixBLOBList">
+                      <ARGUMENT NAME="cs_ListToReplace" VALUE="vallist"/>
+                    </CALLELEMENT>
+                </THEN>
+                </IF>
+            </THEN>
+            <ELSE>
+                 <IF COND="IsVariable._xmlpostmulvaldelim_=true">
+                <THEN>
+                    <SETVAR NAME="DELIM" VALUE="Variables._xmlpostmulvaldelim_"/>
+                </THEN>
+                <ELSE>
+                    <SETVAR NAME="DELIM" VALUE=";"/>
+                </ELSE>
+                </IF>
+                   <STRINGLIST NAME="linst" STR="Variables.currentValue" DELIM="Variables.DELIM"/>
+       			<IF COND="Variables.style=multipleordered">
+                <THEN>
+                    <LISTOBJECT.CREATE NAME="valinst" COLUMNS="value,ordinal"/>
+                </THEN>
+                <ELSE>
+                    <LISTOBJECT.CREATE NAME="valinst" COLUMNS="value"/>
+                </ELSE>
+                </IF>
+       			<LOOP LIST="linst">
+       				<URL.UNPACK VALUE="linst.ITEM" VARNAME="unpacked"/>
+       				<IF COND="Variables.errno!=0">
+       				<THEN>
+       					<THROWEXCEPTION/>
+       				</THEN>
+       				</IF>
+       				<IF COND="Variables.attrassettype!=Variables.empty">
+       				<THEN>
+       					<setvar NAME="errno" VALUE="0"/>
+       					<ASSET.LIST TYPE="Variables.attrassettype" LIST="pointerList" FIELD1="name" VALUE1="Variables.unpacked"/>
+       					<IF COND="Variables.errno=0">
+       					<THEN>
+       						<setvar NAME="unpacked" VALUE="pointerList.id"/>
+       					</THEN>
+       					<ELSE>
+       						<if COND="IsVariable.xmlpostdebug=true">
+   						<then>
+   						<STRING.STREAM VALUE="Error: Variables.cs_currentAttrName could not load (Variables.attrassettype) Variables.unpacked."/>
+   						</then>
+   						</if>
+   						
+       						<setvar NAME="PostDataIsOk" VALUE="no"/>
+       						<THROWEXCEPTION/>
+       					</ELSE>
+       					</IF>
+       				</THEN>
+       				</IF>
+       				
+                    <IF COND="Variables.style=multipleordered">
+                    <THEN>
+                        <LISTOBJECT.ADDROW NAME="valinst" value="Variables.unpacked" ordinal="linst.#curRow"/>
+                    </THEN>
+                    <ELSE>
+                        <LISTOBJECT.ADDROW NAME="valinst" value="Variables.unpacked"/>
+                    </ELSE>
+                    </IF>
+       				<if COND="IsVariable.xmlpostdebug=true">
+   				<then>
+   				Unpacked: <STRING.STREAM VALUE="Variables.unpacked "/>
+   				</then>
+   				</if>
+   				
+       			</LOOP>
+               <LISTOBJECT.TOLIST NAME="valinst" LISTVARNAME="vallist"/>
+             </ELSE>
+            </IF>
+			
+			<IF COND="Variables.assettype=Variables._ASSET_">
+			<THEN>
+				<FLEXASSET.SETATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+            </THEN>
+			<ELSE>
+				<FLEXGROUP.SETATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+			</ELSE>
+			</IF>
+            
+            <IF COND="IsList.tempObjectIDs=true">
+            <THEN>
+                <LOOP LIST="tempObjectIDs">
+                    <TEMPOBJECTS.DELETE ID="tempObjectIDs.id"/>
+                </LOOP>
+            </THEN>
+            </IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<IF COND="Variables.required=T">
+		<THEN>
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<STRING.STREAM VALUE="Required attr: Variables.cs_currentAttrName not found in post data."/>
+			<setvar NAME="PostDataIsOk" VALUE="no"/>
+			</then>
+			</if>
+			
+			<THROWEXCEPTION/>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+</LOOP>
+
+</FTCS>

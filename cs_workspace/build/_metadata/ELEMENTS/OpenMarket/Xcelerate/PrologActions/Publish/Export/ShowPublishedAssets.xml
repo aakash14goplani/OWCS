@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Export/ShowPublishedAssets
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- Export references -->
+<if COND="IsVariable.pubtgt:URLPREFIX!=true">
+<then> 
+    <substitute STR="CS.Property.cs.pgexportfolder" WHAT="\" WITH="/" OUTSTR="pgexportfolder" />
+    <setvar NAME="folder" VALUE="file://Variables.pgexportfolder" />
+    <if COND="IsVariable.pubtgt:DIR=true">
+    <then>
+         <BEGINS STR="Variables.pubtgt:DIR" WHAT="/"/>
+         <if COND="Variables.errno=1">
+         <then>              
+             <setvar NAME="folder" VALUE="Variables.folderVariables.DIR" />
+             <setvar NAME="errno" VALUE="0" />
+         </then>
+         <else>
+             <setvar NAME="folder" VALUE="Variables.folder/Variables.DIR" />
+         </else>
+         </if> 
+    </then>
+    </if>
+ </then>
+ <else>
+     <BEGINS STR="Variables.pubtgt:URLPREFIX" WHAT="/" />
+     <if COND="Variables.errno=1">
+     <then>
+         <setvar NAME="folder" VALUE="Variables.pubtgt:URLPREFIX" />
+         <setvar NAME="errno" VALUE="0"/>
+     </then>
+     <else>
+         <setvar NAME="folder" VALUE="/Variables.pubtgt:URLPREFIX" />
+     </else>
+     </if> 
+ </else>
+ </if>
+ <callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ReferencesTile">
+     <argument NAME="command" VALUE="report"/>
+     <argument NAME="publishoutput" VALUE="Variables.output"/>
+     <argument NAME="folder" VALUE="Variables.folder"/>
+	 <argument NAME="showUnapprove" VALUE="false"/>
+ </callelement>
+
+
+</FTCS> 

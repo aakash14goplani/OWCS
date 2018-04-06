@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Scripts/TextAreaExpand
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+
+//Global variable that stores the reference to the parent element of the div containing the text area
+var parentRef;
+
+//ahowes: javascript method to expand a textarea to be full screen. Useful for code editing.
+function embiggen(elementName) {
+		//[KGF] Find the temp iframe and set its width and height so that it hides the drop down
+		//This is required for IE6
+		var iframeRef = document.getElementById("tempIFrame");
+    if (iframeRef) {
+      iframeRef.style.display = "";	
+      iframeRef.style.zIndex = '999';
+      iframeRef.style.opacity = '0';
+      iframeRef.style.filter = 'alpha(opacity=0)';
+      iframeRef.style.position = "absolute";
+      iframeRef.style.top = "0";
+      iframeRef.style.left = "0";
+      iframeRef.style.width = "100%";
+      iframeRef.style.height = "100%";
+      iframeRef.style.border = "none";
+    }
+    
+		//Find div around textarea, set its width and height appropriately
+	  var codearea = document.getElementById("codearea");
+	  codearea.style.display = "block";
+	  codearea.style.position = "absolute";
+	  codearea.style.left = "0px";
+	  codearea.style.top = "0px";
+	  codearea.style.zIndex = '1000';
+	  //codearea.style.textAlign = "right";
+		codearea.style.width="100%";
+		codearea.style.height="98%";
+		
+		parentRef = codearea.parentNode;
+		parentRef.removeChild(codearea);
+		document.forms[0].appendChild(codearea);
+			
+		//find textarea and apply viewport size
+		var code2textarea = document.getElementById(elementName);
+		code2textarea.style.width = "100%";
+		code2textarea.style.height = "96%"; //safe value to prevent scroll
+		code2textarea.style.top="0px";
+		code2textarea.style.left="0px";
+	
+		//flip from make big to return to small
+        var biglink = document.getElementById("embiggen");
+        var smalllink = document.getElementById("emsmallen");
+        biglink.style.display = "none";
+        smalllink.style.display = "block";
+}
+
+//ahowes: reverts full screen textarea to its default size.         
+function emsmallen(elementName) {
+	//find div and reset
+    var codearea = document.getElementById("codearea");
+    //codearea.style.textAlign = "right";
+		
+		var iframeRef = document.getElementById("tempIFrame");
+    if (iframeRef)
+      iframeRef.style.display="none";
+    
+    document.forms[0].removeChild(codearea);
+		parentRef.appendChild(codearea);
+		
+		codearea.style.display = "";
+        codearea.style.position = "";
+        codearea.style.left = "";
+        codearea.style.top = "";
+        codearea.style.zindex = "";
+        
+		//find textarea and restore
+        var code2textarea = document.getElementById(elementName);
+        code2textarea.style.width = "";
+        code2textarea.style.height = "";
+        
+        //flip links back to embiggen link
+        var biglink = document.getElementById("embiggen");
+        var smalllink = document.getElementById("emsmallen");                
+        biglink.style.display = "block";
+        smalllink.style.display = "none";
+}
+
+]]>
+</SCRIPT>
+
+</ftcs>
+

@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateA/install/StarterPub/ElementCatalog/OpenMarket/Xcelerate/SamplePub/Installation/Article.xml $
+$Revision: 13 $
+$Modtime: 7/16/01 2:48p $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-    Element used to create the Assets - i.e, put an entry in the AssetType table
+- 			and calls Install on the Asset's java class
+-
+- INPUT
+-    command - command to process (deinstall or install)
+-    catalog - name of asset
+-	  assetDefDir - (optional) name of upload directory for this asset
+-
+- OUTPUT
+-    result - result message string
+-->
+
+
+						
+	<SETVAR NAME="assetname" VALUE="Article"/>
+<!-- Check for a deinstall command -->
+
+	<IF COND="Variables.command=deinstall">
+	<THEN>
+<!-- Attempt to delete the catalog -->
+
+     	<ASSET.DEINSTALL TYPE="Article"/> 
+
+<!-- Check for success -->
+
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="result" VALUE="errno Variables.errno from deinstall of Article"/>
+		</THEN>
+		<ELSE>
+<!-- Delete the entry from the AssetType table -->
+   		<ASSETTYPE.LOAD NAME="theAssetType" TYPE="Article"/>
+
+<!-- Check for success -->
+
+			<IF COND="IsError.Variables.errno=true">
+			<THEN>
+				<SETVAR NAME="result" VALUE="errno Variables.errno loading asset type, Article"/>
+			</THEN>
+			<ELSE>
+				<ASSETTYPE.DELETE NAME="theAssetType"/>
+
+<!-- Check for success -->
+
+				<IF COND="IsError.Variables.errno=true">
+				<THEN>
+					<SETVAR NAME="result" VALUE="errno Variables.errno deleting asset type, Article"/>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+ 
+<!-- Check for an install command -->
+
+		<IF COND="Variables.command=install">
+		<THEN>
+
+<!-- Attempt to create the entry in the AssetType table -->
+
+     		<ASSETTYPE.CREATE NAME="theAssetType"/>
+<!-- Check for success -->
+
+			<IF COND="IsError.Variables.errno=true">
+			<THEN>
+				<SETVAR NAME="result" VALUE="errno Variables.errno creating an asset type, Variables.assetname"/>
+			</THEN>
+			</IF>
+
+			<SETVAR NAME="at:assettype" VALUE="Article"/>
+			<SETVAR NAME="at:logic" VALUE="com.openmarket.sampleasset.asset.Article"/>
+			<SETVAR NAME="at:description" VALUE="Article"/>
+			<SETVAR NAME="at:plural" VALUE="Articles"/>
+			<SETVAR NAME="at:canbechild" VALUE="T"/>
+
+         <ASSETTYPE.GATHER NAME="theAssetType" PREFIX="at"/>
+         <ASSETTYPE.SAVE NAME="theAssetType"/>
+<!-- Check for success -->
+
+			<IF COND="IsError.Variables.errno=true">
+			<THEN>
+				<SETVAR NAME="result" VALUE="errno Variables.errno from saving asset type, Article"/>
+			</THEN>
+			<ELSE>
+<!-- Create the Asset table -->
+				<IF COND="IsVariable.assetDefDir=true">
+				<THEN>
+ 	  				<ASSET.INSTALL TYPE="Variables.assetname" CLASS="com.openmarket.sampleasset.asset.Article" DIR="Variables.assetDefDir" ACL="Browser,SiteGod,xceleditor,xceladmin"/>
+				</THEN>
+				<ELSE>
+	 				<ASSET.INSTALL TYPE="Variables.assetname" CLASS="com.openmarket.sampleasset.asset.Article" ACL="Browser,SiteGod,xceleditor,xceladmin" /> 
+				</ELSE>
+				</IF>
+
+				<IF COND="IsError.Variables.errno=true">
+				<THEN>
+					<SETVAR NAME="result" VALUE="errno Variables.errno from installing asset, Article with com.openmarket.sampleasset.asset.Article"/>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>
+			<REMOVEVAR NAME="assetDefDir"/>
+	
+		</THEN>
+		</IF>
+</FTCS>

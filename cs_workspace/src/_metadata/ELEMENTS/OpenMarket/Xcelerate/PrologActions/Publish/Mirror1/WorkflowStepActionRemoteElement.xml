@@ -1,0 +1,23 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/StartMenuRemoteElement
+-
+-- INPUT
+--	sessionid
+--
+-- OUTPUT
+--
+-->
+
+<WORKFLOWENGINE.SAVESTEPACTIONOBJECTS SESSIONID="Variables.sessionid"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="saveerrno" VALUE="Variables.errno"/>
+	<XLAT.LOOKUP VARNAME="result" KEY="dvin/UI/Error/workflow.savestepactionobjectsdetail1" errno="Variables.errno" sessionid="Variables.sessionid" errdetail1="Variables.errdetail1" EVALALL="false"/>
+	<setvar NAME="errno" VALUE="Variables.saveerrno"/>
+	<logmsg STR="Error from WORKFLOWENGINE.SAVESTEPACTIONOBJECTS for session Variables.sessionid Error Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+</FTCS>

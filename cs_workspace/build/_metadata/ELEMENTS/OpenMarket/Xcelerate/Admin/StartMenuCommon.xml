@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+      In order to make the default arguments correctly reflect the available fields, we need to know the definition of the
+      flex parent/assets.  For standard assets subtype doesn't matter.  If we know the asset type coming into this form and
+      it is a flex asset or parent then we'll show a small form asking for the definition.  If we know the asset type and
+      its not a flex asset or parent then we'll go straight to the main form.  If we don't know the asset type we'll show the
+      small form asking for assettype and possibly definition before going to the main form.
+
+      Once we know the defintion of the flex asset/parent we can use asset.inspect to get the list of fields to show in
+      the default argument list.
+
+      Also a defintion of 'Any' can be selected if you don't care about setting default arguments.
+
+      Modified:  Feb 08, 2011
+      Reason:    Add the ability to assign defaul.t Parent Values to Parent Definitions
+
+      Example: TASK  Enhancement  -- User Selects  Media (Media_C) assetType and selects a specific
+              Media Definition  FSSII_Image ( Media_D) now we shuld also
+              1) Query for the Media Parent Defintions ( Media_PD) and
+                 add to the list of attributes ( SV/ Asset ) that user can assign
+                 the default values.
+-->
+
+    <IF COND="IsElement.OpenMarket/Gator/FlexibleAssets/AssetMaker/complexassetmaker=true">
+    <THEN>
+
+        
+
+        <!--
+              Get the List of all Flex Asset Types and must Include
+              Both FLEX BASE and FLEX Assst Types
+          --> 
+		<ATM.GETASSETS FILTER="com.openmarket.gator.interfaces.IFlexGroupManager" LISTVARNAME="lAllFlexParents"/>
+        <ATM.GETASSETS FILTER="com.openmarket.gator.interfaces.IBaseFlexAssetManager" LISTVARNAME="lAllFlexAssets"/>
+        <HASH.CREATE NAME="hFlexTypes" LIST="lAllFlexAssets" COLUMN="assettype"/>
+        <HASH.CREATE NAME="hFlexParentTypes" LIST="lAllFlexParents" COLUMN="assettype"/>
+    </THEN>
+    <ELSE>
+        <HASH.CREATE NAME="hFlexAndParentTypes"/>
+        <HASH.CREATE NAME="hFlexTypes"/>
+        <HASH.CREATE NAME="hFlexParentTypes"/>
+
+    </ELSE>
+    </IF>
+
+</FTCS> 

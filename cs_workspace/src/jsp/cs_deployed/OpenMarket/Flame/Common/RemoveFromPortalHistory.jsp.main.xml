@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Flame/Common/RemoveFromPortalHistory</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Flame/Common/RemoveFromPortalHistory</string>
+        <string>remove asset from portal history</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Flame/Common/RemoveFromPortalHistory.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Flame/Common/RemoveFromPortalHistory.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FFlame%2FCommon%2FRemoveFromPortalHistory.jsp
+@hashval=-1323300448
+key=@ELEMENTCATALOG-OpenMarket/Flame/Common/RemoveFromPortalHistory
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:assetBean xmlns:ns2="http://www.fatwire.com/schema/rest/1.0">
+    <id>CSElement:1123866481355</id>
+    <name>FSIICommon/Login/LogoutUser</name>
+    <createdby>firstsite</createdby>
+    <createddate>2005-08-15T13:42:34.000Z</createddate>
+    <description>This element logs a user out, clearing user session objects and calling engage modules if installed.</description>
+    <publist>FirstSiteII</publist>
+    <status>PL</status>
+    <subtype></subtype>
+    <updatedby>firstsite</updatedby>
+    <updateddate>2005-08-15T13:42:34.000Z</updateddate>
+    <attribute>
+        <name>startdate</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>enddate</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>filename</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>path</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>template</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>urlexternaldoc</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>externaldoctype</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>urlexternaldocxml</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>fw_uid</name>
+        <data>
+            <stringValue>5e7c9989-046e-4b7f-a08a-f3c3594b8f19</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>id</name>
+        <data>
+            <longValue>1123866481355</longValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>fwtags</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>Webreference</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>Composition</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>Mapping</name>
+        <data>
+            <structList>
+                <item>
+                    <name>value</name>
+                    <data>
+                        <stringValue>CSElement:FSIICommon/Login/LogoutUserEngage</stringValue>
+                    </data>
+                </item>
+                <item>
+                    <name>siteid</name>
+                    <data>
+                        <stringValue>1112198287026</stringValue>
+                    </data>
+                </item>
+                <item>
+                    <name>type</name>
+                    <data>
+                        <stringValue>assetname</stringValue>
+                    </data>
+                </item>
+                <item>
+                    <name>key</name>
+                    <data>
+                        <stringValue>LogoutUserEngage</stringValue>
+                    </data>
+                </item>
+            </structList>
+        </data>
+    </attribute>
+    <attribute>
+        <name>Arguments</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>category</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>rootelement</name>
+        <data>
+            <stringValue>FSIICommon/Login/LogoutUser</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>elementname</name>
+        <data>
+            <stringValue>FSIICommon/Login/LogoutUser</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>resdetails1</name>
+        <data>
+            <stringValue>eid=1123866481355</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>resdetails2</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>url</name>
+        <data>
+            <blobValue>
+                <filename>FSIICommon/Login/LogoutUser.jsp</filename>
+                <foldername></foldername>
+                <filedata></filedata>
+            </blobValue>
+        </data>
+    </attribute>
+    <associations>
+        <href>myPathassociations</href>
+    </associations>
+</ns2:assetBean>
+
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set>
+    <dependency>
+      <depType>N</depType>
+      <resType>CSElement</resType>
+      <resId>1123866481355</resId>
+      <uid>5e7c9989-046e-4b7f-a08a-f3c3594b8f19</uid>
+    </dependency>
+  </linked-hash-set>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/FSIICommon/Login/LogoutUser.jsp|UTF-8|_storable_type\=%2FELEMENTS%2FJSP%2FFSIICommon%2FLogin%2FLogoutUser.jsp
+@hashval=1735851550
+key=CSElement-5e7c9989-046e-4b7f-a08a-f3c3594b8f19
+type=ASSETDATA
+sites=FirstSiteII
+
+==================___ END METADATA ___==================-->

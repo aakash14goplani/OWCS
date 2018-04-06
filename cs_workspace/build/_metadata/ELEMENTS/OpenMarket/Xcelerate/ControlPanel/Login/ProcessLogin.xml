@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/Login/ProcessLogin
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<REMOVEVAR NAME="loginMessage"/>
+<!-- see if the user has posted a login -->
+<IF COND="Variables.action=login">
+<THEN>        	            	
+	<SETVAR NAME="loginMessage" VALUE="Variables.empty"/>
+	<IF COND="IsVariable.username=true">
+	<THEN>
+		<!-- try to log in -->
+		<SETVAR NAME="errno" VALUE="0"/>
+		<USERMANAGER.LOGINUSER USERNAMEVARIABLE="username" PASSWORDVARIABLE="password" VARNAME="loggedIn"/>
+		<IF COND="Variables.loggedIn=true">
+		<THEN>
+			<USERMANAGER.GETLOGINUSER VARNAME="loginuser"/>
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetLocale">
+                <ARGUMENT NAME="loginuser" VALUE="Variables.loginuser"/>
+            </CALLELEMENT>
+
+			<SETVAR NAME="errno" VALUE="0"/>
+            <USERISMEMBER GROUP="xceleditor"/>
+            <IF COND="Variables.errno=0">
+            <THEN>
+            	<XLAT.LOOKUP KEY="dvin/UI/Userisnotamemberofthexceleditorgroup" VARNAME="_XLAT_"/>
+                <SETVAR NAME="loginMessage" VALUE="Variables._XLAT_"/>
+            </THEN>
+            <ELSE>
+            	<SETSSVAR NAME="_cs_environment" VALUE="preview"/>
+				<!-- see if the user has posted a publication -->
+				<IF COND="IsVariable.pubid=true">
+				<THEN>
+					<REMOVESSVAR NAME="pubid"/>
+					<SETSSVAR NAME="pubid" VALUE="Variables.pubid"/>
+				    <callelement NAME="OpenMarket/Xcelerate/Actions/Security/SetPublicationName"/>				    
+				</THEN>
+				</IF>
+			</ELSE>
+            </IF>
+        </THEN>
+        <ELSE>
+        	<XLAT.LOOKUP KEY="dvin/UI/Invalidusernameorpassword" VARNAME="_XLAT_"/>
+            <SETVAR NAME="loginMessage" VALUE="Variables._XLAT_"/>
+        </ELSE>
+        </IF>
+    </THEN>
+    <ELSE>
+    	<XLAT.LOOKUP KEY="dvin/UI/Invalidusernameorpassword" VARNAME="_XLAT_"/>
+        <SETVAR NAME="loginMessage" VALUE="Variables._XLAT_"/>
+    </ELSE>
+    </IF>
+</THEN>
+</IF>
+<IF COND="Variables.action=selectPublication">
+<THEN>
+	<REMOVESSVAR NAME="pubid"/>
+	<!-- see if the user has posted a publication -->
+	<IF COND="IsVariable.pubid=true">
+	<THEN>
+		<SETSSVAR NAME="pubid" VALUE="Variables.pubid"/>
+	    <callelement NAME="OpenMarket/Xcelerate/Actions/Security/SetPublicationName"/>				    
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</ftcs>

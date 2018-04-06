@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<IF COND="Variables.buttonImage=separator.png">
+<THEN>
+	<img width="2" height="30" style="margin: 3px 14px 0 14px" src="Variables.cs_imagedir/../js/fw/images/ui/ui/toolbarButton/Variables.buttonImage" class="buttonSeparator" REPLACEALL="Variables.cs_imagedir,Variables.buttonImage"></img>
+</THEN>
+<ELSE>
+	<div class="toolBarButton" style="background:url('Variables.cs_imagedir/../js/fw/images/ui/ui/toolbarButton/Variables.buttonImage') 0 0" onmousedown="this.style.backgroundPosition='50% 0';return false;" onmouseup="this.style.backgroundPosition='100% 0';" onmouseover="this.style.backgroundPosition='100% 0';" onmouseout="this.style.backgroundPosition='0 0';" title="Variables.toolbartitle" ALT="Variables.toolbartitle" REPLACEALL="Variables.cs_imagedir,Variables.toolbartitle,Variables.buttonImage"></div>
+</ELSE>
+</IF>
+</FTCS>

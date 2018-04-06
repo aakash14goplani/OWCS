@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/CSClient/Util/FixDate
+-
+- INPUT
+-   cs_InDate
+-   Variables.cs_OutDate
+- OUTPUT
+-
+-->
+<STRINGLIST STR="Variables.cs_InDate" NAME="lDateTime" DELIM="%20"/>
+<STRINGLIST STR="lDateTime.ITEM" NAME="lYMD" DELIM="-"/>
+<setvar name="deadline_year" VALUE="lYMD.ITEM"/>
+<SETROW LIST="lYMD" ACTION="NEXT"/>
+
+<SETCOUNTER NAME="cMonthFixer" VALUE="lYMD.ITEM"/>
+<INCCOUNTER NAME="cMonthFixer" VALUE="-1"/>
+<setvar name="deadline_month" VALUE="Counters.cMonthFixer"/>
+
+<SETROW LIST="lYMD" ACTION="NEXT"/>
+<setvar name="deadline_day" VALUE="lYMD.ITEM"/>
+
+<SETROW LIST="lDateTime" ACTION="NEXT"/>
+<STRINGLIST STR="lDateTime.ITEM" NAME="lHMS" DELIM=":"/>
+<setvar name="deadline_hour" VALUE="lHMS.ITEM"/>
+<SETROW LIST="lHMS" ACTION="NEXT"/>
+<setvar name="deadline_min" VALUE="lHMS.ITEM"/>
+
+<SETROW LIST="lDateTime" ACTION="LAST"/>
+
+<IF COND="Variables.servertimezone=true" >
+<THEN>
+<DATE.DEFAULTTZ VARNAME="dtz"/> 
+<DATE.CONVERT VARNAME="Variables.cs_OutDate" YEAR="Variables.deadline_year" MONTH="Variables.deadline_month" DAY="Variables.deadline_day" HOUR="Variables.deadline_hour" MINUTE="Variables.deadline_min" TIMEZONE="Variables.dtz" />
+</THEN>
+<ELSE>
+<DATE.CONVERT VARNAME="Variables.cs_OutDate" YEAR="Variables.deadline_year" MONTH="Variables.deadline_month" DAY="Variables.deadline_day" HOUR="Variables.deadline_hour" MINUTE="Variables.deadline_min" TIMEZONE="lDateTime.ITEM" />
+</ELSE>
+</IF>
+</ftcs>

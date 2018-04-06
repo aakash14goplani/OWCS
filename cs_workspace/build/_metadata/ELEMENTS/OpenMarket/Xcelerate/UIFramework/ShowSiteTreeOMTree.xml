@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/ShowSiteTreeOMTree.xml $ 
+$Revision: 39 $ 
+$Modtime: 3/02/04 4:38a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Display the Site Structure in the form of a tree
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<HTML>
+<HEAD>  
+<SCRIPT type="text/javascript" src="Variables.cs_imagedir/OMTree/deployJava.js" REPLACEALL="Variables.cs_imagedir">
+</SCRIPT>
+<![CDATA[
+		<script type="text/javascript">
+	
+		var minVersion  = '1.6.0';	
+		
+		function installJava()
+		{
+			var newWindow = window.open(location.protocol + '//www.java.com','JREInstall','width=500,height=500');
+			if(window.focus)
+			{
+				newWindow.focus();
+			}
+		}
+		function checkJava()
+		{
+			
+			if(!deployJava.isWebStartInstalled(minVersion))
+			{
+				document.getElementById('TreeContainerID').innerHTML = '';
+			 	document.getElementById('javaInstall').style.display = 'block';
+			}
+			
+		}
+	</script>
+	]]>
+
+	<!-- first check to see if the user is logged in or not -->
+
+	<SETVAR NAME="errno" VALUE="0"/>
+	<USERISMEMBER GROUP="xceleditor"/>
+	<if COND="Variables.errno=0">
+		<then> 
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Security/TimeoutError" outstring="urltimeouterror">
+			</SATELLITE.LINK>
+			<REPLACE STR="Variables.urltimeouterror">
+				<script LANGUAGE="JavaScript">
+					parent.parent.location="Variables.urltimeouterror";
+				</script>
+			</REPLACE>
+			<throwexception/>
+		</then>
+	</if>
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+
+	<SATELLITE.LINK ASSEMBLER="query" outstring="urltreeload" pagename="OpenMarket/Xcelerate/UIFramework/TreeLoad">
+	</SATELLITE.LINK>
+<SETVAR NAME="errno" VALUE="0"/>
+<!-- take off leading slash for now -->
+<BEGINS STR="Variables.urltreeload" WHAT="/"/>
+<IF COND="Variables.errno=1">
+<THEN>
+	<SUBSTRING STR="Variables.urltreeload" OUTSTR="urltreeload1" INDEX="1"/>
+	<SETVAR NAME="urltreeload" VALUE="Variables.urltreeload1"/>
+</THEN>
+</IF>
+
+<SATELLITE.LINK ASSEMBLER="query" outstring="urltreeerror" pagename="OpenMarket/Gator/UIFramework/TreeError">
+</SATELLITE.LINK>
+<SETVAR NAME="errno" VALUE="0"/>
+<!-- take off leading slash for now -->
+<BEGINS STR="Variables.urltreeerror" WHAT="/"/>
+<IF COND="Variables.errno=1">
+<THEN>
+	<SUBSTRING STR="Variables.urltreeerror" OUTSTR="urltreeerror1" INDEX="1"/>
+	<SETVAR NAME="urltreeerror" VALUE="Variables.urltreeerror1"/>
+</THEN>
+</IF>
+</HEAD>
+<BODY onload='checkJava();'>
+	<div id="TreeContainerID" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+	<if COND="Variables.Browser=MSIE">
+		<then>
+		        <OBJECT classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" WIDTH = "0" HEIGHT = "0" NAME = "TreeAppletLeader">
+		                <PARAM NAME = "CODE" VALUE = "com.openmarket.tree.TreeAppletLeader.class" />
+		                <PARAM NAME = "CODEBASE" VALUE = "Variables.cs_imagedir/OMTree/" REPLACEALL="Variables.cs_imagedir"/>
+		                <PARAM NAME = "ARCHIVE" VALUE = "tree.jar" />
+		                <PARAM NAME = "NAME" VALUE = "TreeAppletLeader" />
+		                <PARAM NAME = "MAYSCRIPT" VALUE = "" />
+		                <PARAM NAME="type" VALUE="application/x-java-applet;version=1.6.0"/>
+		                <PARAM NAME="scriptable" VALUE="true"/>
+		                <PARAM NAME="TreeURL" VALUE="Variables.urltreeload" REPLACEALL="Variables.urltreeload"/>
+		                <PARAM NAME="ErrorURL" VALUE="Variables.urltreeerror" REPLACEALL="Variables.urltreeerror"/>
+		        </OBJECT>
+		        
+		</then>
+		<else>
+			<APPLET NAME="TreeAppletLeader" CODE="com.openmarket.tree.TreeAppletLeader.class" CODEBASE="Variables.cs_imagedir/OMTree/." WIDTH="0" HEIGHT="0" REPLACEALL="Variables.cs_imagedir">
+				<PARAM NAME="TreeURL" VALUE="Variables.urltreeload" REPLACEALL="Variables.urltreeload"/>
+				<PARAM NAME = "ARCHIVE" VALUE = "tree.jar" />
+			</APPLET>
+		</else>
+	</if>
+</div>
+<div id="javaInstall" style="display:none">
+<a href="#" onclick="installJava();"><XLAT.STREAM KEY="dvin/UI/InstallJava"/></a>
+</div>	
+</BODY>
+</HTML>
+</FTCS>

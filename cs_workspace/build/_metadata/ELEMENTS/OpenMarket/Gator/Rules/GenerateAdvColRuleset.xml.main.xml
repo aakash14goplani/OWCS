@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/Rules/GenerateAdvColRuleset</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/Rules/GenerateAdvColRuleset</string>
+        <string>Advcols rules</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/Rules/GenerateAdvColRuleset.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/Rules/GenerateAdvColRuleset.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FRules%2FGenerateAdvColRuleset.xml
+@hashval=526455851
+key=@ELEMENTCATALOG-OpenMarket/Gator/Rules/GenerateAdvColRuleset
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

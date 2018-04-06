@@ -1,0 +1,171 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+
+<!-- 														
+$Logfile: /VerticalApps/XcelerateD/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/FlexibleAssets/Common/DateTypeAttr.xml $ 
+$Revision: 20 $ 
+$Modtime: 8/06/04 12:01a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+-AssocAttr.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->  
+
+
+<!--Gator/FlexibleAssets/Common/DateTypeAttr.xml-->
+
+<setvar NAME="errno"  VALUE="0"/>
+<!-- Format: yyyy-mm-dd hh:mi  -->
+ 
+<tr>
+	<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>											
+	<td></td>
+	<td class="small-text"><XLAT.STREAM KEY="dvin/UI/Common/PleaseEnterDateInFormat"/>   <br/>
+	<if COND="Variables.EditingStyle=single">
+	<then>
+		 <setvar  NAME="yearstr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="monstr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="daystr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="hourstr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="minstr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="secstr"   VALUE="Variables.empty"/>
+		 <setvar  NAME="milsecstr"   VALUE="Variables.empty"/>
+
+		<if COND="IsList.AttrValueList=true">
+		<then>
+			 <if COND="AttrValueList.#numRows!=0">
+			 <then>
+					<!--  extract the year , month and hour etc  from value list" -->
+					<setvar NAME="errno"  VALUE="0"/>
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="yearstr"
+					INDEX="0"
+					ENDINDEX="4"
+					/>
+					
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="monstr"
+					INDEX="5"
+					ENDINDEX="7"
+					/>
+					
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="daystr"
+					INDEX="8"
+					ENDINDEX="10"
+					/>
+					
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="hourstr"
+					INDEX="11"
+					ENDINDEX="13"
+					/>
+					
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="minstr"
+					INDEX="14"
+					ENDINDEX="16"
+					/>
+					
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="secstr"
+					INDEX="17"
+					ENDINDEX="19"
+					/>
+					<!--
+					<SUBSTRING STR="Variables.MyAttrVal"
+					 OUTSTR="milsecstr"
+					INDEX="20"
+					ENDINDEX="22"
+					/>
+					-->
+                    <!-- to make sure that tree picks dont mess up entered dates -->
+                    <setvar NAME="errno"  VALUE="0"/>
+                    <if COND="IsVariable.Variables.cs_CurrentInputNameyear=true">
+                	<then>
+                						<setvar  NAME="yearstr"   VALUE="Variables.Variables.cs_CurrentInputNameyear"/>	 
+                	</then>
+                	</if>
+                	<if COND="IsVariable.Variables.cs_CurrentInputNamemonth=true">
+                	<then>
+                						<setvar  NAME="monstr"  VALUE="Variables.Variables.cs_CurrentInputNamemonth"/>   
+                	</then>
+                	</if>
+                	<if COND="IsVariable.Variables.cs_CurrentInputNameday=true">
+                	<then>
+                						<setvar   NAME="daystr"   VALUE="Variables.Variables.cs_CurrentInputNameday"/> 
+                	</then>
+                	</if>
+                	<if COND="IsVariable.Variables.cs_CurrentInputNamehour=true">
+                	<then>
+                						<setvar  NAME="hourstr"   VALUE="Variables.Variables.cs_CurrentInputNamehour"/>  
+                	</then>
+                	</if>
+                	<if COND="IsVariable.Variables.cs_CurrentInputNamemin=true">
+                	<then>
+                						<setvar  NAME="minstr"    VALUE="Variables.Variables.cs_CurrentInputNamemin"/>	
+                	</then>
+                	</if>
+                	<if COND="IsVariable.Variables.cs_CurrentInputNamesec=true">
+                	<then>
+                						<setvar NAME="secstr"     VALUE="Variables.Variables.cs_CurrentInputNamesec"/>
+                	</then>
+                	</if>
+                        </then>
+			 </if>
+		</then>
+		</if>
+ 	                <input TYPE="TEXT" NAME="Variables.cs_CurrentInputNameyear" SIZE="4" MAXLENGTH="4"   VALUE="Variables.yearstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.yearstr"/>	-
+ 			<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamemonth" SIZE="2" MAXLENGTH="2"   VALUE="Variables.monstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.monstr"/>	-
+ 			<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNameday" SIZE="2" MAXLENGTH="2"   VALUE="Variables.daystr" REPLACEALL="Variables.cs_CurrentInputName,Variables.daystr"/>   
+			<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>			
+ 			<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>			
+           		<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamehour" SIZE="2" MAXLENGTH="2"   VALUE="Variables.hourstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.hourstr"/>	:
+          		<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamemin" SIZE="2" MAXLENGTH="2"   VALUE="Variables.minstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.minstr"/>	:
+         		<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamesec" SIZE="2" MAXLENGTH="2"   VALUE="Variables.secstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.secstr"/>	 
+ 			<!--input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamemilsec" SIZE="2" MAXLENGTH="2"   VALUE="Variables.milsecstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.milsecstr"/-->
+		<if COND="Variables.RequiredAttr=true">
+			<then>
+			 <setvar NAME="RequireInfo" VALUE="*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqTrue*Variables.typeS!"/>
+			</then>
+			<else> 
+			 <setvar NAME="RequireInfo" VALUE="*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqFalse*Variables.typeS!"/>
+			</else>
+	  </if>
+	</then>
+	<else>
+                 
+	    <input TYPE="TEXT" NAME="Variables.cs_CurrentInputNameyear" SIZE="4" MAXLENGTH="4"   VALUE="Variables.yearstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.yearstr"/>	-
+ 			<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamemonth" SIZE="2" MAXLENGTH="2"   VALUE="Variables.monstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.monstr"/>	-
+ 			<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNameday" SIZE="2" MAXLENGTH="2"   VALUE="Variables.daystr" REPLACEALL="Variables.cs_CurrentInputName,Variables.daystr"/>  
+			   	 <img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/> 
+ 			<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>			
+						<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamehour" SIZE="2" MAXLENGTH="2"   VALUE="Variables.hourstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.hourstr"/>	:
+  		<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamemin" SIZE="2" MAXLENGTH="2"   VALUE="Variables.minstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.minstr"/>	:
+ 			<input TYPE="TEXT" NAME="Variables.cs_CurrentInputNamesec" SIZE="2" MAXLENGTH="2"   VALUE="Variables.secstr" REPLACEALL="Variables.cs_CurrentInputName,Variables.secstr"/>	 
+            <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/HandleOrdinalInput"/>
+			<if COND="Variables.RequiredAttr=true">
+			<then>
+			 <setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqTrue*Variables.typeS!"/>
+			</then>
+			<else> 
+			 <setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqFalse*Variables.typeS!"/>
+			</else>
+	  </if>
+ 	</else>
+	</if>
+	</td>
+</tr>
+
+</FTCS>
+

@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/ExportXML/PublishApprovedAssets
+-
+- INPUT
+-  Variables.PREFIX  - prefix of loaded publishkeys of publisahable assets
+-  Variables.context - name of pubContext argument
+-  Variables.target  - publish target id
+- OUTPUT
+-
+-->
+    <setvar NAME="outdir" VALUE="CS.Property.cs.pgexportfolder" />
+<IF COND="IsVariable.pubfact:DIR=true">
+<THEN>
+     <BEGINS STR="Variables.pubfact:DIR" WHAT="/" />
+     <IF COND="Variables.errno=1">
+     <THEN>
+          <SETVAR NAME="outdir" VALUE="Variables.outdirVariables.pubfact:DIR" />
+     </THEN>
+     <ELSE>
+          <SETVAR NAME="outdir" VALUE="Variables.outdir/Variables.pubfact:DIR" />
+     </ELSE>
+     </IF>
+     <SETVAR NAME="errno" VALUE="0" />
+</THEN>
+</IF>
+
+<SETVAR NAME="exporterror" VALUE="0" />
+<SETVAR NAME="theCount" VALUE="Variables.Variables.PREFIXTotal" />
+<setcounter NAME="count" VALUE="0" />
+<loop FROM="0" COUNT="Variables.theCount">
+	<IF COND="IsError.Variables.exporterror=false">
+	<THEN>
+		<MIRRORKEY.GETTYPE NAME="Variables.PREFIXCounters.count" VARNAME="assettype" />
+		<MIRRORKEY.GETID NAME="Variables.PREFIXCounters.count" VARNAME="assetid" />
+		<setvar NAME="pubkey" VALUE="Variables.PREFIXCounters.count" />
+		<callelement NAME="OpenMarket/Xcelerate/PrologActions/Publish/ExportXML/ExportAsset" SCOPED="STACKED">
+			<argument NAME="assettype" VALUE="Variables.assettype" />
+			<argument NAME="assetid" VALUE="Variables.assetid" />
+			<argument NAME="pubkey" VALUE="Variables.pubkey" />
+			<argument NAME="outdir" VALUE="Variables.outdir" />
+			<argument NAME="assetdate" VALUE="Variables.empty" />
+			<argument NAME="exporterror" VALUE="Variables.empty" />
+		</callelement>
+		<if COND="IsError.Variables.exporterror=false">
+		<then>
+			<PUBLISHSUBASSETS.ADD TYPE="Variables.assettype" ID="Variables.assetid" DATE="Variables.assetdate" />
+			<PUBLISHEDASSETS.ADD KEY="Variables.pubkey" />
+		</then>
+		</if>
+    <inccounter NAME="count" VALUE="1" />
+	</THEN>
+	</IF>
+</loop>       
+
+<if COND="IsError.Variables.exporterror=false">
+<then>
+	<APPROVEDASSETS.NOTEPUBLISH TARGET="Variables.target" />
+    <PUBSESSION.GETID NAME="pubsess" VARNAME="pubsess:id" />
+    <PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.theCount" STATUS="__ASSTS_PUBLISHD__" />
+</then>
+<else>
+	<SETVAR NAME="errno" VALUE="Variables.exporterror" />
+</else>
+</if>
+
+</FTCS> 

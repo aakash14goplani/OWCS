@@ -1,0 +1,241 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/BuildCollectionFront.xml $ 
+$Revision: 61 $ 
+$Modtime: 6/28/04 1:10p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-    Run all the necessary queries:
+-
+-        - a query that lists all content
+-          elements currently in the collection
+-
+-        - the collection defines a set of
+-          queries which, when run and tiled
+-          list the elements that are candidates
+-          for this collection
+-    Required Variables:
+-			- the Collection (called "theCollection") has been loaded (by PrologActions/BuildCollectionFront)
+			- Scatter has been called on theCollection with prefix Collection
+			- a list of Queries called "theQueries has been generated (by PrologActions/BuildCollectionFront)
+			- Variables.atplural has been loaded by looking at the subtype field and gettingg the info from the AssetType
+-->
+
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed"/>
+<if COND="Variables.doproceed=true">
+<then>
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function SetCancelFlag () {
+	var obj = document.forms[0].elements[0];
+
+	obj.form.elements['upcommand'].value="cancel";
+	obj.form.submit();
+	return false;
+}
+
+function checkfields()
+{
+	var obj = document.forms[0].elements[0];
+	obj.form.elements['upcommand'].value="submit";
+	obj.form.submit();
+	return false;
+}
+]]>
+</SCRIPT>
+<callelement NAME="OpenMarket/Xcelerate/Scripts/BuildRank"/>
+<SETVAR NAME="id" VALUE="Variables.Collection:id"/>
+	<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+    <INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+	<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+	
+	<IF COND="IsVariable.atplural=false">
+	<THEN>
+		<SETVAR NAME="atplural" VALUE="Assets"/>
+	</THEN>
+	</IF>
+	
+	<table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+		<tr>
+			<td><span class="title-text"><XLAT.STREAM KEY="dvin/Common/BuildCollection"/>:</span>
+				<span class="title-value-text"><STRING.STREAM VALUE="Variables.Collection:name"/></span>
+			</td>
+		</tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	</table>
+	<table border="0" cellpadding="0" cellspacing="0" style="width:100%;padding-left:15px;">
+		<tr>
+			<td>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ShowCollectionChildren" SCOPED="LOCAL">
+					<ARGUMENT NAME="assetname" VALUE="theCollection"/>
+					<ARGUMENT NAME="allowremove" VALUE="true"/>
+					<ARGUMENT NAME="allowrankedit" VALUE="true"/>
+				</CALLELEMENT>
+			</td>
+		</tr>
+	</table>
+					 <![CDATA[
+        <SCRIPT>
+        loadRank();
+        </SCRIPT>
+        ]]>
+	
+		<!--
+		    Run the queries
+		-->
+			<setvar NAME="doOrder" VALUE="true"/>
+			<IF COND="IsList.theQueries=true">
+			<THEN>
+				<LOOP LIST="theQueries">
+				<IF COND="IsError.Variables.errno=false">
+				<THEN>
+					<IF COND="theQueries.ncode!=-">
+					<THEN>
+		             <ASSOCNAMEDMANAGER.FIND   PREFIX="AssocList:" NAME="theQueries.ncode"/>
+                  <IF COND="Variables.AssocList:Total!=0">
+                  <THEN>
+                          <ASSOCNAMED.GETDESCRIPTION NAME="AssocList:0" VARNAME="Assocdescription"/>
+                  </THEN>
+                  </IF>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Query/ExecuteQuery">
+							<ARGUMENT NAME="list" VALUE="Content"/>
+							<ARGUMENT NAME="inputlist" VALUE="theQueries"/>
+							<ARGUMENT NAME="ResultLimit" VALUE="-1"/>
+						</CALLELEMENT>
+						<SETVAR NAME="executeQueryError" VALUE="Variables.errno"/>
+				     <!-- tile them together -->
+					<table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+	
+						<tr>
+						<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+							<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						</tr>
+				     <tr>
+							<td class="subtitle-text">
+								<STRING.STREAM VALUE="Variables.Assocdescription"/>: <STRING.STREAM VALUE="theQueries.name"/>
+							</td>
+						</tr>
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+						<tr>
+							<td>
+							<if COND="IsError.Variables.executeQueryError=false">
+							<then>
+								<if COND="theQueries.subtype=Variables.Collection:subtype">
+								<then>
+									 <if COND="IsError.Variables.errno=false">
+								         <then>
+										 <STRING.ENCODE VARIABLE="Collection:subtype" VARNAME="Collection:subtype"/>
+								            <callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.Collection:subtype/Tile">
+								             	<argument NAME="doStatus" VALUE="false"/>
+								             	<argument NAME="AssetType" VALUE="Variables.Collection:subtype"/>
+							             	</callelement>
+								         </then>
+								         <else>
+                                    <XLAT.LOOKUP KEY="dvin/UI/Actions/MSGNoatpluralbyQuery" VARNAME="msgtext"/>
+                                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+													<argument NAME="msgtext" VALUE="Variables.msgtext"/>
+													<argument NAME="severity" VALUE="info"/>
+												</callelement>	
+								         </else>
+								     </if>
+								</then>
+								<else>
+                           <XLAT.LOOKUP KEY="dvin/UI/Actions/MSGQueryAsso" VARNAME="msgtext"/>
+									<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+										<argument NAME="msgtext" VALUE="Variables.msgtext"/>
+										<argument NAME="severity" VALUE="info"/>
+									</callelement>	
+								</else>
+								</if>
+							 </then>
+							 <else>
+							 <!-- error from query -->
+							 	<if COND="Variables.executeQueryError=-101">
+							 	<then>
+							     	<XLAT.LOOKUP KEY="dvin/UI/Actions/MSGNoatpluralbyThisQuery" VARNAME="msgtext"/>
+                           <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+										<argument NAME="msgtext" VALUE="Variables.msgtext"/>
+										<argument NAME="severity" VALUE="info"/>
+									</callelement>
+							 	</then>
+							 	<else>
+									<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			   							<argument NAME="elem" VALUE="ExecuteQueryError"/>
+	   									<argument NAME="severity" VALUE="error"/>
+			   							<argument NAME="errno" VALUE="Variables.executeQueryError"/>
+			   							<argument NAME="qryid" VALUE="theQueries.id"/>
+			   							<argument NAME="qryname" VALUE="theQueries.name"/>
+ 									</callelement>	
+							 	</else>
+							 	</if>
+								<setvar NAME="errno" VALUE="0"/>
+
+							 </else>
+							 </if>
+					      </td>
+					    </tr>
+					   </table>
+					 </THEN>
+					 </IF>
+				</THEN>
+				</IF>
+				</LOOP>
+				 <![CDATA[
+        <SCRIPT>
+        copyRank();
+        </SCRIPT>
+        ]]>
+
+			</THEN>
+			 <ELSE>
+		        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		            <argument NAME="error" VALUE="CollectionMissingQuery"/>
+		        </callelement>    
+			 </ELSE>
+			</IF>
+	<table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+		
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	
+		<!-- form buttons -->
+	
+		<tr>
+			<td align="left"><XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+			<A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_"/>
+<A HREF="javascript:void(0)" onclick="return checkfields();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SaveChanges"/></CALLELEMENT></A></td>
+		</tr>
+	</table>
+	
+</then>
+<else>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="elem" VALUE="Variables.doproceed"/>
+		<argument NAME="severity" VALUE="error"/>
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+	</callelement>
+
+	<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+		<argument NAME="errorAlreadyDisplayed" VALUE="true"/>
+	</callelement>
+
+</else>
+</if>
+
+</FTCS>

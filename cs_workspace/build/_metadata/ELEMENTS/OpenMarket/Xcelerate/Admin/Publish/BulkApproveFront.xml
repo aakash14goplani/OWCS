@@ -1,0 +1,225 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/Publish/BulkApproveFront
+-
+- INPUT
+-	Variables.target - publish target id
+- 
+- OUTPUT
+-
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function checkfields(obj)
+{
+   var errors = "";
+	if (obj.elements['query'].value.search(/\S/) == -1)
+	{
+		]]>
+		errors += 
+				"* <XLAT.STREAM KEY="dvin/UI/Admin/Error/supplyaquery" ESCAPE="true" ENCODE="false"/>\n";
+		<![CDATA[
+	}
+	if (obj.elements['Assettypes'].selectedIndex== -1)
+	{
+		]]>
+		errors += 
+				"* <XLAT.STREAM KEY="dvin/UI/Admin/Error/selectatleastoneassettype" ESCAPE="true" ENCODE="false"/>\n";
+		<![CDATA[
+	}
+	if(obj.elements['chunksize'].value.match(/^\d*$/) == null)
+	{
+		]]>
+		errors += 
+				"* <XLAT.STREAM KEY="dvin/UI/Admin/Error/batchsizemustbenumber" ESCAPE="true" ENCODE="false"/>\n";
+		<![CDATA[
+	}
+	if (errors.length != 0) {
+		]]>
+		alert ("<XLAT.STREAM KEY="dvin/UI/Admin/Error/Theformisnotcomplete" ESCAPE="true" ENCODE="false"/>:\n\n" + errors);
+		<![CDATA[
+		return false;
+	}
+	return true;
+}
+function showSample(form, n)
+{
+	var qselect = form.elements['samples'];
+	if ( qselect.selectedIndex == 1 )
+		form.elements['query'].value = "select id from Variables.assettype where status!='VO'";
+	else if ( qselect.selectedIndex == 2 )
+		form.elements['query'].value = "select Variables.assettype.id from Variables.assettype,AssetPublication where Variables.assettype.id=AssetPublication.assetid AND (AssetPublication.pubid=SessionVariables.pubid OR AssetPublication.pubid=0) AND Variables.assettype.status!='VO'";
+	else if ( qselect.selectedIndex == 3 )
+		form.elements['query'].value = "select id from Variables.assettype where status!='VO' AND updateddate < to_date('[desired date here]', 'YYYY-MM-DD')";
+	else if ( qselect.selectedIndex == 4 ) {
+		form.elements['query'].value = "select Page.id from Page,SitePlanTree where Page.id=SitePlanTree.oid and SitePlanTree.ncode='Placed' and Page.status!='VO'";
+		var atselect = form.elements['AssetType'];
+		for ( i=0 ; i < atselect.options.length ; i++ ) {
+			if ( atselect.options[i].value!="Page" )
+				atselect.options[i].selected = false;
+			else
+				atselect.options[i].selected = true;
+		}
+	}
+	else if  ( qselect.selectedIndex == 5 )
+ 		form.elements['query'].value = "select assetid as id from ApprovedAssets where treason='N' and tstate ='H' and assettype = 'Variables.assettype' and targetid=Variables.target";
+	else if ( qselect.selectedIndex == 6 )
+		form.elements['query'].value = "select oid AS id from PubLog where otype='Variables.assetttype'";
+  
+	return false;
+}
+
+function setrecursive(obj)
+{
+	if ( obj.elements['recursive'][0].checked==true )
+	{
+		obj.elements['force'][0].checked=true;	
+	}	
+}
+]]>
+</SCRIPT>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<IF COND="IsError.Variables.errno=true">
+<THEN>
+	<XLAT.STREAM KEY="dvin/UI/Admin/Error/attemptingtoloadpubtarget" errno="Variables.errno" target="Variables.target" EVALALL="false"/>
+   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="NoPublishDest"/>
+  	</callelement>
+</THEN>
+<ELSE>
+<PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtgt:name"/>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ApproveAssetsforPublishtopubtgtname"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<!-- If we have a PubLog table we are an upgrading customer -->
+<CATALOGDEF LIST="tbldef" FROM="PubLog"/>
+<if COND="IsError.Variables.errno=false">
+<then>
+	<setvar NAME="upgradingcustomer" VALUE="true"/>
+</then>
+</if>
+
+<ASSETTYPE.LIST LIST="assettypes" ORDER="description"/>
+	 <SETCOUNTER NAME="count" VALUE="0"/>
+
+ <table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<SPAN CLASS="alert-color">*</SPAN><XLAT.STREAM KEY="dvin/UI/Common/AssetTypes"/>:
+				</td>
+				<td class="form-inset">
+					<TABLE BORDER="0">
+					<TR>
+					<TD>
+			<SELECT NAME="Assettypes" SIZE="8" MULTIPLE="YES">
+	         <LOOP LIST="assettypes">
+					<STRING.ENCODE LIST="assettypes" COLUMN="assettype" VARNAME="atassettype"/>
+	  				<OPTION VALUE="Variables.atassettype" REPLACEALL="Variables.atassettype"/><STRING.STREAM VALUE="assettypes.description"/>
+				</LOOP>
+				</SELECT>
+				</TD><TD WIDTH="15">&nbsp;</TD>
+				<TD class="form-label-inset" valign="top">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Samplequeries"/>:
+				<BR/>
+				<SELECT NAME="samples" SIZE="5" MULTIPLE="NO" onChange="showSample(this.form, Counters.count)" REPLACEALL="Counters.count">
+					<OPTION VALUE="0"/>-<XLAT.STREAM KEY="dvin/UI/Admin/Selectsamplequeryifdesired"/>-
+					<OPTION VALUE="1"/><XLAT.STREAM KEY="dvin/UI/Admin/Assetsofselectedassettypes"/>
+					<OPTION VALUE="2"/><XLAT.STREAM KEY="dvin/UI/Admin/AssetsselectedATinsitePublicationName"/>
+					<OPTION VALUE="3"/><XLAT.STREAM KEY="dvin/UI/Admin/AssetsselectedATupdatedbeforeadate"/>
+					<OPTION VALUE="4"/><XLAT.STREAM KEY="dvin/UI/Admin/PlacedPageassets"/>
+					<OPTION VALUE="5"/><XLAT.STREAM KEY="dvin/UI/Admin/AssetsPreviouslyApprovedChildNever"/>
+					<if COND="IsVariable.upgradingcustomer=true">
+					<then>
+						<OPTION VALUE="6"/><XLAT.STREAM KEY="dvin/UI/Admin/AssetsofselectedATentriesPubLog"/>
+					</then>
+					</if>
+				</SELECT>
+				</TD></TR></TABLE>
+			</td><td></td>
+			</tr>
+			<!--<tr>
+				<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			</tr>-->
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<SPAN CLASS="alert-color">*</SPAN><XLAT.STREAM KEY="dvin/UI/Admin/Query"/>:
+				</td>
+				<td class="form-inset">
+					<TEXTAREA NAME="query" COLS="50" ROWS="7" WRAP="VIRTUAL"></TEXTAREA>
+				</td><td></td>
+			</tr>
+			<!--<tr>
+				<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			</tr>-->
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<SPAN CLASS="alert-color"></SPAN><XLAT.STREAM KEY="dvin/UI/Admin/Approveinbatchesof"/>:
+				</td>
+				<td class="form-inset">
+					<PROPERTY.GET PARAM="xcelerate.bulkapprovechunk" INIFILE="futuretense_xcel.ini" VARNAME="chunksize"/>
+					<INPUT TYPE="text" NAME="chunksize" SIZE="5" VALUE="Variables.chunksize" REPLACEALL="Variables.chunksize"/>
+				</td><td></td>
+			</tr>
+			<!--<tr>
+				<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			</tr>-->
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>							
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/ForceApproval"/>:
+				</td>
+				<td class="form-inset">
+		           <INPUT style="margin-left:0px" TYPE="RADIO" NAME="force" VALUE="true" /><XLAT.STREAM KEY="dvin/Common/Yes"/><BR />
+		           <INPUT style="margin-left:0px" TYPE="RADIO" NAME="force" VALUE="false" CHECKED="true"/><XLAT.STREAM KEY="dvin/Common/No"/>
+				</td><td></td>
+			</tr>
+			
+		<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/Publish/BulkApprovePost"/>
+		<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+		<INPUT TYPE="HIDDEN" NAME="target" VALUE="Variables.target" REPLACEALL="Variables.target"/>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Publish/DestEdit" outstring="DestEditURL">
+			<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+			  <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+																 <satellite.argument name="id" value="Variables.target"/>
+																 <satellite.argument name="action" value="details"/>
+																  </SATELLITE.LINK>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+		<TR>
+			<TD class="form-label-text"></TD><TD class="form-inset">
+				<if cond="Variables.cs_environment=portal">
+				<then>
+					<A HREF="javascript:void(0);" ONCLICK="window.close();">
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+					</A>
+				</then>
+				<else>
+					<A HREF="Variables.DestEditURL" REPLACEALL="Variables.DestEditURL">
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+					</A>
+				</else>
+				</if>
+				<A HREF="javascript:void(0);" onClick="if(checkfields(document.forms[0])!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.statustxt"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/ApproveforPublish"/></CALLELEMENT></A>
+			</TD>
+		</TR>
+	</table>
+	</td></tr>
+</table>
+
+
+</ELSE>
+</IF>
+</FTCS> 

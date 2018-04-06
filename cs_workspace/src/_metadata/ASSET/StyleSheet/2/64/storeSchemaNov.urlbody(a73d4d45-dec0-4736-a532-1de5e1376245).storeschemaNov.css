@@ -1,0 +1,348 @@
+/*
+ *
+ * Global & Miscellaneous changes
+ *
+ */
+
+fieldset {
+	border-style: none;
+}
+fieldset legend {
+	visibility: hidden;
+	height: 0px;
+	font-size: 1px; /* because visibility collapse is broken on IE */
+}
+.ImageSummary {
+	border-style : solid;
+	border-color : #006699;
+	border-width : 1px;
+	background-color : #FFFFFF;
+	padding: 0px;
+	margin: 7px;
+}
+.abstract,
+.byline {
+	color: #999999;
+	font-size: xx-small;
+}
+.postdate {
+	font-size:10px;
+	color: #009900;
+	padding-left: 15px;	
+	font-weight:bold;
+	font-family:Verdana, Arial, Helvetica, sans-serif;		
+}
+.summaryLink
+{
+	text-decoration: none; 
+	color:#4365a2; 
+	font-size:10px; 
+	font-family:Verdana, Arial, Helvetica, sans-serif;	
+}
+a.summaryLink
+{
+	font-weight: bold;
+}
+#ItemAddedSuccessfully {
+	font-weight: bolder;
+	color:#AA0000;
+	text-align: right;
+}
+#ProductDiscount,
+.discountInfo {
+	color:#AA0000;
+}
+
+/* Recommendations always handle their own bullets when rendered in a list. */
+#Container #BodyContainer #MainBodyContainer .AdvColsDetail ul {
+	list-style-type: none
+}
+
+/* Image of the week summary does not need to be so dramatic... */
+#StandardSideNavView #ItemOfTheWeek h4 {
+	font-size: x-small;
+}
+/* In the store schema, we display the advertisement using just an image, so hide the header */
+#StandardSideNavView #Advertisement {
+	text-align: center;
+	padding-top: 30px;
+	padding-bottom: 30px;
+}
+#StandardSideNavView #Advertisement h3 {
+	visibility: hidden;
+	height: 0px; /* IE can't do "collapse" so we set the height to 0 */
+	margin: 0px;
+	padding: 0px;
+}
+
+/* For ALL of the item of the week displays, we don't want to display abstract or price.*/
+#StandardSideNavView #ItemOfTheWeek .ProductSummary ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea #StandardSideNavView #ItemOfTheWeek .ProductSummary {
+	text-align: center;
+	height: 150px;
+}
+#StandardSideNavView #ItemOfTheWeek .ProductSummary .abstract ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea #StandardSideNavView #ItemOfTheWeek .ProductSummary .abstract {
+	visibility: hidden;
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+#StandardSideNavView #ItemOfTheWeek .ProductSummary .ProductPrice ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea #StandardSideNavView #ItemOfTheWeek .ProductSummary .ProductPrice {
+	visibility: hidden;
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+}
+
+#StandardSideNavView #ItemOfTheWeek .AdvColsDetail .ProductSummary b {
+	clear:left;
+	margin-left: 0px;
+	display: block;
+}
+
+/*
+ *
+ * Standard Page changes
+ *
+ */
+ 
+/* Recommendation links get a cool icon */
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail a:link,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail a:hover,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail a:active,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail a:visited {
+	background-image:  url("FirstSiteII/images/button_orange.gif");
+	background-repeat: no-repeat;
+	padding-left: 16px;
+	padding-top: 1px;
+	padding-bottom: 2px;
+}
+
+/* Products in a recommendation get an even cooler icon */
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary a:link,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary a:hover,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary a:active,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary a:visited {
+	background-image:  url("FirstSiteII/images/button_target.gif");
+	background-repeat: no-repeat;
+	padding-left: 16px;
+	padding-top: 1px;
+	padding-bottom: 2px;
+}
+/* When showing an article or a product in a recommendation, tone-down the heading. */
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary h4 ,
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .Content_CSummary h4 {
+	font-weight: bold;
+	font-size: xx-small;
+}
+
+/* Products in a recommendation don't have their image shown... */
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary .ImageSummary {
+	height: 0px;
+	padding: 0px;
+	margin: 0px;
+	display: none;
+	visibility: hidden;
+}
+/* ... or their prices */
+#Container #BodyContainer #MainBodyContainer #StandardDetailView .AdvColsDetail .ProductSummary .ProductPrice {
+	height: 0px;
+	margin: 0px;
+	padding: 0px;
+	display: none;
+	visibility: hidden;
+}
+
+
+
+/*
+ *
+ * Product SideNav changes
+ *
+ */
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #SearchBox {
+	text-align: center;
+	width: 198px;
+}
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #SearchBox h4,
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ProductCategoryList h4,
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ManufacturerList h4 {
+	text-align: left;
+	margin-bottom: 10px;
+	font-size : 12px;
+	font-weight: bold;
+}
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ProductCategoryList ul,
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ManufacturerList ul {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ProductCategoryList li,
+#Container #SideNavContainer #SideNav1 #SideNav2 #ProductSideNavView #ManufacturerList li {
+	margin: 0px;
+	padding-left: 20px;
+	padding-right: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	clear: left;
+}
+
+
+/*
+ *
+ * Product Page, Cart Page & Product_P changes
+ *
+ */
+/* Configure layout */
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #ProductArea ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea {
+	float: left;
+	width: 298px; /* 526 (mainbody) - 218 (promo area) - 10 (padding) = 298px */
+	margin: 0px;
+	padding: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #PromoArea ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea {
+	float: left; /* float beside the product area */
+	width: 188px; /* 218 - 15 - 15 */
+	padding: 15px;
+	margin: 0px;
+}
+
+
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #ProductArea .AdvColsDetail ul ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea .AdvColsDetail ul {
+	padding-left: 0px;
+	margin-left: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #ProductArea #ProductList .ProductSummary ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea .AdvColsDetail li .ProductSummary {
+	clear: left;
+	
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea .AdvColsDetail li .ProductSummary {
+	margin-bottom: 65px;
+}
+
+
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #ProductArea #ProductList .ProductSummary h4 ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea .AdvColsDetail li .ProductSummary h4 {
+	margin-top: 10px;
+	padding-top: 10px;
+	font-size: 12px;
+}
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #ProductArea #ProductList .ProductSummary .ImageSummary ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductArea .AdvColsDetail li .ProductSummary .ImageSummary {
+	float: left;
+	margin: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #PromoArea #ItemOfTheWeek h3 ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea #ItemOfTheWeek h3 {
+	border-bottom: none; /* clear out the formatting imposed by MainBodyContainer h3 */
+}
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #PromoArea .ProductSummary ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea .ProductSummary {
+	text-align: center;
+}
+
+#Container #BodyContainer #MainBodyContainer #Product_PDetail #PromoArea .AdvColsDetail .ProductSummary .ImageSummary ,
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #PromoArea .AdvColsDetail .ProductSummary .ImageSummary {
+	clear: left;
+	float: none;
+	visibility: visible;
+	height: 100px;
+	
+}
+
+/* Format the shopping cart table */
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents {
+	margin: 0px;
+	padding: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents th {
+	color: #FFFFFF;
+	font-weight: bold;
+	background-color: #006699;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents td {
+	background-color: #DDEEEE;
+	margin: 0px;
+	padding-left: 6px;
+	padding-right: 6px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	vertical-align: middle;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents #QuantityHeader {
+	text-align: center;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents #RemoveHeader {
+	text-align: center;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductNameInCart {
+	text-align: left;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductQuantityInCart {
+	text-align: center;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductPriceInCart {
+	text-align: right;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductPriceInCart .discountInfo {
+	text-align: right;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductPriceInCart .discountedPrice {
+	text-align: right;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductTotalInCart {
+	text-align: right;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductDeleteButtonInCart {
+	text-align: center;
+	padding: 0px;
+	margin: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #CartDetailView #ShoppingCartContents .ProductDeleteButtonImageInCart {
+	vertical-align: bottom;
+	padding-top: 2px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	margin: 0px;
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetailView #ProductDetail #ItemAddedSuccessfully {
+	background-color:#FFFF99;
+	border-style: outset;
+	border-width: medium;
+	padding: 15px;
+}
+
+/*
+ *
+ * Product Detail changes
+ *
+ */
+#Container #BodyContainer #MainBodyContainer #ProductDetail #ProductImage {
+	float: left;
+	margin: 10px;
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetail #ProductLongDescription {
+	margin-top: 80px; /* leave some room so people focus on the image for a while */
+	color: #000000;
+	float: left;
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetail #ProductDocs {
+	clear: left;
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetail #ProductPricing {
+	text-align: right;
+	color: #000000;
+}
+#Container #BodyContainer #MainBodyContainer #ProductDetail #ProductCartControl {
+	text-align: right;
+	color: #000000;
+}
+

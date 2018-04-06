@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/CSClient/BuildAssignmentHash
+-
+- INPUT
+-   assets:Total
+- OUTPUT
+-
+-->
+<!-- for all leaves, check to see if its assigned to the current user -->
+    
+<SETCOUNTER NAME="currentInst" VALUE="0"/>
+<LOOP COUNT="Variables.assets:Total">
+    <!-- EXCLUDE="true" means scatter everything -->
+    <ASSET.SCATTER NAME="assets:Counters.currentInst" PREFIX="assetCounters.currentInst" EXCLUDE="true"/>
+    <WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.assetCounters.currentInst:id" OBJVARNAME="workflowasset:Counters.currentInst" />
+    <INCCOUNTER NAME="currentInst" VALUE="1"/>
+</LOOP>
+<SETVAR NAME="workflowasset:Total" VALUE="Variables.assets:Total"/>
+<USERMANAGER.GETLOGINUSER VARNAME="cs_CurrentUser"/>
+<STRINGLIST NAME="lCurrentUser" STR="Variables.cs_CurrentUser" DELIM=";"/>
+
+<WORKFLOWENGINE.GETFILTEREDASSIGNMENTS OBJECTPREFIX="workflowasset:" ASSIGNEDTO="lCurrentUser" SITE="Variables.pubid" PREFIX="assignment:"/>
+<HASH.CREATE NAME="hAssignedAssets"/>
+<IF COND="Variables.assignment:Total!=0">
+<THEN>
+    <SETCOUNTER NAME="currentInst" VALUE="0"/>
+    <LOOP COUNT="Variables.assignment:Total">
+        <WORKFLOWASSIGNMENT.GETASSIGNEDOBJECT NAME="assignment:Counters.currentInst" OBJVARNAME="workflowObject"/>
+        <WORKFLOWASSET.GETASSETID OBJECT="workflowObject" VARNAME="cs_CurrentAssignedID" />
+        <HASH.ADD NAME="hAssignedAssets" VALUE="Variables.cs_CurrentAssignedID"/>
+        <INCCOUNTER NAME="currentInst" VALUE="1"/>
+    </LOOP>
+</THEN>
+</IF>
+
+<HASH.TOSTRING NAME="hAssignedAssets" VARNAME="allAssignments" DELIM=";"/>
+<LOGMSG STR="XXX: Variables.allAssignments"/>
+
+</ftcs>

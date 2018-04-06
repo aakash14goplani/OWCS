@@ -1,0 +1,352 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+
+<!-- OpenMarket/Xcelerate/Admin/StartMenu
+   
+    INPUT
+   
+    OUTPUT
+    This template is being reused for CS7/Alloy UI for StartMenu details
+
+ HISTORY
+ [2007-09-1x KGF]
+ * XSS fixes (adapted from 6.3 fixes):
+   * isCleanString function usage
+   * CSVAR NAME -> STRING.STREAM VALUE
+ * changed definitions of 'obj' to just forms[0] (not .elements[0])
+ [2007-10-09 KGF]
+ * XSS revision: minimized set of restricted characters.
+ [2008-02-25 KGF]
+ * Further XSS fix: encode html special chars in description field
+ *
+ * Modified: Feb 22, 2011
+ * By:       JAG
+ * Reason:   Added Enhancement functionality which includes the following
+ *           1)  User can configure via startmenu the UI From Mode or
+                 Insite Layout Editing
+             2)  Can assign Default Group/Parents based on selected Flex Definition
+                 for both Single Value(SV) and Multi Value(MV) Parents
+             3)  Can assign Default Associated/Customized Attributes based on
+                 selected Flex Definition for both SingleValue(SV) and MultiValue(MV)
+             5)  Provide the ability to assign MultiValue(MV) default values for all
+                 supported datatypes
+ *
+ * Modified: March 22, 2011
+ * By:       JAG
+ * Reason:   Added Enhancement functionality which includes the following
+ *           1) Support for SingleValue {SV} Named Asset Child Associations
+             2) Support for MultiValue  {MV} Named Asset Child Associations
+
+ * Modified:  April 27, 2011
+ * By:        JAG
+ * Reason:    Added Smart Processing and support for FLEX BASE Family Processing
+              Example of FLEX LITE  is ExtensiblePage  has FLEX Definition with
+              NO Parents/Groups
+
+ * Modified:  May 10, 2011
+ * By:        JAG
+ * Reason:    Enhancement Added the Grouping and Section Attribute Type Heading(s) into both
+              Default Value ALL Attributes ( Attributes Flex Defined, Parents, Associations and Meta Attributes )
+              Pulldown and its associated assigned Values Pulldown. All attributes are displayed with the
+              special prefix removed and just the "Name" post fixed with (S) or (M) for MultiValue / SingleValue.
+              Improved the in ADD / REMOVE attribute functinality with respect to Grouped sections.
+              Fixed PR#25711 Adv ui StartMenu - Add Another value button is not working for multiple
+              valued and multiple ordered attribute t
+              types if used in extensible page
+              Fixed PR#25711  Adv UI - Cannot save attribute values in a
+              custom extensivble page asset with attributes of all
+              types, single, multiple, and multiple ordered
+  
+ * Modified: Dec 07,2011
+ * By:       JAG
+ * Reason:   CS80 PR#25701  Advanced ui start menu default values for attributes of 
+             type asset reference  custom defined ${Attibute_name} do not show 
+			 up when creating assets with that startmenu 
+             Default value in the start menu edit screen is not correct. 
+			 Shows ${AssetType} as in Media_C twice !    
+			 
+ * Modified: Dec 07,2011
+ * By:       JAG
+ * Reason:   CS80 PR#25718  CS Adv UI - start menu default values for 
+             type assets, parents, and associations has extra Add button
+    
+-->
+
+
+
+ <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/StartMenuCommon"/>
+
+
+         <IF COND="Variables.op=new">
+            <THEN>
+               <IF COND="IsVariable.item:id=true">
+                  <THEN>
+                     <STARTMENU.LOAD ID="Variables.item:id" OBJVARNAME="mi"/>
+                  </THEN>
+                  <ELSE>
+                     <STARTMENU.CREATE OBJVARNAME="mi"/>
+                  </ELSE>
+               </IF>
+               <!--
+                   <IF COND="Variables.item:legalsitessites=Any">
+                   <THEN>
+                     <SETVAR NAME="item:legalsitessites" VALUE="_ALL_"/>
+                   </THEN>
+                   </IF>
+
+                   <IF COND="Variables.item:legalrolesroles=Any">
+                   <THEN>
+                     <SETVAR NAME="item:legalrolesroles" VALUE="_ALL_"/>
+                   </THEN>
+                   </IF>
+               -->
+               <SETVAR NAME="item:sitessites" VALUE="Variables.empty"/>
+
+
+               <SUBSTITUTE STR="Variables.item:legalrolesroles" WHAT=";" WITH="," OUTSTR="item:legalrolesroles"/>
+               <IF COND="IsVariable.item:process=true">
+                  <THEN>
+                     <IF COND="Variables.item:itemtype!=Search">
+                        <THEN>
+                           <SETVAR NAME="item:processesprocessTotal" VALUE="1"/>
+                           <SETVAR NAME="item:processesprocess0" VALUE="Variables.item:process"/>
+                           <WORKFLOWENGINE.GETPROCESSID OBJVARNAME="currentProc" ID="Variables.item:process"/>
+                           <WORKFLOWPROCESS.GETROLES NAME="currentProc" OBJVARNAME="roleList"/>
+                           <ROLELIST.GETALL NAME="roleList" VARNAME="roles"/>
+                           <SETCOUNTER NAME="currentRole" VALUE="0"/>
+                           <IF COND="Variables.roles!=Variables.empty">
+                              <THEN>
+                                 <STRINGLIST NAME="rlist" STR="Variables.roles" DELIM=","/>
+                                 <LOOP LIST="rlist">
+				                    <SETVAR NAME="rolename" VALUE="rlist.ITEM"/>
+				                    <ICS.GETVAR NAME="Variables.rolename" ENCODING="default" OUTPUT="rolevalue"/>
+                                    <IF COND="Variables.rolevalue!=Variables.empty">
+                                       <THEN>
+                                          <STRINGLIST STR="Variables.rolevalue" NAME="users" DELIM=";"/>
+                                          <SETCOUNTER NAME="currentUser" VALUE="0"/>
+                                          <LOOP LIST="users">
+                                             <SETVAR NAME="item:participantsrequiredroleCounters.currentRoleuserCounters.currentUser" VALUE="users.ITEM"/>
+                                             <INCCOUNTER NAME="currentUser" VALUE="1"/>
+                                          </LOOP>
+                                          <SETVAR NAME="item:participantsrequiredroleCounters.currentRoleuserTotal" VALUE="users.#numRows"/>
+                                       </THEN>
+                                    </IF>
+                                    <SETVAR NAME="item:participantsrequiredroleCounters.currentRole" VALUE="Variables.rolename"/>
+                                    <INCCOUNTER NAME="currentRole" VALUE="1"/>
+                                 </LOOP>
+                              </THEN>
+                           </IF>
+                           <SETVAR NAME="item:participantsrequiredroleTotal" VALUE="rlist.#numRows"/>
+                           <SETVAR NAME="item:participantsoptionalroleTotal" VALUE="0"/>
+                        </THEN>
+                     </IF>
+                  </THEN>
+               </IF>
+
+               <SETVAR NAME="item:assetsubtype" VALUE="Variables.empty"/>
+               <SETVAR NAME="item:argumentsargumentTotal" VALUE="0"/>
+               <IF COND="IsVariable.item:sarguments=true">
+               <THEN>
+                  <STRINGLIST STR="Variables.item:sarguments" NAME="largs" DELIM=";"/>
+                  <SETVAR NAME="item:argumentsargumentTotal" VALUE="largs.#numRows"/>
+                  <SETCOUNTER NAME="currentArg" VALUE="0"/>
+                  <LOOP LIST="largs">
+                     <STRINGLIST STR="largs.ITEM" NAME="pairs" DELIM="="/>
+
+                     <SETVAR NAME="item:argumentsargumentCounters.currentArgname" VALUE="pairs.ITEM"/>
+                     <SETVAR NAME="currentArg" VALUE="pairs.ITEM"/>
+                     <SETROW LIST="pairs" ACTION="NEXT"/>
+                     <IF COND="Variables.currentArg=subtype">
+                     <THEN>
+                         <SETVAR NAME="item:assetsubtype" VALUE="pairs.ITEM"/>
+                     </THEN>
+                     </IF>
+                     <SUBSTITUTE STR="pairs.ITEM" WHAT="__EQ__" WITH="=" OUTSTR="out"/>
+                     <SUBSTITUTE STR="Variables.out" WHAT="__SEMI__" WITH=";" OUTSTR="out"/>
+                     <SETVAR NAME="item:argumentsargumentCounters.currentArgvalue" VALUE="Variables.out"/>
+                     <INCCOUNTER NAME="currentArg" VALUE="1"/>
+                  </LOOP>
+                  <IF COND="IsVariable.Definition=true">
+                  <THEN>
+                     <IF COND="Variables.Definition!=Any">
+                     <THEN>
+                        <!-- add a subtype argument -->
+                        <CALCULATOR.GO VALUE="largs.#numRows 1 +" VARNAME="nextArg"/>
+                        <SETVAR NAME="item:argumentsargumentTotal" VALUE="Variables.nextArg"/>
+                        <SETVAR NAME="item:argumentsargumentlargs.#numRowsname" VALUE="subtype"/>
+                        <SETVAR NAME="item:argumentsargumentlargs.#numRowsvalue" VALUE="Variables.Definition"/>
+                         <SETVAR NAME="item:assetsubtype" VALUE="Variables.Definition"/>
+                     </THEN>
+                     </IF>
+                  </THEN>
+                  </IF>
+               </THEN>
+               <ELSE>
+                  <IF COND="IsVariable.Definition=true">
+                  <THEN>
+                     <IF COND="Variables.Definition!=Any">
+                     <THEN>
+                        <!-- add a subtype argument -->
+                        <SETVAR NAME="item:argumentsargumentTotal" VALUE="1"/>
+                        <SETVAR NAME="item:argumentsargument0name" VALUE="subtype"/>
+                        <SETVAR NAME="item:argumentsargument0value" VALUE="Variables.Definition"/>
+                        <SETVAR NAME="item:assetsubtype" VALUE="Variables.Definition"/>
+                     </THEN>
+                     </IF>
+                  </THEN>
+                  </IF>
+               </ELSE>
+               </IF>
+		       <IF COND="IsVariable.cs_Permissions=true">
+               <THEN>
+                   <SETCOUNTER NAME="cDefArgs" VALUE="Variables.item:argumentsargumentTotal"/>
+                   <STRINGLIST NAME="lSavedPermissions" STR="Variables.cs_Permissions" DELIM=","/>
+                   <LOOP LIST="lSavedPermissions">
+                       <STRINGLIST NAME="lCurrentDefArg" STR="lSavedPermissions.ITEM" DELIM="="/>
+                       <SETVAR NAME="item:argumentsargumentCounters.cDefArgsname" VALUE="lCurrentDefArg.ITEM"/>
+                       <SETROW LIST="lCurrentDefArg" ACTION="LAST"/>
+                       <SETVAR NAME="item:argumentsargumentCounters.cDefArgsvalue" VALUE="lCurrentDefArg.ITEM"/>
+                       <INCCOUNTER NAME="cDefArgs" VALUE="1"/>
+                   </LOOP>
+                   <SETVAR NAME="item:argumentsargumentTotal" VALUE="Counters.cDefArgs"/>
+               </THEN>
+               </IF>
+
+               <IF COND="IsVariable.legal=true">
+                  <THEN>
+                     <STRINGLIST NAME="legalargs" STR="Variables.legal" DELIM=";"/>
+                     <SETVAR NAME="item:legalargsargumentTotal" VALUE="legalargs.#numRows"/>
+                     <SETCOUNTER NAME="currentArg" VALUE="0"/>
+                     <LOOP LIST="legalargs">
+                        <SUBSTRING STR="legalargs.ITEM" OUTSTR="reqflag" ENDINDEX="1"/>
+                        <SUBSTRING STR="legalargs.ITEM" OUTSTR="thearg" INDEX="1"/>
+
+
+                        <SETVAR NAME="item:legalargsargumentCounters.currentArgname" VALUE="Variables.thearg"/>
+                        <IF COND="Variables.reqflag=R">
+                           <THEN>
+                              <SETVAR NAME="item:legalargsargumentCounters.currentArgrequired" VALUE="true"/>
+                           </THEN>
+                           <ELSE>
+                              <SETVAR NAME="item:legalargsargumentCounters.currentArgrequired" VALUE="false"/>
+                           </ELSE>
+                        </IF>
+                        <INCCOUNTER NAME="currentArg" VALUE="1"/>
+                     </LOOP>
+                  </THEN>
+               </IF>
+              	<SETVAR NAME="errno" VALUE="0" />
+                <SETVAR NAME="checkVar" VALUE="0" />
+				<SETVAR NAME="tablename" VALUE="StartMenu"/>
+				<IF COND='IsVariable.item:id=true'>
+				<THEN>
+					<STARTMENUITEM.GATHER NAME="mi" PREFIX="item:"/>
+               		<STARTMENU.SAVE OBJECT="mi"/>
+				</THEN>
+				<ELSE>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+						<ARGUMENT NAME="columnvalue" VALUE="Variables.item:name"/>
+						<ARGUMENT NAME="type" VALUE="String"/>
+					</CALLELEMENT>
+					<IF COND="Variables.validatedstatus=true">
+					<THEN>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+							<ARGUMENT NAME="columnvalue" VALUE="Variables.item:itemtype"/>
+							<ARGUMENT NAME="type" VALUE="String"/>
+						</CALLELEMENT>
+						<IF COND="Variables.validatedstatus=true">
+						<THEN>
+							<EXECSQL LIST="listStartMenu" SQL="SELECT id,cs_name,cs_itemtype from StartMenu where cs_name='Variables.item:name' and cs_itemtype='Variables.item:itemtype'"/>
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+					<IF COND="listStartMenu.#numRows=0">
+					<THEN>
+						<STARTMENUITEM.GATHER NAME="mi" PREFIX="item:"/>
+	               		<STARTMENU.SAVE OBJECT="mi"/>
+	               	</THEN>
+	               	<ELSE>
+	              			<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/StartMenuAlreadyExists" VARNAME="_XLAT_" EVALALL="true"/>
+	           			     <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+								    <argument NAME="severity" VALUE="error"/>
+	 								    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+							 </CALLELEMENT>
+			
+							<!-- Display start menu items for the item type-->
+							<REMOVEVAR NAME="AssetType" />							 
+							 <SETVAR NAME="ItemType" VALUE="Variables.item:itemtype" />							 
+		                     <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/StartMenuFront">
+			                        <ARGUMENT NAME="op" VALUE="list"/>
+	           			     </CALLELEMENT>
+	           			     <SETVAR NAME="checkVar" VALUE="1" />
+	               	</ELSE>
+	               	</IF>
+				</ELSE>
+				</IF>
+				
+               	
+               <IF COND="Variables.errno!=0">
+                  <THEN>
+	                  	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+							<ARGUMENT NAME="error" VALUE="EnterFailed"/>
+						</CALLELEMENT>
+					</THEN>
+                  <ELSE>
+                  	<IF COND='Variables.checkVar!=1'>
+                  	<THEN>
+	                     <STARTMENU.LOAD NAME="Variables.item:name" ITEMTYPE="Variables.item:itemtype" OBJVARNAME="mi"/>
+	                     <STARTMENUITEM.GETID NAME="mi" VARNAME="currentID"/>
+	                     <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/StartMenuFront">
+	                        <ARGUMENT NAME="startitem" VALUE="Variables.currentID"/>
+	                        <ARGUMENT NAME="op" VALUE="view"/>
+	                     </CALLELEMENT>
+                     </THEN>
+                     </IF>
+                  </ELSE>
+               </IF>
+               
+            </THEN>
+            <ELSE>
+               <IF COND="Variables.op=delete">
+                  <THEN>
+                     <STARTMENU.LOAD ID="Variables.startitem" OBJVARNAME="mi"/>
+                     <STARTMENUITEM.GETNAME NAME="mi" VARNAME="currentName"/>
+                     <STARTMENU.DELETE ID="Variables.startitem"/>
+                     <IF COND="Variables.errno=0">
+                        <THEN>
+                           <P/>
+						   <div class="width-outer-70">
+							 <XLAT.LOOKUP KEY="dvin/UI/Admin/StartMenuItemcurrentNamedeletedsuccessfully" VARNAME="_msgtext_"/>
+							 <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+								<argument NAME="msgtext" VALUE="Variables._msgtext_"/>
+								<argument NAME="severity" VALUE="info"/>
+							 </callelement>
+							</div>
+                           <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/StartMenuFront">
+                              <ARGUMENT NAME="op" VALUE="list"/>
+                           </CALLELEMENT>
+			             </THEN>
+                        <ELSE>
+                           <XLAT.STREAM KEY="dvin/UI/Admin/Error/deletingcurrentNameerrnoerrdetail1" currentName="Variables.currentName" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false"/>
+                        </ELSE>
+                     </IF>
+                  </THEN>
+               </IF>
+            </ELSE>
+         </IF>
+
+
+         <PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+         <if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+            <then>
+               <STARTMENUITEM.GETASSETTYPE NAME="mi" VARNAME="assettype"/>
+               <STARTMENUITEM.GETITEMTYPE NAME="mi" VARNAME="itemtype"/>
+               <callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+                  <argument NAME="__TreeRefreshKeys__" VALUE="Self:StartMenuVariables.assettype;Self:StartMenuVariables.itemtype"/>
+               </callelement>
+            </then>
+         </if>
+
+</FTCS>

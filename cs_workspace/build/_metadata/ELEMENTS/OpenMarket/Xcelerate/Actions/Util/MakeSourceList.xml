@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Util/MakeSourceList.xml $ 
+$Revision: 16 $ 
+$Modtime: 3/02/01 5:54p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-MakeSourceList.xml
+-
+- DESCRIPTION
+-	Make list of known content sources
+-
+- HISTORY 
+-->
+
+	 <IF COND="IsVariable.Prefix=true">
+	 	<THEN>
+	 		<SETVAR NAME="Fieldname" VALUE="Variables.Prefix:source"/>
+	 	</THEN>
+	 	<ELSE>
+	 		<SETVAR NAME="Fieldname" VALUE="source"/>
+	 	</ELSE>
+	 </IF>
+	 <selectto LIST="Source" FROM="Source" WHAT="*"/>
+     <SELECT NAME="Variables.Fieldname" dojoType="fw.dijit.UISimpleSelect" showErrors="false" clearButton="true" REPLACEALL="Variables.Fieldname"> 
+     	<if COND="Variables.defaultFormStyle=true">
+		<then>
+			<script event='startup' type='dojo/connect'><![CDATA[
+				dojo.addClass(this.domNode, "defaultFormStyle");
+			]]></script>
+		</then>
+		</if>    
+         <loop LIST="Source">
+             <if COND="Variables.ContentDetails:source=Source.source">
+                 <then>
+                    <OPTION VALUE="Source.source" REPLACEALL="Source.source" SELECTED="true"/><STRING.STREAM VALUE="Source.description"/>
+                 </then>
+                 <else>
+                    <OPTION value="Source.source" REPLACEALL="Source.source"/><STRING.STREAM VALUE="Source.description"/>
+                 </else>
+             </if>
+          </loop>
+     </SELECT>
+
+</FTCS>

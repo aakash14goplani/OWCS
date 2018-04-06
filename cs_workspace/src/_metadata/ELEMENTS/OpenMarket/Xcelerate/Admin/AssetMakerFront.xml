@@ -1,0 +1,472 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/AssetMakerFront.xml 
+
+-->
+
+<!-- OpenMarket/Xcelerate/Admin/AssetMaker
+
+ INPUT
+  Variables.pagetype
+  Variables.action
+  Variables.assettype
+ OUTPUT
+
+-->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<IF COND="Variables.action=new">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/AssetMaker/CreateAssetFront"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.action=show">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetMakerFront">
+			<ARGUMENT NAME="action" VALUE="details"/>
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+		</CALLELEMENT>
+	</THEN>
+	</IF>
+	
+	<IF COND="Variables.action=createtable">
+	<THEN>
+	
+	   	<ASSETTYPE.LOAD NAME="theAssetType" TYPE="Variables.assettype"/>
+		<if COND="Variables.errno!=0">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<argument NAME="error" VALUE="EditNewAssetFailed"/>
+			</callelement>
+			<throwexception/>
+		</then>
+		</if>
+		<ASSETTYPE.SCATTER NAME="theAssetType" PREFIX="at"/>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/CreateAssetTableforAT" at:description="Variables.at:description"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+
+	<!-- parse the asset descriptor file so we can extract out the defdir -->
+	<CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+	   <ARGUMENT NAME="command" VALUE="parseasset"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLJAVA>
+	
+	<!-- Check whether asset table has already been created -->
+	<if COND="IsObject.Variables.assettype=false">
+	<then>
+		<setvar NAME="tableExists" VALUE="false"/>
+		<setvar NAME="numExistingAssets" VALUE="0"/>
+	</then>
+	<else>
+		<setvar NAME="tableExists" VALUE="true"/>
+		<setvar NAME="tablename" VALUE="Variables.assettype"/>
+	   <EXECSQL LIST="assets" 
+		     SQL="SELECT count(*) as thecount FROM Variables.assettype"/>
+		<setvar NAME="numExistingAssets" VALUE="assets.thecount"/>
+	</else>
+	</if> 
+	
+	
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function checkfields()
+{
+	var obj = document.forms[0].elements[0];
+  	if (obj.form.elements['DefDir'].value=="")
+	{
+		]]>
+		alert("<XLAT.STREAM KEY="dvin/Assetmaker/SpecifyDefdir" ESCAPE="true" ENCODE="false"/> ");
+		<![CDATA[
+		obj.form.elements['DefDir'].focus();
+		return false;
+	}
+	return true;
+}
+]]>
+</SCRIPT>
+<STRING.ENCODE VARIABLE="at:assettype" VARNAME="at:assettype"/>
+<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+	<tr><td>
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+				</td>
+				<td class="form-inset">
+					<CSVAR NAME="Variables.at:assettype"/>
+				</td>
+			</tr>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+	          		<STRING.STREAM VALUE="Variables.at:description"/>
+				</td>
+			</tr>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/Assetmaker/DefDir"/>:
+				</td>
+				<td class="form-inset">
+		             <if COND="IsVariable.assetmaker/assettags/defdir=false">
+		             <then>
+		             <INPUT TYPE="TEXT" NAME="DefDir" SIZE="32" MAXLENGTH="128" VALUE=""/>
+		             </then>
+		             <else>
+			             <![CDATA[<INPUT TYPE="TEXT" NAME="DefDir" SIZE="32" MAXLENGTH="128" VALUE="]]><STRING.STREAM VARIABLE="assetmaker/assettags/defdir"/><![CDATA["/>]]>
+	             	 </else>
+	             	 </if>
+		             <br/>
+					 <img height="10" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+					 <br/>
+						<setvar NAME="assettype" VALUE="Variables.assettype"/>
+						<setvar NAME="category" VALUE="g"/>
+						<SELECTTO FROM="Category" WHAT="*" LIST="category" WHERE="assettype,category"/>
+						<if COND="Variables.errno=-101">
+						<then>
+							<INPUT TYPE="CHECKBOX" VALUE="true" CHECKED="CHECKED" NAME="addCategory" />&nbsp; <XLAT.STREAM KEY="dvin/Assetmaker/AddGeneralcategory"/>
+		             </then>
+		             </if> 
+				</td>
+			</tr>
+			
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>			
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.at:id"/>					
+				</td>
+			</tr>
+			
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="createtable"/>
+			<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/AssetMakerPost"/>
+			<INPUT TYPE="HIDDEN" NAME="assettype" VALUE="Variables.at:assettype"  REPLACEALL="Variables.at:assettype"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="AssetFrontURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+													  <satellite.argument name="action" value="details"/>
+													  <satellite.argument name="assettype" value="Variables.assettype"/>
+													   </SATELLITE.LINK>	
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+					<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="Variables.AssetFrontURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.AssetFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/UI/SaveAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/CreateAssetTable"/></CALLELEMENT></A>				
+				</TD>
+			</TR>
+		</table>
+	</td></tr>
+</table>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.action=register">
+	<THEN>
+		<ASSETTYPE.LOAD NAME="theAssetType" TYPE="Variables.assettype"/>
+		<if COND="Variables.errno!=0">
+		<then>
+  				 <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+   					<argument NAME="error" VALUE="EditNewAssetFailed"/>
+	  			 </callelement>
+  				 <throwexception/>
+  				</then>
+           </if>
+		<ASSETTYPE.SCATTER NAME="theAssetType" PREFIX="at"/>
+							<!-- parse the asset descriptor file so we can extract out the defdir -->
+							<CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+							   <ARGUMENT NAME="command" VALUE="parseasset"/>
+								<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+							</CALLJAVA>
+							
+							<!-- Check whether asset table has already been created -->
+							<if COND="IsObject.Variables.assettype=false">
+							<then>
+								<setvar NAME="tableExists" VALUE="false"/>
+								<setvar NAME="numExistingAssets" VALUE="0"/>
+							</then>
+							<else>
+								<setvar NAME="tableExists" VALUE="true"/>
+								<setvar NAME="tablename" VALUE="Variables.assettype"/>
+							</else>
+							</if>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/RegisterAssetElementsforAT" at:description="Variables.at:description"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+		
+	<IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.assettype/ContentDetails=true">
+	<THEN>
+		<XLAT.LOOKUP KEY="dvin/Assetmaker/ElementsExistWarning" VARNAME="msgtext" ENCODE="false"/>
+		<div class="width-outer-70">
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <ARGUMENT NAME="severity" VALUE="warning"/>
+		</CALLELEMENT>   
+		</div>         
+	</THEN>
+	</IF>
+	
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+	<tr><td>
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+				</td>
+				<td class="form-inset">
+					<CSVAR NAME="Variables.at:assettype"/>
+				</td>
+			</tr>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.at:description"/>
+				</td>
+			</tr>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/Common/Class"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.at:logic"/><BR/>
+					<IF COND="Variables.at:logic=com.openmarket.assetmaker.asset.AMAsset">
+					<THEN>
+					    <IF COND="IsSessionVariable.csblobid!=true">
+					    <THEN>
+					        <SETSSVAR NAME="csblobid" VALUE="CS.UniqueID"/>
+					    </THEN>
+					    </IF>
+	                          <SATELLITE.BLOB ASSEMBLER="query" BLOBTABLE="AssetType" BLOBCOL="urldescriptor" BLOBHEADER="text/xml" BLOBKEY="id" BLOBWHERE="Variables.at:id" BLOBNOCACHE="true" CSBLOBID="SessionVariables.csblobid" OUTSTRING="urlblobserver"/>
+						<A HREF="Variables.urlblobserver" REPLACEALL="Variables.urlblobserver" id="adflink"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Admin/ViewDescriptorFile"/></A>
+					</THEN>
+					</IF>
+				</td>
+			</tr>
+<if COND="Variables.at:logic=com.openmarket.assetmaker.asset.AMAsset">
+	<then>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/Assetmaker/DefDir"/>:
+				</td>
+				<td class="form-inset">
+					<IF COND="Variables.tableExists=true">
+					<THEN>
+						<SETVAR NAME="tblname" VALUE="Variables.at:assettype"/>
+					    <SELECTTO LIST="sysinfo" FROM="SystemInfo" WHERE="tblname"/>
+						<if COND="IsError.Variables.errno=false">
+						<then>
+							<STRING.STREAM LIST="sysinfo" COLUMN="defdir"/>
+						</then>
+						<else>
+						errno=<STRING.STREAM VALUE="Variables.errno"/><BR/>
+						</else>
+						</if>	
+						&nbsp;
+					</THEN>
+					<ELSE>	</ELSE>
+					</IF>
+				</td>
+			</tr>
+	</then>
+	</if>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.at:id"/>					
+				</td>
+			</tr>
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="register"/>
+			<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/AssetMakerPost"/>
+			<INPUT TYPE="HIDDEN" NAME="assettype" VALUE="Variables.at:assettype"  REPLACEALL="Variables.at:assettype"/>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="AssetFrontURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			  <satellite.argument name="action" value="details"/>
+			  <satellite.argument name="assettype" value="Variables.assettype"/>
+			   </SATELLITE.LINK>		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+					<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="Variables.AssetFrontURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.AssetFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/Assetmaker/RegisterAssetElements" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/RegisterAssetElements"/></CALLELEMENT></A>
+				</TD>
+			</TR>
+
+
+			</table>
+	</td></tr>
+</table>
+
+	</THEN>
+	</IF>
+<IF COND="Variables.action=list">
+<THEN>
+
+	<IF COND="IsVariable.orderby!=true">
+	<THEN>
+		<SETVAR NAME="orderby" VALUE="assettype"/>
+	</THEN>
+	</IF>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/Assetmaker/AssetMakerAssetTypes"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	
+	<ASSETTYPE.LIST LIST="AssetDetails" FIELD1="logic" VALUE1="com.openmarket.assetmaker.asset.AMAsset" ORDER="Variables.orderby"/>
+
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-30">
+		<tr>
+			<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+			<td >
+				<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                  <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetMakerFront" outstring="urlastmkfront">
+                                      <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                           </SATELLITE.LINK>                                                                                
+                                  <A HREF="Variables.urlastmkfront" REPLACEALL="Variables.urlastmkfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AssetType"/></DIV></A></td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                  <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetMakerFront" outstring="urlastmkfront">
+                                      <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                          <satellite.argument name="orderby" value="description"/>
+                                           </SATELLITE.LINK>
+                                  <A HREF="Variables.urlastmkfront" REPLACEALL="Variables.urlastmkfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></A></td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+					<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<!-- Loop over all search results. -->
+			   			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETVAR NAME="separatorLine" VALUE="0"/>
+						<IF COND="IsList.AssetDetails=true">
+						<THEN>							
+									<LOOP LIST="AssetDetails">
+									
+										<IF COND="Variables.separatorLine=1">
+										<THEN>
+											<!--<tr>
+												<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+											</tr>-->
+										</THEN>
+										</IF>
+										<SETVAR NAME="separatorLine" VALUE="1"/>
+						
+										<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+										<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+										<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisAssetType" VARNAME="_alt_"/>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttpfront">
+			                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+			                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			                                          <satellite.argument name="action" value="details"/>
+			                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+			                                           </SATELLITE.LINK>
+			                            <A HREF="Variables.urlasttpfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlasttpfront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+										<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisAssetType" VARNAME="_alt_"/>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttpfront">
+			                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+			                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			                                          <satellite.argument name="action" value="edit"/>
+			                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+			                                           </SATELLITE.LINK>
+			                            <A HREF="Variables.urlasttpfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlasttpfront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+										<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisAssetType" VARNAME="_alt_"/>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttpfront">
+			                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+			                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			                                          <satellite.argument name="action" value="confirmdelete"/>
+			                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+			                                           </SATELLITE.LINK>
+			                            <A HREF="Variables.urlasttpfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlasttpfront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+										
+										</td>
+								                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+								                    <DIV class="small-text-inset">
+								                    	<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+			                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttpfront">
+			                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+			                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			                                              <satellite.argument name="action" value="details"/>
+			                                              <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+			                                               </SATELLITE.LINK>
+														<A HREF="Variables.urlasttpfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_,Variables.urlasttpfront"><STRING.STREAM VALUE="AssetDetails.assettype"/></A>
+													</DIV>
+												</td>
+												<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+								                    <DIV class="small-text-inset">
+								                    <STRING.STREAM VALUE="AssetDetails.description"/>
+								                    </DIV>
+								                 </td>
+								                 	<td><BR /></td></tr>
+								            <IF COND="Variables.rowStyle=tile-row-normal">
+								            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+								            </THEN>
+								            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+								            </ELSE>
+								            </IF>
+										</LOOP>
+							</THEN>
+							</IF>
+							</table>
+						</td>
+						<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+						</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table> 
+
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetMakerFront" outstring="addAMURL">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="new"/>
+                                          <satellite.argument name="am" value="AssetMakerFront"/>
+                                           </SATELLITE.LINK>
+<XLAT.LOOKUP KEY="dvin/Assetmaker/AddNewAssetMakerAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+<div class="width-outer-70">
+<A HREF="Variables.addAMURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addAMURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewAssetmakerAT"/></CALLELEMENT></A>
+</div>
+
+</THEN>
+</IF>
+</FTCS> 

@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/Util/ShowCellMessage.xml $ 
+$Revision: 9 $ 
+$Modtime: 2/27/04 2:46p $ 
+--> 
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowMessage
+-
+- DESCRIPTION
+-	UI utility to display a Content Centre message - info, warning or error
+-	Use this when showing a message inside a table cell on a details-like page.
+-	This is meant to provide context for the message (the detail row) and not call
+-	undue attention to the message.
+-
+- Arguments
+-	severity: One of error, info or warning
+-	msgtext: The text of the message to display
+- 	or
+-	elem: The name of the element from which to read the message
+- 
+- HISTORY
+-	 
+-->
+<!-- Default severity is info -->
+<IF COND="IsVariable.severity=false">
+    <THEN>
+    <setvar NAME="severity" VALUE="info"/>
+    </THEN>
+</IF>
+        
+<table border="0" cellspacing="0" cellpadding="0">
+    <tr>
+        <td>
+            <table border="0" cellspacing="0" cellpadding="3">
+                <tr>
+                    <td valign="top"><img src="Variables.cs_imagedir/graphics/common/msg/Variables.severity.gif" width="25" height="22" REPLACEALL="Variables.cs_imagedir,Variables.severity"/></td>
+                    <td>
+                    <i>
+		    <IF COND="IsVariable.elem=true">
+                    <THEN>
+                        <!-- Build the name of the error element corresponding to the error -->
+                        <SETVAR NAME="element" VALUE="OpenMarket/Xcelerate/Errors/Variables.elem"/>
+                        
+                        <!-- Check to see if there is an error element for this error -->
+                        <IF COND="IsElement.Variables.element=true">
+                        <THEN>
+                            <CALLELEMENT NAME="Variables.element"/>
+                        </THEN>
+                        <ELSE>    
+                            <XLAT.LOOKUP KEY="dvin/UI/Error/ContentServerDirecterrorelementmissingcode" VARNAME="_XLAT_" errno="Variables.errno" error="Variables.error" EVALALL="false"/>
+                            <SETVAR NAME="errormsg" VALUE="Variables._XLAT_"/>
+                        </ELSE>
+                        </IF>    
+                    </THEN>
+                    <ELSE>
+                        <csvar NAME="Variables.msgtext"/>
+                    </ELSE>
+                    </IF>
+		    </i>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<p/>
+<p/>
+</FTCS> 

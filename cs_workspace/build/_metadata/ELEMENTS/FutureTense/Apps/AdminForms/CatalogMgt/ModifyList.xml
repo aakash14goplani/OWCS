@@ -1,0 +1,135 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!--
+  - CatalogMgt/ModifyList
+  - Copyright (c) Open Market, Inc., 1999, 2000, 2001, All Rights Reserved
+  - $Revision: 9 $
+  -->
+
+<IF COND="IsVariable.key=true"><THEN>
+    <IF COND="Variables.key!=%"><THEN>
+        <SETSSVAR NAME="catalogkey" VALUE="Variables.key"/>
+    </THEN></IF>
+</THEN></IF>
+<SETVAR NAME="tablename" VALUE="SystemInfo"/>
+<SETVAR NAME="tblname" VALUE="Variables.key"/>
+<SELECTTO FROM="Variables.tablename" WHAT="*" LIST="ResultsList" WHERE="tblname" />
+
+<IF COND="ResultsList.#numRows=0">
+    <THEN>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/NoCatalogsMatch"/>" <STRING.STREAM VARIABLE="key"/>"</span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>    
+        <SATELLITE.FORM ASSEMBLER="query">
+            <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+			<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+	<XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_"/>
+	<A onClick="javascript:history.go(-1);return false;" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Back"/></CALLELEMENT></A>
+	</SATELLITE.FORM>
+    </THEN>
+    <ELSE>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/ModifyCatalog"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>    
+        <TABLE class="width-outer-70"  BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD NOWRAP="true" COLSPAN="3">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<XLAT.STREAM KEY="dvin/AdminForms/SelectTheCatalogToModify"/>
+        			</B></FONT>
+        		</TD>
+        	</TR>
+        	<tr><td>
+				<TABLE  BORDER="0" CELLSPACING="0" CELLPADDING="0">
+					<tr>
+						<td></td>
+						<td class="tile-dark" HEIGHT="1">
+							<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" 
+							REPLACEALL="Variables.cs_imagedir"/> 
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+						<td> 
+							<TABLE width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+							<tr>
+								<td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+								</td>
+							</tr>
+							<tr>
+								<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" nowrap="true"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/CatalogName"/></DIV></td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/FileStorage"/></DIV></td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title">	<XLAT.STREAM KEY="dvin/AdminForms/ACL"/></DIV></td>
+								<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							</tr>	
+							<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+							<SETVAR NAME="separatorLine" VALUE="0"/>
+							<LOOP LIST="ResultsList">
+								<SETVAR NAME="separatorLine" VALUE="1"/>
+								<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+									<TD class="small-text-inset" style="vertical-align: middle;" NOWRAP="NOWRAP" VALIGN="BASELINE">
+										<ics.encode base="ContentServer" session="true" output="href">
+											<ics.argument name="pagename" value="FutureTense/Apps/AdminForms/AdminForm"/>
+											<ics.argument name="tool" value="CatalogMgt"/>
+											<ics.argument name="form" value="Modify"/>
+											<ics.argument name="key" value="ResultsList.tblname"/>
+											</ics.encode>
+										<A HREF="Variables.href" REPLACEALL="Variables.href">
+											<STRING.STREAM VALUE="ResultsList.tblname"/>
+										</A>
+									</TD>
+									<td><BR/></td>
+									<TD class="small-text-inset" style="white-space: normal;"  VALIGN="BASELINE">
+										<STRING.STREAM VALUE="ResultsList.defdir"/>
+									</TD>
+									<td><BR/></td>
+									<TD class="small-text-inset" style="white-space: normal;" VALIGN="BASELINE">
+										<SUBSTITUTE STR="ResultsList.acl" WHAT="," WITH =", " OUTSTR="tempval"/>
+										<STRING.STREAM VALUE="Variables.tempval"/>
+									</TD> 
+									<td><BR/></td>
+								</TR>
+								<IF COND="Variables.rowStyle=tile-row-normal">
+									<THEN>
+										<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+									</ELSE>
+								</IF>
+							</LOOP>
+						</TABLE>
+					</td><td class="tile-dark" VALIGN="top" WIDTH="1"><BR /></td>
+					</tr>
+					<tr>
+						<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+						<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+				</TABLE> 
+			</td></tr>
+		</TABLE>
+    </ELSE>
+</IF>
+</FTCS>

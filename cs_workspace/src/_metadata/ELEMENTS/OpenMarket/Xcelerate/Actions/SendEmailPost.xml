@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SendEmailPost.xml $ 
+$Revision: 21 $ 
+$Modtime: 6/03/02 2:56p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- SendEmailPost.xml
+-
+- DESCRIPTION
+-	Send eMail to users
+-
+- HISTORY 
+- 5/8/1999 - Created
+-->
+
+<SETVAR NAME="newList" VALUE="Variables.empty"/>
+<IF COND="IsVariable.toList=true">
+<THEN>
+    <stringlist NAME="eList" STR="Variables.toList" DELIM=";"/>
+    <UL>
+    <loop LIST="eList">
+        <removevar NAME="email"/>
+	<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+	<callelement NAME="Variables.propmanageuserpub">
+	    <argument NAME="upcommand" VALUE="GetUserEMail"/>
+	    <argument NAME="username" VALUE="eList.ITEM"/>
+	    <argument NAME="outname" VALUE="email"/>
+	</callelement>
+	<if COND="IsVariable.email=true">
+	<then>
+            <!-- code modified by Yueh-Ing Yu Chase Manhattan Bank -->
+            <if COND="Variables.newList!=Variables.empty">
+            <then>
+	    <setvar NAME="newList" VALUE="Variables.newList,Variables.email"/>
+            </then>
+            <else>
+            <setvar NAME="newList" VALUE="Variables.email"/>
+            </else>
+            </if>
+	</then>
+	<else>
+	    <LI/><XLAT.STREAM KEY="dvin/UI/Error/UserITEMdoesnothaveanemailaddress" ENCODE="false"/>
+	</else>
+	</if>
+    </loop>
+    </UL>
+</THEN>
+</IF>
+
+<IF COND="Variables.newList!=Variables.empty">
+<THEN>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="theMessage" VALUE="This E-mail message was sent by user: SessionVariables.username&#013;"/>
+    <setvar NAME="theMessage" VALUE="Variables.theMessageVariables.theBody"/>
+    <sendmail TO="Variables.newList" SUBJECT="Variables.subject" BODY="Variables.theMessage"/>
+    <if COND="Variables.errno!=0">
+    <then>
+	<substitute STR="Variables.toList" WHAT=";" WITH="&#60;BR&#62;" OUTSTR="badList"/>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	    <argument NAME="error" VALUE="EmailError"/>
+	</callelement>
+    </then>
+    <else>
+        <XLAT.STREAM KEY="dvin/UI/Emailsent"/><BR/>
+    </else>
+    </if>
+</THEN>
+<ELSE>
+	<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Error/SendingEmail"/></span>
+	<br/>&nbsp;<br/>
+	<XLAT.STREAM KEY="dvin/UI/Error/Norecipientsspecifiedforemail" ENCODE="false"/>
+</ELSE>
+</IF>
+
+</FTCS>

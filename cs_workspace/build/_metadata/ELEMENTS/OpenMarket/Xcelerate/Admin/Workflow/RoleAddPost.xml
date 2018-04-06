@@ -1,0 +1,153 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Workflow/RoleAddPost.xml $ 
+$Revision: 22 $ 
+$Modtime: 2/02/04 5:35p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- WorkflowRoles.xml
+-
+- DESCRIPTION
+-	Admin things about a workflow role
+-
+- HISTORY 
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<HTML>
+<HEAD>
+<PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+<IF COND="IsVariable.docDomain=true">
+<THEN>
+	<IF COND="Variables.docDomain!=Variables.empty">
+	<THEN>
+	    <SCRIPT LANGUAGE="JavaScript">
+		document.domain = "<CSVAR NAME="Variables.docDomain"/>";
+	    </SCRIPT>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</HEAD>
+<!-- first check to see if the user is logged in or not -->
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceladmin"/>
+<if COND="Variables.errno=0">
+	<then> 
+		 <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Util/ShowError" outstring="urlshowerror">
+             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+             <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="error" value="AdminTimeoutError"/>
+                                           </SATELLITE.LINK>
+		<REPLACE STR="Variables.urlshowerror">
+			<script LANGUAGE="JavaScript">
+				parent.parent.location="Variables.urlshowerror";
+			</script>
+		</REPLACE>
+		<throwexception/>
+	</then>
+</if>
+<BODY BGCOLOR="#FFFFFF">
+
+<if COND="IsVariable.workflowrole!=true">
+<then>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	<argument NAME="error" VALUE="NoWorkflowRole"/>                
+    </callelement>
+    <throwexception/>
+</then>
+</if>
+
+<TABLE BGCOLOR="#FFFFFF" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+	<TD BGCOLOR="#FFFFFF" COLSPAN="2">
+	    <FONT FACE="Arial, Helvetica" SIZE="2">
+	    <h3>
+	    <XLAT.STREAM KEY="dvin/UI/Admin/AddNewWorkflowRole"/>
+	    </h3>
+	    </FONT>
+	</TD>
+    </TR>
+    <stringlist NAME="role" STR="Variables.workflowrole" DELIM=";"/>
+    <loop LIST="role">
+	<TR>
+	    <TD>
+		<B><STRING.STREAM VALUE="role.ITEM"/></B>
+	    </TD>
+
+	    <!-- check to see if role has already been added -->
+	    <setvar NAME="errno" VALUE="0"/>
+	    <setvar NAME="tablename" VALUE="WorkflowRoles"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="role.ITEM"/>
+			<ARGUMENT NAME="type" VALUE="String"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.wfid"/>
+				<ARGUMENT NAME="type" VALUE="Long"/>
+			</CALLELEMENT>
+			<IF COND="Variables.validatedstatus=true">
+			<THEN>
+				<execsql LIST="RoleDefined" 
+					SQL="SELECT workflowrole FROM WorkflowRoles
+					WHERE workflowrole='role.ITEM'
+					AND workflowid='Variables.wfid'"/>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+	    <if COND="Variables.errno!=-101">
+	    <then>
+		<TD BGCOLOR="#FFFF00"><FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#000000"><XLAT.STREAM KEY="dvin/UI/Admin/Alreadyadded"/></FONT></TD>
+	    </then>
+	    <else>
+		<!-- Insert the specified information into the table. 
+		-    Report any errors.
+		-    Refresh the navigation
+		-->
+		<SETVAR NAME="id" VALUE="CS.UniqueID"/>
+		<setvar NAME="errno" VALUE="0"/>
+		<CATALOGMANAGER SCOPED="local">
+		    <ARGUMENT NAME="tablename" VALUE="WorkflowRoles"/>
+		    <ARGUMENT NAME="id" VALUE="Variables.id"/>
+		    <ARGUMENT NAME="workflowid" VALUE="Variables.wfid"/>
+		    <ARGUMENT NAME="workflowrole" VALUE="role.ITEM"/>
+		    <ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+		</CATALOGMANAGER>
+		<if COND="Variables.errno!=0">
+		<then>
+		    <TD BGCOLOR="#FFFFFF"><FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#FF0000"><XLAT.STREAM KEY="dvin/UI/Error/Failederrnoeqerrno" errno="Variables.errno" EVALALL="false"/></FONT></TD>
+		</then>
+		<else>
+		    <TD>
+		    <FONT FACE="Arial, Helvetica" SIZE="2">Added.
+
+		    <!-- refresh the navigation bar -->
+		    <SCRIPT LANGUAGE="JavaScript">
+			// parent.frames[0].location='/cgi-bin/gx.cgi/Applogic+FTContentServer?pagename=OpenMarket/Xcelerate/Admin/ShowGeneralFunctions';
+		    </SCRIPT>
+		    </FONT>
+		    </TD>
+		</else>
+		</if>
+	    </else>
+	    </if>
+        </TR>
+    </loop>
+</TABLE>
+
+</BODY>
+</HTML>
+</FTCS>

@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Installation/ElementCatalog/OpenMarket/CommerceData/Installation/CreateTreeTabs.xml $
+$Revision: 3 $
+$Modtime: 8/27/04 11:41a $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-    Element which gets called from installer which creates the Analytics Bridge tree tabs.  This element is ONLY called if
+-    CS-Direct is also installed.
+-
+- INPUT
+- OUTPUT
+-    
+-->
+<setvar NAME="result" VALUE="Variables.empty"/>
+
+<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="globalpopupuri" PAGENAME="OpenMarket/Gator/UIFramework/LoadGlobalPopup"/>
+<!-- take offeverything up to ContentServer -->
+<INDEXOF STR="Variables.globalpopupuri" WHAT="ContentServer" OUTSTR="csIndex"/>
+<IF COND="Variables.csIndex!=0">
+<THEN>
+	<SUBSTRING STR="Variables.globalpopupuri" OUTSTR="globalpopupuri" INDEX="Variables.csIndex"/>
+</THEN>
+</IF>
+
+<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="globalactionuri" PAGENAME="OpenMarket/Gator/UIFramework/TreeOpURL"/>
+<!-- take offeverything up to ContentServer -->
+<INDEXOF STR="Variables.globalactionuri" WHAT="ContentServer" OUTSTR="csIndex"/>
+<IF COND="Variables.csIndex!=0">
+<THEN>
+	<SUBSTRING STR="Variables.globalactionuri" OUTSTR="globalactionuri" INDEX="Variables.csIndex"/>
+</THEN>
+</IF>
+
+<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="loaduri" PAGENAME="OpenMarket/Gator/UIFramework/LoadTab"/>
+<!-- take offeverything up to ContentServer -->
+<INDEXOF STR="Variables.loaduri" WHAT="ContentServer" OUTSTR="csIndex"/>
+<IF COND="Variables.csIndex!=0">
+<THEN>
+	<SUBSTRING STR="Variables.loaduri" OUTSTR="loaduri" INDEX="Variables.csIndex"/>
+</THEN>
+</IF>
+
+<TTM.LOAD NAME="Reports" OBJVARNAME="tab"/>
+<IF COND="IsError.Variables.errno=true">
+<THEN>
+	<!-- add Report tree tab -->
+	<TTM.CREATE OBJVARNAME="tab"/>
+	
+	<TREETAB.SETTITLE NAME="tab" VALUE="Reports"/>
+	<TREETAB.SETPANETYPE NAME="tab" VALUE="Tree"/>
+	<TREETAB.SETLINESTYLE NAME="tab" VALUE="Angled"/>
+	<TREETAB.SETTOOLTIP NAME="tab" VALUE="Report Tab"/>
+	<TREETAB.SETNODEOPENEDPIC NAME="tab" VALUE="Xcelerate/OMTree/TreeImages/minus.png"/>
+	<TREETAB.SETNODECLOSEDPIC NAME="tab" VALUE="Xcelerate/OMTree/TreeImages/plus.png"/>
+	<TREETAB.SETGLOBALACTION NAME="tab" VALUE="Variables.globalactionuri"/>
+	<TREETAB.SETGLOBALPOPUPURL NAME="tab" VALUE="Variables.globalpopupuri"/>
+	<TREETAB.SETUID NAME="tab" VALUE="CSSystem:TreeTabs:Reports"/>
+	<TREETAB.GETGLOBALITEMS NAME="tab" OBJVARNAME="items"/>
+	
+	<TREEITEMS.CREATE NAME="items" OBJVARNAME="item"/>
+	<TREEITEM.SETNAME NAME="item" VALUE="GLOBALITEMS"/>
+	<TREEITEM.SETVALUES NAME="item" VALUE="Item:22:Refresh ALL=refreshAll:"/>
+	<TREEITEMS.SET NAME="items" OBJECT="item"/>
+	<TREEITEMS.CREATE NAME="items" OBJVARNAME="item"/>
+	<TREEITEM.SETNAME NAME="item" VALUE="LOADURI"/>
+	<TREEITEM.SETVALUES NAME="item" VALUE="Variables.loaduri"/>
+	<TREEITEMS.SET NAME="items" OBJECT="item"/>
+	<TREEITEMS.CREATE NAME="items" OBJVARNAME="item"/>
+	<TREEITEM.SETNAME NAME="item" VALUE="NODEITEMS"/>
+	<TREEITEM.SETVALUES NAME="item" VALUE="Item:15:Refresh=refresh:Item:13:Status=status:"/>
+	<TREEITEMS.SET NAME="items" OBJECT="item"/>
+	
+	<TREETAB.SETGLOBALITEMS NAME="tab" OBJECT="items"/>
+	
+	<TREETAB.GETSECTIONS NAME="tab" OBJVARNAME="sections"/>
+	<SECTIONLIST.CREATE NAME="sections" OBJVARNAME="sect"/>
+		<SECTION.SETPOPULATE NAME="sect" VALUE="OpenMarket/CommerceData/UIFramework/LoadReportTab"/>
+		<SECTION.SETNAME NAME="sect" VALUE="Reports"/>
+	<SECTIONLIST.SET NAME="sections" OBJECT="sect"/>
+	<TREETAB.SETSECTIONS NAME="tab" OBJECT="sections"/>
+	
+	<TTM.SAVE OBJECT="tab"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Error Variables.errno installing tree tabs: Variables.errdetail1"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+
+<!-- Check for error -->
+<if COND="Variables.result!=Variables.empty">
+    <then>
+	    <logmsg STR="Installation Error installing main treetabs: Variables.result"/>
+	    ##ERROR## <csvar NAME="Variables.result"/><BR/>
+    </then>
+    <else>
+	    ##SUCCESS## <csvar NAME="Variables.result"/><BR/>
+    </else>
+</if>
+
+</FTCS>
+

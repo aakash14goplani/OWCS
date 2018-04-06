@@ -1,0 +1,541 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/SetGroupStatusFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="pdeadline" VARNAME="pdeadline" />
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/FormatDate" />
+<callelement NAME="OpenMarket/Xcelerate/Util/ClientoffsetInMillis"/>
+<SCRIPT LANGUAGE="JavaScript">
+var clientOffset = <CSVAR NAME="Variables.clientOffset" />
+<![CDATA[
+
+function FinishMyAssignment()
+{
+   var obj = document.forms[0].elements[0];
+
+   //if not singlestep
+   if ((obj.form.elements['ChooseStep'].type) != 'hidden') {
+       var cnt = obj.form.elements['ChooseStep'].length;
+       var selectcount = 0;
+       for (i=0; (i<cnt); i++)
+       {
+           if (obj.form.elements['ChooseStep'][i].checked)
+           selectcount++;
+       }
+    
+       if (selectcount==0) {   
+         ]]>
+         alert("<XLAT.STREAM KEY="dvin/UI/Error/YouMustChooseAStepForThisAssignment" ESCAPE="true" ENCODE="false"/>");
+         <![CDATA[
+         return false;
+       }
+       if (selectcount>1) {
+         ]]>
+         alert("<XLAT.STREAM KEY="dvin/UI/Error/Youmaychooseonlyonestepassignment" ESCAPE="true" ENCODE="false"/>");
+         <![CDATA[
+         return false;
+       }
+   }
+   if(obj.form.elements['dosetdeadline'].value=="true")
+   {
+   if (obj.form.elements['useDefaultDeadline'][1].checked) 
+   {
+        var deadline_date = document.getElementById('deadlineFieldDiv').innerHTML;
+        if (deadline_date == "")
+        {
+            ]]>
+            alert("<XLAT.STREAM KEY="dvin/UI/Error/assignmentdeadlineenterednotvaliddate" ESCAPE="true" ENCODE="false"/>");
+            <![CDATA[
+            return false;
+        }
+        
+        var now = new Date();
+		var cur_date = new Date(now.getTime() + clientOffset + now.getTimezoneOffset()*60*1000 );
+        deadlineVal = dateToObject(deadline_date).valueOf();
+        if (deadlineVal < cur_date.valueOf())
+        {
+            ]]>
+            alert("<XLAT.STREAM KEY="dvin/UI/Error/AssignmentDeadlineEarlierThanCurrentTime" ESCAPE="true" ENCODE="false"/>");
+            <![CDATA[
+            return false;
+ 
+        }
+
+        obj.form.elements['deadline'].value = deadlineVal;
+   }
+   }
+}
+
+function ChangeUserRole()
+{
+   var obj = document.forms[0].elements[0];
+
+   obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/SetGroupStatusFront";
+   obj.form.submit();
+   return false;
+}
+
+function reloadThisPage(id)
+{
+   var obj = document.forms[0].elements[0];
+
+   obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/SetGroupStatusFront";
+   chosenstepid = id
+   obj.form.elements['chosenstepid'].value = chosenstepid;
+   obj.form.submit();
+   return false;
+}
+
+function setDefaultDeadline()
+{
+    var obj = document.getElementById('deadline_div');
+    obj.style.visibility="hidden";
+}
+    
+function setDeadline()
+{
+    var obj = document.getElementById('deadline_div');
+    obj.style.visibility='visible';
+    obj = document.forms[0].elements[0];
+    
+    var chosenStep = null;
+    //ChooseStep is input form field of either type hidden for single choice, or type radio for multiple choices.
+    if ((obj.form.elements['ChooseStep'].type) == 'hidden') {
+        chosenStep = "Step0";
+    }
+    else {
+        cnt = obj.form.elements['ChooseStep'].length;
+        for (i=0; (i<cnt); i++)
+        {
+          if (obj.form.elements['ChooseStep'][i].checked) {
+            chosenStep = "Step" + i;
+            break;
+          }
+        }
+        
+        if (chosenStep == null)
+            return;
+        
+    }
+    
+    if (typeof(obj.form.elements[chosenStep]) != 'undefined') {
+        var rel_deadlineVal = parseInt(obj.form.elements[chosenStep].value);
+        if (!isNaN(rel_deadlineVal) && rel_deadlineVal > 0) {
+            var cur_time = new Date();
+            var deadlineVal = cur_time.valueOf() + rel_deadlineVal;
+            var deadline = new Date(deadlineVal);
+        
+            var jdbcdate = dateToJDBCString(deadline);
+            document.getElementById('deadlineFieldDiv').innerHTML = jdbcdate;
+        }
+    }
+    
+    return false;
+}
+
+]]>
+</SCRIPT>
+
+<!-- load and scatter the group -->
+<STRING.ENCODE VARIABLE="groupid" VARNAME="groupid"/>
+<WORKFLOWENGINE.GETGROUPID ID="Variables.groupid" OBJVARNAME="group"/>
+<WORKFLOWGROUP.SCATTER PREFIX="wfg:" NAME="group"/>
+<setvar NAME="name" VALUE="Variables.wfg:name"/>
+
+<!-- Group Name: <STRING.STREAM VALUE="Variables.name"/><BR/> 
+Group id: <STRING.STREAM VALUE="Variables.groupid"/><BR/>
+Here's the list of the assignments I'm supposed to transition:
+<STRING.STREAM VALUE="Variables.clearassignments"/><BR/>
+-->
+<IF COND="IsVariable.clearassignments=true">
+<THEN>
+		<STRINGLIST NAME="items" STR="Variables.clearassignments" DELIM=";"/>
+
+<LOOP LIST="items">
+	<WORKFLOWENGINE.GETASSIGNMENTID ID="items.ITEM" OBJVARNAME="wflAssignment"/>
+	<WorkflowAssignment.GetAssignedObject NAME="wflAssignment" OBJVARNAME="workflowObject"/>
+	<WorkflowAsset.GetAssetId OBJECT="workflowObject" VARNAME="workflow_assetid" />
+	<WorkflowAsset.GetAssetType OBJECT="workflowObject" VARNAME="workflow_assettype" />
+	<ASSET.LOAD TYPE="Variables.workflow_assettype" OBJECTID="Variables.workflow_assetid" NAME="theAsset"/>
+	<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+	<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+</LOOP>
+</THEN>
+</IF>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/FinishWorkflowGroupAssignments"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<tr><td>
+    <table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+    <tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/GroupName"/>:
+        </td>
+        <td class="form-inset">
+         	<STRING.STREAM VALUE="Variables.name"/>
+        </td><td></td>
+    </tr>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/Description"/>:
+        </td>
+        <td class="form-inset">
+      		<STRING.STREAM VALUE="Variables.wfg:description" />
+        </td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/ID"/>:
+        </td>
+        <td class="form-inset">
+       		<STRING.STREAM VALUE="Variables.groupid" />
+        </td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>    
+	<tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+        </td>
+        <td class="form-inset">
+			<WORKFLOWENGINE.GETPROCESSID ID="Variables.wfg:process" OBJVARNAME="processObject"/>
+			<WORKFLOWPROCESS.GETPROCESSNAME NAME="processObject" VARNAME="processName"/>
+			<WorkflowEngine.GetStateID ID="Variables.stateid" OBJVARNAME="workflow_state" />
+			<WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="statedesc" />
+			<STRING.STREAM VALUE="Variables.processName" /> - <STRING.STREAM VALUE="Variables.statedesc"/>    
+        </td>
+    </tr>
+    
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+        	<XLAT.STREAM KEY="dvin/UI/AssignedUserRole"/>:
+        </td>
+        <td class="form-inset">
+        	(<XLAT.STREAM KEY="dvin/Common/Unknown"/>)
+        </td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+			<XLAT.STREAM KEY="dvin/UI/Wf/AssignmentstoComplete"/>:
+        </td>
+        <td class="form-inset">
+			<IF COND="items.#numRows=1">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/UI/Wf/SingularNumAssignmenttoComplete" num="1" EVALALL="false"/>
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/Wf/PluralNumAssignmentstoComplete" num="items.#numRows" EVALALL="false"/>
+			</ELSE>
+			</IF>
+        </td>
+    </tr>
+    
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+        <td class="form-label-text">
+			<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/ChooseStepState"/>:
+        </td>
+        <td class="form-inset">
+            <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+            <tr>
+                <td>
+                <SETVAR NAME="queuedstepid" VALUE="Variables.empty"/>
+
+                <WorkflowEngine.GetLegalNextWorkflowSteps OBJECT="workflowObject" SITE="SessionVariables.pubid" PREFIX="nextsteps" />
+                
+		    <!-- chosenstepid is the id of the step chosen if more than one steps are possible from a state 
+			 See next comment. This variable is set while reposting the page -->
+            <setvar NAME="stepdeadlinetype" VALUE="default" /> 
+		    <if COND="IsVariable.chosenstepid!=true">
+		    <then>
+			    <setvar NAME="chosenstepid" VALUE="Variables.empty"/>
+                <if COND="Variables.queuedstepid!=Variables.empty">
+                <then>
+                    <WorkflowEngine.GetStepID ID="Variables.queuedstepid" OBJVARNAME="queuedstepobj" />
+                    <WorkflowStep.GetDeadlineType NAME="queuedstepobj" VARNAME="stepdeadlinetype"/>
+                </then>
+                </if>
+		    </then>
+            <else>
+                <WorkflowEngine.GetStepID ID="Variables.chosenstepid" OBJVARNAME="chosenstepobj" />
+                <WorkflowStep.GetDeadlineType NAME="chosenstepobj" VARNAME="stepdeadlinetype"/>
+            </else>
+		    </if>
+			<STRING.ENCODE VARIABLE="chosenstepid" VARNAME="chosenstepid"/>
+		    <INPUT TYPE="hidden" NAME="chosenstepid" VALUE="Variables.chosenstepid" REPLACEALL="Variables.chosenstepid"/>
+		    
+            <if COND="Variables.nextstepsTotal!=0">
+            <then>
+                <setcounter NAME="stepcount" VALUE="0"/>
+                <loop FROM="0" COUNT="Variables.nextstepsTotal">
+                    <setvar NAME="workflow_route" VALUE="nextstepsCounters.stepcount" />
+                    <WorkflowStep.GetID NAME="Variables.workflow_route" VARNAME="stepid" />
+                    <WorkflowStep.GetName NAME="Variables.workflow_route" VARNAME="stepname" />
+                    <WorkflowStep.GetDeadlineType NAME="Variables.workflow_route" VARNAME="deadlinetype"/>
+                    
+                    <!-- We need deadlinetype of the next step to be taken.
+                     If it is ask, the form can contain the deadline part,
+                     if user is workflowadmin, or if not, privs allow.
+                     Otherwise, the user should not be given a choice to  set deadline for the step.
+                     If a single step is possible from a state it is easy. 
+                     For more than one steps possible, from a state, choosing a step will repost the page
+                     if the chosen step has different deadline type with the current step's deadline type.
+                    -->
+                    <if COND="Variables.nextstepsTotal=1">
+                    <then>
+                        <INPUT TYPE="hidden" NAME="ChooseStep" VALUE="Variables.stepid" REPLACEALL="Variables.stepid" />
+                        <setvar NAME="chosenstepid" VALUE="Variables.stepid"/>                        
+                        <WorkflowEngine.GetStepID ID="Variables.chosenstepid" OBJVARNAME="chosenstepobj" />
+                        <WorkflowStep.GetDeadlineType NAME="chosenstepobj" VARNAME="stepdeadlinetype"/>
+                    </then>
+                    <else>
+                        <if COND="Variables.chosenstepid=Variables.empty">
+                        <then>
+                            <if COND="Variables.stepid=Variables.queuedstepid">
+                            <then>
+                                    <INPUT TYPE="radio" NAME="ChooseStep" CHECKED="true" VALUE="Variables.stepid" REPLACEALL="Variables.stepid"  OnClick="return reloadThisPage(Variables.stepid)" />
+                            </then>
+                            <else>
+                                    <INPUT TYPE="radio" NAME="ChooseStep" VALUE="Variables.stepid" REPLACEALL="Variables.stepid" OnClick="return reloadThisPage(Variables.stepid)" />
+                            </else>
+                            </if>
+                        </then>
+                        <else>
+                            <if COND="Variables.stepid=Variables.chosenstepid">
+                            <then>
+                                    <INPUT TYPE="radio" NAME="ChooseStep" CHECKED="true" VALUE="Variables.stepid"  REPLACEALL="Variables.stepid" OnClick="return reloadThisPage(Variables.stepid)"/>
+                            </then>
+                            <else>
+                                    <INPUT TYPE="radio" NAME="ChooseStep" VALUE="Variables.stepid" REPLACEALL="Variables.stepid" OnClick="return reloadThisPage(Variables.stepid)"/>    
+                            </else>
+                            </if>
+                        </else>
+                        </if>
+                    </else>
+                    </if>
+                    <STRING.STREAM VALUE="Variables.stepname"/> ->
+                    <WorkflowStep.GetEndState NAME="Variables.workflow_route" VARNAME="targetstate" />
+                    <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+						<argument NAME="columnvalue" VALUE="Variables.targetstate"/>
+						<argument NAME="type" VALUE="Long"/>
+					</callelement>
+					
+					<IF COND="Variables.validatedstatus=false">
+  					<THEN>
+  						<removevar NAME="targetstate" />
+ 					</THEN>
+ 					</IF>
+ 					
+                    <if COND="IsVariable.targetstate=true">
+                    <then>
+                         <setvar NAME="tablename" VALUE="WorkflowStatusCode" />
+						 <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+							<ARGUMENT NAME="columnvalue" VALUE="Variables.targetstate"/>
+							<ARGUMENT NAME="type" VALUE="Long"/>
+						</CALLELEMENT>
+						<IF COND="Variables.validatedstatus=true">
+						<THEN>
+							<execsql LIST="MyStatusCode" SQL="select description from Variables.tablename where id=Variables.targetstate"/>
+						</THEN>
+						</IF>
+                         <STRING.STREAM VALUE="MyStatusCode.description"/>
+                         <removevar NAME="endstate_deadline" />
+                         <WorkflowEngine.GetStateID ID="Variables.targetstate" OBJVARNAME="targetobj" />
+                         <WorkflowState.GetEstimatedStateTime NAME="targetobj" VARNAME="endstate_deadline" />
+                    </then>
+                    <else>
+                         (<XLAT.STREAM KEY="dvin/UI/nullstate"/>)
+                    </else>
+                    </if>
+                    <br/>
+                    <if COND="IsVariable.endstate_deadline!=true">
+                    <then>
+                         <setvar NAME="endstate_deadline" VALUE="-1" />
+                    </then>
+                    </if>
+                    
+                    <INPUT TYPE="hidden" NAME="StepCounters.stepcount" VALUE="Variables.endstate_deadline" REPLACEALL="Counters.stepcount,Variables.endstate_deadline" />
+                    <inccounter NAME="stepcount" VALUE="1"/>    
+                </loop>
+            </then>
+            <else>
+                <XLAT.STREAM KEY="dvin/UI/Accordingworkflowdefnostatechangepossible"/>
+            </else>
+            </if>
+            </td>
+        </tr>
+        </table>
+        </td>
+    </tr>
+    
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/ActionTaken"/>:</td>
+        <td class="form-inset">
+	         <TEXTAREA NAME="actiontaken" ROWS="6" COLS="60" WRAP="VIRTUAL">
+	         <if COND="IsVariable.actiontaken=true">
+	         <then>
+	             <STRING.STREAM VALUE="Variables.actiontaken" />
+	         </then>
+	         </if>
+	         </TEXTAREA>
+        </td>
+    </tr>
+    
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/ActionlctoTake"/>:</td>
+        <td class="form-inset">
+            <TEXTAREA NAME="actiontotake" ROWS="6" COLS="60" WRAP="VIRTUAL">
+            <if COND="IsVariable.actiontotake=true">
+            <then>
+                <STRING.STREAM VALUE="Variables.actiontotake" />
+            </then>
+            </if>
+            </TEXTAREA>
+        </td>
+    </tr>
+
+		
+	<!-- determine if user is workflowadmin -->
+	<setvar NAME="userisworkflowadmin" VALUE="false"/>
+	<WorkflowProcess.GetAdminRoles NAME="processObject" OBJVARNAME="adminrolesobj"/>
+	<ROLELIST.ISALL NAME="adminrolesobj" VARNAME="roleisall"/>
+	<!-- roleisall=true means Any role -->
+	<if COND="Variables.roleisall=true">
+	<then>
+		<setvar NAME="userisworkflowadmin" VALUE="true"/>
+	</then>
+	<else>
+		<ROLELIST.GETALL NAME="adminrolesobj" VARNAME="admnroles"/>
+		<if COND="Variables.admnroles!=Variables.empty">
+		<then>
+			<STRINGLIST NAME="rlist" STR="Variables.admnroles" DELIM=","/>
+			<loop LIST="rlist">
+				<setvar NAME="errno" VALUE="0"/>
+				<isinlist STR="SessionVariables.currentpubACLs" ITEM="rlist.ITEM"/>
+				<if COND="Variables.errno=1">
+				<then>
+					<setvar NAME="userisworkflowadmin" VALUE="true"/>
+				</then>
+				</if>
+			</loop>
+		</then>
+		</if>
+	</else>
+	</if>
+
+
+<!-- set deadline presented only if deadlinetype of step is ask. No function privs for this -->
+<setvar NAME="dosetdeadline" VALUE="false"/>
+<if COND="Variables.stepdeadlinetype=ask">
+<then>
+    <!-- if deadlinetype is ask, we do not need to check privs if the user is workflow admin -->
+    <if COND="Variables.userisworkflowadmin=true">
+    <then>
+	<setvar NAME="dosetdeadline" VALUE="true"/>
+    </then>
+    </if>
+    <!-- otherwise check privs -->
+    <if COND="Variables.dosetdeadline=false">
+    <then>
+	<!-- Check Function Privs for set process deadline  -->
+	<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+		<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		<argument NAME="assetObjectName" VALUE="theAsset"/>
+		<argument NAME="Function" VALUE="setstepdeadline"/>
+	</callelement>
+
+	<if COND="Variables.PrivsFailed!=true">
+	<then>
+		<setvar NAME="dosetdeadline" VALUE="true"/>
+	</then>
+	</if>
+    </then>
+    </if>
+
+    <if COND="Variables.dosetdeadline=true">
+    <then>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+     		<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Common/AssignmentDeadline"/>:
+        </td>
+        <td class="form-inset" nowrap="nowrap">
+            <INPUT TYPE="RADIO" NAME="useDefaultDeadline" VALUE="true" CHECKED="true" OnClick="setDefaultDeadline()" /><XLAT.STREAM KEY="dvin/Common/Usedefault"/>
+            <br/>
+            <INPUT TYPE="RADIO" NAME="useDefaultDeadline" VALUE="false" OnClick="setDeadline()" />
+            <XLAT.STREAM KEY="dvin/Common/Due"/>
+            <IMG WIDTH="4" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+
+            <XLAT.LOOKUP KEY="fatwire/Alloy/UI/PickADate" VARNAME="pickADateString" />
+            <span ID="deadline_div" style="visibility:hidden">
+                 <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GetLocalizedDate">
+	                     <ARGUMENT NAME="inputDate" VALUE="Variables.pdeadline" />
+	                     <ARGUMENT NAME="outputVar" VALUE="localizedDeadlineValue" />
+	                 </CALLELEMENT>
+				<STRING.ENCODE VARIABLE="localizedDeadlineValue" VARNAME="localizedDeadlineValue"/>
+				<div id="deadlineFieldId" name="dead_line" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.localizedDeadlineValue" REPLACEALL="Variables.localizedDeadlineValue"></div>
+				<DIV ID="deadlineFieldDiv" STYLE="display:none"><STRING.STREAM VALUE="Variables.pdeadline"/></DIV>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+					<ARGUMENT NAME="inputFieldId" value="deadlineFieldId"/>
+					<ARGUMENT NAME="inputDivId" value="deadlineFieldDiv"/>
+				</CALLELEMENT>
+			</span>
+            
+            <SCRIPT>
+                 setDefaultDeadline();
+            </SCRIPT>
+        </td>
+    </tr>
+    </then>
+    </if>
+</then>
+</if><!-- allowedbyprivs -->
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront" outstring="urlwfgrpfront">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+  <satellite.argument name="id" value="Variables.groupid"/>
+  <satellite.argument name="action" value="contents"/>
+  </SATELLITE.LINK>
+    <tr><td><BR/></td><td><A HREF="Variables.urlwfgrpfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;"  REPLACEALL="Variables.urlwfgrpfront,Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+<if COND="Variables.nextstepsTotal!=0">
+<then>
+    <XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="mouseover" ESCAPE="true"/>
+    <XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="_XLAT_"/>
+    <A HREF="javascript:void(0);" OnClick="if(FinishMyAssignment()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/FinishMyAssignment"/></CALLELEMENT></A>
+</then>
+</if></td></tr>
+	</table>
+    </td></tr>
+</table>
+<STRING.ENCODE VARIABLE="clearassignments" VARNAME="clearassignments"/>
+<INPUT TYPE="hidden" NAME="clearassignments" VALUE="Variables.clearassignments" REPLACEALL="Variables.clearassignments"/>
+<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+<INPUT TYPE="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+<INPUT TYPE="hidden" NAME="groupid" VALUE="Variables.groupid" REPLACEALL="Variables.groupid"/>
+<STRING.ENCODE VARIABLE="stateid" VARNAME="stateid"/>
+<INPUT TYPE="hidden" NAME="stateid" VALUE="Variables.stateid" REPLACEALL="Variables.stateid"/>
+<INPUT TYPE="hidden" NAME="deadline" VALUE="-1" />
+<INPUT TYPE="hidden" NAME="dosetdeadline" VALUE="Variables.dosetdeadline" REPLACEALL="Variables.dosetdeadline"/>
+</FTCS> 

@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/WorkflowProcessBar
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<table class="legacyAbar" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+
+        <!-- Workflow Graph visualisation button only for MSIE-->
+	<!-- no preview needed on copy page. Doesn't serve any purpose -->
+<if COND="Variables.subaction!=copy">
+<then>
+        <if COND="Variables.action=graph"><then>
+            <setvar NAME="textStyle" VALUE="action-selected-text"/>
+        </then><else>
+            <setvar NAME="textStyle" VALUE="action-text"/>
+        </else></if>
+        <TOLOWER STR="CS.Header.User-Agent" OUTSTR="msieTest"/>
+		<SETVAR NAME="errno" VALUE="0"/>
+		<INDEXOF STR="Variables.msieTest" WHAT="msie" OUTSTR="msieIndex" INDEX="0"/>
+		<!-- <IF COND="Variables.errno=1"><THEN>		 -->
+		    <INPUT TYPE="HIDDEN" NAME="graphWorkflow" VALUE="Variables.workflow" REPLACEALL="Variables.workflow"/>				
+			<INPUT TYPE="HIDDEN" NAME="graphWorkflowid" VALUE="Variables.wfp:id" REPLACEALL="Variables.wfp:id"/>
+		    <td><XLAT.LOOKUP KEY="dvin/UI/Graph" VARNAME="_XLAT_" ESCAPE="true"/>
+		    <A HREF="javascript:GraphProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif"  border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A></td>
+            <td><XLAT.LOOKUP KEY="dvin/UI/Graph" VARNAME="_XLAT_" ESCAPE="true"/>
+            <A HREF="javascript:GraphProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><span class="Variables.textStyle" REPLACEALL="Variables.textStyle"><XLAT.STREAM KEY="dvin/Common/Preview"/></span></A></td>
+             <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>  
+            <!-- </THEN></IF>  -->
+</then>
+</if>        
+
+  <if COND="Variables.subaction!=copy">
+  <then>  
+        <!-- Show standard process buttons -->
+                <if COND="Variables.action=details"><then>
+            <setvar NAME="textStyle" VALUE="action-selected-text"/>
+        </then><else>
+            <setvar NAME="textStyle" VALUE="action-text"/>
+        </else></if>
+        <td><XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisProcess" VARNAME="_alt_"/>
+        <A HREF="javascript:InspectProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+        <td><XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+        <A HREF="javascript:InspectProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><span class="Variables.textStyle" REPLACEALL="Variables.textStyle"><XLAT.STREAM KEY="dvin/Common/Inspect"/></span></A></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>        
+        
+        <if COND="Variables.action=update"><then>
+            <setvar NAME="textStyle" VALUE="action-selected-text"/>
+        </then><else>
+            <if COND="Variables.action=new"><then>
+                <setvar NAME="textStyle" VALUE="action-selected-text"/>
+            </then><else> 
+                <setvar NAME="textStyle" VALUE="action-text"/>
+            </else></if>
+        </else></if>
+		<td><XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisProcess" VARNAME="_alt_"/>
+		<A HREF="javascript:EditProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+		
+        <td><XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+        <A HREF="javascript:EditProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><span class="Variables.textStyle" REPLACEALL="Variables.textStyle"><XLAT.STREAM KEY="dvin/Common/Edit"/></span></A></td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td><XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisProcess" VARNAME="_alt_"/>
+        <A HREF="javascript:confirmDeleteProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A></td>
+        <td><XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+        <A HREF="javascript:confirmDeleteProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Delete"/></span></A></td>
+  		
+    
+		<td><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+        
+        <!-- More Menu -->
+		<td>
+            <if COND="Variables.action=update"><then>
+                <setvar NAME="menuContext" VALUE="Add/Edit"/>
+            </then><else>
+                <if COND="Variables.action=new"><then>
+                    <setvar NAME="menuContext" VALUE="Add/Edit"/>
+                </then><else>
+                    <setvar NAME="menuContext" VALUE="View"/>
+                </else></if>
+            </else></if>
+
+	    <if COND="Variables.action=details">
+	    <then>   
+        
+			<SELECT NAME="EditFunctions" onChange="workflowHandler(document.forms[0], EditFunctions)">
+
+				<OPTION VALUE="*" SELECTED=""/><XLAT.STREAM KEY="dvin/UI/Admin/moredotdotdot"/>
+
+				<if COND="Variables.menuContext=View">
+				<then>
+					<OPTION VALUE="copy"/> <XLAT.STREAM KEY="dvin/UI/Admin/CopyProcess"/>
+				</then>
+				</if>
+			</SELECT>
+	    </then>
+	    </if>
+
+		</td>
+  </then>
+  </if>
+	</tr>
+</table>
+
+</FTCS> 

@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/AssignmentActions/SendEmail
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- This is a timed action element -->
+
+<!-- get total assignments -->
+<if COND="IsVariable.WorkflowAssignmentTotal=true">
+<then>
+	<setvar NAME="NumOfAssignments" VALUE="Variables.WorkflowAssignmentTotal"/>
+</then>
+<else>
+	<setvar NAME="NumOfAssignments" VALUE="0"/>
+</else>
+</if>
+
+<!-- For each assignment object, get asignee -->
+<setcounter NAME="COUNT" VALUE="0"/>
+<if COND="Variables.NumOfAssignments!=0">
+<then>
+	<loop FROM="0" COUNT="Variables.NumOfAssignments">
+		<setvar NAME="tmp" VALUE="WorkflowAssignmentCounters.COUNT"/>
+		<WORKFLOWASSIGNMENT.GETASSIGNEDUSERID NAME="Variables.tmp" VARNAME="assigneduserid"/>
+
+		<!-- get user -->
+                <WORKFLOWASSIGNMENT.GETASSIGNEDOBJECT NAME="Variables.tmp" OBJVARNAME="assignedobj"/>
+
+		<!-- get asset -->
+		<WORKFLOWABLEOBJECT.GETDISPLAYABLENAME OBJECT="assignedobj" VARNAME="assetname"/>
+
+		<!-- get deadline and format it -->
+		<WORKFLOWASSIGNMENT.GETDEADLINE NAME="Variables.tmp" VARNAME="deadline"/>
+		<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.deadline" VALUETYPE="milliseconds"  VARNAME="time" TIMEZONEID="SessionVariables.time.zone"/>
+         
+		<!-- get email address -->
+		<USERMANAGER.GETUSER USER="Variables.assigneduserid" OBJVARNAME="userobj"/>
+		<CCUSER.GETDISPLAYABLENAME NAME="userobj" VARNAME="assigned_user_name"/>
+		<CCUSER.GETEMAIL NAME="userobj" VARNAME="EmailAddress"/>
+
+			<IF COND="IsVariable.EmailAddress=true">
+			<THEN>
+
+				<!-- load email object -->
+				<EMAILMANAGER.LOAD NAME="Variables.emailname" OBJVARNAME="emailobject"/>
+
+				<!-- Create an encoded parameter that contains required parameters in encoded form.  -->
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/AssignmentActions/EncodeUtil">
+					<ARGUMENT NAME="time" VALUE="Variables.time"/>
+					<ARGUMENT NAME="assetname" VALUE="Variables.assetname"/>					
+				</CALLELEMENT>
+				
+				<!-- translate subject -->
+				<EMAIL.TRANSLATESUBJECT NAME="emailobject" PARAMS="assetname=Variables.assetname" VARNAME="subject" DECODE="true" />
+
+				<!-- translate body -->				
+				<EMAIL.TRANSLATEBODY NAME="emailobject" PARAMS="Variables.param" VARNAME="body" DECODE="true"/> 
+		
+				<!-- send mail -->
+                <MAIL.SEND TO="Variables.EmailAddress" SUBJECT="Variables.subject" BODY="Variables.body" CONTENTTYPE="text/html" />
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/Wf/EmailaddressNone"/><br/>
+			</ELSE>
+			</IF>
+
+	<inccounter NAME="COUNT" VALUE="1"/>
+	</loop>
+</then>
+</if>
+
+
+</FTCS> 

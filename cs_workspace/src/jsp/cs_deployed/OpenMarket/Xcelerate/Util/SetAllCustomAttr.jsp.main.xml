@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Util/SetAllCustomAttr</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Util/SetAllCustomAttr</string>
+        <string>Element to set all Startmenu Extended and Associated MultiValue  Attributes</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Util/SetAllCustomAttr.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Xcelerate/Util/SetAllCustomAttr.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FXcelerate%2FUtil%2FSetAllCustomAttr.jsp
+@hashval=1992209309
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Util/SetAllCustomAttr
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

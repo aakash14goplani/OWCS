@@ -1,0 +1,896 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/TileGroupMembers
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+<SCRIPT Language="Javascript">
+<![CDATA[
+function ActionText(pURL)
+{
+    PreviewWindow = window.open(pURL, "ActionText",
+	"width=300,height=200,scrollbars=yes,toolbar=no,location=no,status=no,menubar=no,resizable=yes,directories=no");
+
+   PreviewWindow.focus();
+}
+function selectAll(elm) {
+	var ptr = document.forms[0].elements;
+	var listlen = ptr.length;
+	for (i=0; i < listlen;i++)
+	{
+	if (ptr[i].name=="clearassignments") {
+		if(elm.checked)
+			ptr[i].checked=true;
+		else
+			ptr[i].checked=false;
+		}
+	}
+	return false;		
+}
+function FinishMyAssignment(page) {
+var obj = document.forms[0].elements;
+	var listlen = obj.length;
+	var currState = "";
+	var newState = "";
+	var anyChecked = false;
+	for (i=0; i < listlen;i++)
+	{
+	if (obj[i].name=="clearassignments") {
+		if (obj[i].checked==true)
+			{
+			anyChecked=true;
+			if (currState=="") 
+			
+				{
+				obj['stateid'].value = currState;
+				currState = eval("obj['wfstate"+obj[i].value+"'].value");
+				obj['stateid'].value = currState;
+
+				}
+				else {
+					newState = eval("obj['wfstate"+obj[i].value+"'].value");
+					if (currState!=newState){ 
+					]]>
+						alert("<XLAT.STREAM KEY="dvin/UI/Error/GroupAssetStatesMustMatch" ESCAPE="true" ENCODE="false"/>");
+					<![CDATA[					
+						return false;
+					}
+				}
+			}
+		}
+	}
+	if (anyChecked!=true) {
+	]]>
+	alert("<XLAT.STREAM KEY="dvin/UI/Error/YouMustSelectAtLeastOneAssignment" ESCAPE="true" ENCODE="false"/>");
+	<![CDATA[
+	return false; }
+	obj.pagename.value="OpenMarket/Xcelerate/Actions/" + page;
+	return true;	
+	
+
+}
+]]>
+</SCRIPT>
+
+<SETVAR NAME="anyDeadlocked" VALUE="false"/>
+
+ <!-- check to see if there is a current active assignment for this user. -->
+     <USERMANAGER.GETLOGINUSER VARNAME="theCurrentUserID"/>
+     <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+     <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.theCurrentUserID" />
+     <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="userlist" />
+    
+
+<CALCULATOR.GO VALUE="Variables.allAssignments:Total Variables.ResultLimit GTE" VARNAME="isBigger"/>
+<IF COND="Variables.isBigger=1">
+	<THEN><SETVAR NAME="countLimit" VALUE="Variables.ResultLimit"/></THEN>
+	<ELSE><SETVAR NAME="countLimit" VALUE="Variables.allAssignments:Total"/></ELSE>
+</IF>
+
+<IF COND="Variables.countLimit!=0">
+<THEN>
+     <SETCOUNTER NAME="colspan_count" VALUE="2"/>
+
+	<IF COND="Variables.showType=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+    </IF>
+
+	<IF COND="Variables.showId=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showKey=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showDescription=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showAssignedTo=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showAssignedBy=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showAssignedDate=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+                
+	<IF COND="Variables.showActionToTake=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+    
+	<IF COND="Variables.showClearedBy=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showClearedDate=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showDueDate=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showProcessDeadline=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showActionTaken=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showWorkflowStatus=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showDeadlocked=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showStepTaken=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.showIsActive=true">
+	<THEN>                    
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+    
+    <IF COND="Variables.showClearAssignment=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+
+
+<table class="width-inner-100" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<tr>
+	<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+<tr>
+<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+<td >
+<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+	<tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+	<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<IF COND="Variables.showClearAssignment=true">
+		<THEN>                    
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><INPUT TYPE="CHECKBOX" NAME="_selectAllCHBx" ONCLICK="selectAll(this);return true;"/></DIV></td>
+		</THEN>
+		</IF>
+		<IF COND="Variables.showType=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showId=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/ID"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showKey=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Name"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showDescription=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Description"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showAssignedTo=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/AssignedTo"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showAssignedBy=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/AssignedBy"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showAssignedDate=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/AssignedDate"/></DIV></td>
+		</THEN>
+		</IF>
+                
+		<IF COND="Variables.showActionToTake=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title">                  
+			<IF COND="Variables.showAsComment=true">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/Common/Comments"/>
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/Common/ActionlctoTake"/>
+			</ELSE>
+			</IF></DIV>
+			</td>
+		</THEN>
+		</IF>
+    
+		<IF COND="Variables.showClearedBy=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/ResolvedBy"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showWorkflowStatus=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/WorkflowState"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showDeadlocked=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showStepTaken=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/StepChosen"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showClearedDate=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/ResolutionDate"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showDueDate=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Due"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showProcessDeadline=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Common/ProcessDeadline"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showActionTaken=true">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/ActionTaken"/></DIV></td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showIsActive=true">
+		<THEN>                    
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/TaskStatus"/></DIV></td>
+		</THEN>
+		</IF>
+        
+        <td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	</tr>
+	<tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+     
+	<SETCOUNTER NAME="assignment_count" VALUE="0"/>
+	<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+	<SETCOUNTER NAME="count" VALUE="0"/>
+
+	<LOOP FROM="0" COUNT="Variables.allAssignments:Total">     
+		<WorkflowAsset.GetAssetId OBJECT="allAssignments:Counters.count" VARNAME="workflow_assetid" />
+		<WorkflowAsset.GetAssetType OBJECT="allAssignments:Counters.count" VARNAME="workflow_assettype" />
+		<SETVAR NAME="errno" VALUE="0"/>
+
+		<!-- Mike: An ugly hack to filter out specific assettypes -->
+		<IF COND="Variables.report_assets!=all">
+		<THEN>
+			<ISINLIST STR="Variables.assettypes" ITEM="Variables.workflow_assettype"/>
+			<SETVAR NAME="doThisAsset" VALUE="Variables.errno"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="doThisAsset" VALUE="1"/>
+		</ELSE>
+		</IF>
+
+	<IF COND="Counters.assignment_count!=Variables.ResultLimit">
+	<THEN>
+	<IF COND="Variables.doThisAsset=1">
+	<THEN>    
+		<tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+		<td><BR /></td>
+		<IF COND="Variables.showClearAssignment=true">
+		<THEN>
+			<td VALIGN="TOP" ALIGN="left">
+                <DIV class="small-text-inset">
+            	    <SETVAR NAME="AbortFlag" VALUE="false"/>
+					<WorkflowEngine.GetFilteredAssignments OBJECT="allAssignments:Counters.count" NOTSTATUS="notactive" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+
+					<IF COND="Variables.workflow_assignmentsTotal=0">
+					<THEN>
+			    		<setvar NAME="wfstate" VALUE=" "/>
+					</THEN>
+					<ELSE>
+						<WorkflowAssignment.GetStateID NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+						<WorkflowEngine.GetStateID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+						<WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="workflow_statedescription" />
+						<WorkflowAssignment.GetAssignedObject NAME="workflow_assignments0" OBJVARNAME="workflowObject"/>
+						<WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+					</ELSE>
+					</IF>
+					
+                    <WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+  		    	<WorkflowEngine.GetFilteredAssignments OBJECT="workflowObject" ASSIGNEDTO="userlist" NOTSTATUS="notactive" PREFIX="availAssignments" EXCLUDECOMMENTS="true"/>
+					<if COND="Variables.availAssignmentsTotal=0">
+					<then>
+						<setvar NAME="AbortFlag" VALUE="true"/>
+						<WorkflowEngine.GetFilteredAssignments OBJECT="workflowObject" NOTSTATUS="notactive" PREFIX="workflow_any" EXCLUDECOMMENTS="true"/>
+						<if COND="Variables.workflow_anyTotal=1">
+						<then>
+							<WorkflowAssignment.GetAssignedUserID NAME="workflow_any0" VARNAME="workflow_assignedto" />
+							<if COND="IsVariable.workflow_assignedto!=true">
+							<then>
+								<!-- Assigned to everybody -->
+								<!-- now check that the user is authorized to take one of the next available steps -->
+								<WorkflowEngine.GetLegalNextWorkflowSteps OBJECT="workflowObject" SITE="SessionVariables.pubid" PREFIX="nextsteps" />
+								<IF COND="Variables.nextstepsTotal!=0">
+									<THEN><setvar NAME="AbortFlag" VALUE="false"/></THEN>
+								</IF>
+							</then>
+							</if>
+						</then>
+						</if>
+					</then>
+					<else>
+						<WorkflowAssignment.GetID NAME="availAssignments0" VARNAME="assignmentid" />
+					</else>
+					</if>
+					<INPUT TYPE="HIDDEN" NAME="wfstateVariables.assignmentid" VALUE="Variables.workflow_stateid" REPLACEALL="Variables.workflow_stateid,Variables.assignmentid"/>
+     
+					<if COND="Variables.AbortFlag=true">
+					<then>
+						<XLAT.LOOKUP KEY="dvin/UI/Wf/NotCurrentlyAssigned" VARNAME="_TITLE_"/>
+						<acronym STYLE="cursor:help;border-bottom-width: 0;" TITLE="Variables._TITLE_" REPLACEALL="Variables._TITLE_"><input type="checkbox" DISABLED="true"/></acronym>
+					</then>
+					<else>
+						<INPUT TYPE="CHECKBOX" NAME="clearassignments" VALUE="Variables.assignmentid" REPLACEALL="Variables.assignmentid"/><SETVAR NAME="hasAssignments" VALUE="true"/>
+					</else>
+					</if>
+				</DIV>
+   			</td>
+		</THEN>
+		</IF>
+		<IF COND="Variables.showType=true">
+		<THEN>
+
+            <ASSETTYPE.LOAD NAME="currAT" TYPE="Variables.workflow_assettype"/>
+            <ASSETTYPE.GET NAME="currAT" FIELD="description"/>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.description"/> 
+					<BR />
+				</DIV>
+			</td>  
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showId=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.workflow_assetid"/>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>               
+                
+		<IF COND="Variables.showKey=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<XLAT.LOOKUP KEY="dvin/UI/ShowContent" VARNAME="_XLAT_" ESCAPE="true"/>
+ 					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+						<ARGUMENT NAME="assettype" VALUE="Variables.workflow_assettype"/>
+						<ARGUMENT NAME="assetid" VALUE="Variables.workflow_assetid"/>
+						<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+						<ARGUMENT NAME="function" VALUE="inspect"/>
+					</CALLELEMENT>
+					<A HREF="Variables.urlInspectItem"
+							OnMouseOver="window.status='Variables._XLAT_'; return true"
+							OnMouseOut="return window.status='';" REPLACEALL="Variables.urlInspectItem,Variables._XLAT_">
+					<ASSET.LOAD NAME="asset" TYPE="Variables.workflow_assettype" OBJECTID="Variables.workflow_assetid"/>
+					<ASSET.GET NAME="asset" FIELD="name" OUTPUT="workflow_assetname"/>
+					<STRING.STREAM VARIABLE="workflow_assetname"/>
+					</A><BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>               
+
+		<IF COND="Variables.showDescription=true">
+		<THEN>
+			<ASSET.GET NAME="asset" FIELD="description" OUTPUT="workflow_assetdescription"/>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VARIABLE="workflow_assetdescription"/>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>               
+                
+		<IF COND="Variables.showAssignedTo=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetAssignedUserID NAME="allAssignments:Counters.count" VARNAME="workflow_assignedto" />
+					<if COND="IsVariable.workflow_assignedto=true">
+					<then>
+						<WorkflowAssignment.GetAssignedUserRole NAME="allAssignments:Counters.count" VARNAME="workflow_assignedrole"/>
+						<!-- getdisplayableusername will not return anything if the user has been deleted -->
+						<XLAT.LOOKUP KEY="dvin/Common/deleted_user" VARNAME="uname"/>
+						<UserManager.GetDisplayableUserName USER="Variables.workflow_assignedto" VARNAME="uname" />
+						<STRING.STREAM VARIABLE="uname" />
+						<if COND="IsVariable.workflow_assignedrole=true">
+						<then>
+							<STRING.STREAM VALUE="(Variables.workflow_assignedrole)"/>
+						</then>
+						</if>
+					</then>
+					<else>
+						(<XLAT.STREAM KEY="dvin/Common/nobody"/>)
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showAssignedBy=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetAssignerUserID NAME="allAssignments:Counters.count" VARNAME="workflow_assignedby" />
+					<if COND="IsVariable.workflow_assignedby=true">
+					<then>
+						<!-- getdisplayableusername will not return anything if the user has been deleted -->
+						<XLAT.LOOKUP KEY="dvin/Common/deleted_user" VARNAME="uname"/>
+						<UserManager.GetDisplayableUserName USER="Variables.workflow_assignedby" VARNAME="uname" />
+						<STRING.STREAM VARIABLE="uname"/>
+					</then>
+					<else>
+						(<XLAT.STREAM KEY="dvin/Common/lcunknown"/>)
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showAssignedDate=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetAssignDate NAME="allAssignments:Counters.count" VARNAME="workflow_assigndate" />
+                    <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+                    <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.workflow_assigndate" VALUETYPE="jdbcdate" VARNAME="workflow_assigndate"/>
+					<STRING.STREAM VALUE="Variables.workflow_assigndate"/>
+					<BR />
+				</DIV>
+			</td>     
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showActionToTake=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetAssignmentComment NAME="allAssignments:Counters.count" VARNAME="workflow_assigncomment" />
+					<if COND="IsVariable.workflow_assigncomment=true">
+					<then>
+						<STRING.LENGTH VALUE="Variables.workflow_assigncomment" VARNAME="mylength"/>
+						<CALCULATOR.GO VALUE="Variables.mylength 20 GT" VARNAME="myflag"/>
+						<IF COND="Variables.myflag=1">
+						<THEN>
+							<SUBSTRING STR="Variables.workflow_assigncomment" OUTSTR="truncated"
+								INDEX="0" ENDINDEX="17"/>
+							<XLAT.LOOKUP KEY="dvin/UI/ShowactionTotake" VARNAME="_XLAT_" ESCAPE="true"/>
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Workflow/ActionToTake" outstring="urlactiontotake">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                               <satellite.argument name="assignmentid" value="Variables.assignmentid"/>
+                                                               </SATELLITE.LINK>
+							<A HREF="javascript:void(0)" onclick="ActionText('Variables.urlactiontotake');"
+								onmouseover="window.status='Variables._XLAT_';return true;"
+								onmouseout="window.status='';return true;" REPLACEALL="Variables.urlactiontotake,Variables._XLAT_"><STRING.STREAM VALUE="Variables.truncated ..."/></A>
+						</THEN>
+						<ELSE>
+							<STRING.STREAM VALUE="Variables.workflow_assigncomment"/>
+						</ELSE>
+						</IF>
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/UI/Wf/Nocomment"/>
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showClearedBy=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetDispositionUserID NAME="allAssignments:Counters.count" VARNAME="workflow_clearedby" />
+					<!-- getdisplayableusername will not return anything if the user has been deleted -->
+					<XLAT.LOOKUP KEY="dvin/Common/deleted_user" VARNAME="uname"/>
+					<UserManager.GetDisplayableUserName USER="Variables.workflow_clearedby" VARNAME="uname" />
+					<STRING.STREAM VALUE="Variables.uname"/>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+   
+		<IF COND="Variables.showWorkflowStatus=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<!-- display the current workflow status -->
+					<WorkflowEngine.GetFilteredAssignments OBJECT="allAssignments:Counters.count" NOTSTATUS="notactive" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+
+					<IF COND="Variables.workflow_assignmentsTotal=0">
+					<THEN>
+			    		<setvar NAME="wfstate" VALUE=" "/>
+					</THEN>
+					<ELSE>
+						<WorkflowAssignment.GetStateID NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+						<WorkflowEngine.GetStateID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+						<WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="workflow_statedescription" />
+						<WorkflowAssignment.GetAssignedObject NAME="workflow_assignments0" OBJVARNAME="workflowObject"/>
+						<WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+					</ELSE>
+					</IF>
+
+					<XLAT.LOOKUP KEY="dvin/UI/Showlowerstatus" VARNAME="_XLAT_"/>
+					<XLAT.LOOKUP KEY="dvin/UI/Showlowerstatus" VARNAME="mouseover" ESCAPE="true"/>
+ 					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+						<ARGUMENT NAME="assettype" VALUE="Variables.workflow_assettype"/>
+						<ARGUMENT NAME="assetid" VALUE="Variables.workflow_assetid"/>
+						<ARGUMENT NAME="varname" VALUE="urlShowStatus"/>
+						<ARGUMENT NAME="function" VALUE="status"/>
+					</CALLELEMENT>
+ 					<A HREF="Variables.urlShowStatus" ONMOUSEOVER="window.status = 'Variables.mouseover'; return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables.urlShowStatus,Variables._XLAT_,Variables.mouseover" TITLE="Variables._XLAT_"><STRING.STREAM VALUE="Variables.workflow_statedescription"/></A>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showDeadlocked=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<!-- display the current workflow status -->
+					<WorkflowEngine.IsObjectDeadlocked OBJECT="workflowObject" VARNAME="isDeadlocked"/>
+					<IF COND="Variables.isDeadlocked=true">
+					<THEN>
+						<SETVAR NAME="anyDeadlocked" VALUE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/ThisAssetisCurrentlyDeadlocked" VARNAME="_ALT_"/>
+						<IMG src="Variables.cs_imagedir/graphics/common/icon/warndeadlock.gif" HEIGHT="13" WIDTH="15" ALT="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+					</THEN>
+					</IF>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showStepTaken=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetQueuedWorkflowStepID NAME="allAssignments:Counters.count" VARNAME="workflow_stepid" />
+					<if COND="IsVariable.workflow_stepid=true">
+					<then>
+						<WorkflowEngine.GetStepID ID="Variables.workflow_stepid" OBJVARNAME="wfStepObj"/>
+						<WorkflowStep.GetName NAME="wfStepObj" VARNAME="workflow_stepname"/>
+						<STRING.STREAM VALUE="Variables.workflow_stepname"/>
+					</then>
+					<else>
+						<WorkflowAssignment.GetGroupedWorkflowStepID NAME="allAssignments:Counters.count" VARNAME="workflow_stepid" />
+						<if COND="IsVariable.workflow_stepid=true">
+						<then>
+							<WorkflowEngine.GetStepID ID="Variables.workflow_stepid" OBJVARNAME="wfStepObj"/>
+							<WorkflowStep.GetName NAME="wfStepObj" VARNAME="workflow_stepname"/>
+							<STRING.STREAM VALUE="Variables.workflow_stepname"/>
+						</then>
+						<else>
+							-
+						</else>
+						</if>
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showClearedDate=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetDispositionDate NAME="allAssignments:Counters.count" VARNAME="workflow_cleardate" />
+					<if COND="IsVariable.workflow_cleardate=true">
+					<then>
+                        <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+                        <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.workflow_cleardate" VALUETYPE="jdbcdate" VARNAME="workflow_cleardate"/>
+						<STRING.STREAM VALUE="Variables.workflow_cleardate"/>
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/UI/Wf/Stillactive"/>
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showDueDate=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetAssignDate NAME="allAssignments:Counters.count" VARNAME="workflow_assigndate" />
+					<WorkflowAssignment.GetDeadline NAME="allAssignments:Counters.count" VARNAME="workflow_deadline" />
+					<IF COND="Variables.workflow_deadline!=0">
+					<THEN>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/FormatDeadline" SCOPED="STACKED">
+						<ARGUMENT NAME="deadline" VALUE="Variables.workflow_deadline"/>
+						<ARGUMENT NAME="assigndate" VALUE="Variables.workflow_assigndate"/>
+					</CALLELEMENT>
+					</THEN>
+					<ELSE>
+					-	<BR />
+					</ELSE>
+					</IF>
+				
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showProcessDeadline=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowEngine.GetAbsDeadline OBJECT="workflowObject" VARNAME="workflowprocess_deadline"/>
+					<IF COND="Variables.workflowprocess_deadline!=0">
+					<THEN>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+		  		<ARGUMENT NAME="inputDate" VALUE="Variables.workflowprocess_deadline" />
+				<ARGUMENT NAME="inputDateType" VALUE="millis"/>
+		  		<ARGUMENT NAME="fromTimeZone" VALUE="server"/>
+		  		<ARGUMENT NAME="toTimeZone" VALUE="client"/>
+		  </CALLELEMENT>
+		  
+		   <SETVAR NAME="pdeadline" VALUE="Variables.outputDate"/>
+						&nbsp;<STRING.STREAM VALUE="Variables.pdeadline"/><br/>
+					</THEN>
+					<ELSE>
+					-	<BR />
+					</ELSE>
+					</IF>
+				
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.showActionTaken=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<WorkflowAssignment.GetDispositionComment NAME="allAssignments:Counters.count" VARNAME="workflow_clearcomment" />
+					<if COND="IsVariable.workflow_clearcomment=true">
+					<then>
+						<STRING.LENGTH VALUE="Variables.workflow_clearcomment" VARNAME="mylength"/>
+						<CALCULATOR.GO VALUE="Variables.mylength 20 GT" VARNAME="myflag"/>
+						<IF COND="Variables.myflag=1">
+						<THEN>
+							<SUBSTRING STR="Variables.workflow_clearcomment" OUTSTR="truncated"
+								INDEX="0" ENDINDEX="17"/>
+							<XLAT.LOOKUP KEY="dvin/UI/Showactiontaken" VARNAME="_XLAT_" ESCAPE="true"/>
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Workflow/ActionTaken" outstring="urlactiontaken">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                               <satellite.argument name="assignmentid" value="Variables.assignmentid"/>
+                                                               </SATELLITE.LINK>
+							<A HREF="javascript:void(0)" onclick="ActionText('Variables.urlactiontaken');"
+								onmouseover="window.status='Variables._XLAT_';return true;"
+								onmouseout="window.status='';return true;" REPLACEALL="Variables.urlactiontaken,Variables._XLAT_"><STRING.STREAM VALUE="Variables.truncated ..."/></A>
+						</THEN>
+						<ELSE>
+							<STRING.STREAM VALUE="Variables.workflow_clearcomment"/>
+						</ELSE>
+						</IF>
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/UI/Wf/Nocomment"/>
+					</else>
+					</if>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>          
+
+		<IF COND="Variables.showIsActive=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<SETVAR NAME="workflow_status" VALUE="active"/>
+					<XLAT.LOOKUP KEY="dvin/UI/Active" VARNAME="workflow_statusdisplay"/>
+					<SETCOUNTER NAME="wfaCount" VALUE="0"/>
+					<LOOP FROM="0" COUNT="Variables.workflow_assignmentsTotal">
+						<WORKFLOWASSIGNMENT.GETSTATUS NAME="workflow_assignmentsCounters.wfaCount" VARNAME="wfa_status"/>
+						<IF COND="Variables.wfa_status=queued">
+							<THEN><SETVAR NAME="workflow_status" VALUE="queued"/>
+							<XLAT.LOOKUP KEY="dvin/UI/Wf/queued" VARNAME="workflow_statusdisplay"/>
+						</THEN></IF>
+						<INCCOUNTER NAME="wfaCount" VALUE="1"/>
+					</LOOP>
+
+					<if COND="Variables.workflow_status=notactive">
+					<then>
+						<WorkflowAssignment.GetDisposition NAME="allAssignments:Counters.count" VARNAME="workflow_status" />
+					</then>
+					</if>
+					<STRING.STREAM VALUE="Variables.workflow_statusdisplay"/>
+					<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>
+        
+        <td><BR /></td>
+	</tr>
+		<inccounter NAME="assignment_count" VALUE="1"/>
+		<IF COND="Variables.rowStyle=tile-row-normal">
+		<THEN>
+			<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	</THEN>
+	</IF><!-- Counters.Assignment_count not equal to ResultLimit -->
+		<INCCOUNTER NAME="count" VALUE="1"/>
+		</LOOP>
+		<IF COND="Counters.assignment_count=0">
+		<THEN>
+			<tr><td><STRING.STREAM VALUE="Variables.NoTileText"/></td></tr>
+		</THEN>
+		</IF>
+		</table>
+		</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+
+	<IF COND="Variables.hasAssignments=true">
+	<THEN>
+		<tr>
+			<td></td>
+			<td ALIGN="right">
+		    	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="mouseover" ESCAPE="true"/>
+			    <XLAT.LOOKUP KEY="dvin/UI/AssetMgt/FinishMyAssignment" VARNAME="_XLAT_"/>
+				<A class="inline-right" HREF="javascript:document.forms[0].submit();" OnClick="return FinishMyAssignment('SetGroupStatusFront');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/FinishMyAssignment"/></CALLELEMENT></A>
+			</td>
+			<td></td>
+		</tr>
+	</THEN>
+	</IF>
+
+</table>
+<INPUT TYPE="hidden" NAME="groupid" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+<INPUT TYPE="hidden" NAME="stateid" VALUE=""/>
+    </THEN>
+    <ELSE>
+        <STRING.STREAM VALUE="Variables.NoTileText"/>
+    </ELSE>
+</IF></FTCS> 

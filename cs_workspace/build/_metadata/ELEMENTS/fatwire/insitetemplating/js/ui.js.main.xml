@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/insitetemplating/js/ui</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/insitetemplating/js/ui</string>
+        <string>Insite Templating UI</string>
+        <string></string>
+        <string>panel</string>
+        <string>fatwire/insitetemplating/js/ui.js</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/fatwire/insitetemplating/js/ui.js|null|_storable_type\=%2FELEMENTS%2Ffatwire%2Finsitetemplating%2Fjs%2Fui.js
+@hashval=-681506834
+key=@ELEMENTCATALOG-fatwire/insitetemplating/js/ui
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,148 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/StarterPub/ElementCatalog/OpenMarket/Xcelerate/SamplePub/Installation/AddSampleAssets.xml $ 
+$Revision: 9 $ 
+$Modtime: 11/07/03 10:26a $ 
+-->
+<!--
+-
+- INPUT
+- adminacl - the name of the administration acl
+- editacl - the name of the editor acl
+- upgradefrom - the version already installed
+- upgrade-log - the name of the log file to write upgrade instructions to
+- defdirBase - the storage directory for the asset url data
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="result" VALUE="Variables.empty"/>
+
+<if COND="Variables.upgradefrom=0.0.0.0.0">
+<then>
+	<!-- Article -->
+   
+   <ASSETTYPE.LOAD NAME="type" TYPE="Article"/>
+   <if COND="IsError.Variables.errno=true">
+   <then>
+	<ASSETTYPE.CREATE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno creating an asset type."/>
+	</THEN>
+	</IF>
+
+	<SETVAR NAME="at:assettype" VALUE="Article"/>
+	<SETVAR NAME="at:logic" VALUE="com.openmarket.sampleasset.asset.Article"/>
+	<SETVAR NAME="at:description" VALUE="Article"/>
+	<SETVAR NAME="at:plural" VALUE="Articles"/>
+	<SETVAR NAME="at:canbechild" VALUE="T"/>
+	<SETVAR NAME="at:fw_uid" VALUE="CSSystem-AssetType-Article"/>
+
+	<ASSETTYPE.GATHER NAME="theAssetType" PREFIX="at"/>
+	<ASSETTYPE.SAVE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from saving asset type, Article."/>
+	</THEN>
+	<ELSE>
+	<!-- Create the Article table -->
+		<ASSET.INSTALL TYPE="Article" CLASS="com.openmarket.sampleasset.asset.Article" ACL="Browser,SiteGod,Variables.editacl,Variables.adminacl" DIR="Variables.defdirBase/Article"/>
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from installing asset, Article with com.openmarket.sampleasset.asset.Article."/>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+   </then>
+   </if>
+	<!-- Image -->
+   <ASSETTYPE.LOAD NAME="type" TYPE="Image"/>
+   <if COND="IsError.Variables.errno=true">
+   <then>
+	<ASSETTYPE.CREATE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno creating an asset type."/>
+	</THEN>
+	</IF>
+
+	<SETVAR NAME="at:assettype" VALUE="Image"/>
+	<SETVAR NAME="at:logic" VALUE="com.openmarket.sampleasset.asset.Image"/>
+	<SETVAR NAME="at:description" VALUE="Image"/>
+	<SETVAR NAME="at:plural" VALUE="Images"/>
+	<SETVAR NAME="at:canbechild" VALUE="T"/>
+	<SETVAR NAME="at:fw_uid" VALUE="CSSystem-AssetType-Image"/>
+
+   <ASSETTYPE.GATHER NAME="theAssetType" PREFIX="at"/>
+   <ASSETTYPE.SAVE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from saving asset type, Image."/>
+	</THEN>
+	<ELSE>
+	<!-- Create the Article table -->
+		<ASSET.INSTALL TYPE="Image" CLASS="com.openmarket.sampleasset.asset.Image" ACL="Browser,SiteGod,Variables.editacl,Variables.adminacl" DIR="Variables.defdirBase/Image"/>
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from installing asset, Image with com.openmarket.sampleasset.asset.Image."/>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+   </then>
+   </if>
+
+	<!-- Linkset -->
+   <ASSETTYPE.LOAD NAME="type" TYPE="Linkset"/>
+   <if COND="IsError.Variables.errno=true">
+   <then>
+	<ASSETTYPE.CREATE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno creating an asset type."/>
+	</THEN>
+	</IF>
+
+	<SETVAR NAME="at:assettype" VALUE="Linkset"/>
+	<SETVAR NAME="at:logic" VALUE="com.openmarket.sampleasset.asset.Linkset"/>
+	<SETVAR NAME="at:description" VALUE="Linkset"/>
+	<SETVAR NAME="at:plural" VALUE="Linksets"/>
+	<SETVAR NAME="at:canbechild" VALUE="T"/>
+	<SETVAR NAME="at:fw_uid" VALUE="CSSystem-AssetType-Linkset"/>
+
+   <ASSETTYPE.GATHER NAME="theAssetType" PREFIX="at"/>
+   <ASSETTYPE.SAVE NAME="theAssetType"/>
+	<IF COND="IsError.Variables.errno=true">
+	<THEN>
+		<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from saving asset type, Linkset."/>
+	</THEN>
+	<ELSE>
+	<!-- Create the Linkset table -->
+		<ASSET.INSTALL TYPE="Linkset" CLASS="com.openmarket.sampleasset.asset.Linkset" ACL="Browser,SiteGod,Variables.editacl,Variables.adminacl" DIR="Variables.defdirBase/Linkset"/>
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="result" VALUE="Variables.result errno Variables.errno from installing asset, Linkset with com.openmarket.sampleasset.asset.Linkset."/>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+   </then>
+   </if>
+
+</then>
+</if>
+
+<if COND="Variables.result!=Variables.empty">
+<then>
+	<csvar NAME="##ERROR## Variables.result"/>
+</then>
+<else>
+	##SUCCESS##
+</else>
+</if>
+</FTCS> 

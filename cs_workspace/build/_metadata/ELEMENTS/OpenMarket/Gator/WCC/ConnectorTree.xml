@@ -1,0 +1,167 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/WCC/ConnectorTree
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+		<USERISMEMBER GROUP="xceladmin"/>
+		<IF COND="Variables.errno=0">
+		<THEN> 
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreePermissionError"/>
+			<THROWEXCEPTION/>
+		</THEN>
+		</IF>
+
+		<XLAT.LOOKUP KEY="wcc/menu/console"       ENCODE="false" VARNAME="_XLATConsole_"/>
+        <XLAT.LOOKUP KEY="wcc/menu/history"       ENCODE="false" VARNAME="_XLATHistory_"/>
+        <XLAT.LOOKUP KEY="wcc/menu/orphan"        ENCODE="false" VARNAME="_XLATOrphan_"/>
+		<XLAT.LOOKUP KEY="wcc/menu/config"        ENCODE="false" VARNAME="_XLATConfiguration_"/>
+		<XLAT.LOOKUP KEY="wcc/menu/rules" 		  ENCODE="false" VARNAME="_XLATRules_"/>
+		
+		<!-- add console  -->
+
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+			<ARGUMENT NAME="AdHoc" VALUE="Variables._XLATConsole_"/>
+			<!--ARGUMENT NAME="TreeNodeID" VALUE="WccPollerConsole"/-->
+			<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="Description"/>
+		<REMOVEVAR NAME="ExecuteURL"/>
+		<REMOVEVAR NAME="OKActions"/>
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+		</SATELLITE.LINK>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/Console" outstring="ExecuteURL">
+		</SATELLITE.LINK>
+		
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+			<ARGUMENT NAME="Label" VALUE="Variables._XLATConsole_"/>
+			<ARGUMENT NAME="Description" VALUE="Variables._XLATConsole_"/>
+			<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+			<!--ARGUMENT NAME="LoadURL" VALUE="Variables.LoadURL"/-->
+			<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+			<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+			<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+			<ARGUMENT NAME="RefreshKeys" VALUE="refresh"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="RefreshKeys"/>
+
+        <!-- add history -->
+
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+            <ARGUMENT NAME="AdHoc" VALUE="Variables._XLATHistory_"/>
+            <ARGUMENT NAME="TreeNodeID" VALUE="WccPollerHistory"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="Description"/>
+        <REMOVEVAR NAME="ExecuteURL"/>
+        <REMOVEVAR NAME="OKActions"/>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+        </SATELLITE.LINK>
+
+        <SATELLITE.LINK ASSEMBLER="query" pagename="WCC/History" outstring="ExecuteURL">
+        </SATELLITE.LINK>
+        
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+            <ARGUMENT NAME="Label" VALUE="Variables._XLATHistory_"/>
+            <ARGUMENT NAME="Description" VALUE="Variables._XLATHistory_"/>
+            <ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+            <ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+            <ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+            <ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+            <ARGUMENT NAME="RefreshKeys" VALUE="refresh"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="RefreshKeys"/>
+
+        <!-- add orphan -->
+
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+            <ARGUMENT NAME="AdHoc" VALUE="Variables._XLATOrphan_"/>
+            <ARGUMENT NAME="TreeNodeID" VALUE="WccPollerOrphan"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="Description"/>
+        <REMOVEVAR NAME="ExecuteURL"/>
+        <REMOVEVAR NAME="OKActions"/>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+        </SATELLITE.LINK>
+
+        <SATELLITE.LINK ASSEMBLER="query" pagename="WCC/OrphanDetail" outstring="ExecuteURL">
+        </SATELLITE.LINK>
+        
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+            <ARGUMENT NAME="Label" VALUE="Variables._XLATOrphan_"/>
+            <ARGUMENT NAME="Description" VALUE="Variables._XLATOrphan_"/>
+            <ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+            <ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+            <ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+            <ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+            <ARGUMENT NAME="RefreshKeys" VALUE="refresh"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="RefreshKeys"/>
+
+        <!-- add configuration -->
+
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+            <ARGUMENT NAME="AdHoc" VALUE="Variables._XLATConfiguration_"/>
+            <ARGUMENT NAME="TreeNodeID" VALUE="WccPollerConfiguration"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="Description"/>
+        <REMOVEVAR NAME="ExecuteURL"/>
+        <REMOVEVAR NAME="OKActions"/>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+        </SATELLITE.LINK>
+
+        <SATELLITE.LINK ASSEMBLER="query" pagename="WCC/Configuration" outstring="ExecuteURL">
+        </SATELLITE.LINK>
+        
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+            <ARGUMENT NAME="Label" VALUE="Variables._XLATConfiguration_"/>
+            <ARGUMENT NAME="Description" VALUE="Variables._XLATConfiguration_"/>
+            <ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+            <ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+            <ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+            <ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+            <ARGUMENT NAME="RefreshKeys" VALUE="refresh"/>
+        </CALLELEMENT>
+        
+        <REMOVEVAR NAME="RefreshKeys"/>
+		
+		<!-- add rules -->
+		
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+			<ARGUMENT NAME="AdHoc" VALUE="Variables._XLATRules_"/>
+			<ARGUMENT NAME="TreeNodeID" VALUE="WccPollerRule"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="Description"/>
+		<REMOVEVAR NAME="ExecuteURL"/>
+		<REMOVEVAR NAME="OKActions"/>
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+		</SATELLITE.LINK>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="WCC/RuleList" outstring="ExecuteURL">
+		</SATELLITE.LINK>
+		
+        <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+			<ARGUMENT NAME="Label" VALUE="Variables._XLATRules_"/>
+			<ARGUMENT NAME="Description" VALUE="Variables._XLATRules_"/>
+			<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+			<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+			<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+			<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+			<ARGUMENT NAME="RefreshKeys" VALUE="refresh"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="RefreshKeys"/>
+
+</ftcs>

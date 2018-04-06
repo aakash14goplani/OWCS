@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Util/ShowTemplateDetails.xml $ 
+$Revision: 24 $ 
+$Modtime: 5/05/03 3:58p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowTemplateDetails.xml
+-
+- DESCRIPTION
+-	Run a query to get the template details and show the template name
+-
+- HISTORY 
+-->
+
+<IF COND="Variables.template!=Variables.empty">
+<THEN>
+	<!-- we should change this to go through the asset or template manager tag -sjc -->
+	<BEGINS STR="Variables.template" WHAT="/" />
+	<if COND="Variables.errno=1">
+	<then>
+		<!-- typeless template -->
+		<SUBSTRING STR="Variables.template" INDEX="1" OUTSTR="noslashname"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Variables.noslashname"/>
+			<ARGUMENT NAME="type" VALUE="String"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<EXECSQL LIST="templatelist" SQL="Select * from Template WHERE subtype IS NULL AND NAME='Variables.noslashname'" TABLE="Template"/>
+		</THEN>
+		</IF>
+	   <IF COND="templatelist.#numRows=1">
+    	<THEN>
+            <!-- #18034 -->
+            <STRING.STREAM VARIABLE="template"/>
+    	</THEN>
+    	<ELSE>
+			<span class="alert-color"><XLAT.STREAM KEY="dvin/UI/Util/NoentryforTemplate"/></span>
+    	</ELSE>
+    	</IF>
+	</then>
+	<else>
+		<ASSET.LIST LIST="templatelist" TYPE="Template" FIELD1="name" VALUE1="Variables.template" FIELD2="subtype" VALUE2="Variables.AssetType" PUBID="SessionVariables.pubid"/>
+     	<IF COND="templatelist.#numRows=1">
+    	<THEN>
+	   	 <STRING.STREAM VARIABLE="template"/>
+    	</THEN>
+    	<ELSE>
+			<span class="alert-color"><XLAT.STREAM KEY="dvin/UI/Util/NoentryforTemplate"/></span>
+    	</ELSE>
+    	</IF>
+    </else>
+    </if>
+</THEN>
+<ELSE>
+    <span class="disabledText"><XLAT.STREAM KEY="dvin/UI/Util/Notemplatespecified"/></span>
+</ELSE>
+</IF>
+</FTCS>

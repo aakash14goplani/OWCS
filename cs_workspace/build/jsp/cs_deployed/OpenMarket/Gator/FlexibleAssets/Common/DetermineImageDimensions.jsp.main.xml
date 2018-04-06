@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions</string>
+        <string>Determines dimensions of the image</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FGator%2FFlexibleAssets%2FCommon%2FDetermineImageDimensions.jsp
+@hashval=634342182
+key=@ELEMENTCATALOG-OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

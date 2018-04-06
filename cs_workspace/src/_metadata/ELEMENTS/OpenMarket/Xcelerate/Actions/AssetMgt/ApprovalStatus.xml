@@ -1,0 +1,203 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ApprovalStatus
+-
+- INPUT
+- Variables.target - id of pubtarget 
+- Variables.pubtargetname - name of pubtarget
+- Variables.assetid
+- Variables.assettype
+- Variables.assetname - name of the loaded asset object
+- OUTPUT
+-	Variables.approvalState	 - Approved, Held, Checked out or Needs Approval
+-	Variables.approvalAction - approve,releaseBlocking,checkin,none
+-  Variables.approvalDetails - text of detailed message concerning approval state
+-->
+
+<SETVAR NAME="approvalState" VALUE="notSet"/>
+<SETVAR NAME="approvalStateForDash" VALUE="notSet"/>
+<SETVAR NAME="approvalAction" VALUE="notSet"/>
+<SETVAR NAME="approvalDetails" VALUE="notSet"/>
+
+<ApprovedAssets.GetAssetStatus TARGET="Variables.target" ID="Variables.assetid" TYPE="Variables.assettype" LISTVARNAME="approvedList"/>
+<!--
+status:<CSVAR NAME="approvedList.status"/>,
+fstate:<CSVAR NAME="approvedList.fstate"/>,
+reason:<CSVAR NAME="approvedList.reason"/>,
+locked:<CSVAR NAME="approvedList.locked"/><br/>-->
+
+<if COND="approvedList.#numRows!=0">
+<then>
+	<!-- status = Approved -->
+	<if COND="approvedList.status=A">
+	<then>
+		<!-- asset is not checked out -->
+		<if COND="approvedList.locked!=T">
+		<then>
+			<SETVAR NAME="approved" VALUE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/ApprovedP" VARNAME="approvalStateForDash" ENCODE="false"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/ApprovedP" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="none"/>
+			<ASSET.GET NAME="Variables.assetname" FIELD="updateddate"/>
+			<!-- approved and published -->
+			<if COND="approvedList.lastdate!=Variables.updateddate">
+			<then>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approvedreadypublish" VARNAME="_XLAT_"/>
+				<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+				<!-- set the variable showHeldAssets which will decide whether held assets info should be shown -->
+				<SETVAR NAME="showHeldAssets" VALUE="true"/>
+			</then>
+			<else>
+				<!-- approved awaiting publish -->
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approvedpublishedversionsame" VARNAME="_XLAT_"/>
+				<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+			</else>
+			</if>
+		</then>
+		<else>
+			<!-- asset is checked out -->
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/CheckedoutP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/CheckedoutP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="checkin"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/checkedoutnotpublished" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+		</else>
+		</if>
+	</then>
+	</if>
+	<!-- asset is changed -->
+	<if COND="approvedList.status=C">
+	<then>
+		<if COND="approvedList.fstate=A">
+		<then>
+			<SETVAR NAME="approved" VALUE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/ApprovedP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/ApprovedP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="approve"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approvedinclusionlinkpagesexported" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+		</then>
+		<else>				
+			<SETVAR NAME="approved" VALUE="false"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="approve"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Assetmodifiedsinceapproved" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+		</else>
+		</if>
+	</then>
+	</if>
+	<!-- asset is held -->
+	<if COND="approvedList.status=H">
+	<then>
+		<!-- asset is held due to a change to parent -->
+		<if COND="approvedList.reason=P">
+		<then>
+			<SETVAR NAME="approved" VALUE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="releaseBlocking"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approvedassetsreferringmustapproved" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+		</then>
+		<else>
+			<!-- asset is held due to the dependent child version no longer exist, i.e. child has changed -->
+			<if COND="approvedList.reason=N">
+			<then>
+				<SETVAR NAME="approved" VALUE="false"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="approvalStateForDash" ENCODE="false" />
+				<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+				<SETVAR NAME="approvalAction" VALUE="approve"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approvedpublishversionsassetsnoexist" VARNAME="_XLAT_"/>
+				<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+			</then>
+			<else>
+				<!-- held due to a child is unapproved -->
+				<SETVAR NAME="approved" VALUE="true"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="approvalStateForDash" ENCODE="false" />
+				<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+				<SETVAR NAME="approvalAction" VALUE="releaseBlocking"/>
+				<if COND="approvedList.reason=C">
+				<then>
+					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Approveddependentassetsnotapproved" VARNAME="_XLAT_"/>
+					<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+				</then>
+				<else>
+					<!-- unknown reason for being held -->
+					<XLAT.LOOKUP KEY="dvin/UI/HeldUnknownReason" VARNAME="_XLAT_"/>
+					<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+				</else>					
+				</if>
+			</else>
+			</if>
+		</else>
+		</if> 
+	</then>
+	</if>
+	<!-- asset's status is unclear, may be held or approved (due to dependent asset changes in dependecies) -->
+	<if COND="approvedList.status=M">
+	<then>
+		<!-- reason is undertermined -->
+		<if COND="approvedList.reason=U">
+		<then>
+			<SETVAR NAME="approved" VALUE="false"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="approve"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldMaybe" VARNAME="_XLAT_"/>
+			<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+		</then>
+		<else>
+			<!-- reason is undertermined child -->
+			<SETVAR NAME="approved" VALUE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldP" VARNAME="approvalStateForDash" ENCODE="false" />
+			<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+			<SETVAR NAME="approvalAction" VALUE="releaseBlocking"/>
+			<if COND="approvedList.reason=X">
+			<then>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldMaybeChild" VARNAME="_XLAT_"/>
+				<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+			</then>
+			<else>
+				<!-- reason is undetermined parent -->
+				<if COND="approvedList.reason=Z">
+				<then>
+					<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/HeldMaybeParent" VARNAME="_XLAT_"/>
+					<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+				</then>
+				<else>
+					<!-- unknown reason for being maybe -->
+					<XLAT.LOOKUP KEY="dvin/UI/HeldUnknownReason" VARNAME="_XLAT_"/>
+					<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+				</else>					
+				</if>
+			</else>
+			</if>
+		</else>
+		</if> 
+	</then>
+	</if>
+</then>
+<else>
+	<SETVAR NAME="approved" VALUE="false"/>
+	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="_XLAT_"/>
+	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/NeedsApprovalP" VARNAME="approvalStateForDash" ENCODE="false" />
+	<SETVAR NAME="approvalState" VALUE="Variables._XLAT_"/>
+	<SETVAR NAME="approvalAction" VALUE="approve"/>
+	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Notyetapprovedforpublish" VARNAME="_XLAT_"/>
+	<SETVAR NAME="approvalDetails" VALUE="Variables._XLAT_"/>
+</else>
+</if>
+
+</FTCS> 

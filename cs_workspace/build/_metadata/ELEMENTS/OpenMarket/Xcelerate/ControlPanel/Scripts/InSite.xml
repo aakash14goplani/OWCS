@@ -1,0 +1,783 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1"> 
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/CheckPortlet"/>
+  
+    <!-- This is typically called from markAssetField custom tag -->
+    <!-- open the ControlPanel window, and set up to close it on exit -->
+    
+    <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlAddRefBase"
+        PAGENAME="OpenMarket/Xcelerate/Actions/AddRefFront">
+        <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="addref"/>
+    </SATELLITE.LINK>
+
+    <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlChangeRefBase"
+        PAGENAME="OpenMarket/Xcelerate/Actions/AddRefFront">
+        <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="changeref"/>
+    </SATELLITE.LINK>
+
+    <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlLockBase"
+        PAGENAME="OpenMarket/Xcelerate/ControlPanel/LockManager">
+        <SATELLITE.ARGUMENT NAME="action" VALUE="lock"/>
+    </SATELLITE.LINK>
+
+    <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlUnlockBase"
+        PAGENAME="OpenMarket/Xcelerate/ControlPanel/LockManager">
+        <SATELLITE.ARGUMENT NAME="action" VALUE="unlock"/>
+    </SATELLITE.LINK> 
+
+    <IF COND="IsVariable.IsPortlet=true">
+    <THEN>
+        <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlControlPanel"
+            PAGENAME="OpenMarket/Xcelerate/ControlPanel/ControlPanel">
+            <SATELLITE.ARGUMENT NAME="IsPortlet" VALUE="true"/>
+        </SATELLITE.LINK>
+    </THEN>
+    <ELSE>
+        <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlControlPanel"
+            PAGENAME="OpenMarket/Xcelerate/ControlPanel/ControlPanel"/>
+    </ELSE>
+    </IF>
+            <SATELLITE.LINK ASSEMBLER="query" CONTAINER="servlet" OUTSTRING="urlEditPanel"
+            PAGENAME="OpenMarket/Xcelerate/ControlPanel/EditPanel"/>
+    <![CDATA[    
+    // dojo imports
+    dojo.require( "dojo.parser" );
+    dojo.require( "insite.Map" );
+    dojo.require( "insite.utilities" );
+    dojo.require( "insite.FieldManager" );
+    dojo.require( "insite.InlineEditBox" );
+    dojo.require( "insite.AutoResizeTextBox" );
+    dojo.require( "dijit.form.DateTextBox" );
+    dojo.require( "dijit.form.NumberSpinner" );
+    dojo.require( "dijit.form.NumberTextBox" );
+    dojo.require( "dijit.form.ValidationTextBox" );
+    dojo.require( "dijit.form.CurrencyTextBox" );
+    dojo.requireLocalization("dijit.form", "validate", "en,en-us,en-gb,zh,pt,da,tr,ru,de,sv,ja,he,fi,nb,el,ar,pt-pt,ROOT,cs,fr,es,ko,nl,zh-tw,pl,it,hu");
+    dojo.requireLocalization("dojo.cldr", "number", "en,en-us,en-gb,zh,pt,da,tr,ru,de,sv,ja,he,fi,nb,el,ar,pt-pt,ROOT,cs,fr,es,ko,nl,zh-tw,pl,it,hu");
+    dojo.requireLocalization("dojo.cldr", "currency", "en,en-us,en-gb,zh,pt,da,tr,ru,de,sv,ja,he,fi,nb,el,ar,pt-pt,ROOT,cs,fr,es,ko,nl,zh-tw,pl,it,hu");
+    dojo.requireLocalization("dojo.cldr", "gregorian", "en,en-us,en-gb,zh,pt,da,tr,ru,de,sv,ja,he,fi,nb,el,ar,pt-pt,ROOT,cs,fr,es,ko,nl,zh-tw,pl,it,hu");
+    // add 'tundra' to body class    
+    var docBody = document.getElementsByTagName( "body" )[0];
+    if ( docBody ) dojo.addClass( docBody, "tundra");
+    // get panel window
+    var controlPanel = openControlPanel();
+    
+    // tell fieldmanager about the panel window
+    insite.FieldManager.setPanelWindow( controlPanel );
+        
+    var editedAssets = new Array(); // used for asset reference fields only - so we can keep track of
+                                    // of what has been added to the panel already.
+                                    // This should go when asset reference fields are managed
+                                    // as other editing fields.
+      
+    // global scope - localized constants
+  var EDIT        = ']]><XLAT.STREAM KEY="dvin/Common/Edit" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var VIEW        = ']]><XLAT.STREAM KEY="dvin/Common/View" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var DELETE      = ']]><XLAT.STREAM KEY="dvin/Common/Delete" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var ONLY_INT    = ']]><XLAT.STREAM KEY="dvin/UI/MaskStringValue" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var MAX_INT     = ']]><XLAT.STREAM KEY="dvin/UI/MaxIntValue" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var IS_REQUIRED = ']]><XLAT.STREAM KEY="dvin/UI/displaynameisrequiredfield" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var MAX_LENGTH  = ']]><XLAT.STREAM KEY="dvin/UI/displaynamehasamaximumlength" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  var CHECKOUT_FAILED = ']]><XLAT.STREAM KEY="dvin/UI/InSiteEditorFailedToCheckOutTheAssetImplicitly" ENCODE="false" ESCAPE="true"/><![CDATA[';
+  
+  function frameEnvironment() {
+    return (parent.frames["ControlPanel"] != null);
+  }
+
+  function isPortlet() { ]]>
+    <if cond="IsVariable.IsPortlet=true">
+    <then>
+      return <ics.getvar name="IsPortlet"/>;
+    </then>
+    <else>
+      return false;
+    </else>
+    </if>
+    <![CDATA[
+  }
+
+    function openControlPanel() {
+        if (frameEnvironment()) {
+            var panelWindow = parent.frames["ControlPanel"];
+            panelWindow.fw.controlPanel.resetEditForm();
+            return panelWindow;
+        } else {
+            return window.open(']]><CSVAR NAME="Variables.urlEditPanel"/><![CDATA[', "EditPanel", "resizable=yes,directories=no,height=300,width=240");
+      }
+    }
+    
+    function UndoCheckout()
+    {
+        var lockedAssets = insite.FieldManager.getLockedAssets();
+        for ( var i = 0; i < lockedAssets.length; i++ ) 
+        {            
+            var id = lockedAssets[i].assetid;
+            var type = lockedAssets[i].assettype;
+            unlock( id, type );
+        }
+    }
+    
+    window.onbeforeunload = function() 
+    {
+        try 
+        {
+            if (controlPanel) 
+            {
+                var panel = controlPanel.fw.controlPanel;
+                if (panel && panel.isDirty())
+                   return ']]><XLAT.STREAM KEY="dvin/UI/AssetMgt/unsavededits" ENCODE="false" ESCAPE="true"/><![CDATA[';
+        }
+      } 
+      catch(e) 
+      {
+          // do nothing. Possible cause: panel has gone
+      }        
+    };   
+
+    // FIXME onunload shouldn't be overridden
+    // Note: dojo.addOnUnload doesn't work. Function is not triggered when onbeforeunload is set
+    window.onunload = function() 
+    {                
+        if ( controlPanel && controlPanel.fw ) 
+        {
+            var panelObj = controlPanel.fw.controlPanel;
+            if ( panelObj )
+                panelObj.resetEditForm();
+        }
+        UndoCheckout();
+    }
+           
+    var activeId = null;
+    var orig_barcolor = "white";
+    var orig_contentcolor = "white";
+
+    // It is used for Plus button operation
+    function site_plus(btn)
+    {
+      try {
+      if (!controlPanel ||
+        !controlPanel.document ||
+        controlPanel.document.readyState != 'complete') {
+        return; //control panel doesn't finish loading yet
+      }
+
+          var id = btn.id.split("_").slice(1).join("_");
+      var keys=btn.id.split("_").slice(1);
+      var parentid=keys[0];
+
+      var col;
+        for (var i = 0; i < colArr.length; i++) {
+          if (colArr[i].parentid == parentid) {
+            col = colArr[i];
+            break;
+          }
+        }
+
+          var oObj = document.getElementById(id);
+      var varPrevSibiling = insite.utilities.previousSibling( oObj );
+      var varNextSibiling = insite.utilities.nextSibling( oObj );
+      var testCounter;
+      if ( varPrevSibiling)
+        testCounter=varPrevSibiling.id.indexOf(parentid);
+
+        if (activeId != null) {
+              var plusObj = document.getElementById('plus_' + activeId);
+              plusObj.className = "sb_plus";
+
+              if (activeId.indexOf("addref_")==0) {
+                  var activeAddObj = document.getElementById('add_' + activeId);
+                  if (activeAddObj != null && typeof activeAddObj == "object") {
+                      activeAddObj.style.visibility = "hidden";
+                  }
+              } else {
+                  var activeObj = document.getElementById('content_' + activeId);
+                  if (activeObj != null && typeof activeObj == "object") {
+                      activeObj.style.borderStyle = 'none';
+                      activeObj.style.borderWidth = '0px';
+                      activeObj.style.background = orig_contentcolor;
+                  }
+
+                  var activeBarObj = document.getElementById('bar_' + activeId);
+                  if (activeBarObj != null && typeof activeBarObj == "object") {
+                      activeBarObj.style.background = orig_barcolor;
+                  }
+
+                  var activeSlotObj = document.getElementById('slot_' + activeId);
+                  if (activeSlotObj != null && typeof activeSlotObj == "object") {
+                     activeSlotObj.style.visibility = "hidden";
+                  }
+
+                  var activeChangeObj = document.getElementById('change_' + activeId);
+                  if (activeChangeObj != null && typeof activeChangeObj == "object") {
+                     activeChangeObj.style.visibility = "hidden";
+                  }
+                  var activeSwapObj  = document.getElementById('swap_' + activeId);
+
+                  if (activeSwapObj  != null && typeof activeSwapObj  == "object") {
+                     activeSwapObj.style.visibility = "hidden";
+                  }
+
+
+                  var activeUpObj = document.getElementById('up_' + activeId);
+                  if (activeUpObj != null && typeof activeUpObj == "object") {
+                     activeUpObj.style.visibility = "hidden";
+                  }
+
+                  var activeDnObj = document.getElementById('down_' + activeId);
+                  if (activeDnObj != null && typeof activeDnObj == "object") {
+                     activeDnObj.style.visibility = "hidden";
+                  }
+
+                  var activeDeleteObj = document.getElementById('delete_' + activeId);
+                  if (activeDeleteObj != null && typeof activeDeleteObj == "object") {
+                      activeDeleteObj.style.visibility = "hidden";
+                  }
+              }
+          }
+
+          if (activeId != null && activeId == id) {
+              activeId = null;
+          } else {
+              var plusObj = document.getElementById('plus_' + id);
+              plusObj.className = "sb_minus";
+
+
+              if (id.indexOf("addref_")==0) {
+                  var activeAddObj = document.getElementById('add_' + id);
+                  if (activeAddObj != null && typeof activeAddObj == "object") {
+                      activeAddObj.style.visibility = "visible";
+                  }
+              } else {
+                  var contentObj = document.getElementById('content_' + id);
+                  if (contentObj != null && typeof contentObj == "object") {
+                      contentObj.style.borderWidth = '2px';
+                      contentObj.style.borderColor = '#A2BAFA';
+                      contentObj.style.borderStyle = 'groove';      // 'dashed';
+                      orig_contentcolor = contentObj.style.background;
+                      contentObj.style.background = '#F8F8F8';
+                  }
+
+                  var barObj = document.getElementById('bar_' + id);
+                  if (barObj != null && typeof barObj == "object") {
+                      orig_barcolor = barObj.style.background;
+                      barObj.style.background = '#6785B7';
+                  }
+
+                  var upObj = document.getElementById('up_' + id);
+                  if (upObj != null && typeof upObj == "object") {
+          if(testCounter!=0){
+            ]]>
+              upObj.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/UpUnavail.gif")';
+            <![CDATA[
+              upObj.disabled="true";
+              upObj.style.visibility = "visible";
+            }else{
+              upObj.disabled=false;
+            ]]>
+              upObj.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/up_noright.gif")';
+            <![CDATA[
+              upObj.style.visibility = "visible";
+
+               }
+                  }
+
+                  var dnObj = document.getElementById('down_' + id);
+                  if (dnObj != null && typeof dnObj == "object") {
+          if(varNextSibiling==null){
+          ]]>
+          dnObj.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/DownUnavail.gif")';
+            <![CDATA[
+              dnObj.disabled="true";
+              dnObj.style.visibility = "visible";
+          }else{
+              dnObj.disabled=false;
+            ]]>
+              dnObj.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/dn_noright.gif")';
+            <![CDATA[
+              dnObj.style.visibility = "visible";
+                     dnObj.style.visibility = "visible";
+             }
+                  }
+
+                  var deleteObj = document.getElementById('delete_' + id);
+                  if (deleteObj != null && typeof deleteObj == "object") {
+                      deleteObj.style.visibility = "visible";
+                  }
+
+                  var slotObj = document.getElementById('slot_' + id);
+                  if (slotObj != null && typeof slotObj == "object") {
+                     slotObj.style.visibility = "visible";
+                  }
+
+                  var activeChangeObj = document.getElementById('change_' + id);
+                  if (activeChangeObj != null && typeof activeChangeObj == "object") {
+                     activeChangeObj.style.visibility = "visible";
+                  }
+                  var activeSwapObj = document.getElementById('swap_' + id);
+                  if (activeSwapObj  != null && typeof activeSwapObj  == "object") {
+                     activeSwapObj.style.visibility = "visible";
+                  }
+              }
+
+              activeId = id;
+          }
+       } catch(e) {
+        // do nothing - workaround around IE's 'access is denied' exception
+       }
+    }
+
+  function site_delete_locked( args ) {
+    site_delete( args[ 0 ], args[ 1 ], true );
+  }
+  
+    function site_delete(btn, parentfield, lockChecked)
+    {
+        var keys = btn.id.split("_").slice(1);
+        var id = keys.join("_");
+        var oObj = document.getElementById(id);
+
+        var parentid = keys[0];
+        var col;
+        for (var i = 0; i < colArr.length; i++) {
+            if (colArr[i].parentid == parentid && colArr[i].parentfield == parentfield) {
+                col = colArr[i];
+                break;
+            }
+        }
+        var parenttype = col.parenttype;
+        var parentname = col.parentname;
+        var lockenabled = col.lockenabled;
+
+        if (lockenabled && typeof lockChecked == "undefined") {
+          getLockStatus( parentid, parenttype, "site_delete", btn, parentfield );
+          return;             
+        }
+        ]]>
+        if (confirm("<XLAT.STREAM KEY="dvin/UI/deleteitemwarning" ENCODE="false" ESCAPE="true"/>")) {
+        <![CDATA[
+            var assetid = id.split("_")[1];
+            colDeleteChild(parentid, parentfield, assetid);
+
+            var oObj = document.getElementById(id);
+            oObj.parentNode.removeChild(oObj);
+            activeId = null;
+
+      // TODO get assoc description
+            setChanged(parentid, parenttype, parentname, col.parentfielddesc);
+        }
+    }
+
+  function site_up_locked( args ) {     
+      site_up( args[ 0 ], args[ 1 ], true );
+  }
+  
+    function site_up(btn, parentfield, lockChecked)
+    {
+        var keys = btn.id.split("_").slice(1);
+        var id = keys.join("_");
+
+        //
+        // to enable down arrow
+        // when it comes down
+        // "down_" is added to the id for retrieving down
+        // button id
+        //
+
+        downText="down_"+id;
+        document.getElementById(downText).disabled=false;
+
+    ]]>
+      document.getElementById(downText).style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/dn_noright.gif")';
+
+    <![CDATA[
+
+        var oObj = document.getElementById(id);
+
+        var parentid = keys[0];
+        var col;
+        for (var i = 0; i < colArr.length; i++) {
+            if (colArr[i].parentid == parentid && colArr[i].parentfield == parentfield) {
+                col = colArr[i];
+                break;
+            }
+        }
+        var parenttype = col.parenttype;
+        var parentname = col.parentname;
+        var lockenabled = col.lockenabled;
+
+        var lastObj = insite.utilities.previousSibling( oObj );
+
+       while (lastObj &&
+                (typeof lastObj.id != "string" ||
+                lastObj.id.indexOf(parentid) != 0))
+        {
+            lastObj = insite.utilities.previousSibling( lastObj );
+        }
+     if (!lastObj)
+        {
+     ]]>
+      btn.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/UpUnavail.gif")';
+    <![CDATA[
+            btn.disabled=true;
+      return;
+        }
+    if(lastObj){
+    var lastObjForCheck = insite.utilities.previousSibling( lastObj );
+     if( lastObjForCheck && lastObjForCheck.id.indexOf(parentid) == -1){
+      ]]>
+      btn.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/UpUnavail.gif")';
+    <![CDATA[
+            btn.disabled=true;
+    }
+  }
+
+  if (lockenabled && typeof lockChecked == "undefined") {
+    getLockStatus( parentid, parenttype, "site_up",  btn, parentfield );
+    return;
+  }
+
+        var tempid = lastObj.id;
+        insite.utilities.swapNode( tempid, id );
+
+        var assetid1 = id.split("_")[1];
+        var assetid2 = tempid.split("_")[1];
+        swap(parentid, parentfield, assetid1, assetid2);
+
+        setChanged(parentid, parenttype, parentname, col.parentfielddesc);
+    }
+    
+  function site_down_locked( args ) {
+    site_down( args[ 0 ], args[ 1 ], true );
+  }
+  
+  function site_down(btn, parentfield, lockChecked)
+    {
+        var keys = btn.id.split("_").slice(1);
+        var id = keys.join("_");
+        //
+        // to enable up arrow
+        // when it comes down
+        // "up_" is added to the id
+        // for retrieving up button id
+        //
+
+        upText="up_"+id ;
+        document.getElementById(upText).disabled=false;
+    ]]>
+      document.getElementById(upText).style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/up_noright.gif")';
+
+    <![CDATA[
+        var oObj = document.getElementById(id);
+
+        var parentid = keys[0];
+        var col;
+        for (var i = 0; i < colArr.length; i++) {
+            if (colArr[i].parentid == parentid && colArr[i].parentfield == parentfield) {
+                col = colArr[i];
+                break;
+            }
+        }
+        var parenttype = col.parenttype;
+        var parentname = col.parentname;
+        var parentfield = col.parentfield;
+        var lockenabled = col.lockenabled;
+        var nextObj = insite.utilities.nextSibling( oObj );
+        while (nextObj &&
+                (typeof nextObj.id != "string" ||
+                nextObj.id.indexOf(parentid) != 0))
+        {
+            nextObj = insite.utilities.nextSibling( nextObj );
+        }
+        if (!nextObj)
+        {
+    ]]>
+      btn.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/DownUnavail.gif")';
+    <![CDATA[
+            btn.disabled=true;
+            return;
+        }
+
+    if(nextObj){
+    var lastObjForNextCheck = insite.utilities.nextSibling( nextObj );
+     if(lastObjForNextCheck == null){
+    // alert("Working fine.");
+     ]]>
+      btn.style.backgroundImage = 'url("<csvar NAME="Variables.cs_imagedir"/>/graphics/common/controlpanel/DownUnavail.gif")';
+    <![CDATA[
+            btn.disabled=true;
+    }
+  }
+        if (lockenabled && typeof lockChecked == "undefined") {
+            getLockStatus( parentid, parenttype, "site_down", btn, parentfield );
+            return;
+        }
+        
+        var tempid = nextObj.id;
+        insite.utilities.swapNode( id, tempid );
+
+        var assetid1 = id.split("_")[1];
+        var assetid2 = tempid.split("_")[1];
+        swap(parentid, parentfield, assetid1, assetid2);
+
+        setChanged(parentid, parenttype, parentname, col.parentfielddesc);
+    }
+
+  function site_addref_locked( args ) {
+    site_addref( args[ 0 ], args[ 1 ], args[ 2 ], args[ 3 ], args[ 4 ], args[ 5 ], true );
+  }
+  
+    function site_addref(parentid, parenttype, parentfield, childtypes, lockenabled,title, lockChecked)
+    {
+        if (lockenabled && typeof lockChecked == "undefined") {
+          getLockStatus( parentid, parenttype, "site_addref", parentid, parenttype, parentfield, childtypes, lockenabled, title );
+          return;            
+        }
+
+        var pURL = "]]><CSVAR NAME="Variables.urlAddRefBase"/><![CDATA[";
+        pURL = pURL + "&childtypes=" + encodeURI(childtypes);
+        pURL = pURL + "&parentid=" + encodeURI(parentid);
+        pURL = pURL + "&parenttype=" + encodeURI(parenttype);
+        pURL = pURL + "&parentfield=" + encodeURI(parentfield);
+        pURL = pURL + "&title=" + encodeURI(title);
+
+        var addrefwin = window.open(pURL, "SiteBuilderAddRef", "directories=no,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no,top=20,width=650,height=680,left=300");
+        addrefwin.focus();
+        return addrefwin;
+    }
+    // it calls the pop up window when edit is been called
+    function site_changeref_locked( args ) {
+        site_changeref( args[ 0 ], args[ 1 ], args[ 2 ], args[ 3 ], args[ 4 ], args[ 5 ], args[ 6 ], true );
+    }
+    function site_changeref(parentid, parenttype, parentfield, assettype, assetid, lockenabled,title, lockChecked)
+    {
+        if (lockenabled && typeof lockChecked == "undefined") {
+          getLockStatus(parentid, parenttype, "site_changeref",  parentid, parenttype, parentfield, assettype, assetid, lockenabled,title);
+          return;
+        }
+
+        var pURL = "]]><CSVAR NAME="Variables.urlChangeRefBase"/><![CDATA[";
+        pURL = pURL + "&assettype=" + encodeURI(assettype);
+        pURL = pURL + "&assetid=" + encodeURI(assetid);
+        pURL = pURL + "&parentid=" + encodeURI(parentid);
+        pURL = pURL + "&parenttype=" + encodeURI(parenttype);
+        pURL = pURL + "&parentfield=" + encodeURI(parentfield);
+        pURL = pURL + "&title=" + encodeURI(title);
+
+        var changerefwin = window.open(pURL, "SiteBuilderChangeRef", "directories=no,scrollbars=yes,resizable=yes,location=no,menubar=no,toolbar=no,top=20,width=650,height=680,left=300");
+        changerefwin.focus();
+        return changerefwin;
+    }
+
+    if (colArr == undefined) var colArr = new Array();
+    function colChild(assetid)
+    {
+        this.assetid = assetid;
+        this.old_assetid = assetid;
+        this.status = 0;
+        this.toString = toStringColChild;
+    }
+    function toStringColChild() {
+        return "ColChild"
+            +"\n\t.assetid->"+this.assetid
+            +"\n\t.old_assetid->"+this.old_assetid
+            +"\n\t.status->"+this.status
+    }
+
+    function colParent(parentid, parenttype, parentfield, parentname, lockenabled, assetid, assettype, parentfielddesc, isrequired)
+    {
+        this.parentid = parentid;
+        this.parenttype = parenttype;
+        this.parentname = parentname;
+        this.parentfield = parentfield;
+        this.parentfielddesc = parentfielddesc;
+        this.lockenabled = lockenabled;
+        this.childArr = new Array();
+        this.childArr[0] = new colChild(assetid);
+        this.toString = toStringColParent;
+        this.isrequired = isrequired;   //boolean
+        // this.delArr = new Array();
+    }
+    function toStringColParent()
+    {
+        // todo: print this.isrequired but we must first ensure there're no dependencies on the order of the toString output.
+        return "ColParent"
+            +"\n\t.parentid->"+this.parentid
+            +"\n\t.parenttype->"+this.parenttype
+            +"\n\t.parentname->"+this.parentname
+            +"\n\t.parentfield->"+this.parentfield
+            +"\n\t.lockenabled->"+this.lockenabled
+            +"\n\t.childArr->[\n"+this.childArr.join(",\n\t\t")+"\n]";
+    }
+
+    /**
+     *  Find the element node with the given id, and append the id with the given suffix.
+     *  @return the updated element object.
+     *  @param id the current id of the element to update
+     *  @param suffix the suffix to append
+     */
+    function suffixId(id, suffix) {
+        var elem = document.getElementById(id);
+        if (elem) elem.id = id + suffix;
+        return elem;
+    }
+
+    if (numCollection == undefined) var numCollection = 0;
+    function initCollection(parentid, parenttype, parentfield, parentname, lockenabled, assetid, assettype, parentfielddesc, isrequired)
+    {
+        var suffix = "_" + numCollection++;
+        var id = parentid + "_" + assetid;
+        suffixId(id, suffix);
+        suffixId("plus_" + id, suffix);
+        suffixId("change_" + id, suffix);
+        suffixId("up_" + id, suffix);
+        suffixId("down_" + id, suffix);
+        suffixId("delete_" + id, suffix);
+        suffixId("bar_" + id, suffix);
+        suffixId("content_" + id, suffix);
+        suffixId("swap_" + id, suffix);
+        for (var i = 0; i < colArr.length; i++) {
+            var col = colArr[i];
+            if (col.parentid==parentid && col.parentfield == parentfield) {
+                var childArr = col.childArr;
+                for (var j = 0; j < childArr.length; j++) {
+                    var child = childArr[j];
+                    if (child.assetid == assetid) {
+                        return;
+                    }
+                }
+                childArr[childArr.length] = new colChild(assetid);
+                return;
+            }
+        }
+
+        colArr[colArr.length] = new colParent(parentid, parenttype, parentfield, parentname, lockenabled, assetid, assettype, parentfielddesc, isrequired);
+    }
+
+    function swap(parentid, parentfield, assetid1, assetid2)
+    {
+        var i;
+        for (i=0; i<colArr.length; i++) {
+            var col = colArr[i];
+            if (col.parentid==parentid && col.parentfield==parentfield) {
+                var asset1 = null;
+                var asset2 = null;
+                var childArr = col.childArr;
+                var j;
+                for (j=0; j<childArr.length; j++) {
+                    var child = childArr[j];
+                    if (child.assetid==assetid1) {
+                        asset1 = child;
+                    }
+
+                    if (child.assetid==assetid2) {
+                        asset2 = child;
+                    }
+                }
+
+                if (asset1 != null && asset2 != null) {
+                    var tmp = asset1.old_assetid;
+                    asset1.old_assetid = asset2.old_assetid;
+                    asset2.old_assetid = tmp;
+                }
+            }
+        }
+    }
+
+    function colDeleteChild(parentid, parentfield, assetid)
+    {
+        var i;
+        for (i=0; i<colArr.length; i++) {
+            var col = colArr[i];
+            if (col.parentid==parentid && col.parentfield == parentfield) {
+                var childArr = col.childArr;
+                var j;
+                for (j=0; j<childArr.length; j++) {
+                    var child = childArr[j];
+                    if (child.assetid==assetid) {
+                        child.status = 1;
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    //[2007-12-xx KGF] added for InSite Editing enhancements.
+    var renlinks = new Array(); //array to hold rendered embedded links
+    var inctips = new Array(); //array to hold tooltip info for inclusions
+    
+    //getHrefFromATag: extracts value of the href attrib from an A tag.
+    function getHrefFromATag(tag)
+    {
+        tag = tag.substr(tag.indexOf('href="') + 6);
+        tag = tag.substr(0, tag.indexOf('"'));
+        return tag;
+    }   
+    function setChanged(assetid, assettype, assetname, attributename,startdate,enddate)
+    {    
+      try { 
+          var panel = controlPanel.fw.controlPanel;
+          if (!panel.isDirty()) {
+              panel.setDirty(true);
+              panel.updateEditedAssets(assettype,assetname, attributename,startdate,enddate);             
+              editedAssets.push( assetid+"-"+attributename );
+          } else {
+              if ( dojo.indexOf( editedAssets, assetid+"-"+attributename) == -1 ) {
+                  panel.updateEditedAssets(assettype, assetname, attributename,startdate,enddate);
+                  editedAssets.push( assetid+"-"+attributename );
+              }
+          }
+          var changed_elem = controlPanel.document.forms("form1").elements("Changed_" + assetid);
+          if (changed_elem!=null && changed_elem.value!="true")
+              changed_elem.value="true";          
+        } catch(e) {
+        } 
+    }
+    
+    function unlock(assetid, assettype) {
+      var unlockURL = "]]><CSVAR NAME="Variables.urlUnlockBase"/><![CDATA[";
+      unlockURL += "&id=" + assetid + "&AssetType=" + assettype;
+        dojo.xhrPost({
+            url: unlockURL,
+            handle: function(){}                       
+        });       
+    }
+    
+    function getLockStatus(assetid, assettype, functionName, functionArgs) {          
+      var args = new Array(); 
+      for ( var i = 0; i < arguments.length; i++  ) {     
+        args[ i ] = arguments[ i ];       
+        }         
+        var lockURL = "]]><CSVAR NAME="Variables.urlLockBase"/><![CDATA[";
+        lockURL += "&id=" + assetid + "&AssetType=" + assettype;        
+        // Note: IE/Opera and Array.splice(): second arg is required!
+        dojo.xhrGet({
+            url: lockURL,
+            handle: onLockStatus,
+            _csdata: { "assetid": args[ 0 ], "assettype": args[ 1 ], "functionName": args[ 2 ], "functionArgs": args.splice(3, args.length - 1 ) }            
+        });     
+    }
+    
+    function onLockStatus( response )
+    {
+      // Note: dojo executes request handler using the request arguments object as context
+      // (i.e. this == arguments )
+        var error = response instanceof Error;
+        var responseText = error ? response.message : response;                              
+        if ( responseText == "succeed" )
+        {
+            // call function         
+            var functionName = this._csdata.functionName;
+      var functionArgs = this._csdata.functionArgs;                              
+            eval( functionName + "_locked" )( functionArgs );
+            insite.FieldManager.addLockedAsset( this._csdata.assetid, this._csdata.assettype ); 
+        }
+        else        
+        {
+            alert( CHECKOUT_FAILED );            
+        }
+    }
+    ]]>
+</FTCS>    

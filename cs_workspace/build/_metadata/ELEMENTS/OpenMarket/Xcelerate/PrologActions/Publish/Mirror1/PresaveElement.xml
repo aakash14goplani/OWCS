@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/PresaveElement
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="tablename" VALUE="AssetPublication"/>
+<EXECSQL SQL="Delete from AssetPublication where pubid!=0 AND NOT EXISTS (SELECT 1 FROM Publication WHERE id = AssetPublication.pubid)" LIST="notapplicable"/> 
+<!-- the error doesn't matter - it means there were no orphan AssetPublication entries to clean up -->
+<SETVAR NAME="errno" VALUE="0"/>
+
+</FTCS>

@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/AssetMaker/BuildEWebEditPro
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+<SETVAR NAME="ewebWidth" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/width"/>
+<SETVAR NAME="ewebHeight" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/height"/>
+
+
+<setvar NAME="outstring" VALUE="Variables.empty"/>
+<substitute STR="Variables.fieldvalue" WHAT="%3c" WITH="%26#60;" OUTSTR="outstring"/>
+<substitute STR="Variables.outstring" WHAT="%3e" WITH="%26#62;" OUTSTR="outstring"/>
+<substitute STR="Variables.outstring" WHAT="%22" WITH="%26#34;" OUTSTR="outstring"/>
+<!-- [KG] substitute " for &quot; to prevent form breaking. -->
+<substitute STR="Variables.outstring" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="outstring"/>
+<substitute STR="Variables.outstring" WHAT="&#60;" WITH="&#38;lt;" OUTSTR="outstring"/>
+<substitute STR="Variables.outstring" WHAT="&#62;" WITH="&#38;gt;" OUTSTR="outstring"/>
+<input type="hidden" name="Variables.fieldname" value="Variables.outstring" REPLACEALL="Variables.fieldname,Variables.outstring"/>
+<INPUT TYPE="hidden" NAME="Variables.AssetType:Variables.fieldname" REPLACEALL="Variables.AssetType,Variables.fieldname"/>
+<replaceall LIST="Variables.fieldname,Variables.ewebWidth,Variables.ewebHeight">
+<INPUT TYPE="hidden" NAME="Variables.fieldname_SelectedTextForEmbeddedLink"  REPLACEALL="Variables.fieldname"/>
+<![CDATA[
+	<script type="text/javascript" language="JavaScript1.2">	
+	if (typeof eWebEditPro == "object") 		
+	{
+        eWebEditPro.parameters.options = "<options><filter auto-detect='yes' on-get='clean-html'></filter></options>";
+		eWebEditPro.create("Variables.fieldname", Variables.ewebWidth, Variables.ewebHeight);
+	}
+	</script>
+
+]]>
+</replaceall>
+<IMG style="vertical-align: middle; margin-left: 10px;" SRC="Variables.helpimage" VALIGN="middle" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" /><br/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/embeddedlinks=true">
+<then>
+	<setvar NAME="embeddedlinks" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/embeddedlinks"/>
+	<if COND="Variables.embeddedlinks=YES">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Scripts/AddEmbeddedLink"/>
+       <div style="margin-top: 10px;">
+           <INDEXOF STR="CS.Header.User-Agent" WHAT="MSIE" OUTSTR="dummy" />
+           <if COND="Variables.errno=1">
+           <then>
+                <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="alt" />
+                <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.fieldname', 'Variables.fielddescription', 'link', true);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.fieldname,Variables.fielddescription,Variables.mouseover">
+                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/AddLink"/></callelement>
+                </A>
+                
+                <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="alt" />
+                <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.fieldname', 'Variables.fielddescription', 'include', true);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.fieldname,Variables.fielddescription,Variables.mouseover">
+                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/Include"/></callelement>
+                </A> 
+                         
+                <setvar NAME="errno" VALUE="0" />
+           </then>
+           </if>
+       </div>
+	</then>
+	</if>
+</then>
+</if>
+<!--  build up a list for the preUpdate element -->
+<BEGINS STR="Variables.fieldname" WHAT="url"/>
+<if COND="Variables.errno=1">
+<then>
+	<INPUT TYPE="hidden" NAME="editfileastext" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+</then>
+</if>
+
+<removevar NAME="alttext"/>
+
+
+</FTCS> 

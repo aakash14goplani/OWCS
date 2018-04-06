@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Installation/NewSiteTreeUpdate
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Util/NewSiteTreeUpdate"/>
+<IF COND="IsError.Variables.errno=true">
+<THEN>
+	<STRING.STREAM VALUE="Variables.errdetail"/>
+</THEN>
+</IF>
+
+</FTCS> 

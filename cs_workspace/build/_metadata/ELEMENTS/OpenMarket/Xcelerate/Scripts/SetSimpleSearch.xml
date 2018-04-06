@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Scripts/SetSimpleSearch
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<!-- [2007-09-18 KG]
+ * it is questionable whether XSS requires validation in the search form itself;
+   changes to SearchPost should already prevent code execution.
+ It looks like search logic is rather scattered...can we do something about this?
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+
+document.forms[0].onsubmit=setValues;
+
+function setValues() {
+	searchvalue = document.forms[0].elements.SearchString.value;
+	var themenu = document.forms[0].elements.fields;
+	var searchfieldname = themenu.options[themenu.selectedIndex].value;
+	document.forms[0].elements[searchfieldname].value = searchvalue;
+}
+
+function doSearch() {
+	setValues();
+ 	document.forms[0].submit();
+	return false;
+}
+
+if (isNS4) { /* Netscape requires manually capturing the event */
+	document.captureEvents(Event.KEYPRESS);
+	document.onkeypress = checkSubmit;
+}
+
+function checkSubmit(e)	{
+	if (isNS4) {
+		var	key	= e.which;
+	}
+	else {
+		var	key	= window.event.keyCode;
+	}
+	if (key	== 13) {
+		doSearch();
+		return false;
+	}
+}
+]]>
+</SCRIPT>
+
+</FTCS> 

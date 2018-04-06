@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">UI/LayoutScriptsHtml</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>UI/LayoutScriptsHtml</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>UI/LayoutScriptsHtml.html</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/UI/LayoutScriptsHtml.html|null|_storable_type\=%2FELEMENTS%2FUI%2FLayoutScriptsHtml.html
+@hashval=1199629105
+key=@ELEMENTCATALOG-UI/LayoutScriptsHtml
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

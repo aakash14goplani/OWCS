@@ -1,0 +1,189 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SearchFront.xml $ 
+$Revision: 48 $ 
+$Modtime: 7/30/04 4:03p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Search common form elements
+-
+- HISTORY
+-	8 May 00		Ward	Add Gator standard formatting. 
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+
+<!-- Load the search engine specific strings -->
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+
+<!-- Create hidden input fields for form post -->
+	<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+	<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+    <INPUT type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+    <IF COND="IsVariable.cs_StartID=true">
+    <THEN>
+        <STRING.ENCODE VARIABLE="cs_StartID" VARNAME="OutputQString"/>
+        <INPUT type="hidden" name="cs_StartID" value="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+        <!-- Load start menu item to check for default args -->
+        <STARTMENU.LOAD ID="Variables.cs_StartID" OBJVARNAME="si"/>
+        <STARTMENUITEM.GETARGUMENTS NAME="si" OBJVARNAME="currentArgs"/>
+        <ARGUMENTLIST.GETALL NAME="currentArgs" PREFIX="itemArgs:"/>
+        <IF COND="Variables.itemArgs:Total!=0">
+        <THEN>
+            <SETCOUNTER NAME="argNum" VALUE="0"/>
+            <LOOP COUNT="Variables.itemArgs:Total">
+                <ARGUMENT.GETNAME NAME="itemArgs:Counters.argNum" VARNAME="argname"/>
+                <ARGUMENT.GETVALUE NAME="itemArgs:Counters.argNum" VARNAME="argval"/>
+                <SETVAR NAME="startmenuarg:Variables.argname" VALUE="Variables.argval"/>
+                <INCCOUNTER NAME="argNum" VALUE="1"/>
+            </LOOP>
+        </THEN>
+        </IF>
+		
+        <STARTMENUITEM.GETASSETSUBTYPE NAME="si" VARNAME="cs_assetsubtype"/>
+		<IF COND="IsVariable.cs_assetsubtype=true">
+        <THEN>
+		
+		<IF COND="IsVariable.flextemplateid=true">
+					<THEN>
+						 <fatm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+						 <ASSET.LIST TYPE="Variables.templatetype" FIELD1="name" VALUE1="Variables.cs_assetsubtype" LIST="result"/>
+						
+						 <SETVAR NAME="appendCountQuery" VALUE="Variables.AssetType.flextemplateid=result.id"/>
+					</THEN>
+				</IF>        
+				<IF COND="IsVariable.flexgrouptemplateid=true">
+							<THEN>
+								 <fgtm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+								 <ASSET.LIST TYPE="Variables.templatetype" FIELD1="name" VALUE1="Variables.cs_assetsubtype" LIST="result"/>
+								 
+								 <SETVAR NAME="appendCountQuery" VALUE="Variables.AssetType.flexgrouptemplateid=result.id"/>   
+							</THEN>
+				</IF>
+				
+				<IF COND="IsVariable.flextemplateid=false">
+				<THEN>
+					<IF COND="IsVariable.flexgrouptemplateid=false">
+					<THEN>			   
+						   <fatm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+						   <IF COND="IsVariable.templatetype=true">
+						   <THEN>
+								<ASSET.LIST TYPE="Variables.templatetype" FIELD1="name" VALUE1="Variables.cs_assetsubtype" LIST="result"/>
+								<SETVAR NAME="appendCountQuery" VALUE="Variables.AssetType.flextemplateid=result.id"/>
+						   </THEN>
+						   <ELSE>
+								<fgtm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+								<IF COND="IsVariable.templatetype=true">
+								<THEN>
+									<ASSET.LIST TYPE="Variables.templatetype" FIELD1="name" VALUE1="Variables.cs_assetsubtype" LIST="result"/>
+									<SETVAR NAME="appendCountQuery" VALUE="Variables.AssetType.flexgrouptemplateid=result.id"/>   
+								</THEN>
+								</IF>
+						   </ELSE>
+						   </IF>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+        </THEN>
+        </IF>
+
+    </THEN>
+    </IF>
+    <STRING.ENCODE VARIABLE="frontpage" VARNAME="frontpage" />
+     <if COND="IsVariable.frompage!=true">
+    <then>
+		<STRING.ENCODE VARIABLE="ThisPage" VARNAME="ThisPage"/>
+        <INPUT type="hidden" name="frontpage" VALUE="Variables.ThisPage" REPLACEALL="Variables.ThisPage"/>
+		<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+        <INPUT type="hidden" name="postpage" VALUE="Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+    </then>
+    <else>
+		<STRING.ENCODE VARIABLE="frontpage" VARNAME="frontpage"/>
+        <INPUT type="hidden" name="frontpage" VALUE="Variables.frontpage" REPLACEALL="Variables.frontpage"/>
+		<STRING.ENCODE VARIABLE="postpage" VARNAME="postpage"/>
+        <INPUT type="hidden" name="postpage" VALUE="Variables.postpage" REPLACEALL="Variables.postpage"/>
+    </else>
+    </if>
+     
+ 
+     <!--
+  	<INPUT type="hidden" name="frontpage" value="Variables.ThisPage" REPLACEALL="Variables.ThisPage"/>
+    <INPUT type="hidden" name="postpage" VALUE="Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+    -->
+ 
+<!-- Load the asset type -->
+
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+	<SETVAR NAME="PluralAssetName" VALUE="Variables.AssetTypeObj:plural"/>
+	<SETVAR NAME="origAssetType" VALUE="Variables.AssetType"/>
+<!--
+    If this content category does not use a search engine, then define the
+    traditional Javascript functions for creating SQL query fragments.
+-->
+
+<IF COND="Variables.AssetTypeObj:usesearchindex!=1">
+  <THEN>
+    <callelement NAME="OpenMarket/Xcelerate/Scripts/FormatDate"/>
+  </THEN>
+  <ELSE>
+    <SCRIPT LANGUAGE="JavaScript1.2">
+    function formatSetDate(datestr, obj, formfield) {
+        dijit.byId(formfield).set('value',datestr);
+    }
+    </SCRIPT>
+  </ELSE>
+</IF>
+
+<table class="width-outer-70" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td class="title-text"><XLAT.STREAM KEY="dvin/UI/AdvancedSearchforPluralAssetName"/></td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+
+	<tr>
+		<td>
+			<!-- Invoke asset-specific searching. -->
+
+			<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SearchForm"/>
+		</td>
+	</tr>
+	<tr>
+		<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+
+
+<ics.literal table="AssetPublication" column="assettype" string="Variables.origAssetType"
+output="literal"/>
+     
+<setvar NAME="tablename" VALUE="Variables.origAssetType"/>
+
+
+<IF COND="IsVariable.appendCountQuery=true">
+<THEN>
+	<EXECSQL LIST="ContentCount" SQL="SELECT count(*) as thecount FROM AssetPublication,Variables.origAssetType WHERE (AssetPublication.pubid=SessionVariables.pubid OR AssetPublication.pubid=0) AND AssetPublication.assettype=Variables.literal AND AssetPublication.assetid=Variables.AssetType.id AND Variables.AssetType.status!='VO' AND Variables.appendCountQuery" TABLE="Variables.origAssetType,AssetPublication"/>
+</THEN>
+<ELSE>
+	<EXECSQL LIST="ContentCount" SQL="SELECT count(*) as thecount FROM AssetPublication,Variables.origAssetType WHERE (AssetPublication.pubid=SessionVariables.pubid OR AssetPublication.pubid=0) AND AssetPublication.assettype=Variables.literal AND AssetPublication.assetid=Variables.origAssetType.id AND Variables.origAssetType.status!='VO'" TABLE="Variables.origAssetType,AssetPublication"/>
+</ELSE>
+</IF>
+	
+	<tr>
+		<td><XLAT.STREAM KEY="dvin/Common/Total"/>&nbsp;<STRING.STREAM VALUE="Variables.PluralAssetName"/>: <CSVAR NAME="ContentCount.thecount"/></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+
+</table>
+
+</FTCS>

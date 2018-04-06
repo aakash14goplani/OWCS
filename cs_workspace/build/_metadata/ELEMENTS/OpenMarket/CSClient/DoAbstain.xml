@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/CSClient/DoAbstain
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Placeholder for undetermined logic needed to prevent abstention of Variables.AssetType:Variables.id when locked,
+	if it turns out to be desired -->
+<setvar NAME="foundcheckout" VALUE="false"/>
+
+<if COND="Variables.foundcheckout=true">
+<then>
+	<XLAT.LOOKUP KEY="dvin/UI/Assetlockedcannotabstain" VARNAME="_XLAT_"/>
+	<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+</then>
+<else>
+	<!-- Perform common processing -->
+	
+	<!-- if there is a comment, use it -->
+	<if COND="IsVariable.finish:ActionToTake=false">
+	<then>
+		<setvar NAME="comment" VALUE="Variables.empty"/>
+	</then>
+	<else>
+		<setvar name="comment" value="Variables.finish:ActionToTake"/>
+		<substitute STR="Variables.comment" WHAT="%26" WITH=" AND " OUTSTR="comment"/>
+		<substitute STR="Variables.comment" WHAT="'" WITH=" " OUTSTR="comment"/>
+		<substitute STR="Variables.comment" WHAT="%22" WITH=" " OUTSTR="comment"/>
+	</else>
+	</if>
+
+	<IGNORETHIS>&#60;![CDATA[
+		<WorkflowEngine.AbstainFromVoting ID="Variables.assignmentid"
+			SITE="SessionVariables.pubid"
+			COMMENT="Variables.comment"/>
+		]]&#62;</IGNORETHIS>
+
+	<!-- Report any errors -->
+	<if COND="Variables.errno=0">
+	<then>
+		<!-- workflow abstain success -->
+		<AFFECTEDNODES></AFFECTEDNODES>
+	</then>
+	<else>
+		<XLAT.LOOKUP KEY="dvin/UI/FailedToAbstainFromTheAssignment" EVALALL="false" errno="Variables.errno, Variables.errdetail1" VARNAME="_XLAT_"/>
+		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+	</else>
+	</if>
+</else>
+</if>
+
+</ftcs>

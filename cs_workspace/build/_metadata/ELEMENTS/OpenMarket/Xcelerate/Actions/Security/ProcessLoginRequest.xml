@@ -1,0 +1,168 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Security/ProcessLoginRequest.xml $ 
+$Revision: 39 $ 
+$Modtime: 9/02/04 4:59p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- ProcessLoginRequest.xml
+-
+- DESCRIPTION
+-	Process a login request
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<HTML>
+<HEAD>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/SetStylesheet"/>
+</HEAD>
+<BODY>
+<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+<if cond="Variables._enableForms=true">
+<then>
+	<setvar name="ThisPage" value="ShowMyDesktopFront"/>
+</then>
+<else>
+	<setvar name="ThisPage" value="ShowStartMenuItems"/>
+</else>
+</if>
+<!-- check to see if we logged in successfully. If so, then
+     check to see if there are several publications that
+     we are associated with. If so, then offer a choice. Else,
+     go to the main page -->
+<callelement NAME="OpenMarket/Xcelerate/PrologActions/LoginPost"/>
+
+<!-- if we're not successfully logged in, produce an error -->
+<IF COND="IsSessionVariable.currentUser!=true">
+	<THEN>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/Security/TimeoutError">
+			<argument NAME="cs_environment" VALUE="standard"/>
+		</callelement>
+	</THEN>
+	<ELSE> 
+		<SETVAR NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceleditor"/>
+		<if COND="Variables.errno=0">
+			<then>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetLocale"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Errors/NoXceleditor">
+					<ARGUMENT NAME="cs_environment" VALUE="standard"/>
+				</CALLELEMENT>
+			</then>
+	<else>
+		<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+			<TR>
+				<TD WIDTH="100">
+					&nbsp;
+				</TD>
+				<TD>
+                   <!--
+                    check whether xcelerate.jar, framework.jar exists in classpath or not
+                   -->
+                   <setvar NAME="errno" VALUE="0"/>
+                   <ASSETTYPE.LIST LIST="junk"/>
+                   <IF COND="Variables.errno=-900">
+                   <THEN>
+                       <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                          <argument NAME="error" VALUE="NoClasspath"/>
+                       </callelement>
+                   </THEN>
+                   <ELSE>
+                        <!--
+                         check whether assetmaker.jar exists in classpath or not
+                        -->
+                        <setvar NAME="errno" VALUE="0"/>
+                        <CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+                        <ARGUMENT NAME="command" VALUE="parseproperties"/>
+                        </CALLJAVA>
+                        <IF COND="Variables.errno=-900">
+                        <THEN>
+                            <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                            <argument NAME="error" VALUE="NoClasspath"/>
+                            </callelement>
+                        </THEN>
+                        <ELSE>
+						    <if COND="Variables.userIsAdvancedUser=false">
+                            <then>                            	
+                                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                                    <argument NAME="error" VALUE="NoLoginAccessRole"/>
+                                </callelement>
+                            </then>
+                            <else>
+			
+                               <!-- if there's no publication associated with this user, kick him out -->
+                               <if COND="Variables.NumPublications=none">
+                               <then>                            	
+                                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                                    <argument NAME="error" VALUE="NoPublication"/>
+                                </callelement>
+                               </then>
+							   <else>
+							     <!-- Now we are ok let's go to main site frame -->
+					
+								<PROPERTY.GET PARAM="xcelerate.showSiteTree" INIFILE="futuretense_xcel.ini" VARNAME="propshowsitetree"/>
+								 <setvar NAME="showST" VALUE="Variables.propshowsitetree"/>
+								 <!-- if there's only one publication, then go into the main screen -->
+								<if COND="Variables.NumPublications=one">
+								<then>
+								<!-- The _enableForms property enables/disables following assettypes from the advanced ui.
+									�	All Flex assets and their parent assets
+									�	All basic assets
+									�	Engage assets like Recommendation, Segment and Promotion
+									�	Special assets like Query and Collection
+									-->
+								<!-- need to write the URL that we want into the current page -->
+                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/UIFramework/ShowMainFrames" outstring="urlshowmainframes">
+                                    <satellite.argument name="ThisPage" value="Variables.ThisPage"/>
+                                    <satellite.argument name="showSiteTree" value="Variables.showST"/>
+                                 </SATELLITE.LINK>
+								 <replaceall LIST="Variables.urlshowmainframes">    
+                                  <SCRIPT LANGUAGE="JavaScript">
+                                     parent.location.replace('Variables.urlshowmainframes');
+                                  </SCRIPT>
+                                 </replaceall>
+								</then>
+								 </if>
+
+									 <!-- if there's more than one publication, then allow them to select -->
+								<if COND="Variables.NumPublications=many">
+								<then>
+                                  <callelement NAME="OpenMarket/Xcelerate/Actions/Security/SelectPublication">
+                                   <argument NAME="showST" VALUE="Variables.showST"/>
+								   <argument NAME="ThisPage" VALUE="Variables.ThisPage"/>
+                                  </callelement>
+								</then>
+								 </if>
+							   </else>
+                               </if>
+						    </else>
+                            </if>
+                      </ELSE>
+                      </IF>
+                  </ELSE>
+                  </IF>
+                  </TD>
+			    </TR>
+			</TABLE>
+		   </else>
+           </if>
+
+	</ELSE>
+	
+</IF>
+</BODY>
+</HTML>
+
+</FTCS>

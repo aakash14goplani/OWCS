@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ShowBlockingAssetsFront
+-
+- INPUT
+- Variables.AssetType
+- Variables.id
+- Variables.target
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<setvar NAME="assetname" VALUE="theCurrentAsset"/>
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetname"/>
+<if COND="Variables.errno=0">
+	<then>
+		<!-- 
+			Check if the current asset's start and end dates are valid
+			and show a warning message if they are not.
+		-->	
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/WarnAssetApproval">
+			<ARGUMENT NAME="id" VALUE="Variables.id" />
+			<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType" />		
+		</CALLELEMENT>	
+		
+		<ASSET.GET NAME="Variables.assetname" FIELD="id" OUTPUT="id"/>
+			<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/ApprovalStatusPost"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+
+			<ASSET.GET NAME="Variables.assetname" FIELD="name"/>
+			<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+			<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="atdescription"/>
+			 <PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+			 <PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtgt:name"/>
+			
+			<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ApprovalStatusDetails">
+				<ARGUMENT NAME="name" VALUE="Variables.name"/>
+				<ARGUMENT NAME="atdescription" VALUE="Variables.atdescription"/>
+				<ARGUMENT NAME="pubtargetname" VALUE="Variables.pubtgt:name"/>
+				<ARGUMENT NAME="showblocking" VALUE="true"/>
+			</callelement>
+	</then>
+	<else>
+		<!--
+		<br/>ASSET.LOAD of <csvar NAME="Variables.id"/> failed with error: <csvar NAME="Variables.errno"/>
+		-->
+		<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<argument NAME="error" VALUE="InvalidContentId"/>
+		</callelement>
+	</else>
+</if>
+
+
+</FTCS> 

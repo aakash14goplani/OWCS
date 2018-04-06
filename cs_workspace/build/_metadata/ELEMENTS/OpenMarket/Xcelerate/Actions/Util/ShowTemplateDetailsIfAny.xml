@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Util/ShowTemplateDetailsIfAny.xml $ 
+$Revision: 1 $ 
+$Modtime: 5/10/04 1:16p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/Util/ShowTemplateDetailsIfAny
+-
+- INPUT
+-		Variables.template - the template name
+-		Variables.AssetType - the asset type
+- OUTPUT
+-
+-->
+
+<IF COND="Variables.template!=Variables.empty">
+<THEN>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Template"/>:</td>
+		<td></td>
+		<td class="form-inset">
+			<!-- we should change this to go through the asset or template manager tag -sjc -->
+			<BEGINS STR="Variables.template" WHAT="/" />
+			<if COND="Variables.errno=1">
+			<then>
+				<!-- typeless template -->
+				<SUBSTRING STR="Variables.template" INDEX="1" OUTSTR="noslashname"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<ARGUMENT NAME="columnvalue" VALUE="Variables.noslashname"/>
+					<ARGUMENT NAME="type" VALUE="String"/>
+				</CALLELEMENT>
+				<IF COND="Variables.validatedstatus=true">
+				<THEN>
+					<EXECSQL LIST="templatelist" SQL="Select * from Template WHERE subtype IS NULL AND NAME='Variables.noslashname'" TABLE="Template"/>
+				</THEN>
+				</IF>
+			   <IF COND="templatelist.#numRows=1">
+		    	<THEN>
+                    <!-- #18034 -->
+                    <STRING.STREAM VARIABLE="template"/>
+		    	</THEN>
+		    	<ELSE>
+					<span class="alert-color"><XLAT.STREAM KEY="dvin/UI/Util/NoentryforTemplate"/></span>
+		    	</ELSE>
+		    	</IF>
+			</then>
+			<else>
+				<ASSET.LIST LIST="templatelist" TYPE="Template" FIELD1="name" VALUE1="Variables.template" FIELD2="subtype" VALUE2="Variables.AssetType" PUBID="SessionVariables.pubid"/>
+		     	<IF COND="templatelist.#numRows=1">
+		    	<THEN>
+			   	 <STRING.STREAM VARIABLE="template"/>
+		    	</THEN>
+		    	<ELSE>
+					<span class="alert-color"><XLAT.STREAM KEY="dvin/UI/Util/NoentryforTemplate"/></span>
+		    	</ELSE>
+		    	</IF>
+		    </else>
+		    </if>
+		 </td>
+	</tr>
+</THEN>
+<ELSE>
+	<!-- if there is no template and there are no templates that exist for this assettype, display nothing-->
+	<ASSET.GETSUBTYPE NAME="theCurrentAsset" OUTPUT="subtype"/>
+	<TEMPLATEMANAGER.GetTemplateNames LISTVARNAME="templates" ASSETTYPES="Variables.AssetType" SUBTYPE="Variables.subtype" PUBID="SessionVariables.pubid" EXCLUDEVARIANTS="true"/>
+   <IF COND="templates.#numRows!=0">
+   <THEN>
+ 	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Template"/>:</td>
+		<td></td>
+		<td class="form-inset">
+		  	<span class="disabledText"><XLAT.STREAM KEY="dvin/UI/Util/Notemplatespecified"/></span>
+		</td>
+	</tr>
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+
+
+</ftcs>

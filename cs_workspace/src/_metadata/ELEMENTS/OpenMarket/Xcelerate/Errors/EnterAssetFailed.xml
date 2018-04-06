@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Errors/EnterAssetFailed.xml $
+$Revision: 17 $
+$Modtime: 1/22/04 2:58p $
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-   Error saving an asset.
+-
+- INPUT
+-   Variables.AssetType - asset type
+-->
+
+	<IF COND="IsVariable.errorcode=false">
+	<THEN>
+	<setvar NAME="errorcode" VALUE="Variables.errno"/>
+	</THEN>
+	</IF>
+<!-- Load the information about the asset type -->
+
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+<!-- Display the error -->
+	<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+	<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailed" ESCAPE="false" ENCODE="false"/>
+	<!-- if this asset type has a unique name constraint check whether that has been violated -->
+	<if COND="Variables.errorcode=-12075">
+	<then>
+		<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailedErrCode12075" ESCAPE="false" ENCODE="false"/>
+	</then>
+	<else>
+	   <!-- some other database error -->
+		<if COND="Variables.errorcode=-105">
+		<then>
+			<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailedErrCode105" ESCAPE="false" ENCODE="false"/>
+		</then>
+		<else>
+			<if COND="Variables.errorcode=-12034">
+			<then>
+				<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailedErrCode12034" ESCAPE="false" ENCODE="false"/>
+			</then>
+			<else>
+				<IF COND="Variables.errorcode=-107">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailedErrorCode107" ESCAPE="false" ENCODE="false"/>
+				</THEN>
+				<ELSE>
+					<IF COND="Variables.errorcode=-403">
+					<THEN>
+						<XLAT.STREAM KEY="dvin/UI/Error/XMLParseFailed" ESCAPE="true" ENCODE="false"/>
+					</THEN>
+					<ELSE>
+						<IF COND="Variables.errorcode=-13009">
+							<THEN>
+								<XLAT.STREAM KEY="dvin/UI/Error/SingleUniqueAttributeViolation" ESCAPE="true" ENCODE="false"/>
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.errorcode=-3703">
+								<THEN>
+									<XLAT.STREAM KEY="fatwire/admin/fieldValueParsingFailed3703" ESCAPE="true" ENCODE="false"/>
+								</THEN>
+								<ELSE>
+									<IF COND="Variables.errorcode=-3704">
+									<THEN>
+										<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ShowDependencyMessage" />
+									</THEN>
+									<ELSE>
+										<XLAT.STREAM KEY="dvin/UI/Error/EnterAssetFailedWhileSaving" ESCAPE="false" ENCODE="false"/>
+									</ELSE>
+									</IF>
+								</ELSE>
+								</IF>
+							</ELSE>
+						</IF>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+			</else>
+			</if>
+		</else>
+		</if>
+	</else>
+	</if>
+	<if COND="IsVariable.errdetail1=true">
+	<then>
+		<p/>
+		<STRING.STREAM VALUE="Variables.errdetail1"/>
+	</then>
+	</if>
+</FTCS>

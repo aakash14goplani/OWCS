@@ -1,0 +1,379 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/FunctionPrivs/List.xml $ 
+$Revision: 39 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- List.xml
+-
+- DESCRIPTION
+-	Display the function privilege rules.
+-	Function privs and roles come in in scattered form.  This element does what is needed to
+-	display them.
+-
+-	The current display is organized to be functions down the left, and roles across the top.
+-	Each cell must furthermore have all associated tuples displayed in it.  There is also a
+-	requirement that similar tuples line up across, within the given function.
+-
+-	The strategy for doing this efficiently is to go through the list of privs for the process
+-	and create a family of lists.  There will be a list for each function, which contains the
+-	set of unique tuples (WITHOUT the role, obviously), which will be used to form the rows for
+-	each function.
+-
+- HISTORY 
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<HTML>
+<HEAD>
+<PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+<IF COND="IsVariable.docDomain=true">
+<THEN>
+	<IF COND="Variables.docDomain!=Variables.empty">
+	<THEN>
+	    <SCRIPT LANGUAGE="JavaScript">
+		document.domain = "<CSVAR NAME="Variables.docDomain"/>";
+	    </SCRIPT>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</HEAD>
+<!-- first check to see if the user is logged in or not -->
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceladmin"/>
+<if COND="Variables.errno=0">
+	<then>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Util/ShowError" outstring="urlshowerror">
+            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="error" value="AdminTimeoutError"/>
+                                           </SATELLITE.LINK>
+		<REPLACE STR="Variables.urlshowerror">
+			<script LANGUAGE="JavaScript">
+				parent.parent.location="Variables.urlshowerror";
+			</script>
+		</REPLACE>
+		<throwexception/>
+	</then>
+</if>
+<BODY BGCOLOR="#FFFFFF">
+
+<!-- Get all the roles for the current workflow -->
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="workflowid" VALUE="Variables.wf:id"/>
+
+<stringlist NAME="roles" STR="Variables.wfp:rolesroles" DELIM=","/>
+    
+<INPUT TYPE="HIDDEN" NAME="fname" VALUE=""/>
+
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr>
+		<td></td>
+		<td NOWRAP="NOWRAP" class="tile-dark" valign="TOP" HEIGHT="1">
+			<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/> 
+		</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td NOWRAP="NOWRAP" class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+		<td> 
+		
+<TABLE BGCOLOR="#FFFFFF" CELLPADDING="0" CELLSPACING="0" BORDER="0">
+<tr>
+	<td colspan="4" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+	</td>
+	<td colspan="roles.#numRows" class="tile-highlight" REPLACEALL="roles.#numRows"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+	</td>
+</tr>
+<tr>
+	<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	
+	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title" style="text-align:center;"><XLAT.STREAM KEY="dvin/UI/Admin/Function"/></DIV></td>
+	
+	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	
+	<td class="tile-b" colspan="roles.#numRows" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir,roles.#numRows"><DIV class="new-table-title" style="text-align:center;"><XLAT.STREAM KEY="dvin/UI/Admin/AccessRulesforEachRole"/></DIV></td>
+		
+	<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+</tr>
+
+<TR>
+    <TD COLSPAN="3"></TD>
+    <TD ALIGN="CENTER"  COLSPAN="roles.#numRows" REPLACEALL="roles.#numRows">
+	<XLAT.STREAM KEY="dvin/UI/Admin/Rulesapplyassetassigneduseronetheseroles"/>
+    </TD>
+    <TD></TD>
+</TR>
+
+<TR>
+    <TD COLSPAN="3"></TD>
+    <if COND="Variables.wfp:rolesroles=_ALL_">
+    <then>
+		<ROLEMANAGER.GETROLENAMES LISTVARNAME="ACLList"/>
+		<TD ALIGN="CENTER" style="font-weight:bold">
+			<loop LIST="ACLList">
+				&nbsp;<STRING.STREAM VALUE="ACLList.aclname"/>
+			</loop>
+		</TD>
+    </then>
+    <else>
+    	<loop LIST="roles">
+        	<TD ALIGN="CENTER" style="font-weight:bold">
+		   		&nbsp;<STRING.STREAM VALUE="roles.ITEM"/>
+			</TD>
+    	</loop>
+    </else>
+    </if>
+    <td></td>
+</TR>
+
+<!-- Get a list of all function codes -->
+<WORKFLOWENGINE.GETALLFUNCTIONS PREFIX="function:"/>
+
+<!-- Create a list for each function, containing the unique set of tuples (minus roles) for that function.
+     The lists will be named "list_function_<id>".  There will also be an associated hash object, named
+     "hash_function_<id>", that will have strings in it of the form "<state-id>-<allowed-value>-<role>".  We
+     also need to build a boolean variable for each function describing whether there are ANY roles in the
+     workflow for that function.  This boolean will be called "exists_function_<id>". -->
+
+<!-- create listobjects and hashes -->
+<SETCOUNTER NAME="nthFunction" VALUE="0"/>
+<LOOP COUNT="Variables.function:Total">
+	<WORKFLOWFUNCTION.GETID NAME="function:Counters.nthFunction" VARNAME="function:id"/>
+	<LISTOBJECT.CREATE NAME="list_function_Variables.function:id" COLUMNS="state,role,allowed"/>
+	<HASH.CREATE NAME="hash_function_Variables.function:id"/>
+	<SETVAR NAME="exists_function_Variables.function:id" VALUE="false"/>
+	<INCCOUNTER NAME="nthFunction" VALUE="1"/>
+</LOOP>
+
+<!-- Go through privs list and build the listobjects -->
+<if COND="Variables.wfp:privsprivTotal!=0">
+<then>
+	<setcounter NAME="FUNCTIONPRIVS" VALUE="0"/>
+	<loop FROM="0" COUNT="Variables.wfp:privsprivTotal">
+		<setvar NAME="allowed" VALUE="Variables.wfp:privsprivCounters.FUNCTIONPRIVSallowed"/>
+		<setvar NAME="function" VALUE="Variables.wfp:privsprivCounters.FUNCTIONPRIVSfunction"/>
+		<setvar NAME="role" VALUE="Variables.wfp:privsprivCounters.FUNCTIONPRIVSrole"/>
+		<setvar NAME="state" VALUE="0"/>
+		<!-- state can be null.  Even if it is, it counts for a separate row. -->
+		<if COND="IsVariable.wfp:privsprivCounters.FUNCTIONPRIVSstate=true">
+		<then>
+			<setvar NAME="state" VALUE="Variables.wfp:privsprivCounters.FUNCTIONPRIVSstate"/>
+		</then>
+		</if>
+		<setvar NAME="hashkey" VALUE="Variables.state-Variables.allowed-Variables.role"/>
+		<hash.contains NAME="hash_function_Variables.function" VALUE="Variables.hashkey" VARNAME="answer"/>
+		<if COND="Variables.answer=false">
+		<then>
+			<!-- Add to list and hash -->
+			<hash.add NAME="hash_function_Variables.function" VALUE="Variables.hashkey"/>
+			<listobject.addrow NAME="list_function_Variables.function" state="Variables.state" role="Variables.role" allowed="Variables.allowed"/>
+		</then>
+		</if>
+
+		<!-- See if we need to set the 'exists' value for this function -->
+	      	<setvar NAME="errno" VALUE="0"/>
+	      	<isinlist LIST="roles" ITEM="Variables.role"/>
+		<if COND="Variables.errno=1">
+		<then>
+			<setvar NAME="exists_function_Variables.function" VALUE="true"/>
+		</then>
+		</if>
+
+		<inccounter NAME="FUNCTIONPRIVS" VALUE="1"/>
+	</loop> <!-- privs loop -->
+</then>
+</if>
+
+<!-- Go through functions once again and convert listobjects to lists of the same name -->
+<SETCOUNTER NAME="nthFunction" VALUE="0"/>
+<LOOP COUNT="Variables.function:Total">
+	<WORKFLOWFUNCTION.GETID NAME="function:Counters.nthFunction" VARNAME="function:id"/>
+	<LISTOBJECT.TOLIST NAME="list_function_Variables.function:id" LISTVARNAME="list_function_Variables.function:id"/>
+	<INCCOUNTER NAME="nthFunction" VALUE="1"/>
+</LOOP>
+
+<!-- For each function, find the rules associated with this function in the current workflow -->
+<SETCOUNTER NAME="nthFunction" VALUE="0"/>
+<LOOP COUNT="Variables.function:Total">
+    <TR style="font-size:11px;">
+	<WORKFLOWFUNCTION.GETID NAME="function:Counters.nthFunction" VARNAME="function:id"/>
+	<WORKFLOWFUNCTION.GETNAME NAME="function:Counters.nthFunction" VARNAME="funcName"/>
+    <XLAT.LOOKUP KEY="dvin/UI/Security/CCFunction/Variables.funcName" VARNAME="function:description" />
+
+	<setvar NAME="conditionalvalue" VALUE="Variables.exists_function_Variables.function:id"/>
+	<if COND="Variables.conditionalvalue=false">
+	<then>
+      		<!-- No rules. Just display the link to the Add Rule form -->
+      	<td></td>
+		<TD NOWRAP="NOWRAP">
+			<STRING.STREAM  VARIABLE="function:description"/>
+		</TD> 
+	
+		<!-- Summary line, link to add rule form -->
+
+		<TD ALIGN="CENTER">
+			<if COND="Variables.privactions=updates">
+			<then>
+				<a HREF="javascript: AddFunctionPrivs(document.forms[0],Variables.function:id)" REPLACEALL="Variables.function:id"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/New"/></CALLELEMENT></a>
+			</then>
+			<else>
+				&nbsp;
+			</else>
+			</if>
+		</TD>
+
+		<!-- Summary line, all access allowed -->	
+		<TD ALIGN="CENTER"  COLSPAN="roles.#numRows" REPLACEALL="roles.#numRows">
+			<span class="disabledText" ><XLAT.STREAM KEY="dvin/UI/Admin/Norestrictions"/></span>
+		</TD>
+	</then>
+	<else>
+
+        	<!-- Rules found. Display each rule with a link to remove the rule, and 
+			finally display a link to add a new rule for this function -->
+
+		<!-- Function name, span N+1 rows, where N is the number of unique records this function has -->
+		<setcounter NAME="Np1" VALUE="list_function_Variables.function:id.#numRows"/>
+		<inccounter NAME="Np1" VALUE="1"/>
+		<td></td>
+		<TD  NOWRAP="NOWRAP" ROWSPAN="Counters.Np1" ALIGN="LEFT" REPLACEALL="Counters.Np1">
+			<STRING.STREAM VARIABLE="function:description"/>
+		</TD>
+		<removecounter NAME="Np1"/>
+		<!-- loop through all unique privs that belong to this function -->
+		<setcounter NAME="Np2" VALUE="list_function_Variables.function:id.#numRows"/>
+		<setvar NAME="nop" VALUE="list_function_Variables.function:id.#numRows" />
+		<if COND="list_function_Variables.function:id.#numRows!=0">
+		<then>
+			
+			<loop LIST="list_function_Variables.function:id">
+				<setvar NAME="allowed" VALUE="list_function_Variables.function:id.allowed"/>
+				<setvar NAME="state" VALUE="list_function_Variables.function:id.state"/>
+				<setvar NAME="role" VALUE="list_function_Variables.function:id.role"/>
+				<!-- to remove, we need functionid, stateid and role -->
+				<setvar NAME="p1" VALUE="Variables.function:id"/>
+				<setvar NAME="p2" VALUE="Variables.state"/>
+				<setvar NAME="p3" VALUE="Variables.role"/>
+				<setvar NAME="p4" VALUE="Variables.allowed"/>
+					<if COND="Counters.Np2!=Variables.nop">
+						<then>
+							<td></td>
+						</then>
+					</if>		
+					
+					<TD ALIGN="CENTER">
+					<if COND="Variables.privactions=updates">
+					<then>
+						<img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+						<a HREF="javascript: RemoveFunctionPrivs(document.forms[0],Variables.p1, Variables.p2, 'Variables.p3', 'Variables.p4')" REPLACEALL="Variables.p1, Variables.p2, Variables.p3, Variables.p4"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Remove"/></CALLELEMENT></a>
+					</then>
+					<else>
+						&nbsp;
+					</else>
+					</if>
+				</TD>
+
+	    			<!-- Description of rule, by ACL -->
+
+				<loop LIST="roles">
+	        			<setvar NAME="errno" VALUE="0"/>
+	        			<isinlist ITEM="roles.ITEM" STR="Variables.role"/>
+					<if COND="Variables.errno=0">
+					<then>
+						<!-- this role is not same as role for which priv is defined -->
+				    		<TD ></TD>
+					</then>
+					<else>
+							
+							<if COND="Variables.allowed=true">
+								<then>
+									<XLAT.LOOKUP KEY="dvin/Common/allowed" VARNAME="_isallowed"/>
+								</then>
+								<else>
+									<XLAT.LOOKUP KEY="dvin/Common/notallowed" VARNAME="_isallowed"/>
+								</else>
+								</if>
+				       		<TD ALIGN="CENTER" NOWRAP="NOWRAP" title="Variables._isallowed" REPLACEALL="Variables._isallowed">
+							<if COND="Variables.state!=0">
+							<then>
+								<setvar NAME="id" VALUE="Variables.state"/>
+					        		<selectto LIST="wfstatus" FROM="WorkflowStatusCode" WHERE="id"/>
+					        		<csvar NOWRAP="NOWRAP" NAME="wfstatus.description"/>
+								<if COND="Variables.allowed=true">
+								<then>
+									<span>*</span>
+								</then>
+								</if>
+							</then>
+							<else>
+								<XLAT.STREAM KEY="dvin/UI/Admin/WorkflowNotActive"/><br/>
+							</else>
+							</if>
+						</TD>
+					</else>
+					</if>
+
+				</loop>
+			
+				<![CDATA[</TR><TR>]]>
+			<inccounter NAME="Np2" VALUE="-1"/>
+			</loop> <!-- privs loop -->
+		</then>
+		</if>
+		<removecounter NAME="Np2"/>
+		<!-- Summary line, link to add form -->
+		<TD></TD>
+		<TD ALIGN="CENTER">
+			<if COND="Variables.privactions=updates">
+			<then>
+				<img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+				<a href="javascript: AddFunctionPrivs(document.forms[0],Variables.function:id)" REPLACEALL="Variables.function:id"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/New"/></CALLELEMENT></a>
+			</then>
+			<else>
+				&nbsp;
+			</else>
+			</if>
+		</TD>
+
+		<!-- Summary line, no other access allowed -->
+
+		<TD style="font-style: italic; font-size: 11px;" ALIGN="CENTER" COLSPAN="roles.#numRows" REPLACEALL="roles.#numRows">
+			(<XLAT.STREAM KEY="dvin/UI/Admin/Unlessnewruleaccessgrantedexistrule"/>)
+		</TD>
+	</else> <!-- privs found = true -->
+	</if>
+
+    </TR>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <INCCOUNTER NAME="nthFunction" VALUE="1"/>
+</LOOP> <!-- function -->
+
+</TABLE>
+
+		</td>
+		<td class="tile-dark" NOWRAP="NOWRAP" VALIGN="top" WIDTH="1"><BR /></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" NOWRAP="NOWRAP" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		<td></td>
+	</tr>
+</TABLE>
+</BODY>
+</HTML>
+</FTCS>

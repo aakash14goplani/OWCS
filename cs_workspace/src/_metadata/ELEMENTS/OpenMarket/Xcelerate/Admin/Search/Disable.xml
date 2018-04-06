@@ -1,0 +1,162 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Search/Disable.xml $ 
+$Revision: 24 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- Admin/Search/Disable.xml
+-
+- DESCRIPTION
+-	Disable requested.  Inform user of consequences and request 
+-	confirmation.
+-
+- HISTORY 
+-->
+
+
+
+<!-- Load the search engine specific strings -->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+
+<!-- Load the asset type -->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/DisablingSearchEngineforAssetTypeObjdesc"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<XLAT.LOOKUP KEY="dvin/UI/Admin/processnotaffectdbdeletesearchengineidx" VARNAME="msgtext"/>
+<div class="width-outer-70">
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	<ARGUMENT NAME="severity" VALUE="info"/>
+</CALLELEMENT>
+</div>
+<!--
+    This form is used merely to request confirmation of the command.
+    No other input is gathered.
+-->
+
+<input type="hidden" name="pagename" value="OpenMarket/Xcelerate/Admin/Search/DisablePost"/>
+<input type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+
+<!--
+    Table is used to format the form.
+-->
+    <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		<td>
+		<table cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="3" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td HEIGHT="16" class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;<BR /></td>
+				<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+			</tr>
+			<tr><td colspan="3" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr>
+				<td class="form-label-inset">
+					<XLAT.STREAM KEY="dvin/UI/AssetType"/>:
+				</td>
+				<td class="form-inset" WIDTH="200">
+						<STRING.STREAM VALUE="Variables.AssetTypeObj:description"/>
+				</td><td></td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+				<tr>
+				<td class="form-label-inset">
+					<XLAT.STREAM KEY="dvin/AT/Common/Status"/>:
+				</td>
+				<td class="form-inset">
+						<IF COND="Variables.AssetTypeObj:usesearchindex!=1">
+						<THEN>
+							<XLAT.STREAM KEY="dvin/UI/Admin/SQLqueriesSearchesinsidetextcontentslower" ENCODE="false"/>
+						</THEN>
+						<ELSE>
+							<XLAT.STREAM KEY="dvin/UI/Admin/seDescriptionsearchingisenabled"/>
+						</ELSE>
+						</IF>
+				</td><td><BR /></td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+				<tr>
+				<td class="form-label-inset">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Index"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.AssetTypeObj:indexfile"/>
+				</td><td><BR /></td>
+			</tr>
+		</table>
+
+	</td>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+</table>
+
+<table BORDER="0">
+  <!--
+      Input field: submit button
+      The user confirms readiness to proceed with the resync action.
+  -->
+  <tr>
+    <td class="form-label-text">
+       <XLAT.STREAM KEY="dvin/UI/Admin/Confirmation"/>:
+    </td>
+    <td></td>
+    <td class="form-inset">
+     <strong><XLAT.STREAM KEY="dvin/UI/Admin/Thiswilldeletethesearchindex"/></strong>
+     &nbsp;<XLAT.STREAM KEY="dvin/UI/Admin/RebuildindexDisablemsg" ENCODE="false"/> 
+     &nbsp;
+     <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Search/Resync" outstring="urlsearchresync">
+         <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+         <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                          </SATELLITE.LINK>
+     <A HREF="Variables.urlsearchresync" REPLACEALL="Variables.urlsearchresync"><XLAT.STREAM KEY="dvin/UI/Admin/Rebuildindexlc"/></A>
+    </td>
+  </tr>
+</table>
+<XLAT.LOOKUP KEY="dvin/UI/Admin/DisableSearchEngine" VARNAME="_XLAT_" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_status_" ESCAPE="true"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Search/List" outstring="SearchURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                          </SATELLITE.LINK>
+<div class="width-outer-70">
+<table><tr><td>
+<A HREF="Variables.SearchURL" onmouseover="window.status='Variables._status_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._status_,Variables.SearchURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+</td><td>
+<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/DisableSearchEngine"/></CALLELEMENT></A>
+</td></tr></table>
+</div>
+
+</FTCS>

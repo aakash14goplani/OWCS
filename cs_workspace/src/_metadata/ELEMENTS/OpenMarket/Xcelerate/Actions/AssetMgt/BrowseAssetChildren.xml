@@ -1,0 +1,142 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/BrowseAssetChildren
+-
+- INPUT
+- Variables.assetname - name of asset object
+- OUTPUT
+-
+-->
+
+
+<!-- get the list of child asset type -->
+<IF COND="IsVariable.childassettype=true">
+<THEN>
+	<STRINGLIST NAME="AssetTypeList" STR="Variables.childassettype" DELIM="," />
+</THEN>
+<ELSE>
+	<ASSET.GET NAME="Variables.assetname" FIELD="id"/>
+	<SETVAR NAME="tablename" VALUE="AssetRelationTree" />
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.id"/>
+		<ARGUMENT NAME="type" VALUE="Long"/>
+	</CALLELEMENT>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<EXECSQL LIST="AssetTypeList" SQL="SELECT DISTINCT otype FROM AssetRelationTree where nparentid IN (SELECT nid FROM AssetRelationTree WHERE oid=Variables.id)" />
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+<P/>
+<IF COND="AssetTypeList.#numRows!=0">
+<THEN>
+	<TABLE class="width-inner-100"><TR><TD class="form-label-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/RelatedAssets"/>:</TD><TD></TD></TR></TABLE>
+	<TABLE class="width-inner-100" CELLPADDING="0" CELLSPACING="0" BORDER="0">
+        <LOOP LIST="AssetTypeList">
+
+
+	    <IF COND="IsColumn.AssetTypeList.otype=true">
+	    <THEN><SETVAR NAME="otype" VALUE="AssetTypeList.otype"/></THEN>
+	    <ELSE><SETVAR NAME="otype" VALUE="AssetTypeList.ITEM"/></ELSE>
+	    </IF>
+	    <ASSET.CHILDREN NAME="Variables.assetname" LIST="theAssetChildren" OBJECTTYPE="Variables.otype" ORDER="ncode,nrank asc"/>
+	    <IF COND="IsList.theAssetChildren=true">
+	    <THEN>
+	        <TR>
+		    <TD class="form-label-text"><STRING.STREAM VALUE="Variables.otype" />:</TD><TD colspan="7"></TD>
+		</TR>
+		<TR>
+		    <TD align="left" valign="top" BGCOLOR="#FFFFFF" colspan="3">
+		    </TD>
+		    <TD><XLAT.STREAM KEY="dvin/AT/Common/Name"/></TD><TD></TD><TD><XLAT.STREAM KEY="dvin/AT/Common/Description"/></TD><TD></TD><TD><XLAT.STREAM KEY="dvin/Common/Related"/></TD>
+		</TR>
+		<TR>
+			<TD colspan="8"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></TD>
+		</TR>
+			<LOOP LIST="theAssetChildren">
+
+			<TR>
+		    <TD>&nbsp;</TD>
+			<TD VALIGN="TOP" NOWRAP="NOWRAP">
+				<IF COND="theAssetChildren.ncode=-">
+				<THEN>
+		             <STRING.STREAM VALUE="theAssetChildren.nrank"/>
+				</THEN>
+				<ELSE>
+				     <ASSOCNAMEDMANAGER.FIND   PREFIX="AssocList:" TYPE="Variables.assetname" NAME="theAssetChildren.ncode"/>
+                     <IF COND="Variables.AssocList:Total!=0">
+				     <THEN>
+                       <ASSOCNAMED.GETDESCRIPTION NAME="AssocList:Counters.currentItem" VARNAME="Assocdescription"/>
+					   <STRING.STREAM VALUE="Variables.Assocdescription"/>
+				     </THEN>
+				     <ELSE>
+					   <STRING.STREAM VALUE="theAssetChildren.ncode"/>
+				     </ELSE>
+				     </IF> 
+				</ELSE>
+		        </IF>
+			</TD>
+			<TD>&nbsp;&nbsp;</TD>	
+			<TD VALIGN="TOP" NOWRAP="NOWRAP"> 
+				  <XLAT.LOOKUP KEY="dvin/UI/Browsethisitem" VARNAME="_XLAT_"/>
+				  <XLAT.LOOKUP KEY="dvin/UI/Browsethisitem" VARNAME="mouseover" ESCAPE="true"/>
+                  <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BrowseAssetChildren" outstring="BrowseURL">
+                      <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                        <satellite.argument name="c" value="theAssetChildren.otype"/>
+                        <satellite.argument name="p" value="Variables.p"/>
+                       <satellite.argument name="cid" value="theAssetChildren.oid"/>
+                        </SATELLITE.LINK>
+				  <A HREF="Variables.BrowseURL"
+				  OnMouseOver="window.status='Variables.mouseover'; return true"
+				  OnMouseOut="return window.status='';" title="Variables._XLAT_" REPLACEALL="Variables.BrowseURL,Variables._XLAT_,Variables.mouseover">
+				 <STRING.STREAM VALUE="theAssetChildren.name"/>
+				 </A>
+
+				<SETVAR NAME="tablename" VALUE="AssetRelationTree" />
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<ARGUMENT NAME="columnvalue" VALUE="theAssetChildren.oid"/>
+					<ARGUMENT NAME="type" VALUE="Long"/>
+				</CALLELEMENT>
+				<IF COND="Variables.validatedstatus=true">
+				<THEN>
+					<EXECSQL LIST="AssetChildList" SQL="SELECT count(*) as thecount FROM AssetRelationTree where nparentid IN (SELECT nid FROM AssetRelationTree WHERE oid=theAssetChildren.oid)" />
+				</THEN>
+				</IF>
+				 
+			</TD>
+			<TD>&nbsp;&nbsp;</TD>
+			<TD VALIGN="TOP"><STRING.STREAM VALUE="theAssetChildren.description"/></TD>
+			<TD>&nbsp;&nbsp;</TD>
+			<TD VALIGN="TOP"><STRING.STREAM VALUE="AssetChildList.thecount"/></TD>
+		</TR>
+		<TR>
+			<TD colspan="8"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></TD>
+		</TR>
+		</LOOP>
+
+	    </THEN>
+	    <ELSE>
+	      <!-- No children - no problem -->
+	      <SETVAR NAME="errno" VALUE="0"/>
+	      <P/><XLAT.STREAM KEY="dvin/UI/AssetMgt/Thisassetdoesnotrefertoanyotherassets"/>
+	    </ELSE>	      
+	    </IF>
+	    <TR>
+			<TD align="left" valign="top" BGCOLOR="#FFFFFF" colspan="8">
+			&nbsp;</TD>
+		</TR>
+
+	</LOOP>
+	</TABLE>
+</THEN>
+<ELSE>
+<!-- No children - no problem -->
+	<XLAT.STREAM KEY="dvin/UI/AssetMgt/Thisassetdoesnotrefertoanyotherassets"/><P/>
+	<SETVAR NAME="errno" VALUE="0"/>
+</ELSE>
+</IF>
+
+</FTCS> 

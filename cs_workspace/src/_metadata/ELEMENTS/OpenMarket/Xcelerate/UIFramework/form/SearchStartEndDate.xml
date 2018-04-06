@@ -1,0 +1,181 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/UIFramework/form/SearchStartEndDate
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!--Start of the start date/enddate attributes -->
+<ICS.GETPROPERTY NAME="cs.sitepreview" FILE="futuretense.ini" OUTPUT="enableSitePreview"/>
+<IF COND="Variables.enableSitePreview!=disabled">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>			
+	<ICS.GETPROPERTY NAME="ft.cgipath" OUTPUT="cgipath"/>									           						
+	<XLAT.LOOKUP KEY="fatwire/Alloy/UI/PickADate" VARNAME="pickADateString" />
+	<XLAT.LOOKUP KEY="fatwire/Alloy/UI/DatePicker" VARNAME="datePickerString" />        
+
+    <tr>
+        <td class="form-label-text">
+		<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+		<then>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateOnOrBefore" />:
+		</then>
+		<else>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateBefore" />:
+		</else>
+		</if>
+	</td>
+	<td></td>
+        <td class="form-inset" nowrap="nowrap">
+		
+		<INPUT TYPE="hidden" NAME="StartDateBefore" VALUE="" />
+		<div style="display: table;">
+			<if COND="IsVariable.StartDateBeforeText=true">
+				<then>
+					<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+						<argument NAME="inputDate" value="Variables.StartDateBeforeText"/>
+						<argument NAME="outputVar" value="outValue"/>
+					</callelement>
+					<div id="StartDateBeforeText" name="StartDateBeforeText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.StartDateBeforeText"  REPLACEALL="Variables.StartDateBeforeText"></div>
+					<DIV ID="startDateBeforeFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue"/></DIV>
+					<removevar NAME="outValue" />
+					<SETVAR NAME="convertedDate" VALUE="Variables.StartDateBeforeText" />
+				</then>
+				<else>
+					<div id="StartDateBeforeText" name="StartDateBeforeText" dojoType="fw.dijit.UIInput" clearButton="true" readonly="true" ></div>
+					<DIV ID="startDateBeforeFieldIdDiv" STYLE="display:none"></DIV>
+				</else>
+			</if>
+			
+			
+			
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="StartDateBeforeText"/>
+				<ARGUMENT NAME="inputDivId" value="startDateBeforeFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>	 
+    <tr>
+        <td class="form-label-text">
+		<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+		<then>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateOnOrAfter" />:
+		</then>
+		<else>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateAfter" />:
+		</else>
+		</if>
+	</td>
+	<td></td>
+        <td class="form-inset" nowrap="nowrap"><INPUT TYPE="hidden" NAME="StartDateAfter" VALUE="" />
+        <div style="display: table;">
+            <if COND="IsVariable.StartDateAfterText=true">
+				<then>
+					<div id="StartDateAfterText" name="StartDateAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.StartDateAfterText"  REPLACEALL="Variables.StartDateAfterText"></div>
+					<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+						<argument NAME="inputDate" value="Variables.StartDateAfterText"/>
+						<argument NAME="outputVar" value="outValue"/>
+					</callelement>
+					<DIV ID="startDateAfterFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue"/></DIV>
+					<removevar NAME="outValue" />
+					<SETVAR NAME="convertedDate" VALUE="Variables.StartDateAfterText" />
+				</then>
+					
+				<else>
+					<div id="StartDateAfterText" name="StartDateAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" ></div>
+					<DIV ID="startDateAfterFieldIdDiv" STYLE="display:none"></DIV>
+				</else>
+			</if>
+			<DIV ID="startDateAfterFieldIdDiv" STYLE="display:none"></DIV>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="StartDateAfterText"/>
+				<ARGUMENT NAME="inputDivId" value="startDateAfterFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+		<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+		<then>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateOnOrBefore" />:
+		</then>
+		<else>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateBefore" />:
+		</else>
+		</if>
+	</td>
+	<td></td>
+        <td class="form-inset" nowrap="nowrap"><INPUT  TYPE="hidden" NAME="EndDateBefore" VALUE="" />
+        <div style="display: table;">
+	        <if COND="IsVariable.EndDateBeforeText=true">
+				<then>
+					<div id="EndDateBeforeText" name="EndDateBeforeText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.EndDateBeforeText"  REPLACEALL="Variables.EndDateBeforeText"></div>
+					<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+						<argument NAME="inputDate" value="Variables.EndDateBeforeText"/>
+						<argument NAME="outputVar" value="outValue"/>
+					</callelement>
+					<DIV ID="endDateBeforeFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue" /></DIV>
+					<REMOVEVAR NAME="outValue" />
+					<SETVAR NAME="convertedDate" VALUE="Variables.EndDateBeforeText" />
+				</then>
+				<else>
+					<div id="EndDateBeforeText" name="EndDateBeforeText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" ></div>
+					<DIV ID="endDateBeforeFieldIdDiv" STYLE="display:none"></DIV>
+				</else>
+			</if>
+			
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="EndDateBeforeText"/>
+				<ARGUMENT NAME="inputDivId" value="endDateBeforeFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+    </tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <tr>
+        <td class="form-label-text">
+		<if COND="Variables.AssetTypeObj:usesearchindexVariables.seNickname=1AV">
+		<then>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateOnOrAfter" />:
+		</then>
+		<else>
+				<XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateAfter" />:
+		</else>
+		</if>
+	</td>
+	<td></td>
+        <td class="form-inset" nowrap="nowrap"><INPUT  TYPE="hidden" NAME="EndDateAfter" VALUE="" />
+        <div style="display: table;">
+	        <if COND="IsVariable.EndDateAfterText=true">
+				<then>
+					<div id="EndDateAfterText" name="EndDateAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" VALUE="Variables.EndDateAfterText"  REPLACEALL="Variables.EndDateAfterText"></div>
+					<callelement NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+						<argument NAME="inputDate" value="Variables.EndDateAfterText"/>
+						<argument NAME="outputVar" value="outValue"/>
+					</callelement>
+					<DIV ID="endDateAfterFieldIdDiv" STYLE="display:none"><CSVAR NAME="Variables.outValue" /></DIV>
+					<REMOVEVAR NAME="outValue" />
+					<SETVAR NAME="convertedDate" VALUE="Variables.EndDateAfterText" />
+				</then>
+				<else>
+					<div id="EndDateAfterText" name="EndDateAfterText" dojoType="fw.dijit.UIInput"  clearButton="true" readonly="true" ></div>
+					<DIV ID="endDateAfterFieldIdDiv" STYLE="display:none"></DIV>
+				</else>
+			</if>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/DateTimeWidget">
+				<ARGUMENT NAME="inputFieldId" value="EndDateAfterText"/>
+				<ARGUMENT NAME="inputDivId" value="endDateAfterFieldIdDiv"/>
+			</CALLELEMENT>
+		</div>
+		</td>
+    </tr>
+</THEN>
+</IF>
+</ftcs>

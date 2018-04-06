@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">AlloyUI/Asset/Util/getFiltersForAssetDefinition</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>AlloyUI/Asset/Util/getFiltersForAssetDefinition</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>AlloyUI/Asset/Util/getFiltersForAssetDefinition.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/AlloyUI/Asset/Util/getFiltersForAssetDefinition.xml|null|_storable_type\=%2FELEMENTS%2FAlloyUI%2FAsset%2FUtil%2FgetFiltersForAssetDefinition.xml
+@hashval=1302030039
+key=@ELEMENTCATALOG-AlloyUI/Asset/Util/getFiltersForAssetDefinition
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

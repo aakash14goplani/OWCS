@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- addAssetType
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="result" VALUE="Variables.empty"/>
+<setvar NAME="AssetTypeExists" VALUE="Variables.empty"/>
+
+<!-- Make sure asset type doesn't already exist.  If so, a refresh install is probably being run. -->
+<SETVAR NAME="errno" VALUE="0"/>
+<ASSETTYPE.LIST LIST="ThisType" FIELD1="assettype" VALUE1="Variables.assetname"/>
+<IF COND="Variables.errno=0">
+<THEN>
+    <setvar NAME="AssetTypeExists" VALUE="true"/>
+	<!-- <XLAT.STREAM KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/> -->
+
+</THEN>
+<ELSE>
+
+    <ASSETTYPE.CREATE NAME="theAssetType"/>
+    <!-- Check for success -->
+    
+    <IF COND="IsError.Variables.errno=true">
+    <THEN>
+    	<SETVAR NAME="result" VALUE="errno Variables.errno creating an asset type, Variables.assetname"/>
+    </THEN>
+    </IF>
+    
+    <SETVAR NAME="at:assettype" VALUE="Variables.assetname"/>
+    <SETVAR NAME="at:logic" VALUE="com.openmarket.xcelerate.asset.Variables.assetname"/>
+    <if COND="IsVariable.assetlogic=true">
+    	<then>
+    		<if COND="Variables.assetlogic!=Variables.empty">
+    			<then>
+    				<SETVAR NAME="at:logic" VALUE="Variables.assetlogic"/>
+    			</then>
+    		</if>
+    	</then>
+    </if>
+    <SETVAR NAME="at:keyfield" VALUE="name"/>
+    <SETVAR NAME="at:description" VALUE="Variables.AssetDescription"/>
+    <SETVAR NAME="at:plural" VALUE="Variables.AssetPlural"/>
+    <SETVAR NAME="at:canbechild" VALUE="Variables.AssetChild"/>
+    <ASSETTYPE.GATHER NAME="theAssetType" PREFIX="at"/>
+    <ASSETTYPE.SAVE NAME="theAssetType"/>
+    <!-- Check for success -->
+    
+    <IF COND="IsError.Variables.errno=true">
+    <THEN>
+    	<SETVAR NAME="result" VALUE="errno Variables.errno from saving asset type, Variables.assetname"/>
+    </THEN>
+    </IF>
+    
+</ELSE>
+</IF>
+</FTCS> 

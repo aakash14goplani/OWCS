@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:assetBean xmlns:ns2="http://www.fatwire.com/schema/rest/1.0">
+    <id>StyleSheet:1200501462732</id>
+    <name>coreEndsSept</name>
+    <createdby>firstsite</createdby>
+    <createddate>2008-01-17T19:01:22.000Z</createddate>
+    <description>This Stylesheet asset is meant to be used for the site FirstSite II up to September 30th 2013.</description>
+    <publist>FirstSiteII</publist>
+    <status>ED</status>
+    <subtype></subtype>
+    <updatedby>firstsite</updatedby>
+    <updateddate>2008-01-18T10:02:15.000Z</updateddate>
+    <attribute>
+        <name>startdate</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>enddate</name>
+        <data>
+            <dateValue>2013-09-30T23:59:59.000Z</dateValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>filename</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>path</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>template</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>urlexternaldoc</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>externaldoctype</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>urlexternaldocxml</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>fw_uid</name>
+        <data>
+            <stringValue>c46adf4a-747e-4a40-8dde-d236467ec4f3</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>id</name>
+        <data>
+            <longValue>1200501462732</longValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>SegRating</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>fwtags</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>Webreference</name>
+        <data/>
+    </attribute>
+    <attribute>
+        <name>source</name>
+        <data>
+            <stringValue>123Jump</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>urlbody</name>
+        <data>
+            <blobValue>
+                <filename>coreEndsSept.urlbody(c46adf4a-747e-4a40-8dde-d236467ec4f3).core.css</filename>
+                <foldername></foldername>
+                <filedata></filedata>
+            </blobValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>mimetype</name>
+        <data>
+            <stringValue>text/css</stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>alttext</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>keywords</name>
+        <data>
+            <stringValue></stringValue>
+        </data>
+    </attribute>
+    <attribute>
+        <name>category</name>
+        <data>
+            <stringValue>g</stringValue>
+        </data>
+    </attribute>
+    <associations>
+        <href>myPathassociations</href>
+    </associations>
+</ns2:assetBean>
+
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set>
+    <dependency>
+      <depType>N</depType>
+      <resType>StyleSheet</resType>
+      <resId>1200501462732</resId>
+      <uid>c46adf4a-747e-4a40-8dde-d236467ec4f3</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ASSET_TYPE</resType>
+      <resId>StyleSheet</resId>
+      <uid>e3dc2e53-3771-43dd-a07c-0ef7bc019fef</uid>
+    </dependency>
+  </linked-hash-set>
+</dependencies>
+==================______________________==================
+#
+storable0=ASSET/StyleSheet/77/0/coreEndsSept.urlbody(c46adf4a-747e-4a40-8dde-d236467ec4f3).core.css||_storable_type\=coreEndsSept.urlbody%28c46adf4a-747e-4a40-8dde-d236467ec4f3%29.core.css&_blob_prop\=urlbody&_value_count\=S
+key=StyleSheet-c46adf4a-747e-4a40-8dde-d236467ec4f3
+type=ASSETDATA
+sites=FirstSiteII
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,329 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/AssetMaker/Populate/AssetStubElementCatalog/OpenMarket/AssetMaker/AssetStubFiles/StandardElements/ContentForm.xml $
+$Revision: 31 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of divine Inc.
+-					All Rights Reserved.
+-
+- ContentForm.xml
+-
+- DESCRIPTION
+- Edit form of the asset
+- INPUT: Asset is loaded and fields have been scattered using ContentDetails as prefix
+-->
+<div dojoType="dijit.layout.BorderContainer" class="bordercontainer">
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+<INPUT TYPE="hidden" NAME="Prefix" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/AssetChildrenFormNewJavascript"/>
+
+<!-- site specific fields -->
+
+
+<!-- Indicate that the form is repostable, according to the rules laid out in Actions/EditFront, so that all downstream
+      widgets know to change their behavior accordingly, provided they obey the convention for reposting. -->
+<SETVAR NAME="isAssetRepostable" VALUE="true"/>
+<SETVAR NAME="repostContentFormJavascript" VALUE="repostAssetMakerContentForm();"/>
+
+<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+<!-- figure out whether this is
+for initial creation or subsequent editing
+-->
+<setvar NAME="formfunction" VALUE="Variables.updatetype"/>
+
+<callelement NAME="OpenMarket/AssetMaker/BuildCheckRequiredProperties"/>
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function repostAssetMakerContentForm()
+{
+	relPrepareForSubmit();
+	if (checkfieldsnosubmit())
+		repostContentForm();
+	return false;
+}
+
+
+function getPublicationList()
+{
+     var selectField = document.forms[0].elements['pubidlist'];
+     var values = "";
+     var x = 0;
+     for (x=0;x<selectField.length;x++)
+         {
+            if(selectField[x].selected)
+            {
+             //alert(InvForm.kb[x].value);
+             	values = selectField[x].value + "," + values ;
+            }
+         }         
+         document.forms[0].elements['WebRoot:publication'].value = values.substring(0,values.length-1);
+}
+
+function saveAssetMakerContentForm()
+{
+	getPublicationList();
+	var result = populateVirtualWebRoots();
+	if(!result)
+		return result;
+	relPrepareForSubmit();	
+	if (checkfieldsnosubmit())
+	{
+		var hostName = document.forms[0].elements['WebRoot:name'].value;
+		var rootUrl = document.forms[0].elements['WebRoot:rooturl'].value;
+		var isClean  = isCleanString(rootUrl,'<\'\">%\\&?;',true);
+		if(!isClean) 
+		{
+			alert(']]><XLAT.STREAM KEY="UI/Forms/InvalidCharactersNotAllowedRootURL" ESCAPE="true" ENCODE="false"/><![CDATA[');
+			return false;
+		}		
+		var id = (document.forms[0].elements['id']) ? document.forms[0].elements['id'].value : "";
+		var xhrArgs = {
+				url: "ContentServer",
+				content: {
+					pagename: 'OpenMarket/Xcelerate/AssetType/WebRoot/ValidateWebRoot',
+					id:id,	
+					hostname:hostName,
+					rooturl:rootUrl
+				},
+				preventCache: true,
+				handleAs: "json"
+			};
+			dojo.xhrPost(xhrArgs).then(function(res) {
+				if(res && res.status === "success") {
+					document.forms[0].submit();
+					return false;
+					
+				} else
+				{
+					alert(res.message);
+				}
+			});		
+	}	
+}
+
+
+function populateVirtualWebRoots()
+{
+	var length = document.forms[0].elements["VirtualRootURLTotal"].value;
+	var virtualWebRootValue = "";
+	for(i=0;i<length;i++) {		
+		if(document.forms[0].elements["WebRoot:environment:"+i])
+		{
+			var environment = document.forms[0].elements["WebRoot:environment:"+i].value;
+			var virutalRoot = document.forms[0].elements["WebRoot:virtualrooturl:"+i].value;
+			var isClean  = isCleanString(virutalRoot,'<\'\">%\\&?;',true);
+			if(!isClean) 
+			{
+				alert(']]><XLAT.STREAM KEY="UI/Forms/InvalidCharactersNotAllowedRootURL" ESCAPE="true" ENCODE="false"/><![CDATA[');
+				return false;
+			}
+			if(environment.length > 0 && virutalRoot.length >0)
+			{
+				if(i>0) {
+					virtualWebRootValue = virtualWebRootValue +",";
+				}
+				virtualWebRootValue = virtualWebRootValue + environment +"=" + virutalRoot;
+			}	
+		}	
+	}
+	document.forms[0].elements["WebRoot:virtualrooturls"].value = virtualWebRootValue;
+	return true;
+}
+
+function deleteWebroot(index) 
+{
+	var row = dojo.byId("WebRootsTableRow_"+index);
+	dojo.destroy(row);
+	var table = dojo.byId("WebRootsTableBody");
+	if(table.children && table.children.length == 1)
+	{
+		addNewWebRoot();
+	}
+}
+
+
+function addNewWebRoot() 
+{
+	var table = dojo.byId("WebRootsTableBody");
+	var index = document.forms[0].elements["VirtualRootURLTotal"].value;
+	var row = dojo.create("tr", {id: "WebRootsTableRow_"+ index}, table);
+	var cell1 = dojo.create("td", {}, row);
+	var environmentInputBox = new fw.dijit.UIInput({clearButton: true,name: "WebRoot:environment:"+index,showErrors: "false"}).placeAt(cell1);
+	dojo.attr(environmentInputBox.textbox, 'maxlength', 128);
+	dojo.style(environmentInputBox.domNode, "width", "10em");	
+	var cell2 = dojo.create("td", {}, row);
+	var virutalRootURLInputBox = new fw.dijit.UIInput({clearButton: true,name: "WebRoot:virtualrooturl:"+index,showErrors: "false"}).placeAt(cell2);
+	dojo.attr(virutalRootURLInputBox.textbox, 'maxlength', 128);
+	dojo.style(virutalRootURLInputBox.domNode, "width", "45em");
+	dojo.create("td", {innerHTML: "<img src='js/fw/images/ui/ui/forms/cross.png' onClick='deleteWebroot("+index+")'>", width:"30"}, row);
+	document.forms[0].elements["VirtualRootURLTotal"].value = parseInt(index) + 1;
+}
+
+function cancelAssetMakerContentForm()
+{
+	var obj = document.forms[0];
+	if(confirm("]]><XLAT.STREAM KEY="dvin/Common/CancelClicked" ESCAPE="true" ENCODE="false"/><![CDATA[")){
+	obj.elements['upcommand'].value="cancel";
+	obj.submit();
+	return false;
+}
+}
+
+]]>
+</SCRIPT>
+<!-- form buttons -->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBar">
+	<ARGUMENT NAME="cancelScript" VALUE="cancelAssetMakerContentForm"/>
+	<ARGUMENT NAME="submitScript" VALUE="saveAssetMakerContentForm"/>
+	<ARGUMENT NAME="doNotShowSaveButton" VALUE="false"/>
+	<ARGUMENT NAME="NoPreview" VALUE="true"/>
+</CALLELEMENT>
+<xlat.lookup KEY="UI/Forms/Content" VARNAME="tabContent"/>
+<div dojoType="dijit.layout.ContentPane" region="center">
+<div dojoType="dijit.layout.TabContainer" class="formstabs formsTabContainer" style="width:100%;height:100%">
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/RetainSelectedTab">
+	<ARGUMENT NAME="tabContent" VALUE="Variables.tabContent"/>
+	<ARGUMENT NAME="elementType" VALUE="XML"/>
+</CALLELEMENT>
+<div dojoType="dijit.layout.ContentPane" title='Variables.tabContent' style="height: 100%;" selected="true" replaceall="Variables.tabContent">
+<table border="0" cellpadding="0" cellspacing="0" class="width70BottomExMargin">
+	<tr>
+		<td><span class="title-text"><STRING.STREAM VALUE="Variables.at:description"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.ContentDetails:name"/></span></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+	<!-- Asset Editing form Body -->
+	<SETVAR NAME="editpropertylist" VALUE="name,rooturl"/>	
+	<xlat.lookup KEY="UI/Forms/Host" VARNAME="host"/>
+	<xlat.lookup KEY="dvin/AT/Common/Name" VARNAME="name"/>
+	<tr>
+		<td>
+		<table border="0" cellpadding="0" cellspacing="0">	
+			<!-- Name -->
+				<tr>
+					<td  CLASS="form-label-text">						
+							<span class="alert-color">*</span><STRING.STREAM VALUE="Variables.host Variables.name"/>:
+					</td>
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 					
+					<td>
+						<IF COND="Variables.updatetype=editfront">
+						<THEN>
+							<ics.getvar name="ContentDetails:name" encoding="default" output="hostname"/>					 	
+							<STRING.STREAM VALUE="Variables.hostname"/><br/>
+							<INPUT TYPE="hidden" NAME="WebRoot:name" VALUE="Variables.hostname" REPLACEALL="Variables.hostname"/>
+						</THEN>
+						<ELSE>
+							<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+									<argument NAME="inputName" VALUE="WebRoot:name"/>
+									<argument NAME="inputValue" VALUE="Variables.ContentDetails:name"/>								
+									<argument NAME="width" VALUE='45em'/>
+									<argument NAME="inputMaxlength" VALUE='128'/>				
+							</callelement>	
+						</ELSE>
+						</IF>	
+					</td>
+				</tr>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			
+			<!-- Web Root -->
+				<tr>
+					<xlat.lookup KEY="UI/Forms/RootURL" VARNAME="rooturl"/>
+					<td  CLASS="form-label-text">
+						<span class="alert-color">*</span><STRING.STREAM VALUE="Variables.rooturl"/>:
+					</td>					
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 
+					<td>
+							<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+								<argument NAME="inputName" VALUE="WebRoot:rooturl"/>
+								<argument NAME="inputValue" VALUE="Variables.ContentDetails:rooturl"/>								
+								<argument NAME="width" VALUE='45em'/>
+								<argument NAME="inputMaxlength" VALUE='128'/>				
+							</callelement>	
+				</td>
+				</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>			
+			<!--  Virutal WebRoots -->
+			<ics.getvar name="ContentDetails:virtualrooturls" encoding="default" output="virtualrooturlsvalue"/> 
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<callelement NAME="OpenMarket/Xcelerate/AssetType/WebRoot/BuildVirtualWebRoot">
+						<argument NAME="fielddescription" VALUE="Variables.assetmaker/property/virtualrooturls/description"/>						
+						<argument NAME="action" VALUE="edit"/>
+						<argument NAME="fieldvalue" VALUE="Variables.virtualrooturlsvalue"/>
+			</callelement>
+				<SETVAR NAME="formfieldlist" VALUE="Variables.formfieldlist,name,rooturl,virtualrooturls,publication"/>
+			<INPUT TYPE="hidden" NAME="WebRoot:virtualrooturls" VALUE="Variables.virtualrooturlsvalue" REPLACEALL="Variables.virtualrooturlsvalue"/>
+				
+			<!--  Publication -->
+			<ics.getvar name="ContentDetails:publication" encoding="default" output="publicationvalue"/> 			
+			<INPUT TYPE="hidden" NAME="WebRoot:publication" VALUE="Variables.publicationvalue" REPLACEALL="Variables.publicationvalue"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+					<td  CLASS="form-label-text">
+						<xlat.lookup KEY="dvin/Common/Sites" VARNAME="Sites"/>
+						<STRING.STREAM VALUE="Variables.Sites"/>:
+					</td>
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 
+					<td>
+						<xlat.lookup KEY="dvin/Common/Select" VARNAME="CommonSelect"/>
+					 	<PUBLICATION.LIST LIST="allSites" ORDER="description"/>						
+					 	<SELECT NAME="pubidlist" MULTIPLE="yes" SIZE="6" STYLE="width:250px">					
+						<STRINGLIST NAME="publicationlist" STR="Variables.publicationvalue" DELIM=","/>
+						<HASH.CREATE NAME="publicationHash" LIST="publicationlist" COLUMN="ITEM"/>
+						<HASH.CONTAINS NAME="publicationHash" VALUE="0" VARNAME="flag"/>
+						<IF COND="Variables.flag=true">
+								<THEN>
+									<option value="0" selected="selected"><XLAT.STREAM KEY="dvin/Common/Any"/></option>	
+									<setvar NAME="isInAnyPub" VALUE="true"/>								
+								</THEN>
+								<ELSE>
+									<option value="0"><XLAT.STREAM KEY="dvin/Common/Any"/></option>
+									<setvar NAME="isInAnyPub" VALUE="false"/>				
+								</ELSE>
+							</IF>	
+							<LOOP LIST="allSites">
+								<STRING.ENCODE LIST="allSites" COLUMN="name" VARNAME="asname"/>
+								<if COND="Variables.isInAnyPub=false">
+									<then>
+									<HASH.CONTAINS NAME="publicationHash" VALUE="allSites.name" VARNAME="flag"/>
+										<IF COND="Variables.flag=true">
+											<then>
+											    <OPTION VALUE="Variables.asname" SELECTED="true" REPLACEALL="Variables.asname"/><STRING.STREAM VALUE="Variables.asname"/>
+											    
+											</then>
+											<else>
+												<OPTION VALUE="Variables.asname" REPLACEALL="Variables.asname"/><STRING.STREAM VALUE="Variables.asname"/>
+											</else>
+										</IF>
+										</then>
+										<else>
+											<OPTION VALUE="Variables.asname" REPLACEALL="Variables.asname"/><STRING.STREAM VALUE="Variables.asname"/>
+										</else>
+								</if>
+							</LOOP>
+						</SELECT>
+					</td>
+			</tr>
+			</table>
+		</td>
+		</tr>
+        </table>
+		
+	</div>
+		
+		</div>
+		</div>
+	<INPUT TYPE="hidden" NAME="FieldsOnForm" VALUE="Variables.formfieldlist" REPLACEALL="Variables.formfieldlist"/>
+</div>
+</FTCS>

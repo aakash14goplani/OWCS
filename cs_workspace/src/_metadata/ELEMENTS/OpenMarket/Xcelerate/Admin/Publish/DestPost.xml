@@ -1,0 +1,348 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Publish/DestPost.xml $ 
+$Revision: 39 $ 
+$Modtime: 6/18/04 4:13p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Display form for edit or new a PubTarget.
+-
+- HISTORY 
+-->
+
+<!-- fix Destination address -->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<IF COND="IsVariable.pubtgt:dest=true">
+<THEN>
+     <IF COND="Variables.pubtgt:test!=Variables.empty">
+     <THEN>
+          <ENDS STR="Variables.pubtgt:dest" WHAT="/" />
+    	  <IF COND="Variables.errno=0">
+    	  <THEN>
+               <SETVAR NAME="pubtgt:dest" VALUE="Variables.pubtgt:dest/" />
+    	  </THEN>
+    	  </IF>
+          <SETVAR NAME="errno" VALUE="0"/>
+     </THEN>
+     </IF>
+</THEN>
+</IF>
+
+<IF COND="Variables.action=edit">
+<THEN>
+	<!--for roles, we need to replace ; delimiter with ,-->
+	<SUBSTITUTE STR="Variables.pubtgt:approles" WHAT=";" WITH="," OUTSTR="pubtgt:approles"/>
+	<SUBSTITUTE STR="Variables.pubtgt:pubroles" WHAT=";" WITH="," OUTSTR="pubtgt:pubroles"/>
+    <setvar NAME="errno" VALUE="0"/>
+	<PUBTARGETMANAGER.LOAD ID="Variables.id" OBJVARNAME="pubtgt"/>
+   <PUBTARGET.GATHER NAME="pubtgt" PREFIX="pubtgt:"/>
+   <if COND="IsError.Variables.errno=false">
+   <then>
+   	 <PUBTARGETMANAGER.SAVE OBJECT="pubtgt"/>
+    	<if COND="IsError.Variables.errno=false">
+    	<then>
+    		<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt2:"/>
+    	</then>
+    	</if>
+   </then>
+   </if>
+
+   <if COND="IsError.Variables.errno=false">
+   <then>
+		<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+		<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+					<argument NAME="__TreeRefreshKeys__" VALUE="Self:PublishDestinations"/>
+				</callelement>		
+			</then>
+		</if>
+		<SETVAR NAME="list" VALUE="true"/>
+    </then>
+    <else>
+       <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+       	<argument NAME="error" VALUE="PubTargetEdit"/>
+        </callelement>
+		<SETVAR NAME="list" VALUE="false"/>
+    </else>
+    </if>
+</THEN>
+</IF>
+<IF COND="Variables.action=new">
+<THEN>
+	<IF COND="Variables.newName=true">
+		<THEN>
+		<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		<tr><td>
+		<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		<tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		<td>
+		<table cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="3" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td HEIGHT="16" class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;<BR /></td>
+				<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+			</tr>
+			<tr><td/><td>
+			<table><tr>
+			<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/Common/EnterNewName"/>:</td>
+			<td class="form-inset">
+			<STRING.ENCODE VARIABLE="pubtgt:name" VARNAME="pubtgt:name"/>
+			<INPUT TYPE="text" NAME="pubtgt:name" VALUE="Variables.pubtgt:name" REPLACEALL="Variables.pubtgt:name"/></td>
+			<td>
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="new"/>
+			<STRING.ENCODE VARIABLE="pubtgt:dest" VARNAME="pubtgt:dest"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:dest" VALUE="Variables.pubtgt:dest" REPLACEALL="Variables.pubtgt:dest"/>
+			<STRING.ENCODE VARIABLE="pubtgt:type" VARNAME="pubtgt:type"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:type" VALUE="Variables.pubtgt:type" REPLACEALL="Variables.pubtgt:type"/>
+			<STRING.ENCODE VARIABLE="pubtgt:factors" VARNAME="pubtgt:factors"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:factors" VALUE="Variables.pubtgt:factors" REPLACEALL="Variables.pubtgt:factors"/>
+			<STRING.ENCODE VARIABLE="pubtgt:sites" VARNAME="pubtgt:sites"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:sites" VALUE="Variables.pubtgt:sites" REPLACEALL="Variables.pubtgt:sites"/>
+			<STRING.ENCODE VARIABLE="pubtgt:pubroles" VARNAME="pubtgt:pubroles"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:pubroles" VALUE="Variables.pubtgt:pubroles" REPLACEALL="Variables.pubtgt:pubroles"/>
+			<STRING.ENCODE VARIABLE="pubtgt:approles" VARNAME="pubtgt:approles"/>
+			<INPUT TYPE="HIDDEN" NAME="pubtgt:approles" VALUE="Variables.pubtgt:approles" REPLACEALL="Variables.pubtgt:approles"/>
+			<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/Publish/DestPost"/></td></tr></table>
+			</td><td/></tr>
+			</table>
+	</td>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	</tr>
+			<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+</table></td></tr>
+<tr><td align="right"><A HREF="#" ONCLICK="document.forms['AppForm'].submit();" REPLACEALL="Variables.AddDestURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewDestination"/></CALLELEMENT></A></td></tr></table>
+</THEN>
+		<ELSE>
+	<!--for roles, we need to replace ; delimiter with ,-->
+	<SUBSTITUTE STR="Variables.pubtgt:approles" WHAT=";" WITH="," OUTSTR="pubtgt:approles"/>
+	<SUBSTITUTE STR="Variables.pubtgt:pubroles" WHAT=";" WITH="," OUTSTR="pubtgt:pubroles"/>
+    <setvar NAME="errno" VALUE="0"/>
+	<PUBTARGETMANAGER.CREATE OBJVARNAME="pubtgt"/>
+    
+   <PUBTARGET.GATHER NAME="pubtgt" PREFIX="pubtgt:"/>
+
+   <if COND="IsError.Variables.errno=false">
+   <then>
+   	 <PUBTARGETMANAGER.SAVE OBJECT="pubtgt"/>
+     
+    	<if COND="IsError.Variables.errno=false">
+    	<then>
+    		<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt2:"/>
+    	</then>
+    	</if>
+   </then>
+   </if>
+    <if COND="IsError.Variables.errno=false">
+    <then>
+		<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+		<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+					<argument NAME="__TreeRefreshKeys__" VALUE="Self:PublishDestinations"/>
+				</callelement>		
+			</then>
+		</if>
+		<SETVAR NAME="list" VALUE="true"/>
+    </then>
+    <else>
+		<if COND="Variables.errno=-105">
+		<then>
+            <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Couldnotcreatepublishdestination" VARNAME="msgtext" errno="Variables.errno" ENCODE="false" EVALALL="false"/>
+            <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Pubdestdatabaseerror" VARNAME="addMsg"/>
+            <SETVAR NAME="msgtext" VALUE="Variables.msgtext&#60;BR&#62;Variables.addMsg"/>
+            <div class="width-outer-70">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<ARGUMENT NAME="severity" VALUE="error"/>
+			</CALLELEMENT>
+			</div>
+			<SETVAR NAME="list" VALUE="false"/>
+			<callelement NAME="OpenMarket/Xcelerate/Admin/Publish/DestPost">
+				<argument NAME="newName" VALUE="true"/>
+			</callelement>
+		</then>
+        <else>
+            <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Couldnotcreatepublishdestination" VARNAME="msgtext" errno="Variables.errno" ENCODE="false" EVALALL="false"/>
+			<div class="width-outer-70">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<ARGUMENT NAME="severity" VALUE="error"/>
+			</CALLELEMENT>
+			</div>
+			<SETVAR NAME="list" VALUE="false"/>
+        </else>
+		</if>
+	</else>
+    </if>
+</ELSE>
+</IF>
+</THEN>
+</IF>
+
+<IF COND="Variables.action=delete">
+<THEN>
+
+ 	<PUBTARGETMANAGER.CANEDIT ID="Variables.id"/>
+    <if COND="IsError.Variables.errno=false">
+    <then>
+			<PUBTARGETMANAGER.LOAD ID="Variables.id" OBJVARNAME="pubtgt"/>
+    </then>
+    </if>
+    
+    <if COND="IsError.Variables.errno=false">
+    <then>
+        <!-- remove publish history first -->
+        <PUBSESSIONMANAGER.GETALL TARGET="Variables.id" PREFIX="pubHist:"/>
+        <if COND="Variables.pubHist:Total!=0">
+        <then>
+        		<SETCOUNTER NAME="nthSession" VALUE="0"/>
+            <loop COUNT="Variables.pubHist:Total"> 
+            	<PUBSESSION.GETID NAME="pubHist:Counters.nthSession" VARNAME="pubsessid"/>              
+               <PUBSESSIONMANAGER.DELETE ID="Variables.pubsessid"/>
+               <INCCOUNTER NAME="nthSession" VALUE="1"/>
+             </loop>
+        </then>
+        </if>
+        
+        <!-- remove publish event -->
+        <setvar NAME="errno" VALUE="0"/>
+        <setvar NAME="eventname" VALUE="PublishEvent_Variables.id" />
+        <verifyevent NAME="Variables.eventname"/>
+		<if COND="Variables.errno=1">
+		<then>
+			<destroyevent NAME="Variables.eventname"/>
+		</then>
+		</if>
+        
+        <!-- reset errno to 0. destroyevent may set errno if the event doesn't exist -->
+        <setvar NAME="errno" VALUE="0"/>
+                
+        <PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt2:"/>
+    </then>
+    </if>
+    
+    <if COND="IsError.Variables.errno=false">
+    <then>
+          <APPROVEDASSETS.DELETETARGET TARGET="Variables.id" />
+          <ASSETTEMPLATEMANAGER.DELETETARGET TARGET="Variables.id" />
+          <ASSETTARGETMANAGER.DELETETARGET TARGET="Variables.id" />
+    </then>
+    </if>
+
+    <if COND="IsError.Variables.errno=false">
+    <then>
+         <PUBTARGETMANAGER.DELETE ID="Variables.id"/>
+    </then>
+    </if>
+    
+    <if COND="IsError.Variables.errno=false">
+    <then>
+		<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+		<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+					<argument NAME="__TreeRefreshKeys__" VALUE="Self:PublishDestinations"/>
+				</callelement>		
+			</then>
+		</if>
+    <XLAT.STREAM KEY="dvin/UI/Admin/DeletedPublishDestinationname" name="Variables.pubtgt2:name" EVALALL="false"/>
+<P/>
+	<callelement NAME="OpenMarket/Xcelerate/Admin/Publish/DestEdit">
+		<argument NAME="action" VALUE="list"/>
+	</callelement>
+
+    </then>
+    <else>
+       <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+       	<argument NAME="error" VALUE="PubTargetEdit"/>
+        </callelement>
+	<SETVAR NAME="list" VALUE="false"/>
+    </else>
+    </if>
+</THEN>
+</IF>
+
+
+<IF COND="Variables.action=forcepublish">
+<THEN>
+    <setvar NAME="errno" VALUE="0"/>
+	<PUBTARGETMANAGER.LOAD ID="Variables.id" OBJVARNAME="pubtgt"/>
+ 	<if COND="IsError.Variables.errno=false">
+ 	<then>
+ 		<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt2:"/>
+ 	</then>
+ 	</if>
+	<!--Log the user who invoked the force approve for the published assets as well as the publish destination -->
+	<USERMANAGER.GETLOGINUSER VARNAME="currentUserInfo"/>
+	<USERMANAGER.GETLOGINUSERNAME VARNAME="currentUser" />
+
+	<LOGMSG STR="'Force Approve Published Assets' was invoked by user 'Variables.currentUser(Variables.currentUserInfo)' on publish destination 'Variables.pubtgt2:name(Id # Variables.pubtgt2:id)'"/>
+    <if COND="Variables.errno=0">
+    <then>
+          <ApprovedAssets.InvalidateAllKeys TARGET="Variables.id" />
+ 		  <if COND="Variables.errno=0">
+		  <then>
+		       <APPROVEDASSETS.FORGETAPPROVALPUBLISHSTATUS TARGET="Variables.id" />
+		  </then>
+		  </if>
+   </then>
+    </if>
+
+    <if COND="Variables.errno=0">
+    <then>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ForcePublishallItemsNextTime"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	<SETVAR NAME="list" VALUE="true"/>
+    </then>
+    <else>
+    <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Couldnotflushobject" errno="Variables.errno" id="Variables.id" EVALALL="false" ENCODE="false" VARNAME="msgtext"/>
+	<div class="width-outer-70">
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<ARGUMENT NAME="severity" VALUE="error"/>
+	</CALLELEMENT>
+	</div>
+	<SETVAR NAME="list" VALUE="false"/>
+    </else>
+    </if>
+</THEN>
+</IF>
+
+<IF COND="Variables.list=true">
+<THEN>
+						<callelement NAME="OpenMarket/Xcelerate/Admin/Publish/DestEdit">
+							<argument NAME="id" VALUE="Variables.pubtgt2:id"/>
+							<argument NAME="action" VALUE="details"/>
+						</callelement>
+
+</THEN>
+</IF>
+
+<!-- call the delivery type specific element -->
+<if cond="Variables.cs_environment=portal">
+<then>
+    <script>
+        window.close();
+    </script>
+</then>
+</if>
+
+</FTCS>

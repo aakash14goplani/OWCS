@@ -1,0 +1,181 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/AssetListTable
+--																																																						          
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<if COND="IsVariable.recname=true">
+<then>
+		<span class="form-label-text"><STRING.STREAM VARIABLE="recname"/></span> 
+		<!-- replace the following spacer gif with a space -->
+		<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+		<span class="small-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Recommendation"/></span>
+        </then>
+</if>
+<table border="0" cellpadding="0" cellspacing="5">
+	<SETVAR NAME="total" VALUE="Variables.Variables.list:Total"/>
+	<if COND="Variables.total!=0">
+	<then>
+		<setcounter  NAME="assetcounter"  VALUE="0"/>
+		<SETCOUNTER NAME="curRel" VALUE="0"/>									
+		<loop COUNT="Variables.total">
+			<SETVAR NAME="currentRelid" VALUE="Variables.Variables.list:Counters.curRel:relid"/>
+			<IF COND="Variables.currentRelid=Variables.recid">
+			<THEN>
+				<ASSET.LIST LIST="AssetList" TYPE="Variables.Variables.list:Counters.curRel:asset_type" FIELD1="id" VALUE1="Variables.Variables.list:Counters.curRel:asset"/>
+				<IF COND="Variables.displaytype=input">
+				<THEN>
+					    <XLAT.LOOKUP KEY="dvin/AT/Common/RemoveSelectionFromList" VARNAME="_XLAT_" ESCAPE="true"/>
+					    <XLAT.LOOKUP KEY="dvin/AT/Common/RemoveSelectionFromList" VARNAME="_ALT_"/>
+					<tr>
+						<td valign="top" align="right">
+							<a href="javascript:void(0)" onclick="return RemoveSelection('Variables.TemplateChosen','dAssetList.idVariables.recid','TreeSelect')"   REPLACEALL="Variables.TemplateChosen,AssetList.id,Variables.recid,Variables._ALT_" title="Variables._ALT_">
+							<img src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" alt="Variables._ALT_" title="Variables._ALT_" border="0" REPLACEALL="Variables.cs_imagedir,Variables._ALT_,Variables._XLAT_"/></a>
+							<INPUT TYPE="hidden" NAME="dAssetList.idVariables.recid" VALUE="" REPLACEALL="AssetList.id,Variables.recid"/>
+						</td>
+						<td colspan="2"><STRING.STREAM LIST="AssetList" COLUMN="name"/> <span class="small-text"> 
+							<!-- replace the spacer gif with just a space -->
+							<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							<SETVAR NAME="uglyAT" VALUE="Variables.Variables.list:Counters.curRel:asset_type"/>
+							<ASSETTYPE.LOAD NAME="ATinst" TYPE="Variables.uglyAT"/>
+							<ASSETTYPE.SCATTER NAME="ATinst" PREFIX="ATObj"/>
+							(<STRING.STREAM VARIABLE="ATObj:description"/>)&nbsp;</span>
+							<setvar NAME="currentConf" VALUE="Variables.Variables.list:Counters.curRel:confidence"/>
+							
+							<setvar NAME="currentval"  VALUE="Variables.currentConf"/>
+							<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/IntDecConversion">
+								<argument NAME="OPtype" VALUE="DecToInt"/>
+								<argument NAME="currentval" VALUE="Variables.currentConf"/>
+							</callelement>
+							
+							<XLAT.STREAM KEY="dvin/AT/AdvCols/Confidence"/> &nbsp;=&nbsp;<INPUT TYPE="Text" NAME="Variables.currentRelidnewconfCounters.assetcounter" SIZE="3" maxlength="3" VALUE="Variables.NewConfidence" REPLACEALL="Variables.currentRelid,Variables.currentConf,Counters.assetcounter,Variables.NewConfidence"/>%&nbsp;
+							<setvar NAME="ConfidenceName" VALUE="Variables.ConfidenceName*Variables.currentRelidnewconfCounters.assetcounter!"/>
+						</td>
+					</tr>
+					<!--INPUT TYPE="hidden" NAME="dAssetList.idRecList.id" VALUE="" REPLACEALL="AssetList.id,RecList.id"/-->
+				</THEN>
+				<ELSE>
+					<tr>
+						<td></td>
+						<td colspan="2">
+						<!-- [2009-01-05 KGF #13180] Make assets in recommendations immediately inspectable -->
+						<SETVAR NAME="uglyAT" VALUE="Variables.Variables.list:Counters.curRel:asset_type"/>
+						<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_"/>
+						<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="mouseover" ESCAPE="true"/>
+ 						<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+							<ARGUMENT NAME="assettype" VALUE="Variables.uglyAT"/>
+							<ARGUMENT NAME="assetid" VALUE="AssetList.id"/>
+							<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+							<ARGUMENT NAME="function" VALUE="inspect"/>
+						</CALLELEMENT>
+						<A HREF="Variables.urlInspectItem"
+							onmouseover="window.status='Variables.mouseover';return true;"
+							onmouseout="return window.status='';return true;"
+							title="Variables._XLAT_" REPLACEALL="Variables.urlInspectItem,Variables._XLAT_,Variables.mouseover">
+							<STRING.STREAM LIST="AssetList" COLUMN="name"/>
+						</A>
+						<span class="small-text">
+						<setvar NAME="currentval"  VALUE="Variables.Variables.list:Counters.curRel:confidence"/>
+						
+						<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/IntDecConversion">
+							<argument NAME="OPtype" VALUE="DecToInt"/>
+						</callelement>
+
+						<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+						<ASSETTYPE.LOAD NAME="ATinst" TYPE="Variables.uglyAT"/>
+						<ASSETTYPE.SCATTER NAME="ATinst" PREFIX="ATObj"/>
+						(<STRING.STREAM VARIABLE="ATObj:description"/>)</span>&nbsp; <XLAT.STREAM KEY="dvin/AT/AdvCols/Confidence"/>&nbsp;=&nbsp;<STRING.STREAM VARIABLE="NewConfidence"/>%</td>
+						<setvar NAME="Variables.varconfidence" VALUE="Variables.Variables.list:Counters.curRel:confidence"/>
+					</tr>
+
+				</ELSE>
+				</IF>
+				<INCCOUNTER NAME="assetcounter" VALUE="1"/>
+			</THEN>
+			</IF>
+			<INCCOUNTER NAME="curRel" VALUE="1"/>
+		</loop>
+	</then>
+	<else>
+		<tr>
+			<td></td>
+			<td colspan="2"><span class="small-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/NoRelatedItems"/> </span></td>
+		</tr>
+	</else>
+	</if>
+	 
+	<IF COND="Variables.displaytype=input">
+	<THEN>
+		 <INPUT TYPE="hidden" NAME="Variables.varname" VALUE="" REPLACEALL="Variables.varname"/>
+		 <tr>
+			<IF COND="Variables.showSiteTree=true">
+			<THEN> 
+                 <XLAT.LOOKUP KEY="dvin/Util/FlexAssets/SelectFromTree" VARNAME="SelectFromTree" ESCAPE="true"/>
+				<td><img height="1" width="30" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				<td valign="top"> 
+						<A HREF="javascript:void(0)" onclick="return SelectFromTree('Variables.TemplateChosen','Variables.varname')" onmouseover="window.status='Variables.SelectFromTree'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.TemplateChosen,Variables.varname,Variables.SelectFromTree">
+						<XLAT.LOOKUP KEY="dvin/AT/Common/Selectproductorcategoryfromtree" VARNAME="_ALT_"/>
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddSelectedItems"/></CALLELEMENT>
+					</A>
+				</td>
+				<IF COND="IsVariable.Dontshowhint!=true">
+				<THEN>
+					<td ><span class="small-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Hint1"/> </span></td>
+					<setvar NAME="Dontshowhint"  VALUE="true"/>
+				</THEN>
+				<ELSE>
+					<td> </td>
+				</ELSE>
+				</IF>
+			</THEN>
+			<ELSE>
+				<TD> </TD>
+				<TD>
+                    <SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+                    <SCRIPT>
+                        <SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+                            <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+                            <SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+                            <SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="multiple"/>
+                            <SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+                            <SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="Variables.recname"/>
+                        </SATELLITE.LINK>
+                        <![CDATA[
+                          function PickAssetCallback_]]><STRING.STREAM VALUE="Variables.currentUniqueID"/><![CDATA[(SelectedAssets)
+                          {
+                            var obj = document.forms[0].elements[0];
+                            obj.form.TemplateChosen.value = ]]><STRING.STREAM VALUE="Variables.TemplateChosen"/><![CDATA[;
+                            var AssetList = SelectedAssets.split(";");
+                            var assetIDs = '';
+                            for (var z = 0; z < AssetList.length; z++)
+                            {
+                              var AssetInfo = AssetList[z].split(":");
+                              if (z == 0)
+                                assetIDs = 'id='+AssetInfo[1]+',assettype='+AssetInfo[0];
+                              else
+                                assetIDs += ':id='+AssetInfo[1]+',assettype='+AssetInfo[0];
+                            }
+                            document.forms[0].elements[']]><STRING.STREAM VALUE="Variables.varname"/><![CDATA['].value = assetIDs;
+                            repostFlexContentForm();
+                          }
+                          ]]>
+                          function PickAssetPopup_<STRING.STREAM VALUE="Variables.currentUniqueID"/>() {
+                            OpenPickAssetPopup('<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true"/>', GetBannerHistory());
+                          }
+                    </SCRIPT>
+					<A HREF="#" ONCLICK="PickAssetPopup_Variables.currentUniqueID(Variables.currentUniqueID); return false;" TARGET="_blank" REPLACEALL="Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+				</TD>
+			</ELSE>
+			</IF>
+		</tr>
+	</THEN>
+	</IF>
+</table>
+</FTCS> 
+
+  

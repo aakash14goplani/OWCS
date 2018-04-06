@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/UIFramework/UITimeOutCheck</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/UIFramework/UITimeOutCheck</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/UIFramework/UITimeOutCheck.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Gator/UIFramework/UITimeOutCheck.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FGator%2FUIFramework%2FUITimeOutCheck.jsp
+@hashval=1804040738
+key=@ELEMENTCATALOG-OpenMarket/Gator/UIFramework/UITimeOutCheck
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

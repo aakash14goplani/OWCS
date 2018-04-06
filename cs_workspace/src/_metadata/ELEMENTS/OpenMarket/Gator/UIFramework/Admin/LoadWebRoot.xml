@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadWebRoots
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+	<IF COND="Variables.Type=WebRoot">
+				<THEN>
+					<ASSET.LIST TYPE="WebRoot" LIST="DGList" PUBID="SessionVariables.pubid" EXCLUDEVOIDED="true"/>
+						<REMOVEVAR NAME="Description"/>
+	
+						<!-- display Add New-->
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+							<ARGUMENT NAME="AdHoc" VALUE="WebRoot:new"/>
+							<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+						</CALLELEMENT>
+			
+						<REMOVEVAR NAME="LoadURL"/>
+						<REMOVEVAR NAME="OKActions"/>
+						<XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="ExecuteURL">
+							<satellite.argument name="cs_formmode" value="WCM"/>
+							<satellite.argument name="cs_formmode" value="WCM"/>
+							<satellite.argument name="cs_enviroment" value="standard"/>
+							<satellite.argument name="AssetType" value="WebRoot"/>
+						</SATELLITE.LINK>
+
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+							<satellite.argument name="AssetType" value="Variables.AssetType"/>
+						</SATELLITE.LINK>
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+							<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+							<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+							<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+							<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+							<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+							<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/plus.png"/>
+						</CALLELEMENT>
+					<IF COND="IsList.DGList=true">
+					<THEN>					
+						<LOOP LIST="DGList">
+							<REMOVEVAR NAME="ExecuteURL"/>
+							<REMOVEVAR NAME="OKActions"/>
+							<REMOVEVAR NAME="LoadURL"/>
+							<REMOVEVAR NAME="Image"/>
+							
+							<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+								<ARGUMENT NAME="AdHoc" VALUE="DGList.id"/>
+								<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+							</CALLELEMENT>
+		
+							<REMOVEVAR NAME="OKActions"/>
+		
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ContentDetailsFront" outstring="ExecuteURL">
+								<satellite.argument name="AssetType" value="WebRoot"/>
+								<satellite.argument name="id" value="DGList.id"/>
+								<satellite.argument name="function" value="inspect"/>
+							</SATELLITE.LINK>
+		
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+								<satellite.argument name="AssetType" value="Variables.AssetType"/>
+							</SATELLITE.LINK>
+		
+							<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+								<ARGUMENT NAME="Label" VALUE="DGList.name"/>
+								<ARGUMENT NAME="Description" VALUE="DGList.name"/>
+								<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+								<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+								<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+								<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/data/Variables.image"/>								
+							</CALLELEMENT>
+						</LOOP>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+
+</ftcs>

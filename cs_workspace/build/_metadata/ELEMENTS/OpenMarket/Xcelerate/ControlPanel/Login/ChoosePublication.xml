@@ -1,0 +1,190 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/ControlPanel/Login/ChoosePublication
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<setvar NAME="errno" VALUE="0"/>
+<USERMANAGER.GETLOGINUSERNAME VARNAME="username"/>
+<setvar NAME="numrows" VALUE="0"/>
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<USERMANAGER.GETLOGINUSER VARNAME="loginuser"/>
+<callelement NAME="Variables.propmanageuserpub">
+    <argument NAME="upcommand" VALUE="GetPublications"/>
+    <argument NAME="qryprefix" VALUE="UP"/>
+    <argument NAME="username" VALUE="Variables.loginuser"/>
+</callelement>
+<!-- if anything was returned, process it -->
+<if COND="Variables.numrows!=0"><then>
+    <!-- we either have one row returned
+             or many. At this point, we cannot
+             have numRows = 0 -->
+    <if COND="Variables.numrows=1"><then>
+        <setssvar NAME="pubid" VALUE="UP.pubid"/>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/Security/SetPublicationName"/>>
+        <THROWEXCEPTION/>
+    </then><else>
+        <!-- many publications -->
+        <SETSSVAR  NAME="numpubs" VALUE="many"/>
+        <SETVAR NAME="errno" VALUE="-1"/>
+    </else></if>
+</then><else>
+    <!-- No access to publications -->
+    <SETVAR NAME="loginMessage" VALUE="User does not have access to publications."/>
+    <SETVAR NAME="errno" VALUE="-1"/>
+</else></if>
+
+<REMOVEVAR NAME="IsSiteSelected"/>
+<IF COND="IsSessionVariable.pubid=true">
+    <THEN>
+        <IF COND="SessionVariables.pubid!=notSet">
+            <THEN>
+                <SETVAR NAME="IsSiteSelected" VALUE="true"/>
+            </THEN>
+        </IF>
+    </THEN>
+</IF>
+
+<IF COND="IsVariable.IsSiteSelected=false"><THEN>
+
+<html>
+<head>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicHeader"/>
+    <title><XLAT.STREAM KEY="dvin/UI/ContentServerInSiteEditor"/></title>
+    <link href="Variables.cs_imagedir/graphics/common/controlpanel/insite.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.cs_imagedir"/>
+</head> 
+<body style="margin: 0; padding: 0">
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST">
+<input type="hidden" name="pagename" value="OpenMarket/Xcelerate/ControlPanel/EditPanel"/>
+<input type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+<input type="hidden" name="id" value="Variables.id" REPLACEALL="Variables.id"/>
+<input type="hidden" name="panel" value="Variables.panel" REPLACEALL="Variables.panel"/>
+<input type="hidden" name="action" value="selectPublication"/>
+<IF COND="IsVariable.mode=true">
+<THEN>
+	<INPUT TYPE="hidden" NAME="mode" VALUE="Variables.mode" REPLACEALL="Variables.mode"/>
+</THEN>
+</IF>
+<table ID="table1" BORDER="0" CELLSPACING="0" CELLPADDING="0" width="250" align="center">
+    <tr>
+        <td></td>
+        <td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td class="tile-dark" VALIGN="top" WIDTH="1"><BR/>
+        </td>
+        <td>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+                <tr>
+                    <td colspan="5" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+                <tr>
+                    <td class="tile-a" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" colspan="2" REPLACEALL="Variables.cs_imagedir">
+                        <DIV class="new-table-title">
+                            <XLAT.STREAM KEY="dvin/UI/ContentServerInSiteEditor"/>
+                        </DIV>
+                    </td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" align="right" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                    <td class="tile-c" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+                <tr class="tile-row-highlight">
+                    <td colspan="7"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+                <tr class="tile-row-highlight">
+                    <td></td>
+                    <td colspan="3">
+                        <span class="line-title">
+                        <XLAT.STREAM KEY="dvin/UI/PleaseChooseaSite"/>:
+                        </span>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr class="tile-row-highlight">
+                    <td colspan="7"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+                
+                <tr class="tile-row-highlight">
+                    <td><BR/>
+                    </td>
+                    <td NOWRAP="true" align="right">
+                        <span class="line-title">
+                        </span>
+                    </td>
+                    <td>
+                        <SELECT name="pubid">
+                        <LOOP LIST="UP">
+                            <OPTION VALUE="UP.pubid" REPLACEALL="UP.pubid"><STRING.STREAM LIST="UP" COLUMN="name"/></OPTION>
+                        </LOOP>
+                        </SELECT>
+                    </td>
+                    <td><BR/>
+                    </td>
+                    <td><BR/>
+                    </td>
+                </tr>
+                
+                <tr class="tile-row-highlight">
+                    <td><BR/>
+                    </td>
+                    <td align="right">
+                        <span class="line-title">
+                        <img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="30" REPLACEALL="Variables.cs_imagedir"/>
+                        </span>
+                    </td>
+                    <td><A HREF="javascript:void(0)" onclick="javascript:document.AppForm.submit();"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Select"/></CALLELEMENT></A></td>
+                    <td><BR/>
+                    </td>
+                    <td><BR/>
+                    </td>
+                </tr>
+                <tr class="tile-row-highlight">
+                    <td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+                <tr>
+                    <td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="7" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>
+            </table>
+        </td>
+        <td class="tile-dark" VALIGN="top" WIDTH="1"><BR/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td background="Variables.cs_imagedir/graphics/common/controlpanel/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+        <td></td>
+    </tr>
+</table>
+<![CDATA[
+</td>
+</tr>
+<tr>
+    <td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+</table>
+]]>
+</SATELLITE.FORM>
+</body>
+</html>
+<script>
+	var iHeight = 15 + document.all.item('table1').offsetHeight;
+	var iWidth = 4 + document.all.item('table1').offsetWidth;
+	window.resizeTo(iWidth, iHeight);
+</script>
+<!-- return -1, so that the control panel stops loading -->
+<SETVAR NAME="errno" VALUE="-1"/>
+</THEN></IF>
+
+</FTCS>

@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Util/ShowMarketingTab
+
+INPUT
+
+OUTPUT
+
+-->
+<!-- Record dependencies for the Template -->
+<IF COND="IsVariable.tid=true"><THEN><RENDER.LOGDEP cid="Variables.tid" c="Template"/></THEN></IF>
+
+<setvar NAME="marketingTabRequired"  VALUE="false"/>
+<IF COND="Variables.enabledFields=false">
+	<THEN>
+		<SETVAR NAME="enabled" VALUE="true"/>
+	</THEN>
+</IF>
+
+<CALLELEMENT NAME="OpenMarket/Gator/Util/HasMarketStudio"/>
+<IF COND="Variables.hasMarketStudio=true">
+	<THEN>
+		<IF COND="Variables.enabledFields=true">
+			<THEN>
+				<HASH.CONTAINS VARNAME="enabled" NAME="enabledFields" VALUE="ruleset"/>
+			</THEN>
+		</IF>
+		<IF COND="Variables.enabled=true">
+			<THEN>
+				<FLEXASSET.GETRATINGRULESETMAP NAME="theCurrentAsset" OBJVARNAME="theAppMap"/>
+				<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/CDLoadRuleset"/>
+				<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/CDSortSegments"/>
+			
+				<if COND="IsList.RatingList=true">
+				<then>
+					<if COND="RatingList.#numRows!=0">
+					<then>
+						<setvar NAME="marketingTabRequired"  VALUE="true"/>
+					</then>
+					</if>
+				</then>
+				</if>
+			</THEN>
+		</IF>
+
+		<IF COND="Variables.marketingTabRequired=false">
+			<THEN>
+				<IF COND="Variables.enabledFields=true">
+					<THEN>
+						<HASH.CONTAINS VARNAME="enabled" NAME="enabledFields" VALUE="Relationships"/>
+					</THEN>
+				</IF>
+				<IF COND="Variables.enabled=true">
+					<THEN>
+						<IF COND="Variables.ContentDetails:Relationships:Total!=0">
+							<THEN>
+								<setvar NAME="marketingTabRequired"  VALUE="true"/>
+							</THEN>
+						</IF>
+					</THEN>
+				</IF>
+			</THEN>
+		</IF>
+	</THEN>
+</IF>
+		
+</FTCS>

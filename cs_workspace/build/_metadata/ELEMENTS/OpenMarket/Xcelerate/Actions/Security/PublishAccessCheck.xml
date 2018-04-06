@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Security/PublishAccessCheck
+-
+- 	This element verifies if current user can access publish-related screens. There are two levels of verification depending on the input. 
+-	First, user must have xcelpublish ACL. If user has acl, we then check if user has access to the targetid. 
+- 	Scenario: User has publish right(ACL and Roles) in Site A but not in Site B.
+-		1) Logging into Site B and crafting a site A publish link will still show error because at the time of the crafted link, 
+-		the roles for the user are based on Site B and not Site A.
+-		2) Logging into Site B and crafting a link in Site B will show error because user does not have right.
+-		3) Logging into Site A, user will be able to publish. 
+- INPUT
+-	targetid (optional) - destination id 
+- OUTPUT
+-	doproceed
+-->
+<SETVAR NAME="doproceed" VALUE="true"/>
+<USERISMEMBER GROUP="xcelpublish"/>
+<IF COND="Variables.errno=0">
+    <THEN>
+        <XLAT.LOOKUP KEY="fatwire/Alloy/Authorization/IllegalTransition" VARNAME="_xlat_" ENCODE="false"/>
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+            <ARGUMENT NAME="severity" VALUE="error"/>
+            <ARGUMENT NAME="msgtext" VALUE="Variables._xlat_"/>
+        </CALLELEMENT>
+        <SETVAR NAME="doproceed" VALUE="false"/>
+    </THEN>
+	<ELSE>
+		<!-- Does current user have access to any publish destination for the current site? This is checked by user roles -->
+		<PUBTARGETMANAGER.FIND PREFIX="pbt" PUBID="SessionVariables.pubid" FILTERFORPUBLISH="true"/>
+		<IF COND="Variables.pbtTotal=0">
+		<THEN>
+			<XLAT.LOOKUP KEY="fatwire/Alloy/Authorization/IllegalTransition" VARNAME="_xlat_" ENCODE="false"/>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<ARGUMENT NAME="severity" VALUE="error"/>
+				<ARGUMENT NAME="msgtext" VALUE="Variables._xlat_"/>
+			</CALLELEMENT>
+			<SETVAR NAME="doproceed" VALUE="false"/>
+		</THEN>
+		<ELSE>
+			<IF COND="IsVariable.targetid=true">
+			<THEN>
+				<SETVAR NAME="showErrorFlag" VALUE="true"/>
+				<SETCOUNTER NAME="n" VALUE="0"/>
+				<LOOP COUNT="Variables.pbtTotal">
+					<PUBTARGET.SCATTER NAME="pbtCounters.n" PREFIX="pubtarget:"/>
+                    <IF COND="Variables.targetid=Variables.pubtarget:id">
+					<THEN>
+						<SETVAR NAME="showErrorFlag" VALUE="false"/>
+					</THEN>
+					</IF>
+                    <INCCOUNTER NAME="n" VALUE="1"/>
+                </LOOP>
+				<IF COND="Variables.showErrorFlag=true">
+				<THEN>
+					<XLAT.LOOKUP KEY="fatwire/Alloy/Authorization/IllegalTransition" VARNAME="_xlat_" ENCODE="false"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="severity" VALUE="error"/>
+						<ARGUMENT NAME="msgtext" VALUE="Variables._xlat_"/>
+					</CALLELEMENT>
+					<SETVAR NAME="doproceed" VALUE="false"/>
+				</THEN>
+				</IF>
+			</THEN>
+			<ELSE>
+				<!-- User has access to some publish destination but no targetid was provided therefore we can only assume user has access based on ACL -->
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</ELSE>
+</IF>
+                                                                         
+</FTCS>

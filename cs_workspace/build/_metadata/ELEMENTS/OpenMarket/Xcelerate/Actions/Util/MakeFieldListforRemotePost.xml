@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/Util/MakeFieldListforRemotePost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+    <IF COND="IsVariable.updateFieldList!=true">
+    <THEN>
+        <!-- Make the updateFieldList Variable as it is not specified in the src and config files -->
+        <ASSET.INSPECT LIST="AssetAttributes"  TYPE="Variables.AssetType"/>
+        <IF COND="IsList.AssetAttributes=true">
+        <THEN>
+    
+            <SETVAR NAME="updateFieldList"  VALUE="Variables.empty"/>
+            <SETVAR NAME="firsttime"  VALUE="true"/>
+            <LOOP LIST="AssetAttributes">
+                <LOGMSG STR="AssetAttribute: AssetAttributes.name"/>
+				
+				<ICS.RESOLVEVARIABLES NAME="Variables.AssetAttributes.name" OUTPUT="currentAttrValue"/>
+
+				<IF COND="Variables.currentAttrValue=_EMPTY_">
+				<THEN>
+					<SETVAR NAME="AssetAttributes.name" VALUE="Variables.empty"/>
+				</THEN>
+				</IF>
+				
+                <IF COND="IsVariable.AssetAttributes.name=true">
+                <THEN>
+                    <IF COND="Variables.firsttime=true">
+                    <THEN>
+                        <SETVAR NAME="firsttime"  VALUE="false"/>
+                        <SETVAR NAME="updateFieldList"  VALUE="AssetAttributes.name"/>
+                    </THEN>
+                    <ELSE>
+                         <SETVAR NAME="updateFieldList"  VALUE="Variables.updateFieldList,AssetAttributes.name"/>
+                    </ELSE>
+                    </IF>
+                </THEN>
+                </IF>
+             </LOOP>
+        </THEN>
+        </IF>
+    </THEN>
+    </IF>
+
+
+
+</FTCS>

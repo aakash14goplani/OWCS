@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/AssetMaker/BuildCheckRequiredProperties</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/AssetMaker/BuildCheckRequiredProperties</string>
+        <string>Generate JavaScript to check for required properites</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/AssetMaker/BuildCheckRequiredProperties.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/AssetMaker/BuildCheckRequiredProperties.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FAssetMaker%2FBuildCheckRequiredProperties.xml
+@hashval=-1059645633
+key=@ELEMENTCATALOG-OpenMarket/AssetMaker/BuildCheckRequiredProperties
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadUsers
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<!-- This element handles all children of the Users root node -->
+
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<callelement NAME="Variables.propmanageuserpub">
+	<argument NAME="upcommand" VALUE="GetAllUsers"/>
+	<argument NAME="qryprefix" VALUE="ActiveUsers"/>
+</callelement>
+
+<loop LIST="ActiveUsers">
+	<setvar NAME="AUusername" VALUE="ActiveUsers.Variables.ActiveUsers_qrycol"/>
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="Users:Variables.AUusername"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	
+	<REMOVEVAR NAME="LoadURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+    <XLAT.LOOKUP KEY="dvin/TreeApplet/DisplayUserProfile" ENCODE="false" VARNAME="_XLAT_"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/UserProfileFront" outstring="ExecuteURL">
+		<satellite.argument name="username" value="Variables.AUusername"/>
+		<satellite.argument name="action" value="details"/>
+	</SATELLITE.LINK>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+		<satellite.argument name="AssetType" value="Variables.AssetType"/>
+	</SATELLITE.LINK>
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables.AUusername"/>
+		<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+	</CALLELEMENT>
+</loop>
+
+</FTCS> 

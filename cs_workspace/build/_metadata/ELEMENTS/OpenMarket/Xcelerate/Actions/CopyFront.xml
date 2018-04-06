@@ -1,0 +1,231 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/CopyFront.xml $ 
+$Revision: 28 $ 
+$Modtime: 8/23/04 6:02p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- CopyFront.xml
+-
+- DESCRIPTION
+-	Copy a content item
+-
+- HISTORY 
+-->
+<callelement NAME="OpenMarket/Gator/Scripts/TabDirtyScript"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed"/>
+
+<SETVAR NAME="Copyid" VALUE="Variables.id"/>
+<SETVAR NAME="CopyAssetType" VALUE="Variables.AssetType"/>
+
+<INPUT TYPE="hidden" NAME="EditFlag" VALUE="copy"/>  
+<STRING.ENCODE VARIABLE="Copyid" VARNAME="CopyidEnc"/>   
+<INPUT TYPE="hidden" NAME="Copyid" VALUE="Variables.CopyidEnc" REPLACEALL="Variables.CopyidEnc"/> 
+<STRING.ENCODE VARIABLE="CopyAssetType" VARNAME="CopyAssetTypeEnc"/>    
+<INPUT TYPE="hidden" NAME="CopyAssetType" VALUE="Variables.CopyAssetTypeEnc" REPLACEALL="Variables.CopyAssetTypeEnc"/>     
+
+<STRING.ENCODE VALUE="Variables.__WORKFLOWPROCID__" VARNAME="__WORKFLOWPROCID1__" />
+<STRING.ENCODE VALUE="Variables.__PARTROLES__" VARNAME="__PARTROLES1__" />
+<!-- check for repost of __WORKFLOWPROCID__ -->
+<IF COND="IsVariable.__WORKFLOWPROCID__=true">
+<THEN>
+	<INPUT TYPE="HIDDEN" NAME="__WORKFLOWPROCID__" VALUE="Variables.__WORKFLOWPROCID1__" REPLACEALL="Variables.__WORKFLOWPROCID1__"/>
+	<STRINGLIST NAME="lPartRoles" STR="Variables.__PARTROLES__" DELIM=","/>
+	<INPUT TYPE="HIDDEN" NAME="__PARTROLES__" VALUE="Variables.__PARTROLES1__" REPLACEALL="Variables.__PARTROLES1__"/>
+	<LOOP LIST="lPartRoles">
+		<SETVAR NAME="currentParticipant" VALUE="Variables.__ROLE__lPartRoles.ITEM__"/>
+		<INPUT TYPE="HIDDEN" NAME="__ROLE__lPartRoles.ITEM__" VALUE="Variables.currentParticipant" REPLACEALL="Variables.currentParticipant,lPartRoles.ITEM"/>
+	</LOOP>
+</THEN>
+<ELSE>
+	<IF COND="IsVariable.StartItem=true">
+	<THEN>
+		<STARTMENU.LOAD ID="Variables.StartItem" OBJVARNAME="si"/>
+		<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+		<PROCESSLIST.GETALL NAME="currentProc" VARNAME="__WORKFLOWPROCID__"/>
+		<if COND="Variables.__WORKFLOWPROCID__!=Variables.empty">
+		<then>
+			<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.__WORKFLOWPROCID__" SITE="SessionVariables.pubid" VARNAME="canstartworkflow"/>
+			<if COND="Variables.canstartworkflow=true">
+			<then>
+				<INPUT TYPE="HIDDEN" NAME="__WORKFLOWPROCID__" VALUE="Variables.__WORKFLOWPROCID1__" REPLACEALL="Variables.__WORKFLOWPROCID1__"/>
+				<STARTMENUITEM.GETPARTICIPANTS NAME="si" OBJVARNAME="currentParts"/>
+                
+				<PARTICIPANTLIST.GETREQUIRED NAME="currentParts" OBJVARNAME="partsList"/>
+				<PARTICIPANTS.GETALLROLES NAME="partsList" VARNAME="allRoles"/>
+				<IF COND="Variables.allRoles!=Variables.empty">
+				<THEN>
+					<STRING.ENCODE VALUE="Variables.allRoles" VARNAME="allRolesEnc"/>
+					<INPUT TYPE="hidden" NAME="__PARTROLES__" VALUE="Variables.allRolesEnc" REPLACEALL="Variables.allRolesEnc"/>
+                    
+					<STRINGLIST STR="Variables.allRoles" NAME="rlist" DELIM=","/>
+					<LOOP LIST="rlist">
+						<PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="partsList" ROLE="rlist.ITEM" LISTVARNAME="users"/>
+						<HASH.CREATE NAME="uhash" LIST="users" COLUMN="ITEM"/>
+						<HASH.TOSTRING NAME="uhash" VARNAME="postUsers" DELIM=";"/>
+						<INPUT TYPE="hidden" NAME="__ROLE__rlist.ITEM__" VALUE="Variables.postUsers" REPLACEALL="rlist.ITEM,Variables.postUsers"/>
+					</LOOP>
+				</THEN>
+				</IF>
+
+				<WorkflowEngine.GetProcessID ID="Variables.__WORKFLOWPROCID__" OBJVARNAME="currentProc"/>
+				<WorkflowProcess.GetInitialStepID NAME="currentProc" VARNAME="inistepid"/>
+				<WorkflowProcess.GetStep NAME="currentProc" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+				<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+				<IF COND="Variables.steptype=ask">
+				<THEN>
+					<SETVAR NAME="cs_StepID" VALUE="Variables.inistepid"/>
+				</THEN>
+				</IF>
+
+			</then>
+			<else>
+				<WorkflowEngine.GetProcessID ID="Variables.__WORKFLOWPROCID__" OBJVARNAME="workflow"/>
+				<WorkflowProcess.GetProcessName NAME="workflow" VARNAME="workflowname" />
+				<setvar NAME="doproceed" VALUE="NoStartWorkflowPriv"/>
+			</else>
+			</if>
+		</then>
+		</if>
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+<if COND="Variables.doproceed=true">
+<then>
+    <STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>  
+	<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+
+	<!-- On 5/10/2008, added new support infrastructure for ContentForms.   The idea is to allow a ContentForm coder to not
+	      need to worry about the details of reposting, and also to allow certain widgets (e.g., the related asset widget) to
+	      be written in a way that can work without modification for lots of different situations.  This code is also present in
+	      NewContentFront, and should probably be made an element in its own right. -->
+	      
+	<!-- Leave chicken tracks so that the ContentForm elements do not need to do arcane calculation if they want to repost -->
+	<SETVAR NAME="AssetRepostPage" VALUE="OpenMarket/Xcelerate/Actions/NewContentFront"/>
+	
+	<!-- Provide standard javascript function that reposts -->
+	<SCRIPT TYPE="text/javascript">
+	function repostContentForm()
+	{
+		document.forms[0].pagename.value='OpenMarket/Xcelerate/Actions/NewContentFront';
+		document.forms[0].submit();
+	}
+	</SCRIPT>
+	
+	<!-- Provide variables that describe how to submit and repost in Javascript.  These variables can be superceded by individual
+	      Content Form elements to include code that causes fields to be checked, etc., allowing various widgets to be written that
+	      use just these variables to figure out what to do. -->
+	<SETVAR NAME="repostContentFormJavascript" VALUE="repostContentForm();"/>
+	<SETVAR NAME="submitContentFormJavascript" VALUE="document.forms[0].submit();"/>
+
+	<!-- Lastly, provide an indication to content forms, as a convenience, as to whether or not this is a repost.  This is
+	       mostly provided because we cannot make AssetMaker stub elements get updated, but it is potentially useful
+	       for all asset types.  -->
+	<INPUT TYPE="hidden" NAME="contentFormReposted" VALUE="true"/>
+	<IF COND="IsVariable.contentFormReposted!=true">
+	<THEN>
+		<SETVAR NAME="contentFormReposted" VALUE="false"/>
+	</THEN>
+	</IF>
+
+	<ASSET.CREATE TYPE="Variables.AssetType" NAME="copyAssetInstance"/>
+	<ASSET.GET NAME="copyAssetInstance" FIELD="id" OUTPUT="id"/>
+	<IF COND="IsError.Variables.errno!=true">
+	<THEN>
+		<IF COND="IsVariable.id=true">
+		<THEN>
+			<ASSET.SET NAME="Variables.assetObjectName" FIELD="id" VALUE="Variables.id"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	
+	<callelement NAME="OpenMarket/Xcelerate/Scripts/PickAssetPopup"/>
+	<IF COND="IsVariable.cs_StepID=true">
+	<THEN>
+		<STRING.ENCODE VARIABLE="cs_StepID" VARNAME="cs_StepID" />
+		<INPUT TYPE="hidden" NAME="cs_StepID" VALUE="Variables.cs_StepID" REPLACEALL="Variables.cs_StepID"/>
+		<INPUT TYPE="hidden" NAME="cs_AlreadyHaveAssignees" VALUE="yes"/>
+		<IF COND="IsVariable.cs_AlreadyHaveAssignees=false">
+		<THEN>
+			<INPUT TYPE="hidden" NAME="id" VALUE="Variables.CopyidEnc" REPLACEALL="Variables.CopyidEnc"/>
+			<INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+			<STRING.ENCODE VARIABLE="ccsourceid" VARNAME="ccsourceid"/>
+			<INPUT TYPE="hidden" NAME="ccsourceid" VALUE="Variables.ccsourceid" REPLACEALL="Variables.ccsourceid"/>
+			<SETVAR NAME="cs_SavedID" VALUE="Variables.id"/>
+			<REMOVEVAR NAME="id"/>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/SetAssigneesForAskStep">
+				<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+				<ARGUMENT NAME="AskStep" VALUE="Variables.cs_StepID"/>
+				<ARGUMENT NAME="workflowid" VALUE="Variables.__WORKFLOWPROCID1__"/>
+				<ARGUMENT NAME="cancelpage" VALUE="OpenMarket/Xcelerate/Actions/ShowStartMenuItems"/>
+				<ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+				<ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+			</CALLELEMENT>
+			<SETVAR NAME="id" VALUE="Variables.cs_SavedID"/>
+		</THEN>
+		<ELSE>
+			<!-- repost role selections and call the ContentForm -->
+			<STRING.ENCODE VARIABLE="assigneeroles" VARNAME="assigneeroles"/>
+			<INPUT TYPE="hidden" NAME="assigneeroles" VALUE="Variables.assigneeroles" REPLACEALL="Variables.assigneeroles"/>
+			<STRINGLIST NAME="lAssigneeRoles" STR="Variables.assigneeroles" DELIM="," />
+			<LOOP LIST="lAssigneeRoles">
+				<ICS.RESOLVEVARIABLES NAME="$(Variables.ask:$(lAssigneeRoles.ITEM))" DELIMITED="true" OUTPUT="cs_currentRoleVal"/>
+				<STRING.ENCODE VARIABLE="cs_currentRoleVal" VARNAME="cs_currentRoleValEnc"/>
+				<INPUT TYPE="hidden" NAME="ask:lAssigneeRoles.ITEM" VALUE="Variables.cs_currentRoleValEnc" REPLACEALL="Variables.cs_currentRoleValEnc,lAssigneeRoles.ITEM"/>
+			</LOOP>
+
+			<!-- display assignee selections at the end -->
+			<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentForm"/>
+			<!-- Check if the tab container was loaded in the call to content form. We already show the assignees in that page. So need to check here before we show it -->
+			<if cond="IsVariable.tabContent!=true">
+			<then>
+				<!-- This should not show up in the definition selection page so make sure that AssocTmpls was not called by checking this list-->
+				<if cond="IsList.lAllDefs!=true">
+				<then>
+					<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/ShowAssigneeSelectionsBelow"/>
+				</then>
+				</if>
+			</then>
+			</if>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+			<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentForm"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+	</ELSE>
+	</IF>
+</then>
+<else>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="elem" VALUE="Variables.doproceed"/>
+		<argument NAME="severity" VALUE="info"/>
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+	</callelement>
+		
+	<!-- Display the details page -->
+	<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+	</callelement>
+		     
+</else>
+</if>
+
+</FTCS>
+

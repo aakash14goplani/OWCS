@@ -1,0 +1,244 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/AttributeTypes/EWEBEDITPRO
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Display one eWebEditPro widget per attribute value -->
+<IF COND="Variables.MultiValueEntry=no">
+<THEN>
+	
+	<!-- Don't want default display field  -->
+	<setvar NAME="doDefaultDisplay" VALUE="no"/>
+	
+	<!-- Get all parameters from Attribute Editor xml -->
+	<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="XSIZE" VARNAME="XSIZE"/>  
+	<if COND="IsVariable.XSIZE!=true">
+	<then>
+		<setvar NAME="XSIZE" VALUE="400"/>
+	</then>
+	</if>
+	
+	<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="YSIZE" VARNAME="YSIZE"/>  
+	<if COND="IsVariable.YSIZE!=true">
+	<then>
+		<setvar NAME="YSIZE" VALUE="200"/>
+	</then>
+	</if>
+	
+	<tr> 
+	
+		<!-- Standard element to display attribute name or description -->
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+		<td></td>
+		<td>
+		
+			<!-- Single valued attributes -->
+			<if COND="Variables.EditingStyle=single">
+			<then>
+				
+				<!-- Special case: TEXTAREA for URL attributes -->
+				<IF COND="Variables.AttrType=url">
+				<THEN>
+					<setvar NAME="errno" VALUE="0"/>
+					<BEGINS STR="AttrValueList.urlvalue" WHAT="AttrValueList."/>
+					<IF COND="Variables.errno=1">
+					<THEN>
+						<setvar NAME="filename" VALUE="CS.UniqueID.txt"/>
+					</THEN>
+					<ELSE>
+						<setvar NAME="filename" VALUE="AttrValueList.urlvalue"/>
+					</ELSE>
+					</IF>
+					
+					<INPUT TYPE="hidden" NAME="Variables.cs_SingleInputName_file" VALUE="Variables.filename" REPLACEALL="Variables.cs_SingleInputName,Variables.filename"/>
+					
+					<setvar NAME="errno" VALUE="0"/>
+					<BEGINS STR="AttrValueList.@urlvalue" WHAT="AttrValueList."/>
+					<IF COND="Variables.errno=1">
+					<THEN>
+						<setvar NAME="MyAttrVal" VALUE="Variables.empty"/>
+					</THEN>
+					<ELSE>
+						<setvar NAME="MyAttrVal" VALUE="AttrValueList.@urlvalue"/>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+				
+				<!-- Display a TEXTAREA with all parameters from Attribute Editor xml -->
+				<!-- The NAME of the input must be the attribute name -->
+				<SUBSTITUTE STR="Variables.MyAttrVal" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="currentValue"/>
+				<setvar NAME="currentInput" VALUE="Variables.cs_SingleInputName"/>
+				
+			</then>
+			<else>
+				<!-- Multiple valued attributes -->
+				<!-- For single value attributes we can usually use the default RequireInfo -->
+				<!-- For multiple value attributes we need to append to RequireInfo for each value -->
+				<if COND="Variables.RequiredAttr=true">
+				<then>
+					<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_MultipleInputName*Variables.currentAttrName*ReqTrue*Variables.AttrType!"/>
+				</then>
+				<else>
+					<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_MultipleInputName*Variables.currentAttrName*ReqFalse*Variables.AttrType!"/>
+				</else>
+				</if>
+				<IF COND="Variables.AttrType=url">
+				<THEN>
+					<setvar NAME="errno" VALUE="0"/>
+					<CALCULATOR.GO VALUE="AttrValueList.#curRow Counters.TCounter GTE" VARNAME="realVal"/>
+					
+					<IF COND="Variables.realVal=1">
+					<THEN>
+						<setvar NAME="errno" VALUE="0"/>
+						<BEGINS STR="AttrValueList.urlvalue" WHAT="AttrValueList."/>
+						<IF COND="Variables.errno=1">
+						<THEN>
+							<setvar NAME="filename" VALUE="CS.UniqueID.txt"/>
+						</THEN>
+						<ELSE>
+							<setvar NAME="filename" VALUE="AttrValueList.urlvalue"/>
+						</ELSE>
+						</IF>
+						
+						<INPUT TYPE="hidden" NAME="Variables.cs_MultipleInputName_file" VALUE="Variables.filename" REPLACEALL="Variables.cs_MultipleInputName,Variables.filename"/>
+					
+					
+						<BEGINS STR="AttrValueList.@urlvalue" WHAT="AttrValueList."/>
+						<IF COND="Variables.errno=1">
+						<THEN>
+							<setvar NAME="tempval" VALUE="Variables.empty"/>
+						</THEN>
+						<ELSE>
+							<setvar NAME="tempval" VALUE="AttrValueList.@urlvalue"/>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+						<INPUT TYPE="hidden" NAME="Variables.cs_MultipleInputName_file" VALUE="CS.UniqueID.txt" REPLACEALL="Variables.cs_MultipleInputName,CS.UniqueID"/>
+						<setvar NAME="tempval" VALUE="Variables.empty"/>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+				<!-- Display a TEXTAREA with all parameters from Attribute Editor xml -->
+				<!-- The NAME of the input must be the attribute name prepended by the TCounter counter -->
+				<SUBSTITUTE STR="Variables.tempval" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="currentValue"/>
+				<setvar NAME="currentInput" VALUE="Variables.cs_MultipleInputName"/>
+			</else>
+			</if>
+			
+			<INPUT TYPE="hidden" NAME="Variables.currentInput" value="Variables.currentValue" REPLACEALL="Variables.currentInput,Variables.currentValue"/>
+			<!-- The following hidden field is for getting the selected text for addlink and inlcude.Previous method was not working in firefox -->
+			<INPUT TYPE="hidden" NAME="Variables.currentInput_SelectedTextForEmbeddedLink"  REPLACEALL="Variables.currentInput"/>
+				
+			<REPLACEALL LIST="Variables.currentInput,Variables.XSIZE,Variables.YSIZE">
+			<![CDATA[
+			<script language="JavaScript">
+            <!--
+				if (typeof eWebEditPro == "object") 		
+				{
+					options = "<options><filter auto-detect='yes' on-get='clean-html'></filter></options>";
+				
+					eWebEditPro.create("Variables.currentInput", Variables.XSIZE, Variables.YSIZE);
+				}
+            //-->
+				</script>
+			]]>
+			</REPLACEALL>
+		</td>
+		   <if COND="Variables.EditingStyle!=single">
+		   <then>
+	   		<callelement NAME="OpenMarket/Xcelerate/Scripts/MoveMulFields"/>   
+            <td valign="top">      
+			<XLAT.LOOKUP KEY="dvin/UI/Moveup" VARNAME="mouseover" ESCAPE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/Moveup" VARNAME="_XLAT_"/>
+            <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="move_ewebeditprofield('Variables.cs_MultipleInputName', 1);" REPLACEALL="Variables.cs_MultipleInputName,Variables.mouseover">
+               <IMG src="Variables.cs_imagedir/graphics/common/controlpanel/up.gif" BORDER="0" VSPACE="0"  HSPACE="2" TITLE="Variables._XLAT_" ALT="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+            </A>                   
+			<XLAT.LOOKUP KEY="dvin/UI/Movedown" VARNAME="mouseover" ESCAPE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/Movedown" VARNAME="_XLAT_"/>
+            <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="move_ewebeditprofield('Variables.cs_MultipleInputName', -1);" REPLACEALL="Variables.cs_MultipleInputName,Variables.mouseover">
+               <IMG src="Variables.cs_imagedir/graphics/common/controlpanel/dn.gif" BORDER="0" VSPACE="0"  HSPACE="2" TITLE="Variables._XLAT_" ALT="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+            </A>                 
+            </td>  
+        </then>
+        </if>
+        <if COND="Variables.AllowEmbeddedLinks=true">
+        <then>
+             <if COND="IsVariable.embeddedlink_inited!=true">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Scripts/AddEmbeddedLink"/>
+                    <setvar NAME="embeddedlink_inited" VALUE="true" />
+                </then>
+                </if>
+            
+                <td valign="top">
+                    <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="alt" />
+                    <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                    <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.currentInput', 'Variables.currentAttrName', 'link', true);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.currentInput,Variables.currentAttrName,Variables.mouseover">
+                        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/AddLink"/></callelement>
+                    </A><br/>
+
+                    <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="alt" />
+                    <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                    <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.currentInput', 'Variables.currentAttrName', 'include', true);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.currentInput,Variables.currentAttrName,Variables.mouseover">
+                        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/Include"/></callelement>
+                    </A>         
+                </td>   
+                   
+                <setvar NAME="errno" VALUE="0" />   
+        </then>
+        </if>
+
+        
+   	</tr>
+</THEN>
+<ELSE>
+	<PROPERTY.GET PARAM="xcelerate.ewebeditpro" INIFILE="futuretense_xcel.ini" VARNAME="webeditjs"/>  	
+    <REPLACE STR="Variables.webeditjs">
+		<script language="JavaScript1.2" src="Variables.webeditjs"></script>
+	</REPLACE>
+	<PROPERTY.GET PARAM="xcelerate.renumcharref" INIFILE="futuretense_xcel.ini" VARNAME="renumcharref"/>
+	<IF COND="IsVariable.renumcharref=true">
+		<THEN>
+			<IF COND="Variables.renumcharref!=Variables.empty">
+				<THEN>
+					<REPLACE STR="Variables.renumcharref">
+					<![CDATA[
+					<script language="JavaScript1.2">
+						if (typeof eWebEditPro == "object") {
+							eWebEditPro.onsave = function() {
+								var reNumCharRef = Variables.renumcharref;
+								for(var i=0; i < eWebEditPro.instances.length; i++) {
+									var input = eWebEditPro.instances[i].linkedElement();
+									input.value = input.value.replace(reNumCharRef,
+										function(s) {
+											var html = "";
+											for (var i = 0; i < s.length; i++) {
+												var c = s.charCodeAt(i);
+												html += "&#"+c+";";
+											}
+											return html;
+										}
+									);
+								}
+							};
+						}
+						
+					</script>
+					]]>
+					</REPLACE>
+				</THEN>
+			</IF>
+		</THEN>
+	</IF>
+</ELSE>
+</IF> <!-- MultiValueEntry -->
+</FTCS> 

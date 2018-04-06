@@ -1,0 +1,433 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/RevTracking.xml $ 
+$Revision: 21 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+<!-- OpenMarket/Xcelerate/Admin/RevTracking
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function checkfields()
+{
+var obj = document.forms[0].elements[0];
+var aNum = obj.form.elements['numversions'].value;
+var num = Number(obj.form.elements['numversions'].value);
+
+	if (obj.form.elements['numversions'].value=="")
+	{
+]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Admin/pleaseenteravalidnumber"  ESCAPE="true" ENCODE="false"/>"); 
+
+	<![CDATA[
+		return false;
+	}
+	if (/[^0-9]/.test(aNum) || num <=0)
+	{
+	]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Admin/pleaseenteravalidnumber"  ESCAPE="true" ENCODE="false"/>"); 
+	<![CDATA[
+		return false;
+	}
+
+}
+]]>
+</SCRIPT>
+<STRING.ENCODE VARIABLE="assettype" VARNAME="assettype"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<ASSETTYPE.LOAD NAME="theAssetType" TYPE="Variables.assettype"/>
+<ASSETTYPE.SCATTER NAME="theAssetType" PREFIX="at"/>
+
+<!-- edit tracking -->
+<IF COND="Variables.action=details">
+<THEN>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="AssetTypeURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="assettype" value="Variables.assettype"/>
+                                                          </SATELLITE.LINK>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/RevisionTrackingforAT"/>: <A HREF="Variables.AssetTypeURL" REPLACEALL="Variables.AssetTypeURL"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="Variables.at:description"/></A></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+	<argument NAME="AssetType" VALUE="Variables.assettype"/>
+</callelement>
+
+<IF COND="Variables.trackingenabled=true">
+<THEN>
+<setvar NAME="nversions" VALUE="Variables.empty"/>
+<setvar NAME="dstorage" VALUE="Variables.empty"/>
+
+<!-- query RTInfo table; this table should be accessible by SiteGod as well as by xceladmin -->
+	<SETVAR NAME="tablename" VALUE="RTInfo"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.assettype"/>
+		<ARGUMENT NAME="type" VALUE="String"/>
+	</CALLELEMENT>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<execsql LIST="rtinfolist" SQL="SELECT * from Variables.tablename where tblname = 'Variables.assettype'"/>
+	</THEN>
+	</IF>
+	<setvar NAME="nversions" VALUE="rtinfolist.versions"/>
+	<setvar NAME="dstorage" VALUE="rtinfolist.storage"/>
+
+	<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+			<td  class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Admin/RevisionstoKeep"/>:
+			</td>
+			<td></td>
+			<td  class="form-inset">
+					<INPUT TYPE="text" NAME="numversions" SIZE="5" MAXSIZE="5" VALUE="Variables.nversions" REPLACEALL="Variables.nversions"/>
+			</td>
+		</tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+			<td  class="form-label-text">
+					<INPUT TYPE="checkbox" NAME="removeexcessrevisions" VALUE="true"/>
+			</td>
+			<td></td>
+			<td  class="form-inset">
+					<XLAT.STREAM KEY="dvin/UI/Admin/RemoveExcessRevisions"/>
+			</td>
+		</tr>
+		</table>
+		</td></tr>
+	</table>
+	
+	<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/RevTracking"/>
+	<INPUT TYPE="hidden" NAME="action" VALUE="dochangenumrevs"/>
+	<INPUT TYPE="hidden" NAME="assettype" VALUE="Variables.assettype" REPLACEALL="Variables.assettype"/>
+	<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover_cancel" ESCAPE="true"/>
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/SetRevisions" VARNAME="_XLAT_" ESCAPE="true"/>
+	<div class="width-outer-70">
+	<A HREF="Variables.AssetTypeURL" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.AssetTypeURL,Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Admin/SetRevisions"/></CALLELEMENT></A>
+	</div>
+</THEN>
+<ELSE>
+	<div class="width-outer-70">
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/TheATisnotcurrentlyrevisiontracked" at:description="Variables.at:description" EVALALL="false" ENCODE="false" VARNAME="msgtext"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>
+	</div>
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+		<ARGUMENT NAME="action" VALUE="details"/>
+	</CALLELEMENT>
+</ELSE>
+</IF>
+</THEN>
+</IF>
+
+<!-- first time tracking -->
+<IF COND="Variables.action=track">
+<THEN>	
+      <ics.literal table="SystemInfo" column="tblname" string="ElementCatalog"
+output="literal"/>
+	  <setvar NAME="tablename" VALUE="SystemInfo"/>
+	  <setvar NAME="dir" VALUE="Variables.empty"/>
+	  <execsql LIST="ddir" SQL="select defdir from SystemInfo where tblname=Variables.literal"/>
+	  <IF COND="Variables.errno=0">
+	  <THEN>
+		  <!-- get the root directory-->
+		  <indexof STR="ddir.defdir" WHAT="elements" OUTSTR="offset"/>
+		  <substring STR="ddir.defdir" OUTSTR="dir" ENDINDEX="Variables.offset"/>
+	  </THEN>
+	  </IF>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="AssetTypeURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="assettype" value="Variables.assettype"/>
+                                                          </SATELLITE.LINK>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/RevisionTrackingforAT"/>: <A HREF="Variables.AssetTypeURL" REPLACEALL="Variables.AssetTypeURL"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="Variables.at:description"/></A></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+    <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+	  <argument NAME="AssetType" VALUE="Variables.assettype"/>
+    </callelement>
+<IF COND="Variables.trackingenabled!=true">
+<THEN>
+<INPUT TYPE="hidden" NAME="storage" SIZE="32" MAXSIZE="32" VALUE="Variables.dirStorage/Variables.assettype" REPLACEALL="Variables.dir,Variables.assettype"/>
+<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td  class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Admin/RevisionstoKeep"/>:
+				</td>
+				<td></td>
+				<td  class="form-inset">
+						<INPUT TYPE="text" NAME="numversions" SIZE="5" MAXSIZE="5" VALUE="20"/>
+				</td>
+			</tr>
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD></TD><TD class="form-inset">
+					<A HREF="Variables.AssetTypeURL" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.AssetTypeURL,Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/EnableRevisionTracking"/></CALLELEMENT></A>
+				</TD>
+			</TR>
+		</table>
+		</td></tr>
+</table>
+
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover_cancel" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/UI/Admin/EnableRevisionTracking" VARNAME="_XLAT_" ESCAPE="true"/>
+
+</THEN>
+<ELSE>
+<div class="width-outer-70">
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/TheATiscurrentlyrevisiontracked" VARNAME="msgtext"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>
+</div>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover_cancel" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/UI/Admin/SetRevisions" VARNAME="_XLAT_" ESCAPE="true"/> 
+<XLAT.LOOKUP KEY="dvin/AdminForms/UnTrack" VARNAME="mouseover_untrack" ESCAPE="true"/> 
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/RevTracking" outstring="UntrackURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="untrack"/>
+                                                         <satellite.argument name="assettype" value="Variables.assettype"/>
+                                                          </SATELLITE.LINK>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/RevTracking" outstring="urlrevtracking">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="assettype" value="Variables.assettype"/>
+                                                          </SATELLITE.LINK>
+<div class="width-outer-70">														 
+<A HREF="Variables.AssetTypeURL" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.AssetTypeURL,Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+<!-- <IMG WIDTH="50" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/> -->
+<A HREF="Variables.urlrevtracking" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.urlrevtracking"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SetRevisions_"/></CALLELEMENT></A>
+<A HREF="Variables.UntrackURL" onmouseover="window.status='Variables.mouseover_untrack';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.UntrackURL,Variables.mouseover_untrack"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Untrack_"/></CALLELEMENT></A>	
+</div>
+</ELSE>
+</IF>
+	
+	<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/RevTracking"/>
+	<INPUT TYPE="hidden" NAME="action" VALUE="dotrack"/>
+	<INPUT TYPE="hidden" NAME="assettype" VALUE="Variables.assettype" REPLACEALL="Variables.assettype"/>
+
+</THEN>
+</IF>
+
+<IF COND="Variables.action=dotrack">
+<THEN>
+	<ASSET.TRACK TYPE="Variables.assettype" DIR="Variables.storage" REVISIONS="Variables.numversions"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+	<div class="width-outer-70">
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/TrackTablesucceededforassettype" VARNAME="msgtext"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="severity" VALUE="info"/>
+		</callelement>
+	</div>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+			<ARGUMENT NAME="action" VALUE="details"/>
+		</CALLELEMENT>
+	</THEN>
+	<ELSE>		
+		<div class="width-outer-70">
+		<IF COND="Variables.errno=-10023">
+		<THEN>
+		  <XLAT.LOOKUP KEY="dvin/UI/Admin/assettypeassettypetablemaynotexist" assettype="Variables.assettype" errno="Variables.errno" EVALALL="false" VARNAME="msgtext"/>
+		  <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			  <argument NAME="severity" VALUE="error"/>
+		  </callelement>			
+		</THEN>
+		<ELSE>
+		  <XLAT.LOOKUP KEY="dvin/UI/Admin/TrackTablefailedassettypeerrno" assettype="Variables.assettype" errno="Variables.errno" EVALALL="false" VARNAME="msgtext"/>
+		  <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			  <argument NAME="severity" VALUE="error"/>
+		  </callelement>
+     
+    		<IF COND="Variables.errno=-10020">
+    		<THEN>
+    			<XLAT.STREAM KEY="dvin/UI/Admin/assettypeassettypemayalreadybetracked"/><br/>
+    			<XLAT.STREAM KEY="dvin/UI/Admin/Pleaserefreshtreeleftframetryagain"/> 
+    		</THEN>
+    		</IF>
+		</ELSE>
+		</IF>
+		</div>
+	</ELSE>	
+	</IF>
+
+</THEN>
+</IF>
+
+<IF COND="Variables.action=dountrack">
+<THEN>	
+	<ASSET.UNTRACK TYPE="Variables.assettype"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+		<div class="width-outer-70">
+		<IMPLICITCHECKOUT.CLEARCHECKOUTINFOBYTYPE ASSETTYPE="Variables.assettype" />
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/Untracksucceededforassettype" VARNAME="msgtext"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="severity" VALUE="info"/>
+		</callelement>
+		</div>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+			<ARGUMENT NAME="action" VALUE="details"/>
+		</CALLELEMENT>
+	</THEN>
+	<ELSE>
+		<XLAT.STREAM KEY="dvin/UI/Admin/Untrackfailedforassettypeerrno" errno="Variables.errno" EVALALL="false"/><br/>
+	  	<IF COND="Variables.errno=-10011">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/UI/Admin/assettypemaynotbetracked"/><br/>
+			<XLAT.STREAM KEY="dvin/UI/Admin/Pleaserefreshtreeleftframetryagain"/> 
+		</THEN>
+		</IF>
+	</ELSE>	
+	</IF>
+
+</THEN>
+</IF>
+
+<IF COND="Variables.action=dochangenumrevs">
+<THEN>	
+	<div class="width-outer-70">
+	<SETVERSIONS TABLE="Variables.assettype" NUMVERSIONS="Variables.numversions"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/SetRevisionssucceededforassettype" VARNAME="msgtext"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="severity" VALUE="info"/>
+		</callelement>
+		<!-- Now, if the user selected it, clean up excess revisions -->
+		<IF COND="Variables.removeexcessrevisions=true">
+		<THEN>
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/Removingexcessrevisionsforassettype" VARNAME="msgtext"/>
+			<ASSET.REMOVEEXCESSREVISIONS TYPE="Variables.assettype" MAX="Variables.numversions"/>
+			<IF COND="IsError.Variables.errno=false">
+			<THEN>
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/Removeexcessrevisionssucceededforassettype" VARNAME="msgtext"/>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="severity" VALUE="info"/>
+				</callelement>
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/Admin/Removeexcessrevisionsfailedforassettypeerrno" at:description="Variables.at:description" errno="Variables.errno" EVALALL="false"/>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="severity" VALUE="info"/>
+				</callelement>
+			</ELSE>
+			</IF>
+		</THEN>
+		</IF>
+	</THEN>
+	<ELSE>
+		<XLAT.STREAM KEY="dvin/UI/Admin/SetRevisionsfailedforassettypeerrno" at:description="Variables.at:description" errno="Variables.errno" EVALALL="false"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="severity" VALUE="info"/>
+		</callelement>
+	</ELSE>	
+	</IF>
+	</div>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+		<ARGUMENT NAME="action" VALUE="details"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+
+<IF COND="Variables.action=cancel">
+<THEN>	
+	  <XLAT.STREAM KEY="dvin/UI/Admin/UntrackTablecancelledforassettype"/><br/>
+</THEN>
+</IF>
+
+
+<IF COND="Variables.action=untrack">
+<THEN> 
+<div class="width-outer-70">
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="AssetTypeURL">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="assettype" value="Variables.assettype"/>
+                                                          </SATELLITE.LINK>
+<table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/RevisionTrackingforAT"/>: <A HREF="Variables.AssetTypeURL" REPLACEALL="Variables.AssetTypeURL"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="Variables.at:description"/></A></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+	  <argument NAME="AssetType" VALUE="Variables.assettype"/>
+    </callelement>
+    
+<IF COND="Variables.trackingenabled=true">
+<THEN>
+<XLAT.LOOKUP KEY="dvin/UI/Admin/AreyousureyouwanttoUntrackQ" ENCODE="false" VARNAME="msgtext"/>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="severity" VALUE="warning"/>
+	</callelement>
+<p/>
+<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover_cancel" ESCAPE="true"/>
+<XLAT.LOOKUP KEY="dvin/AdminForms/UnTrack" VARNAME="_XLAT_" ESCAPE="true"/>
+<A HREF="Variables.AssetTypeURL" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.AssetTypeURL,Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/UnTrack"/></CALLELEMENT></A>
+            			<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/RevTracking"/>
+            			<INPUT TYPE="hidden" NAME="action" VALUE="dountrack"/>
+            			<INPUT TYPE="hidden" NAME="assettype" VALUE="Variables.assettype" REPLACEALL="Variables.assettype"/>
+     </THEN>
+     <ELSE>
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/TheATisnotcurrentlyrevisiontracked" at:description="Variables.at:description" EVALALL="false" ENCODE="false" VARNAME="msgtext"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>
+
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+		<ARGUMENT NAME="action" VALUE="details"/>
+	</CALLELEMENT>
+    </ELSE>
+    </IF>
+    </div>
+</THEN>
+</IF>
+
+<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+<then>
+	<STRING.ENCODE VARIABLE="assettype_RevTrack" VARNAME="assettype_RevTrack"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+		<argument NAME="__TreeRefreshKeys__" VALUE="Self:Variables.assettype_RevTrack"/>
+	</callelement>		
+</then>
+</if>
+
+</FTCS> 

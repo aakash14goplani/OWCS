@@ -1,0 +1,241 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/Update
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+<SETVAR NAME="primarypubid" VALUE="Variables.Node1"/>
+<SETSSVAR NAME="pubid" VALUE="Variables.primarypubid"/>
+
+<SETCOUNTER NAME="currentNode" VALUE="3"/>
+<LOOP UNTIL="IsVariable.NodeCounters.currentNode=false">
+	<INCCOUNTER NAME="currentNode" VALUE="1"/>
+</LOOP>
+<INCCOUNTER NAME="currentNode" VALUE="-2"/>
+
+<SETVAR NAME="errno" VALUE="0"/>
+<ASSET.LOAD NAME="ainst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.Edited" EDITABLE="true"/>
+<SETVAR NAME="id" VALUE="Variables.Edited"/>
+<IF COND="Variables.errno=0">
+<THEN>
+   <ASSET.GET NAME="ainst" FIELD="status" OUTPUT="currentStatus"/>
+   <IF COND="Variables.currentStatus!=VO">
+   <THEN>
+      <SETVAR NAME="OKToSave" VALUE="true"/>
+      <!-- here we asked the client to send changes only so we gather a fieldlist of the changes -->
+      <!-- some variable manipulation needs to be done based on data type and single or multi value -->
+   
+      <!-- get enabled fields for the subtype -->
+   	<ASSET.GETSUBTYPE NAME="ainst" OUTPUT="SubType"/>
+   	<EXTERNALCLIENTSMANAGER.LOADFROMFIELDS SITE="Variables.primarypubid" OBJVARNAME="oClient" ASSETTYPE="Variables.AssetType" CLIENTAPP="CSDocLink"/>
+   	<EXTERNALCLIENTSITEM.GETID NAME="oClient" VARNAME="clientid"/>
+   	<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lClientFields" SUBTYPE="Variables.SubType" ACTION="enable" VALUE="true"/>
+      <HASH.CREATE NAME="hEnabledFields"/>
+   	<LOOP LIST="lClientFields">
+         <REMOVEVAR NAME="typeString"/>
+         <INSPECTDATA.GETTYPESTRING SITE="Variables.primarypubid" ASSETTYPE="Variables.AssetType" SUBTYPE="Variables.SubType" ATTRIBUTE="lClientFields.property" VARNAME="typeString"/>
+         <IF COND="IsVariable.typeString=true">
+         <THEN>
+            <INSPECTOR.PARSETYPESTRING VALUE="Variables.typeString" ATTRIBUTE="lClientFields.property" LISTVARNAME="lTypeInfo"/>
+            <IF COND="lTypeInfo.readonly=false">
+            <THEN>
+               
+               <IF COND="lTypeInfo.multiple=true">
+               <THEN>
+                  <SETVAR NAME="currentValue" VALUE="Variables.empty"/>
+                  <IF COND="IsVariable.changes:lClientFields.property=true">
+                  <THEN>
+                     <SETVAR NAME="currentValue" VALUE="Variables.changes:lClientFields.property"/>
+                  </THEN>
+                  </IF>
+				  <IF COND="lClientFields.property=Dimension">
+						<THEN>
+							<SETVAR NAME="changes:Dimension:0" VALUE="Variables.currentValue"/>
+							<SETVAR NAME="changes:Dimension:0_type" VALUE="Dimension"/>
+							<SETVAR NAME="changes:Dimension:Total" VALUE="1"/>
+							<HASH.ADD NAME="hEnabledFields" VALUE="Variables.changes:Dimension:0"/>
+							<HASH.ADD NAME="hEnabledFields" VALUE="Variables.changes:Dimension:Total"/>
+						</THEN>
+				  </IF>
+                  <IF COND="Variables.currentValue=Variables.empty">
+                  <THEN>
+                     <SETVAR NAME="changes:lClientFields.property:Total" VALUE="0"/>
+                  </THEN>
+                  <ELSE>
+                     <STRINGLIST NAME="lValues" STR="Variables.currentValue" DELIM=","/>
+                     <SETVAR NAME="changes:lClientFields.property:Total" VALUE="lValues.#numRows"/>
+                     <SETCOUNTER NAME="valNum" VALUE="0"/>
+                     <LOOP LIST="lValues">
+                        <IF COND="lTypeInfo.clienttype=Number">
+                        <THEN>
+                           <CALCULATOR.GO VALUE="lValues.ITEM 9999999999 GT" VARNAME="tooBig"/>
+                           <IF COND="Variables.tooBig=1">
+                           <THEN>
+                              <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/IntValueTooLarge" VARNAME="OKToSave" EVALALL="false" fieldDesc="lTypeInfo.description"/>
+                           </THEN>
+                           </IF>
+                        </THEN>
+                        </IF>
+                        <IF COND="lTypeInfo.clienttype=Date">
+                        <THEN>
+				             <CALLELEMENT NAME="OpenMarket/CSClient/Util/FixDate">
+                                <ARGUMENT NAME="cs_InDate" VALUE="lValues.ITEM"/>
+                                <ARGUMENT NAME="cs_OutDate" VALUE="cs_CurrentLongDate"/>
+                             </CALLELEMENT>
+                             <CALLELEMENT NAME="OpenMarket/CSClient/Util/TimestampToJDBCDate">
+                                <ARGUMENT NAME="cs_InDate" VALUE="Variables.cs_CurrentLongDate"/>
+                                <ARGUMENT NAME="cs_OutDate" VALUE="changes:lClientFields.property:Counters.valNumlTypeInfo.structfield2"/>
+                            </CALLELEMENT>
+	                   </THEN>
+                        <ELSE>
+                            <SETVAR NAME="changes:lClientFields.property:Counters.valNumlTypeInfo.structfield2" VALUE="lValues.ITEM"/>
+                        </ELSE>
+                        </IF>
+				                        
+                        <IF COND="lTypeInfo.structfield1=:ordinal">
+                        <THEN>
+                            <SETVAR NAME="changes:lClientFields.property:Counters.valNumlTypeInfo.structfield1" VALUE="Counters.valNum"/>
+                        </THEN>
+                        </IF>
+                        <INCCOUNTER NAME="valNum" VALUE="1"/>
+                     </LOOP>
+                  </ELSE>
+                  </IF>
+                  
+                  <!-- most multi valued attributes will be a pain to process -->
+                  <!-- we really need more support from the client -->
+			   </THEN>
+               <ELSE>
+				 
+                  <SETVAR NAME="currentValue" VALUE="Variables.empty"/>
+                  <IF COND="IsVariable.changes:lClientFields.property=true">
+                  <THEN>
+                     <SETVAR NAME="currentValue" VALUE="Variables.changes:lClientFields.property"/>
+                  </THEN>
+                  </IF>
+                  <IF COND="Variables.currentValue!=Variables.empty">
+                  <THEN>
+                     <IF COND="lTypeInfo.clienttype=Number">
+                     <THEN>
+                        <CALCULATOR.GO VALUE="Variables.currentValue 9999999999 GT" VARNAME="tooBig"/>
+                        <IF COND="Variables.tooBig=1">
+                        <THEN>
+                           <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/IntValueTooLarge" VARNAME="OKToSave" EVALALL="false" fieldDesc="lTypeInfo.description"/>
+                        </THEN>
+                        </IF>
+                     </THEN>
+                     </IF>
+                        <IF COND="lTypeInfo.clienttype=Date">
+                        <THEN>
+						   <SETVAR NAME="servertimezone" VALUE="false" />
+						   <IF COND="lClientFields.property=startdate">
+						   <THEN>
+						    <SETVAR NAME="servertimezone" VALUE="true" />
+						   </THEN>
+						   </IF>
+						   <IF COND="lClientFields.property=enddate">
+						   <THEN>
+						    <SETVAR NAME="servertimezone" VALUE="true" />
+						   </THEN>
+						   </IF>
+						   <CALLELEMENT NAME="OpenMarket/CSClient/Util/FixDate">
+                                <ARGUMENT NAME="cs_InDate" VALUE="Variables.currentValue"/>
+                                <ARGUMENT NAME="cs_OutDate" VALUE="cs_CurrentLongDate"/>
+    							<ARGUMENT NAME="servertimezone" VALUE="Variables.servertimezone"/>
+                            </CALLELEMENT>
+                            <CALLELEMENT NAME="OpenMarket/CSClient/Util/TimestampToJDBCDate">
+                                <ARGUMENT NAME="cs_InDate" VALUE="Variables.cs_CurrentLongDate"/>
+                                <ARGUMENT NAME="cs_OutDate" VALUE="currentValue"/>
+                            </CALLELEMENT>
+                            <SETVAR NAME="changes:lClientFields.property" VALUE="Variables.currentValue"/>
+                        </THEN>
+                        </IF>
+
+                  </THEN>
+                  </IF>
+               </ELSE>
+               </IF>
+               <HASH.ADD NAME="hEnabledFields" VALUE="lClientFields.property"/>
+            </THEN>
+            </IF>
+         </THEN>
+         </IF>
+   	</LOOP>
+   
+      <IF COND="Variables.OKToSave=true">
+      <THEN>
+      	<HASH.TOSTRING NAME="hEnabledFields" VARNAME="fieldList" DELIM=","/>
+      
+         <ASSET.GATHER NAME="ainst" PREFIX="changes" FIELDLIST="Variables.fieldList"/>
+         <!-- may need to checkout if rev tracked -->
+         <CALLELEMENT NAME="OpenMarket/CSClient/CheckOut">
+            <ARGUMENT NAME="Function" VALUE="edit"/>
+         </CALLELEMENT>
+         <IF COND="Variables.doproceed=true">
+         <THEN>
+            <ASSET.SET NAME="ainst" FIELD="status" VALUE="ED"/>
+
+         	<ASSET.SAVE NAME="ainst"/>
+         	<IF COND="Variables.errno=0">
+         	<THEN>
+         		<AFFECTEDNODES>
+         			<ICS.RESOLVEVARIABLES NAME="$(Variables.Node$(Counters.currentNode))" OUTPUT="parentID" DELIMITED="true"/>
+                  <NODE NODEID="Variables.Edited" PARENTID="Variables.parentID" REPLACEALL="Variables.Edited,Variables.parentID"/>
+         		</AFFECTEDNODES>
+               <if COND="Variables.trackingenabled=true">
+               <then>
+		  <IMPLICITCHECKOUT.ISCHECKEDOUT ASSETTYPE="Variables.AssetType"
+			ASSETID="Variables.id" VARNAME="checkVar"/>
+		  <IF COND="IsVariable.checkVar=true">
+                  <THEN>
+		     <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+                     <!-- CATALOGMANAGER SCOPED="STACKED">
+                       <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+                       <ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+                       <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+                     </CATALOGMANAGER -->
+
+					 <ASSET.UNDOCHECKOUT NAME="ainst" REVERT="false" FLUSH="true"/>
+                  </THEN>
+                  </IF>
+               </then>
+               </if>
+         	</THEN>
+         	<ELSE>
+               <XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+         		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+         	</ELSE>
+         	</IF>
+         </THEN>
+         <ELSE>
+            <XLAT.LOOKUP KEY="dvin/CSDocLink/Variables.doproceed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+         </ELSE>
+         </IF>
+      </THEN>
+      <ELSE>
+         <ERROR CODE="4" DESCRIPTION="Variables.OKToSave" SEVERITY="2" REPLACEALL="Variables.OKToSave"/>
+      </ELSE>
+      </IF>
+   </THEN>
+   <ELSE>
+      <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/AssetHasBeenDeleted" VARNAME="_XLAT_"/>
+      <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+   </ELSE>
+   </IF>
+
+</THEN>
+<ELSE>
+   <XLAT.LOOKUP KEY="dvin/CSDocLink/V1/SourceAssetMissing" VARNAME="_XLAT_"/>
+   <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+</ELSE>
+</IF>
+
+</FTCS> 

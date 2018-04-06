@@ -1,0 +1,284 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/User/ShowUserProfiles
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<ics.getproperty name="username" file="dir.ini" output="usernameattr"/>
+<TABLE class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/TreeApplet/UserProfiles"/></span>
+		</td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</TABLE>
+<TABLE class="width-outer-70" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+	<TR>
+		<TD COLSPAN="2" HEIGHT="5"></TD>
+	</TR>
+	<TR>
+		<TD NOWRAP="true" COLSPAN="2"></TD>
+	</TR>
+	<TR>
+		<TD NOWRAP="nowrap">
+			<TABLE width="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+				<tr>
+					<td></td>
+					<td class="tile-dark" HEIGHT="1">
+						<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+					<td nowrap="nowrap">
+						<TABLE width="100%"  cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+							<tr>
+								<td colspan="11" class="tile-highlight">
+									<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+								</td>
+							</tr>
+							<tr>
+								<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" nowrap="true">
+									<DIV class="new-table-title"></DIV>
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" nowrap="true">
+									<DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/UserName"/></DIV>
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Email"/></DIV>
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-b" nowrap="nowrap" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/LocalePreference"/></DIV>
+								</td>
+								<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								<td class="tile-c" nowrap="nowrap" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/TimeZone"/></DIV>
+								</td>
+								<td class="tile-d" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							</tr>
+
+							<IF COND="IsVariable.pattern=true">
+								<THEN>
+									<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myUserObj" USERNAME="Variables.pattern"/>
+									<IF COND="Variables.errno!=-13051">
+										<THEN>
+											<CCUSER.GETEMAIL NAME="myUserObj"  VARNAME="userEmail"/>
+											<CCUSER.GETTIMEZONE NAME="myUserObj"  VARNAME="timezone"/>
+											<CCUSER.GETLOCALE NAME="myUserObj" VARNAME="userLocalePref"/>
+										</THEN>
+									</IF>
+									<IF COND="IsVariable.userEmail!=true">
+										<THEN>
+											<SETVAR NAME="userEmail" VALUE="Variables.empty" />
+										</THEN>
+									</IF>
+									<IF COND="IsVariable.timezone!=true">
+										<THEN>
+											<SETVAR NAME="timezone" VALUE="Variables.empty" />
+										</THEN>
+									</IF>
+									<IF COND="IsVariable.userLocalePref!=true">
+										<THEN>
+											<SETVAR NAME="userLocalePref" VALUE="Variables.empty" />
+										</THEN>
+									</IF>
+									<TR class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+										<TD><BR /></TD>
+										<TD style="vertical-align:middle" NOWRAP="NOWRAP" ALIGN="LEFT">
+											<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+											<ics.encode base="ContentServer" session="true" output="href">
+												<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+												<ics.argument name="action" value="details"/>
+												<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+												<ics.argument name="username" value="Variables.pattern"/>
+											</ics.encode>
+											<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+											<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+											<ics.encode base="ContentServer" session="true" output="href">
+												<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+												<ics.argument name="action" value="edit"/>
+												<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+												<ics.argument name="username" value="Variables.pattern"/>
+											</ics.encode>
+											<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+											<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+											<ics.encode base="ContentServer" session="true" output="href">
+												<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+												<ics.argument name="action" value="confirmdelete"/>
+												<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+												<ics.argument name="username" value="Variables.pattern"/>
+											</ics.encode>
+											<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+										</TD>
+										<TD><BR /></TD>
+										<TD align="LEFT">
+											<ics.encode base="ContentServer" session="true" output="href">
+												<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+												<ics.argument name="action" value="details"/>
+												<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+												<ics.argument name="username" value="Variables.pattern"/>
+											</ics.encode>
+											<A HREF="Variables.href" REPLACEALL="Variables.href">
+												<STRING.STREAM VALUE="Variables.pattern"/>
+											</A>
+										</TD>
+										<TD><BR /></TD>
+										<TD align="LEFT">
+											<STRING.STREAM VALUE="Variables.userEmail"/>
+										</TD>
+										<TD><BR /></TD>
+										<TD align="LEFT">
+											<STRING.STREAM VALUE="Variables.userLocalePref"/>
+										</TD>
+										<TD><BR /></TD>
+										<TD align="LEFT">
+											<STRING.STREAM VALUE="Variables.timezone"/>
+										</TD>
+										<TD><BR /></TD>
+									</TR>
+								</THEN>
+								<ELSE>
+									<DIR.LISTUSERS list="ResultsList"/>
+									<IF COND="ResultsList.#numRows=0">
+										<THEN>
+											<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+												<tr><td>
+													<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/NoUsersmatchpattern"/></span>
+												</td></tr>
+												<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+											</table>
+											<SATELLITE.FORM ASSEMBLER="query">
+											<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+											<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+											<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+											<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+											<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+											<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+											<A onClick="javascript:history.go(-1);return false;" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Back"/></CALLELEMENT></A>
+											</SATELLITE.FORM>
+										</THEN>
+										<ELSE>
+											<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+											<LOOP LIST="ResultsList">
+												<DIR.GETATTRS list="atts" name="ResultsList.NAME" attrs="Variables.usernameattr"/>
+												<SETROW LIST="atts" ACTION="FIRST"/>
+												<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myUserObj" USERNAME="atts.VALUE"/>
+												<IF COND="Variables.errno!=-13051">
+													<THEN>
+														<CCUSER.GETEMAIL NAME="myUserObj"  VARNAME="userEmail"/>
+														<CCUSER.GETTIMEZONE NAME="myUserObj"  VARNAME="timezone"/>
+														<CCUSER.GETLOCALE NAME="myUserObj" VARNAME="userLocalePref"/>
+													</THEN>
+												</IF>
+												<IF COND="IsVariable.userEmail!=true">
+													<THEN>
+														<SETVAR NAME="userEmail" VALUE="Variables.empty" />
+													</THEN>
+												</IF>
+												<IF COND="IsVariable.timezone!=true">
+													<THEN>
+														<SETVAR NAME="timezone" VALUE="Variables.empty" />
+													</THEN>
+												</IF>
+												<IF COND="IsVariable.userLocalePref!=true">
+													<THEN>
+														<SETVAR NAME="userLocalePref" VALUE="Variables.empty" />
+													</THEN>
+												</IF>
+												<SETVAR NAME="separatorLine" VALUE="1"/>
+												<TR class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+													<TD><BR /></TD>
+													<TD style="vertical-align:middle" NOWRAP="NOWRAP" ALIGN="LEFT">
+														<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+														<ics.encode base="ContentServer" session="true" output="href">
+															<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+															<ics.argument name="action" value="details"/>
+															<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+															<ics.argument name="username" value="atts.VALUE"/>
+														</ics.encode>
+														<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+														<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+														<ics.encode base="ContentServer" session="true" output="href">
+															<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+															<ics.argument name="action" value="edit"/>
+															<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+															<ics.argument name="username" value="atts.VALUE"/>
+														</ics.encode>
+														<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+														<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+														<ics.encode base="ContentServer" session="true" output="href">
+															<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+															<ics.argument name="action" value="confirmdelete"/>
+															<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+															<ics.argument name="username" value="atts.VALUE"/>
+														</ics.encode>
+														<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+													</TD>
+													<TD><BR /></TD>
+													<TD align="LEFT">
+														<ics.encode base="ContentServer" session="true" output="href">
+															<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/UserProfileFront"/>
+															<ics.argument name="action" value="details"/>
+															<ics.argument name="manageprofile" value="Variables.manageprofile"/>
+															<ics.argument name="username" value="atts.VALUE"/>
+														</ics.encode>
+														<A HREF="Variables.href" REPLACEALL="Variables.href">
+															<STRING.STREAM VALUE="atts.VALUE"/>
+														</A>
+													</TD>
+													<TD><BR /></TD>
+													<TD align="LEFT">
+														<STRING.STREAM VALUE="Variables.userEmail"/>
+													</TD>
+													<TD><BR /></TD>
+													<TD align="LEFT">
+														<STRING.STREAM VALUE="Variables.userLocalePref"/>
+													</TD>
+													<TD><BR /></TD>
+													<TD align="LEFT">
+														<STRING.STREAM VALUE="Variables.timezone"/>
+													</TD>
+													<TD><BR /></TD>
+												</TR>
+												<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+												</IF>
+											</LOOP>
+										</ELSE>
+									</IF>
+								</ELSE>
+							</IF>
+						</TABLE>
+					</td>
+					<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+				</tr>
+				<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir">
+						<IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+					</td>
+					<td></td>
+				</tr>
+			</TABLE>
+		</TD>
+	</TR>
+</TABLE>
+</FTCS>

@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!--
+  - UserMgt/ModifyUser
+  - Copyright (c) Open Market, Inc., 1999, 2000, 2001, All Rights Reserved
+  - $Revision: 9 $
+  -->
+
+<SATELLITE.FORM ASSEMBLER="query" METHOD="post">
+	<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+	<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>   
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/ModifyUser"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<TABLE class="width-outer-50"  BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+    
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <XLAT.STREAM KEY="dvin/UI/UserName"/>:
+        </TD>
+        <TD class="form-inset" align="left">
+            	<STRING.ENCODE VARIABLE="key" VARNAME="OutputQString1"/>
+				<STRING.ENCODE VARIABLE="idkey" VARNAME="OutputQString2"/>
+
+    			<REPLACEALL LIST="Variables.OutputQString1,Variables.OutputQString2">                 
+    				Variables.OutputQString1
+    				<INPUT TYPE="hidden" NAME="username" VALUE="Variables.OutputQString1"/>
+    				<INPUT TYPE="hidden" NAME="userid" VALUE="Variables.OutputQString2"/>
+                </REPLACEALL>
+    	</TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+        <TD class="form-label-text" align="right" VALIGN="TOP" NOWRAP="true">
+  			<span class="alert-color">*</span> <XLAT.STREAM KEY="dvin/AdminForms/AccessPrivileges"/>:
+		</TD>
+        <TD lass="form-inset" align="left">
+    		<INPUT TYPE="HIDDEN" NAME="acl" VALUE=""/>
+			<CALLELEMENT NAME="FutureTense/Apps/AdminForms/Common/ACLString" SCOPED="STACKED">
+				<ARGUMENT NAME="userid" VALUE="Variables.OutputQString2"/>            
+				<ARGUMENT NAME="aclString" VALUE="CS.Empty"/>
+			</CALLELEMENT>
+            <CALLELEMENT NAME="FutureTense/Apps/AdminForms/Common/ACLList">
+                <ARGUMENT NAME="selectList" VALUE="Variables.aclString"/>
+            </CALLELEMENT>
+            <STRING.ENCODE VARIABLE="aclString" VARNAME="aclString"/>
+    		<INPUT TYPE="HIDDEN" NAME="oldacls" VALUE="Variables.aclString" REPLACEALL="Variables.aclString"/>
+        </TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <INPUT TYPE="checkbox" NAME="modifyPassword"/><XLAT.STREAM KEY="dvin/AdminForms/ModifyPassword"/> 
+		</TD>
+    	<TD></TD>
+    </TR>
+	
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+				<XLAT.STREAM KEY="dvin/UI/Password"/>: 
+        </TD>
+        <TD class="form-inset" align="left">
+            <INPUT TYPE="PASSWORD" NAME="password" SIZE="32" VALUE=""/>
+		</TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+			<XLAT.STREAM KEY="dvin/AdminForms/ReenterPassword"/>:
+        </TD>
+        <TD class="form-inset" align="left">
+            <INPUT TYPE="PASSWORD" NAME="password2" SIZE="32" VALUE=""/>
+		</TD>
+    </TR>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<TR>
+        <TD></TD>
+		<TD>
+    		<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+			<INPUT TYPE="hidden" NAME="tool" VALUE="UserMgt"/>
+    		<INPUT TYPE="hidden" NAME="form" VALUE="DoModify"/>
+ 			<XLAT.LOOKUP KEY="dvin/AdminForms/Modify" VARNAME="_XLAT_"/>
+    		<A onClick="if(checkModifyInput(document.forms[0]) != false){ document.forms[0].submit();}" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/Modify"/></CALLELEMENT></A>
+        </TD>
+    </TR>
+</TABLE>
+</SATELLITE.FORM>
+</FTCS>

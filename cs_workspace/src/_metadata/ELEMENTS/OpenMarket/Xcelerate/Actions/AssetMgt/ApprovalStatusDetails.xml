@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ApprovalStatusDetails
+-
+- INPUT
+- Variables.target
+- Variables.pubtargetname
+- Variables.AssetType
+- Variables.id
+- Variables.atdescription
+- Variables.name		- name field of asset we are working with
+- OUTPUT
+-
+-->
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function SetCancelFlag () {
+	var obj = document.forms[0].elements[0];
+
+	obj.form.elements['upcommand'].value="cancel";
+	obj.form.submit();
+	return false;
+}
+
+]]>
+</SCRIPT>
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="targetEnc"/>
+<INPUT TYPE="HIDDEN" NAME="target" VALUE="Variables.targetEnc" REPLACEALL="Variables.targetEnc"/>
+<STRING.ENCODE VARIABLE="targetname" VARNAME="targetname"/>
+<INPUT TYPE="HIDDEN" NAME="targetname" VALUE="Variables.targetname" REPLACEALL="Variables.targetname"/>
+
+<setvar NAME="namefieldofasset" VALUE="Variables.name"/>
+ 
+     <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    </callelement>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ApprovalStatus">
+		<ARGUMENT NAME="target" VALUE="Variables.target"/>
+		<ARGUMENT NAME="pubtargetname" VALUE="Variables.pubtargetname"/>
+		<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+		<ARGUMENT NAME="assetname" VALUE="Variables.assetname"/>
+	</CALLELEMENT>
+	<IF COND="Variables.approvalAction=none">
+	<THEN>
+	<div class="width-outer-70">
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables.approvalDetails"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+	</div>	
+	</THEN>
+	<ELSE>
+   <!-- Action bar -->
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">
+	</callelement>
+	
+   <table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+    
+	<tr>
+		<if COND="Variables.pagename=OpenMarket/Xcelerate/Actions/ShowBlockingAssetsFront">
+		<then>
+			<td><span class="title-text"><XLAT.STREAM KEY="dvin/UI/Assetspreventingpublishtopubtargetname"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.pubtargetname"/></span></td>
+		</then>
+		<else>		
+			<td><span class="title-text"><XLAT.STREAM KEY="dvin/UI/Approvepublishtopubtargetnameatdescription"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.name"/></span></td>
+		</else>
+		</if>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+	<setvar NAME="isHeld" VALUE="false"/>
+	<setvar NAME="hasCheckBox" VALUE="false"/>
+	<tr>
+	<td>
+	 <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <ARGUMENT NAME="msgtext" VALUE="Variables.approvalDetails"/>
+        <ARGUMENT NAME="severity" VALUE="info"/>
+     </CALLELEMENT>
+     
+ 		<!-- if I need approval now -->
+		<if COND="Variables.approvalAction=approve">
+		<then>
+			<LISTOBJECT.CREATE NAME="listobject" COLUMNS="assetid,assettype" />
+ 	      <LISTOBJECT.ADDROW NAME="listobject"
+			        assetid="Variables.id"
+			        assettype="Variables.AssetType" />
+			<LISTOBJECT.TOLIST NAME="listobject" LISTVARNAME="myself" />
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/TileHeldAssets">
+				<ARGUMENT NAME="list" VALUE="myself"/>
+				<ARGUMENT NAME="target" VALUE="Variables.target"/>
+				<ARGUMENT NAME="targetname" VALUE="Variables.pubtargetname"/>
+				<ARGUMENT NAME="docheckbox" VALUE="true"/>
+			</CALLELEMENT>
+		</then>
+		</if>
+	
+		<!-- if a dependent or parent is blocking me from publish -->
+		<if COND="Variables.approvalAction=releaseBlocking">
+		<then>	
+			<ApprovedAssets.GetBlockingAssets TARGET="Variables.target" ID="Variables.id" TYPE="Variables.AssetType" LISTVARNAME="blockingAssets"/>
+			<if COND="blockingAssets.#numRows!=0">
+			<then>
+				<XLAT.STREAM KEY="dvin/UI/AssetMgt/Assetspreventingpublishpubtargetname"/>:<br/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/TileHeldAssets">
+					<ARGUMENT NAME="list" VALUE="blockingAssets"/>
+					<ARGUMENT NAME="target" VALUE="Variables.target"/>
+					<ARGUMENT NAME="targetname" VALUE="Variables.pubtargetname"/>
+					<ARGUMENT NAME="docheckbox" VALUE="true"/>
+				</CALLELEMENT>
+			</then>
+			</if>
+		</then>
+		</if>
+	</td>
+	</tr>
+	
+	<!-- any parents whom I might be blocking -->
+	<ApprovedAssets.GetBlockedParents TARGET="Variables.target" ID="Variables.id" TYPE="Variables.AssetType" LISTVARNAME="parentList"/>
+	<if COND="parentList.#numRows!=0">
+	<then>
+		<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar">
+			<argument NAME="SpaceAbove" VALUE="No"/>
+		</callelement>-->
+
+		<tr>
+			<td><span class="title-text"><XLAT.STREAM KEY="dvin/UI/Unapprovedassetsrelatedto"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.namefieldofasset"/></span></td>
+		</tr>
+
+		<tr>
+		<td>
+			<XLAT.STREAM KEY="dvin/UI/AssetMgt/Assetsdependentheldpublish" name="Variables.namefieldofasset" EVALALL="false"/>:<br/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/TileHeldAssets">
+				<argument NAME="list" VALUE="parentList"/>
+				<argument NAME="target" VALUE="Variables.target"/>
+				<argument NAME="targetname" VALUE="Variables.pubtargetname"/>
+				<argument NAME="docheckbox" VALUE="true"/>
+			</callelement>
+		</td>
+		</tr>
+	</then>
+	</if>
+	<if COND="Variables.hasCheckBox=true">
+	<then>
+		<tr>
+			<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<!--<tr><td colspan="3" ALIGN="LEFT">
+		<XLAT.LOOKUP KEY="dvin/UI/SelectAllforApproval" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="javascript:void(0);" onclick="return checkall()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.pubtargetname,Variables._XLAT_"><IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/select_all.gif" BORDER="0" VSPACE="10" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.targetname"/></A>
+		</td></tr>-->
+		<tr><td colspan="3" ALIGN="RIGHT">
+		<table><tr><td>
+		<XLAT.LOOKUP KEY="dvin/UI/CancelApproval" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+		</td><td>
+		<XLAT.LOOKUP KEY="dvin/UI/Approveselecteditemsforpublishpubtargetname" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="javascript:void(0);" onclick="document.forms[0].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.pubtargetname,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Approve"/></CALLELEMENT></A>
+		</td></tr></table>
+		</td></tr>
+	</then>
+	</if>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<tr>
+		<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+</table>
+</ELSE>
+</IF>	
+</FTCS> 

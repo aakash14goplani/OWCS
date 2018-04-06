@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/ShowWorkFrames.xml $
+$Revision: 42 $
+$Modtime: 3/02/04 4:39a $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowWorkFrames.xml
+-
+- DESCRIPTION
+-	Display the workframes within the application
+-
+- HISTORY
+-	27 Apr 00	Ward	Turn on frameborders & set frame margins.
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<HTML>
+<HEAD>
+<!-- BEGIN: Check current user and site in session -->
+<script language="JavaScript">
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/getSessionIdentifier"/>
+<REPLACEALL LIST="CS.Property.ft.cgipath,Variables.sessionIdentifier">
+	<![CDATA[
+	var csPath = "CS.Property.ft.cgipathContentServer";
+	var currentUserSite = "Variables.sessionIdentifier";
+	]]>
+</REPLACEALL>
+</script>
+
+<script src="CS.Property.ft.cgipathjs/cs.js" REPLACEALL="CS.Property.ft.cgipath"></script>
+<script language="JavaScript">
+	<![CDATA[
+	window.onmouseover = checkUser;
+	]]>
+</script>
+<!-- END: Check current user and site in session -->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+
+<SCRIPT LANGUAGE="JavaScript">
+    var showSiteTree="<STRING.STREAM VARIABLE="showSiteTree"/>";
+</SCRIPT>
+</HEAD>
+
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/" outstring="theaction">
+    </SATELLITE.LINK>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/UIFramework/ShowToolbar" outstring="thetoolbar">
+                                      <satellite.argument name="tab" value="General"/>
+                                       </SATELLITE.LINK>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/UIFramework/ShowSiteTree" outstring="thetree">
+    </SATELLITE.LINK>
+
+    <if COND="IsVariable.ThisPage=true">
+        <then>
+            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Variables.ThisPage" outstring="theaction">
+             </SATELLITE.LINK>
+        </then>
+
+    </if>
+    <if COND="IsVariable.AssetType=true">
+        <then>
+            <SETVAR NAME="theaction" VALUE="Variables.theaction&#38;AssetType=Variables.AssetType"/>
+        </then>
+	</if>
+    <if COND="IsVariable.id=true">
+        <then>
+            <SETVAR NAME="theaction" VALUE="Variables.theaction&#38;id=Variables.id"/>
+        </then>
+	</if>
+
+    <if COND="IsVariable.pubid=true">
+		<then>
+<!--				PUB ID = <CSVAR NAME="Variables.pubid"/><BR/>-->
+            <SETVAR NAME="theaction" VALUE="Variables.theaction&#38;pubid=Variables.pubid"/>
+            <SETVAR NAME="thetoolbar" VALUE="Variables.thetoolbar&#38;pubid=Variables.pubid"/>
+            <SETVAR NAME="thetree" VALUE="Variables.thetree&#38;pubid=Variables.pubid"/>
+
+	    <!-- Set session information for this site -->
+	    <setssvar NAME="pubid" VALUE="Variables.pubid"/>
+	    <callelement NAME="OpenMarket/Xcelerate/Actions/Security/SetPublicationName"/>
+
+        </then>
+    </if>
+	<if COND="Variables.wem=true">
+		<then>			
+			<SETVAR NAME="theaction" VALUE="Variables.theaction&#38;wem=Variables.wem"/>
+			<SETVAR NAME="thetree" VALUE="Variables.thetree&#38;wem=Variables.wem"/>
+		</then>
+	</if>				
+			
+	<SETSSVAR NAME="showSiteTree" VALUE="Variables.showSiteTree"/>
+	<if COND="Variables.showSiteTree=true">
+		<then>
+        <FRAMESET COLS="225, *" border="5px">
+			<FRAME NAME="XcelTree" SCROLLING="no" SRC="Variables.thetree"  FRAMEBORDER="0" marginwidth="0" marginheight="0" ONFOCUS="checkUser()" REPLACEALL="Variables.thetree"/>
+            <FRAME NAME="XcelAction" SRC="Variables.theaction" FRAMEBORDER="0" marginwidth="0" marginheight="0" ONFOCUS="checkUser()" REPLACEALL="Variables.theaction"/>
+        </FRAMESET>
+		</then>
+		<else>
+        <FRAMESET COLS="100%,*">
+            <FRAME NAME="XcelAction" SRC="Variables.theaction" marginwidth="0" marginheight="0" ONFOCUS="checkUser()" REPLACEALL="Variables.theaction"/>
+        </FRAMESET>
+		</else>
+	</if>
+
+</HTML>
+</FTCS>

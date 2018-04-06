@@ -1,0 +1,157 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/SetDeadlinePost
+-
+- INPUT
+-
+- OUTPUT
+-
+COMMENTS:
+
+		This element is the second part of the Set deadline for an assignment. When we want to set an assignment deadline we use
+		"Set Assignment deadline" from the Workflow commands in the drop down box in Status screen of the asset.
+		Then we choose either "Default" or specify a mm/dd/yyyy and time. Then when we hit Set Deadline, this element "SetDeadlinePost.xml"
+		is invoked. 
+		The input to this element include:
+		
+		AssetType
+		id (asset id)
+		deadlineaction (whether the deadline is for a workflow process or an assignment)
+		assignmentid (if it is an assignment)
+		pdeadline - value in milliseconds that represents the deadline (can be 0, which means no deadline, See SetDeadlineFront.xml for more details)
+		
+		
+		This element basically completes the set deadline process. It receives the asset type ,asset id and assignment id, loads the workflow asset,
+		and sets the deadline for the given "pdeadline" (represents the deadline in milliseconds). This element is called from
+		OpenMarket/Xcelerate/Actions/SetDeadlineFront.xml
+		
+		
+		Given these details this element should not be hard to comprehend.
+		
+		
+		-Sathish Paul Leo.
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<STRING.ENCODE VARIABLE="deadline" VARNAME="deadline" />
+<STRING.ENCODE VARIABLE="deadLineDate" VARNAME="deadLineDate" />
+<STRING.ENCODE VARIABLE="deadlineaction" VARNAME="deadlineaction" />
+<setvar NAME="errno" VALUE="0"/>
+<!-- load workflowable object -->
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowableobj" />
+<if COND="Variables.errno=0">
+<then>
+
+ <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GetDBFormatDate">
+        <ARGUMENT NAME="inputDate" VALUE="Variables.deadline" />
+          <ARGUMENT NAME="outputVar" VALUE="deadLineDate"/>
+			  </CALLELEMENT>
+
+			 
+ <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+		  		<ARGUMENT NAME="inputDate" VALUE="Variables.deadLineDate" />
+		  		<ARGUMENT NAME="fromTimeZone" VALUE="client"/>
+		  		<ARGUMENT NAME="toTimeZone" VALUE="server"/>
+				<ARGUMENT NAME="outputType" VALUE="millis"/>
+		  </CALLELEMENT>
+		  
+		   
+		  
+		  <if COND="IsVariable.outputDate=true">
+		<then>
+		 <SETVAR NAME="pdeadline" VALUE="Variables.outputDate"/>
+		</then>
+	</if>
+
+	<!-- set process deadline -->
+    <if COND="Variables.deadlineaction=Process">
+	<then>
+		<WORKFLOWENGINE.SETABSDEADLINE OBJECT="workflowableobj" ABSDEADLINE="Variables.pdeadline"/>
+	</then>	
+	</if>
+        <if COND="Variables.deadlineaction=Assignment">
+        <then>
+        	<SETVAR NAME="prevErrno" VALUE="Variables.errno"/>
+        	<INDEXOF STR="Variables.assignmentid" WHAT="%" OUTSTR="index" INDEX="0"/>
+        	<IF COND="Variables.errno=1">
+        	<THEN>
+        		<!-- 
+        			The asset has more than one assignment id, separated by a '%' (denoted by %25). Parse it out and set it into a list
+        			We need to set the given assignment deadline to all assignment ids specified.
+        			The 'assignmentIdList is being set in the element Xcelerate/Actions/SetDeadlinePost.xml
+        		 -->
+        		 <STRINGLIST NAME="assignmentIdList" STR="Variables.assignmentid" DELIM="%25"/>
+        	</THEN>
+        	<ELSE>
+        		<LISTOBJECT.CREATE NAME="tempList" COLUMNS="ITEM"/>
+        		<LISTOBJECT.ADDROW NAME="tempList" ITEM="Variables.assignmentid"/>
+        		<LISTOBJECT.TOLIST NAME="tempList" LISTVARNAME="assignmentIdList"/>
+        	</ELSE>
+        	</IF>
+        	<SETVAR NAME="errno" VALUE="Variables.prevErrno"/>
+        <LOOP LIST="assignmentIdList">
+        	<ICS.LISTGET LISTNAME="assignmentIdList" FIELDNAME="ITEM" OUTPUT="currentId" />
+            <WORKFLOWENGINE.SETASSIGNMENTDEADLINE ID="Variables.currentId" DEADLINE="Variables.pdeadline"/>
+        </LOOP>
+        </then>	
+        </if>
+        <if COND="Variables.errno=0">
+        <then>
+            <!-- parse  deadline -->
+            <IF COND="Variables.pdeadline!=0">
+            <THEN>
+	            <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="FULL" TIMESTYLE="FULL" LOCALE="LocaleName"  TIMEZONEID="SessionVariables.time.zone"/>
+    	        <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.pdeadline" VALUETYPE="milliseconds" VARNAME="pdeadline"/>
+            </THEN>
+            </IF>
+            <!-- show workflow status page -->
+            <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                <argument NAME="id" VALUE="Variables.id"/>
+            </callelement>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.deadlineaction"/>
+				<ARGUMENT NAME="type" VALUE="String"/>
+ 			</CALLELEMENT>
+			<IF cond="Variables.validatedstatus=true">
+			<THEN>
+			<XLAT.LOOKUP KEY="dvin/UI/Common/Variables.deadlineactionDeadlineSetTo" VARNAME="_XLAT_"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<argument NAME="severity" VALUE="info"/>
+				<argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+			</callelement>
+			</THEN>
+			</IF>
+			<if COND="Variables.cs_environment=ucform">
+			<then>
+				<SCRIPT TYPE="text/javascript">
+					dojo.addOnLoad(function(){
+						SitesApp.notifyModelUpdate('workflowStatus');
+					});
+				</SCRIPT>
+			</then>
+			</if>
+	</then>
+	<else>
+	    <!-- show error -->
+	    <setvar NAME="ERRNO" VALUE="Variables.errno"/>
+	    <XLAT.LOOKUP KEY="dvin/UI/Error/SetVariables.deadlineactionDeadlineFailed" VARNAME="_XLAT_"/>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+                <argument NAME="severity" VALUE="info"/>
+            </callelement>
+		<!-- show workflow status page --> 
+		<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+		</callelement>
+	</else>
+	</if>
+
+</then>
+</if>
+
+
+
+</FTCS> 

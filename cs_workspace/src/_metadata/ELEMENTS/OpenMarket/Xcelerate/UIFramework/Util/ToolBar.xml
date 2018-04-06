@@ -1,0 +1,315 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/UIFramework/Util/ToolBar
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+<ASSET.GETASSETTYPEPROPERTIES TYPE="Variables.AssetType"/>	
+
+<if cond="Variables.ThisPage=EditFront">
+<then>
+	<IF COND="Variables.CanPreview=false">
+	<THEN>
+		<SETVAR NAME="NoPreview" VALUE="true"/>
+	</THEN>
+	</IF>
+	<IF COND="Variables.NoPreview!=true">
+	<THEN>
+		<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset"/>
+		<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="preview" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="false"/>
+	<IF COND="Variables.isLegal=false">
+	<THEN>
+		<SETVAR NAME="NoPreview" VALUE="true"/>
+	</THEN>
+	</IF>
+	</THEN>
+	</IF>
+</then>
+</if>
+
+<IF COND="Variables.updatetype=setformdefaults">
+<THEN>
+	<SETVAR NAME="buttonSrc" VALUE="btnSave.png"/>
+</THEN>
+<ELSE>
+	<SETVAR NAME="buttonSrc" VALUE="btnSave.png"/>
+</ELSE>
+</IF>
+<IF COND="Variables.cs_environment!=ucform">
+<THEN>
+	<div dojoType="dijit.layout.ContentPane" region="top">
+	<div class='toolbarContent'>
+	<table>
+	<tr>
+		<td align="left">
+			<XLAT.LOOKUP KEY="dvin/UI/GoBack" VARNAME="_GoBackXLAT_" ESCAPE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/GoBack" VARNAME="_GoBackALT_"/>
+			<if cond="Variables.ThisPage!=EditFront">
+			<then>
+				<IF COND="IsVariable.cancelScript=true">
+				<THEN>
+					<A HREF="javascript:void(0)" onclick=" return Variables.cancelScript();" onmouseover="window.status='Variables._GoBackXLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._GoBackXLAT_,Variables.cancelScript">
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+							<argument NAME="buttonImage" VALUE="goback.png"/>
+							<argument NAME="toolbartitle" value="Variables._GoBackALT_"/>
+						</callelement>
+					</A>
+				</THEN>
+				<ELSE>
+					<A HREF="javascript:void(0)" onclick=" return SetCancelFlag();" onmouseover="window.status='Variables._GoBackXLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._GoBackXLAT_">
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+							<argument NAME="buttonImage" VALUE="goback.png"/>
+							<argument NAME="toolbartitle" value="Variables._GoBackALT_"/>
+						</callelement>
+					</A>
+				</ELSE>
+				</IF>
+			</then>
+			</if>
+			<if cond="Variables.ThisPage=EditFront">
+			<then>
+				<XLAT.LOOKUP KEY="dvin/UI/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisDescription" VARNAME="_ALT_"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+					<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+					<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+					<ARGUMENT NAME="varname" VALUE="urlInspectThisItem"/>
+					<ARGUMENT NAME="function" VALUE="inspect"/>
+				</CALLELEMENT>
+				<A HREF="Variables.urlInspectThisItem" onclick="return true" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_, Variables.urlInspectThisItem">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+						<argument NAME="buttonImage" VALUE="inspect.png"/>
+						<argument NAME="toolbartitle" value="Variables._ALT_"/>
+					</callelement>
+				</A>
+																
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+					<argument NAME="buttonImage" VALUE="separator.png"/>
+					<argument NAME="toolbartitle" value=""/>
+				</callelement>
+			
+			</then>
+			</if>
+			<IF COND="IsVariable.customToolBar=true">
+			<THEN>
+				<IF COND="Variables.customToolBar=HFields">
+				<THEN>
+					<IF COND="Variables.doNotShowSaveButton!=true">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" ONCLICK="senum_selAllAll(); return checkfields('Variables.PType','Variables.PName','Variables.PConstrainttype','Variables.PLength','Variables.PLowerrange','Variables.PUpperrange','Variables.PDefaultval','Variables.PmyEnumValue');" ONMOUSEOVER="window.status='Variables._SaveChanges_';return true;" ONMOUSEOUT="window.status='';return true;"
+							REPLACEALL="Variables.PType,Variables.PName,Variables.PConstrainttype,Variables.PLength,Variables.PLowerrange,Variables.PUpperrange,Variables.PDefaultval,Variables.PmyEnumValue,Variables._SaveChanges_">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+				<IF COND="Variables.customToolBar=HistoryVals">
+				<THEN>
+					<IF COND="Variables.doNotShowSaveButton!=true">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="senum_selAllAll(); return checkfields();" onmouseover="window.status='Variables._ALT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._ALT_">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+				<IF COND="Variables.customToolBar=ScalarVals">
+				<THEN>
+					<IF COND="Variables.doNotShowSaveButton!=true">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="senum_selAllAll(); return checkfields('Variables.PType','Variables.PName','Variables.PConstrainttype','Variables.PLength','Variables.PLowerrange','Variables.PUpperrange','Variables.PDefaultval','Variables.PmyEnumValue');" onmouseover="window.status='Variables._SaveChanges_';return true;" onmouseout="window.status='';return true;" 
+						REPLACEALL="Variables._SaveChanges_,Variables.PType,Variables.PName,Variables.PConstrainttype,Variables.PLength,Variables.PLowerrange,Variables.PUpperrange,Variables.PDefaultval,Variables.PmyEnumValue">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+				<IF COND="Variables.customToolBar=FlexTmpls">
+				<THEN>					
+					<IF COND="Variables.doNotShowSaveButton!=true">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="selAllAll(); return checkfields('Variables.TemplateType',document.forms[0].elements['sMyTmplAttributes']);" onmouseover="window.status='Variables.ForSave';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.ForSave">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+			</THEN>
+			<ELSE>				
+				<IF COND="Variables.doNotShowSaveButton!=true">
+				<THEN>
+					<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_ALT_"/>
+					<IF COND="IsVariable.submitScript=true">
+					<THEN>
+						<A HREF="javascript:void(0)" onclick="return Variables.submitScript();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.submitScript">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</THEN>
+					<ELSE>
+						<A HREF="javascript:void(0)" onclick="return checkfields();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="save.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>			
+			<if cond="Variables.ThisPage=EditFront">
+			<then>
+			
+				<IF COND="IsVariable.NoPreview!=true">
+				<THEN>
+					<PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="Variables.AssetType" ASSETID="Variables.id" PUBID="SessionVariables.pubid"/>
+					<IF COND="IsVariable.previewURL=true">
+					<THEN>
+						<callelement NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+						<IF COND="Variables.Screen=Preview">
+						<THEN>
+							<SETVAR NAME="spanClass" VALUE="action-selected-text"/>
+						</THEN>
+						<ELSE>
+							<SETVAR NAME="spanClass" VALUE="action-text"/>
+						</ELSE>
+						</IF>						
+						<XLAT.LOOKUP KEY="dvin/Common/Preview" ESCAPE="true" VARNAME="_XLAT_"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/PreviewThisDescription" VARNAME="_ALT_"/>
+						<A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');"	REPLACEALL="Variables.previewURL">
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+								<argument NAME="buttonImage" VALUE="preview.png"/>
+								<argument NAME="toolbartitle" value="Variables._ALT_"/>
+							</callelement>
+						</A>						
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+			
+			
+				<XLAT.LOOKUP KEY="dvin/UI/ApproveforPublish" ESCAPE="true" VARNAME="_XLAT_"/>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ApproveFront" outstring="urlapprfront">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="AssetType" value="Variables.AssetType"/>
+					<satellite.argument name="Screen" value="Approve"/>
+					<satellite.argument name="id" value="Variables.id"/>
+				</SATELLITE.LINK>
+				<A HREF="Variables.urlapprfront" REPLACEALL="Variables.urlapprfront">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+						<argument NAME="buttonImage" VALUE="approve.png"/>
+						<argument NAME="toolbartitle" value="Variables._XLAT_"/>
+					</callelement>
+				</A>
+				
+				<XLAT.LOOKUP KEY="dvin/Common/Delete" ESCAPE="true" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisDescription" VARNAME="_ALT_"/>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DeleteFront" outstring="urldelfront">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="AssetType" value="Variables.AssetType"/>
+					<satellite.argument name="id" value="Variables.id"/>
+				</SATELLITE.LINK>
+				<A HREF="Variables.urldelfront" onclick="return checkLock(event);" REPLACEALL="Variables.urldelfront">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+						<argument NAME="buttonImage" VALUE="delete.png"/>
+						<argument NAME="toolbartitle" value="Variables._ALT_"/>
+					</callelement>
+				</A>
+
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+					<argument NAME="buttonImage" VALUE="separator.png"/>
+					<argument NAME="toolbartitle" value=""/>
+				</callelement>			
+													
+				<XLAT.LOOKUP KEY="UI/Forms/Refresh" ESCAPE="true" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="UI/Forms/RefreshThisDescription" VARNAME="_ALT_"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+					<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+					<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+					<ARGUMENT NAME="varname" VALUE="urlInspectThisItem"/>
+					<ARGUMENT NAME="function" VALUE="edit"/>
+				</CALLELEMENT>
+				<SETVAR NAME="editCheck" VALUE="true"/>
+				<IF COND="Variables.AssetType=Template">
+				<THEN>
+					<!-- check whther user is allowed to edit SiteCatalog or ElementCatalog -->
+					<USERISMEMBER GROUP="PageEditor"/>
+					<if COND="Variables.errno=0">
+					<then>
+						<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+						<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+						<setvar NAME="editCheck" VALUE="WrongACLToEditAsset"/>
+					</then>
+					<else>
+						<USERISMEMBER GROUP="ElementEditor"/>
+						<if COND="Variables.errno=0">
+						<then>
+							<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+							<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+							<setvar NAME="editCheck" VALUE="WrongACLToEditAsset"/>
+						</then>
+						</if>
+					</else>
+					</if>                                                    
+				</THEN>
+				</IF>
+				<IF COND="Variables.editCheck=true">
+				<THEN>
+				<A HREF="Variables.urlInspectThisItem" style="position: absolute; right: 7px" REPLACEALL="Variables.urlInspectThisItem">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBarButton">
+						<argument NAME="buttonImage" VALUE="refresh.png"/>
+						<argument NAME="toolbartitle" value="Variables._ALT_"/>
+					</callelement>
+				</A>
+				</THEN>
+				</IF>
+			</then>
+			</if>			
+		</td>
+	</tr>
+	</table>
+	</div>
+	<div id="msgArea"></div>
+	<div class="toolbarBorder"></div>
+	</div>
+</THEN>
+</IF>
+</ftcs>

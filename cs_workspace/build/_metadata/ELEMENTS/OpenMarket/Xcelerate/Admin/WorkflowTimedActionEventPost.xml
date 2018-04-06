@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/WorkflowTimedActionEventPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+
+
+	<IF COND="Variables.action=destroy">
+	<THEN>
+		<DESTROYEVENT NAME="WorkflowTimedActionEvent"/>
+		<div class="width-outer-70">
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/Eventdestroyedsuccessfully" VARNAME="msgtext"/>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<ARGUMENT NAME="msgtext" VALUE="Variables.msgtext"/>
+				<ARGUMENT NAME="severity" VALUE="info"/>
+			</CALLELEMENT>
+		</div>
+	</THEN>
+	</IF><!-- destroy -->
+
+	<IF COND="Variables.action=save">
+	<THEN>
+<!-- 
+        <SETVAR NAME="time" VALUE="Variables.hh:Variables.mm:0 Variables.W/Variables.DD/Variables.MM"/>
+        We do not need to set the time variable. It is already being properly set in the preSave() javascript function
+        that is found in OpenMarket\Xcelerate\Actions\Util\EventFront.jsp. The logic to read from the selected input
+        i.e. whether daily, weekly, hourly etc is all done in preSave().
+-->        
+		<DESTROYEVENT NAME="WorkflowTimedActionEvent"/>
+		<SETVAR NAME="errno" VALUE="0"/>
+		<APPEVENT NAME="WorkflowTimedActionEvent"
+			GUID="CS.Property.ft.contentserver"
+			TIMES="Variables.time">
+			<ARGUMENT NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowTimedAction"/>
+		</APPEVENT>
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="ERRNO" VALUE="Variables.errno"/>
+			<div class="width-outer-70">
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/Eventsetupfailederrorno" VARNAME="msgtext"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<ARGUMENT NAME="msgtext" VALUE="Variables.msgtext"/>
+					<ARGUMENT NAME="severity" VALUE="error"/>
+				</CALLELEMENT>
+			</div>
+		</THEN>
+		<ELSE>
+			<div class="width-outer-70">
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/Eventsetupsuccessful" VARNAME="msgtext"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<ARGUMENT NAME="msgtext" VALUE="Variables.msgtext"/>
+					<ARGUMENT NAME="severity" VALUE="info"/>
+				</CALLELEMENT>
+			</div>
+		</ELSE>
+		</IF>
+
+		<IF COND="Variables.enabled=yes">
+    	<THEN>
+			<ENABLEEVENT NAME="WorkflowTimedActionEvent"/>
+		</THEN>
+		</IF><!-- enable -->
+
+		<IF COND="Variables.enabled=no">
+		<THEN>
+			<DISABLEEVENT NAME="WorkflowTimedActionEvent"/>
+		</THEN>
+		</IF><!-- disable -->
+
+
+	</THEN>
+	</IF><!-- save -->
+
+
+      <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/WorkflowTimedActionEventFront">
+      	<ARGUMENT NAME="action" VALUE="view"/>
+      </CALLELEMENT>
+
+
+
+</FTCS>

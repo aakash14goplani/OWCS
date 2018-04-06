@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/BuildSearchTreeNode -->
+
+<STRING.LENGTH VALUE="Variables.Label" VARNAME="length"/>
+<SETVAR NAME="rememberNode" VALUE="Label:Variables.length:Variables.Label:"/>
+<!-- The _enableForms property enables/disables following assettypes from the advanced ui.
+	�	All Flex assets and their parent assets
+	�	All basic assets
+	�	Engage assets like Recommendation, Segment and Promotion
+	�	Special assets like Query and Collection
+	-->
+<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+<if cond="Variables._enableForms!=true">
+<then>
+<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+	<argument NAME="assettype" VALUE="Variables.AssetType"/>
+</callelement>
+</then>
+</if>
+<if cond="Variables.navigateLink=true">
+<then>
+	<STRINGLIST NAME="actions" STR="Inspect" DELIM=";"/>
+</then>
+<else>
+	<STRINGLIST NAME="actions" STR="Inspect;Edit;Delete;Status" DELIM=";"/>
+</else>
+</if>
+<IF COND="IsVariable.Description=true">
+<THEN>
+	<STRING.LENGTH VALUE="Variables.Description" VARNAME="length"/>
+	<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeDescription:Variables.length:Variables.Description:"/>
+</THEN>
+</IF>
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID">
+	<ARGUMENT NAME="ID" VALUE="Variables.ID"/>
+</CALLELEMENT>
+<STRING.LENGTH VALUE="Variables.TreeNodeID" VARNAME="length"/>
+<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeID:Variables.length:Variables.TreeNodeID:"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="ExecuteURL">
+	<satellite.argument name="AssetType" value="Variables.AssetType"/>
+	<satellite.argument name="n0_" value="Variables.TreeNodeID"/>
+	<satellite.argument name="op" value="displayNode"/>
+</SATELLITE.LINK>
+<STRING.LENGTH VALUE="Variables.ExecuteURL" VARNAME="length"/>
+<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeExecuteURL:Variables.length:Variables.ExecuteURL:"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+	<satellite.argument name="AssetType" value="Variables.AssetType"/>
+</SATELLITE.LINK>
+<STRING.LENGTH VALUE="Variables.OpURL" VARNAME="length"/>
+<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeOpURL:Variables.length:Variables.OpURL:"/>
+
+<ASSET.GETSUBTYPE TYPE="Variables.AssetType" OBJECTID="Variables.ID" OUTPUT="stype" />
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/FindAssetImage">
+	<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+	<ARGUMENT NAME="AssetDef" VALUE="Variables.stype"/>
+</CALLELEMENT>
+<STRING.LENGTH VALUE="Variables.imageUsed" VARNAME="length"/>
+<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeImage:Variables.length:Variables.imageUsed:"/>
+<LOOP LIST="actions">
+   <XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/actions.ITEM" ENCODE="false" VARNAME="action"/>
+   <STRING.LENGTH VALUE="Variables.action" VARNAME="length"/>
+   <SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeOKAction:Variables.length:Variables.action:"/>
+</LOOP>
+
+<IF COND="IsVariable.RefreshKeys=true">
+<THEN>
+	<STRINGLIST NAME="keys" STR="Variables.RefreshKeys" DELIM=";"/>
+	<LOOP LIST="keys">
+		<STRING.LENGTH VALUE="keys.ITEM" VARNAME="length"/>
+		<SETVAR NAME="rememberNode" VALUE="Variables.rememberNodeRefreshKey:Variables.length:keys.ITEM:"/>
+	</LOOP>
+</THEN>
+</IF>
+
+<STRING.UTF8ENCODE VALUE="Variables.rememberNodeEND:3:END:" VARNAME="Variables.Varname"/>
+
+</FTCS> 

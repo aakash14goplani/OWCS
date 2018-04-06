@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/RevisionDetailsFront
+-
+- INPUT
+-	Variables.AssetType
+-  Variables.id
+-  Variables.rev
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<STRING.ENCODE VARIABLE="rev" VARNAME="rev" />
+<!--setvar NAME="assetname" VALUE="theCurrentAssetVariables.rev"/-->
+<script type="text/javascript">
+    var revision=window.document.URL ; 
+    var spos=revision.indexOf("rev") ;
+	var verr ; 
+	if ( spos > -1 ) 
+	{
+	   var mes=revision.substring(spos+4) ;	     	   	   
+	   var pPos = mes.indexOf('&') ;  
+	   if (  pPos != -1 )
+		  verr="Version "+mes.substring(0,pPos);       	  
+	   else
+	      verr="Version "+mes ; 		 
+	}else
+	   verr = "Version " ; 	   
+	window.document.title=verr; 
+</script>
+
+<setvar NAME="assetname" VALUE="theCurrentAsset"/>
+<ASSET.LOADREVISION TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetname" REVISION="Variables.rev"/>
+<if COND="IsError.Variables.errno=false">
+<then>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/GetContentDetails">
+			<argument NAME="getaux" VALUE="true"/>
+			<argument NAME="qryprefix" VALUE="ContentDetails"/>
+			<argument NAME="assetname" VALUE="Variables.assetname"/>
+	</callelement>
+	<if COND="IsError.Variables.errno=true">
+		<then>
+			<CSVAR NAME="Variables.errno"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<argument NAME="error" VALUE="InvalidContentId"/>
+				<argument NAME="assettype" VALUE="Variables.AssetType"/>
+				<argument NAME="id" VALUE="Variables.id"/>
+			</callelement>
+		</then>
+		<else>
+			<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentDetails">
+				<argument NAME="revisionInspect" VALUE="true"/>
+				<argument NAME="revision" VALUE="Variables.rev"/>
+			</callelement>
+		</else>
+	</if>
+</then>
+<else>
+	<XLAT.STREAM KEY="dvin/UI/Error/RevisionLoadFailed" errno="Variables.errno" errdetail="Variables.errdetail" EVALALL="false"/>
+ </else>
+</if>
+
+</FTCS> 

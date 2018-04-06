@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/ShowTreePickError
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="Variables.pickerrors=true">
+<THEN>
+	<LISTOBJECT.TOLIST NAME="errors" LISTVARNAME="errors"/>
+	<table border="1" cellspacing="0" cellpadding="0">
+	<tr>
+		<td class="message-bg-color">
+			<table border="0" cellspacing="0" cellpadding="3">
+				<tr>
+					<td valign="top"><img src="Variables.cs_imagedir/graphics/common/msg/warning.gif" width="25" height="22" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td>
+						<LOOP LIST="errors">
+							<STRING.STREAM VALUE="errors.message"/><br/><br/>
+						</LOOP>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+	<p/>
+	<p/>
+</THEN>
+</IF>
+
+</FTCS> 

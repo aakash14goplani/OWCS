@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Errors/MissingAttributeEditorElement
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<XLAT.STREAM KEY="dvin/UI/Error/MissingAttributeEditorElement" ESCAPE="false" ENCODE="false"/>
+</ftcs>

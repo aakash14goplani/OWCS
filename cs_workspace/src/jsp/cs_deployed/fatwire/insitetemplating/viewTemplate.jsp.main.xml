@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/insitetemplating/viewTemplate</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/insitetemplating/viewTemplate</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>fatwire/insitetemplating/viewTemplate.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/fatwire/insitetemplating/viewTemplate.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2Ffatwire%2Finsitetemplating%2FviewTemplate.jsp
+@hashval=155714497
+key=@ELEMENTCATALOG-fatwire/insitetemplating/viewTemplate
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

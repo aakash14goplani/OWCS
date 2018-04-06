@@ -1,0 +1,626 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/AssetChildrenForm.xml $ 
+$Revision: 62 $ 
+$Modtime: 8/16/04 2:27p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Children Form
+--		expects: Variables.AssetType - current Asset Type (parent)
+-- 	optionally, Variables.childassettype - gives only child relations of this asset type,
+--							otherwise shows all possible child relations organized by child asset type
+--
+-- Variables.isAssetRepostable will be set to "true" only if the asset can be reposted.  In that case, assetRepostInvocation
+--    will contain the javascript invocation required to repost the asset form properly.  All assets heretofore will obey
+--    this convention.
+--
+-- Variables.repostContentFormJavascript is expected to be set correctly for the content form, if Variables.isAssetRepostable is set to true.
+-->
+
+<IF COND="IsVariable.isAssetRepostable=false">
+<THEN>
+	<SETVAR NAME="isAssetRepostable" VALUE="false"/>
+</THEN>
+</IF>
+
+<XLAT.LOOKUP KEY="dvin/Common/PnoneP" VARNAME="noneString"/>
+
+<IF COND="Variables.cs_environment=standard">
+<THEN>
+	<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="editBaseURL" PAGENAME="OpenMarket/Xcelerate/UIFramework/ShowMainFrames">
+		<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+		<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+		<SATELLITE.ARGUMENT NAME="ThisPage" VALUE="EditFront"/>
+	</SATELLITE.LINK>
+</THEN>
+<ELSE>
+	<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="editBaseURL" PAGENAME="OpenMarket/Xcelerate/Actions/EditFront">
+		<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+		<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+	</SATELLITE.LINK>
+</ELSE>
+</IF>
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<replace STR="Variables.editBaseURL">
+var urlBase = "Variables.editBaseURL";
+</replace>
+
+<![CDATA[
+
+function openEditWindow (assetID,assetType) {
+	if (assetID) {
+		var urlEdit = urlBase+"&AssetType="+assetType+"&id="+assetID;
+		if (parent && parent.parent && parent.parent.frames["XcelWorkFrames"])
+			urlEdit += "&showSiteTree=" + parent.parent.frames["XcelWorkFrames"].showSiteTree;
+		editwindow = window.open(urlEdit, "_blank");
+	} else {
+		]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/AssetMgt/NoAssetSpecified" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+	}
+}
+
+function setRelatedAsset(id,str,targ,val) {
+document.forms[0].elements[targ].value = val;
+document.forms[0].elements[id].value = str;
+}
+
+]]>
+</SCRIPT>
+
+<!-- Get the list of possible child associations for this asset for all children or a single child assettype  -->
+<!-- Find Any subtype associated with this asset type -->
+<ASSET.GETSUBTYPE NAME="theCurrentAsset"/>
+<IF COND="IsVariable.childassettype=true">
+<THEN>
+	<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" CHILDTYPE="Variables.childassettype" SUBTYPE="Variables.subtype" ORDER="name desc" PUBID="SessionVariables.pubid"/>
+</THEN>
+<ELSE>
+	<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" SUBTYPE="Variables.subtype" ORDER="childassettype,name desc" PUBID="SessionVariables.pubid"/>
+</ELSE>
+</IF>
+
+<IF COND="associations.#numRows!=0">
+<THEN>
+	<!-- currentItem counter describes which association we are talking about, since they are ordered -->
+	<IF COND="IsCounter.currentItem=false">
+	<THEN>
+		<SETCOUNTER NAME="currentItem" VALUE="1"/>
+	</THEN>
+	</IF>
+
+	<IF COND="IsList.associations=true">
+	<THEN>
+		<IF COND="associations.#numRows!=0">
+		<THEN>
+			<LOOP LIST="associations">
+				<!-- For each association that is eligible, find its name and its saved value (if any), and present these in a text element.
+				    Since an association may be multivalued, depending on the kind of association this is, we may need to display multiple elements
+				    and ordinal values, and an "Add" button as well. -->
+				<SETVAR NAME="Assocname" VALUE="associations.name"/>
+				<TR>
+					<TD align="left" valign="top" BGCOLOR="#FFFFFF" colspan="2">
+						<IF COND="Variables.childAtype!=associations.childassettype">
+						<THEN>
+							<IF COND="associations.childassettype!=*">
+							<THEN>
+								<ASSETTYPE.LOAD NAME="child" FIELD="assettype" VALUE="associations.childassettype"/>
+								<ASSETTYPE.GET NAME="child" FIELD="description" OUTPUT="childatdescription"/>
+								<ASSETTYPE.GET NAME="child" FIELD="assettype" OUTPUT="childassettype"/>
+								<ASSETTYPE.GET NAME="child" FIELD="plural" OUTPUT="childatplural"/>
+							</THEN>
+							<ELSE>
+								<xlat.lookup KEY="dvin/AT/Common/GenericAsset" VARNAME="childatdescription"/>
+								<SETVAR NAME="childassettype" VALUE="*"/>
+							</ELSE>
+							</IF>
+							<span class="form-label-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/Associatedchildatdescription"/>:</span>
+							<SETVAR NAME="childAtype" VALUE="associations.childassettype"/>
+						</THEN>
+						</IF>
+					</TD>
+				</TR>
+				<TR>
+					<TD WIDTH="20">&nbsp;</TD>
+					<TD>
+						<TABLE CELLPADDING="0" BORDER="0">
+						<TR>
+							<TD >
+								<STRING.STREAM LIST="associations" COLUMN="description"/>
+							</TD>
+						</TR>
+						<TR>
+							<TD align="left" NOWRAP="" VALIGN="MIDDLE">
+								
+								<!-- Legal child asset types needs to be assembled.  This will be either Variables.childassettype, or if that has a "*" value,
+								     all asset types that are legally children will be assembled into a comma-separated list. -->
+								     
+								<IF COND="Variables.childassettype!=*">
+								<THEN>
+									<SETVAR NAME="legalchildassettypes" VALUE="Variables.childassettype"/>
+								</THEN>
+								<ELSE>
+									<IF COND="IsVariable.childtypeslist=true">
+									<THEN>
+										<SETVAR NAME="legalchildassettypes" VALUE="Variables.childtypeslist"/>
+									</THEN>
+									<ELSE>
+										<!-- We don't have the child types list hanging around, so assemble it -->
+										<SETVAR NAME="childtypeslist" VALUE="Variables.empty"/>
+										<ASSETTYPE.LIST LIST="potential_list" ORDER="description"/>
+										<LOOP LIST="potential_list">
+											<IF COND="potential_list.canbechild=T">
+											<THEN>
+												<IF COND="Variables.childtypeslist=Variables.empty">
+												<THEN>
+													<SETVAR NAME="childtypeslist" VALUE="potential_list.assettype"/>
+												</THEN>
+												<ELSE>
+													<SETVAR NAME="childtypeslist" VALUE="Variables.childtypeslist,potential_list.assettype"/>
+												</ELSE>
+												</IF>
+											</THEN>
+											</IF>
+										</LOOP>
+										<SETVAR NAME="legalchildassettypes" VALUE="Variables.childtypeslist"/>
+									</ELSE>
+									</IF>
+								</ELSE>
+								</IF>
+								
+								<!-- The current association value will scatter in two different ways:  If single-valued, there will be a variable called
+								     "xxx:Association-named:<name_of_association>", which contains the value (if any).  If multivalued, then
+								     "xxx:Association-named:<name_of_association>:Total" will contain the number of values, and the first child consists
+								     of the variables "xxx:Association-named:<name_of_association>:0:ref" (describing the asset id) and
+								     "xxx:Association-named:<name_of_association>:0:ref_type" (describing the asset type of the asset id).
+								     Also, "xxx:Association-named:<name_of_association>:0:rank" describes the rank value of the association.
+								-->
+								
+								<IF COND="associations.multivalued=T">
+								<THEN>
+									<!-- Multivalued association -->
+									
+									<!-- The way assets have been posted around has truly been messed up.  What started as a very simple model,
+									      where the asset would be scattered into variables, is now almost a nightmare of different versions of each
+									      value.  For example, the "ContentDetails:" prefix is used sometimes, and the "Variables.AssetType:" prefix
+									      is used other times, and it is not clear at all what the relationship is between these two, other than form
+									      elements named "ContentDetails:" do not seem to be created by this element.  I will therefore take the
+									      approach that variables of the form "Variables.AssetType:xxx" supercede variables of the form
+									      "ContentDetails:xxx", if they exist.
+									-->
+									
+									<IF COND="IsVariable.Variables.AssetType:Association-named:Variables.Assocname:Total=true">
+									<THEN>
+										<SETVAR NAME="currentPrefix" VALUE="Variables.AssetType"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="currentPrefix" VALUE="ContentDetails"/>
+									</ELSE>
+									</IF>
+									<SETVAR NAME="currentPrefix" VALUE="Variables.currentPrefix:Association-named:Variables.Assocname:"/>
+									
+									<!-- Multivalued associations are gathered automatically because great effort is made to modify form values
+									      via javascript before they are posted, so that they exactly match the specification for asset scatter/gather.
+									      That means that the lists must be reorganized as deletions occur BEFORE the post happens, and that the
+									      count field is also updated appropriately whenever any action is take, prior to post -->
+									
+									<IF COND="IsVariable.Variables.currentPrefixTotal=true">
+									<THEN>
+										<SETVAR NAME="actualcount" VALUE="Variables.Variables.currentPrefixTotal"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="actualcount" VALUE="0"/>
+									</ELSE>
+									</IF>
+									
+									<IF COND="Variables.isAssetRepostable=true">
+									<THEN>
+										<!-- Asset is repostable, so we can change the count of the number of slots by clicking the Add button -->
+										<IF COND="IsVariable.relatedSlotCountCounters.currentItem=true">
+										<THEN>
+											<!-- The number of slots we should display was posted in -->
+											<SETVAR NAME="numberOfSlots" VALUE="Variables.relatedSlotCountCounters.currentItem"/>
+										</THEN>
+										<ELSE>
+											<!-- Otherwise, the number of slots equals the actual count of items so far -->
+											<SETVAR NAME="numberOfSlots" VALUE="Variables.actualcount"/>
+										</ELSE>
+										</IF>
+										<!-- This hidden input allows a javascript method to increase the number of displayed slots -->
+										<INPUT TYPE="hidden" NAME="relatedSlotCountCounters.currentItem" VALUE="Variables.numberOfSlots" REPLACEALL="Counters.currentItem,Variables.numberOfSlots"/>
+									</THEN>
+									<ELSE>
+										<!-- NOT repostable.  Display ten blank slots so that there's a reasonable chance we'll satisfy the user in one go anyhow. -->
+										<CALCULATOR.GO VALUE="Variables.actualcount 10 +" VARNAME="numberOfSlots"/>
+									</ELSE>
+									</IF>
+									
+									<!-- This is the hidden which contains the count -->
+									<INPUT TYPE="hidden" NAME="Variables.AssetType:Association-named:Variables.Assocname:Total" VALUE="Variables.actualcount" REPLACEALL="Variables.AssetType,Variables.Assocname,Variables.actualcount"/>
+									<!-- Now, display a table with numberOfSlots rows, where the first actualcount rows have data in them -->
+									<TABLE>
+										<SETCOUNTER NAME="slotCounter" VALUE="0"/>
+										<IF COND="Variables.numberOfSlots!=0">
+										<THEN>
+											<LOOP COUNT="Variables.numberOfSlots">
+												<!-- First, figure out if there's real relationship value here yet or not -->
+												<CALCULATOR.GO VALUE="Counters.slotCounter Variables.actualcount LT" VARNAME="realvalue"/>
+												<IF COND="Variables.realvalue=1">
+												<THEN>
+													<SETVAR NAME="displayId" VALUE="Variables.Variables.currentPrefixCounters.slotCounter:ref"/>
+													<SETVAR NAME="displayType" VALUE="Variables.Variables.currentPrefixCounters.slotCounter:ref_type"/>
+													<SETVAR NAME="displayRank" VALUE="Variables.Variables.currentPrefixCounters.slotCounter:rank"/>
+													<IF COND="IsVariable.relatedTagCounters.currentItem-Counters.slotCounter=true">
+													<THEN>
+														<!-- The related value is set already! -->
+														<SETVAR NAME="displayValue" VALUE="Variables.relatedTagCounters.currentItem-Counters.slotCounter"/>
+													</THEN>
+													<ELSE>
+														<!-- Need to find the display string for this asset -->
+														<ASSET.LIST LIST="anAssetChild" FIELD1="id" VALUE1="Variables.displayId" TYPE="Variables.displayType"/>
+														<IF COND="IsList.anAssetChild=true">
+														<THEN>
+															<SETVAR NAME="displayValue" VALUE="anAssetChild.name"/>
+														</THEN>
+														<ELSE>
+															<SETVAR NAME="displayValue" VALUE="Variables.noneString"/>
+														</ELSE>
+														</IF>
+													</ELSE>
+													</IF>
+												</THEN>
+												<ELSE>
+													<SETVAR NAME="displayId" VALUE="Variables.empty"/>
+													<SETVAR NAME="displayType" VALUE="Variables.empty"/>
+													<SETVAR NAME="displayRank" VALUE="Variables.empty"/>
+													<SETVAR NAME="displayValue" VALUE="Variables.noneString"/>
+												</ELSE>
+												</IF>
+												
+												<TR>
+													<!-- Create a unique identifier to describe THIS asset popup -->
+													<SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+
+													<TD>
+														<script type="text/javascript">
+
+				function DeleteRelationship_<STRING.STREAM VALUE="Variables.currentUniqueID"/>()
+				{
+					if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value &#62; <STRING.STREAM VALUE="Counters.slotCounter"/>)
+					{
+						var currentpoint = <STRING.STREAM VALUE="Counters.slotCounter"/>;
+						var total = document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value;
+						while (currentpoint &#60; total)
+						{
+							document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':ref'].value =
+								document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+(currentpoint+1)+':ref'].value;
+							document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':ref_type'].value =
+								document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+(currentpoint+1)+':ref_type'].value;
+							document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':rank'].value =
+								document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+(currentpoint+1)+':rank'].value;
+							document.forms[0].elements['<STRING.STREAM VALUE="relatedTagCounters.currentItem-"/>'+currentpoint].value =
+								document.forms[0].elements['<STRING.STREAM VALUE="relatedTagCounters.currentItem-"/>'+(currentpoint+1)].value;
+							currentpoint ++;
+						}
+						document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':ref'].value = '';
+						document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':ref_type'].value = '';
+						document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:"/>'+currentpoint+':rank'].value = '';
+						document.forms[0].elements['<STRING.STREAM VALUE="relatedTagCounters.currentItem-"/>'+currentpoint].value = '<STRING.STREAM VALUE="Variables.noneString"/>';
+						document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value --;
+					}
+				}
+				
+														</script>
+														<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="_XLAT_"/>
+														<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="mouseover" ESCAPE="true"/>
+														<A HREF="javascript:void(0)" onclick="DeleteRelationship_Variables.currentUniqueID()" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.currentUniqueID,Variables.mouseover">
+															<img ALIGN="absmiddle" HSPACE="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+														</A>
+													</TD>
+													<TD>
+														<INPUT TYPE="hidden" NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref" VALUE="Variables.displayId" REPLACEALL="Variables.AssetType,Variables.Assocname,Counters.slotCounter,Variables.displayId"/>
+														<INPUT TYPE="hidden" NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref_type" VALUE="Variables.displayType" REPLACEALL="Variables.AssetType,Variables.Assocname,Counters.slotCounter,Variables.displayType"/>
+														<INPUT TYPE="text" SIZE="32" maxlength="32" NAME="relatedTagCounters.currentItem-Counters.slotCounter" onFocus="this.blur()" VALUE="Variables.displayValue" REPLACEALL="Counters.currentItem,Counters.slotCounter,Variables.displayValue"/>
+													</TD>
+													<TD>
+														<INPUT TYPE="text" SIZE="5" NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:rank" VALUE="Variables.displayRank" REPLACEALL="Variables.AssetType,Variables.Assocname,Counters.slotCounter,Variables.displayRank"/>
+													</TD>
+													<TD>
+														<IF COND="Variables.showSiteTree=false">
+														<THEN>
+															<IF COND="Variables.childassettype!=*">
+															<THEN>
+																<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+																	<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+																	<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+																	<SATELLITE.ARGUMENT NAME="cs_PickAssetType" VALUE="Variables.childassettype"/>
+																	<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+																	<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+																	<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+																</SATELLITE.LINK>
+															</THEN>
+															<ELSE>
+																<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+																	<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+																	<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+																	<SATELLITE.ARGUMENT NAME="cs_PickAssetType" VALUE="Variables.empty"/>
+																	<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+																	<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+																	<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+																</SATELLITE.LINK>
+															</ELSE>
+															</IF>
+															<script type="text/javascript">
+															
+				function PickAssetCallback_<STRING.STREAM VALUE="Variables.currentUniqueID"/>(SelectedAssets)
+				{
+					var AssetInfo = SelectedAssets.split(":");
+					document.forms[0].elements['<STRING.STREAM VALUE="relatedTagCounters.currentItem-Counters.slotCounter"/>'].value = AssetInfo[2];
+					document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref"/>'].value = AssetInfo[1];
+					document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref_type"/>'].value = AssetInfo[0];
+					document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:rank"/>'].value = <STRING.STREAM VALUE="Counters.slotCounter"/> + 1;
+					if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value == <STRING.STREAM VALUE="Counters.slotCounter"/>)
+						document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value ++;
+				}
+				
+				function PickAssetPopup_<STRING.STREAM VALUE="Variables.currentUniqueID"/>()
+				{
+					if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value &#62;= <STRING.STREAM VALUE="Counters.slotCounter"/>)
+					{
+						OpenPickAssetPopup('<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true"/>', GetBannerHistory());
+					}
+				}
+															</script>
+															<!-- draw the recent asset popup -->
+															<A HREF="#" ONCLICK="PickAssetPopup_Variables.currentUniqueID(Variables.currentUniqueID);return false;" TARGET="_blank" REPLACEALL="Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+														</THEN>
+														<ELSE>
+															<script type="text/javascript">
+															
+				function PickAssetFromTree_<STRING.STREAM VALUE="Variables.currentUniqueID"/>()
+				{
+					if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value &#62;= <STRING.STREAM VALUE="Counters.slotCounter"/>)
+					{
+						SelectFromTreeTypedTextField('<STRING.STREAM VALUE="relatedTagCounters.currentItem-Counters.slotCounter"/>','<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref"/>','<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref_type"/>','<STRING.STREAM VALUE="Variables.legalchildassettypes"/>','single');
+						if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:ref"/>'].value != '')
+						{
+							document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Counters.slotCounter:rank"/>'].value = <STRING.STREAM VALUE="Counters.slotCounter"/> + 1;
+							if (document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value == <STRING.STREAM VALUE="Counters.slotCounter"/>)
+								document.forms[0].elements['<STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname:Total"/>'].value ++;
+						}
+					}
+				}
+															</script>
+															<!-- Create a "pick-from-tree" link that fills in the text field we need to be filled in -->
+															<XLAT.LOOKUP KEY="dvin/UI/SelectonechildatdesctreeclickAdd" VARNAME="_XLAT_" ESCAPE="true"/>
+															<XLAT.LOOKUP KEY="dvin/AT/Common/SelectFromTree" VARNAME="_xlat_select"/>
+															<A HREF="javascript:void(0)" onclick="PickAssetFromTree_Variables.currentUniqueID()" OnMouseOver="window.status='Variables._XLAT_'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.currentUniqueID,Variables._XLAT_">
+																<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddSelectedItems"/></CALLELEMENT>
+															</A>
+														</ELSE>
+														</IF>
+													</TD>
+												</TR>
+												
+												<INCCOUNTER NAME="slotCounter" VALUE="1"/>
+											</LOOP>
+										</THEN>
+										</IF>
+										<!-- If the form is repostable, include an Add button -->
+										<IF COND="Variables.isAssetRepostable=true">
+										<THEN>
+											<TR>
+												<TD>
+													<setvar NAME="NameorDesc" VALUE="Variables.childatdescription"/>
+													<xlat.lookup KEY="dvin/AT/Common/AddAnother" VARNAME="AddAnother"/>
+													<xlat.lookup KEY="dvin/AT/Common/AddAnother" ESCAPE="true" VARNAME="mouseover"/>
+													
+													<!-- Output the necessary javascript function only once on the form - it is shared by all -->
+													<if COND="IsVariable.AssetRelationAddAnotherJavascript=false">
+													<then>
+														<setvar NAME="AssetRelationAddAnotherJavascript" VALUE="false"/>
+													</then>
+													</if>
+													<if COND="Variables.AssetRelationAddAnotherJavascript=false">
+													<then>
+														<script type="text/javascript">
+				function AddAnotherRelatedAssetSlot(relatedItem)
+				{
+					document.forms[0].elements['relatedSlotCount'+relatedItem].value ++;
+					<STRING.STREAM VALUE="Variables.repostContentFormJavascript"/>
+				}
+														</script>
+														<setvar NAME="AssetRelationAddAnotherJavascript" VALUE="true"/>
+													</then>
+													</if>
+													<INPUT type="button" value="Variables.AddAnother" onclick="AddAnotherRelatedAssetSlot('Counters.currentItem');" BORDER="0" VSPACE="10" 
+														onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;"
+														REPLACEALL="Variables.AddAnother,Counters.currentItem,Variables.mouseover"/>
+													<img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" ALT="Variables.AddAnother"
+														REPLACEALL="Variables.cs_imagedir,Variables.AddAnother"/>
+												</TD>
+											</TR>
+										</THEN>
+										</IF>
+									</TABLE>
+								</THEN>
+								<ELSE>
+									<!-- Single valued association -->
+									&nbsp;
+									<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+									<A HREF="javascript:void(0);" OnMouseOver="window.status='Variables._XLAT_'; return true" OnMouseOut="return window.status='';" 
+										ONCLICK="openEditWindow(document.forms[0].elements['Variables.AssetType:Association-named:Variables.Assocname'].value,document.forms[0].elements['Variables.AssetType:Association-named:Variables.Assocname_type'].value);"
+										REPLACEALL="Variables.AssetType,Variables.Assocname,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Edit"/></CALLELEMENT></A>
+									&nbsp;&nbsp;&nbsp;
+									<ICS.RESOLVEVARIABLES NAME="$(Variables.ContentDetails:Association-named:$(Variables.Assocname))" DELIMITED="true" OUTPUT="assoc"/>
+									<!-- if there is no such variable, treat it the same as empty -->
+									<if COND="IsError.Variables.errno=true">
+									<then>
+										<SETVAR NAME="assoc" VALUE="Variables.empty"/>
+									</then>
+									</if>
+									<ICS.RESOLVEVARIABLES NAME="$(Variables.ContentDetails:Association-named:$(Variables.Assocname)_type)" DELIMITED="true" OUTPUT="assoc_type"/>
+									<!-- if there is no such variable, treat it the same as empty -->
+									<if COND="IsError.Variables.errno=true">
+									<then>
+										<SETVAR NAME="assoc_type" VALUE="Variables.empty"/>
+									</then>
+									</if>
+
+									<!-- 
+										Fix for #14134 - Data corruption issue in related fields when using pickfromtree attribute editor 
+									-->
+									<IF COND="Variables.assoc!=Variables.empty">
+									<THEN>
+										<ASSET.LIST LIST="anAssetChild" FIELD1="id" VALUE1="Variables.assoc" TYPE="Variables.assoc_type"/>
+										<IF COND="IsList.anAssetChild=true">
+										<THEN>
+											<SETVAR NAME="name" VALUE="anAssetChild.name"/>
+										</THEN>
+										<ELSE>
+											<setvar NAME="name" VALUE="Variables.noneString"/>
+											<SETVAR NAME="assoc" VALUE="Variables.empty"/>
+											<SETVAR NAME="assoc_type" VALUE="Variables.empty"/>
+										</ELSE>
+										</IF>
+									</THEN>
+									<ELSE>
+										<setvar NAME="name" VALUE="Variables.noneString"/>
+										<SETVAR NAME="assoc" VALUE="Variables.empty"/>
+										<SETVAR NAME="assoc_type" VALUE="Variables.empty"/>
+									</ELSE>
+									</IF>
+
+									<!--
+										fix for #14167 - Adding from tree into an association and attribute together looses the association
+									-->
+
+									<SETVAR NAME="currSelectedAssocValue" VALUE="Variables.relatedTagCounters.currentItem"/>
+									<SETVAR NAME="currSelectedAssocIdValue" VALUE="Variables.Variables.AssetType:Association-named:Variables.Assocname"/>
+									<SETVAR NAME="currSelectedAssocTypeValue" VALUE="Variables.Variables.AssetType:Association-named:Variables.Assocname_type"/>
+									<SETVAR NAME="emptyValue" VALUE="Variables.noneString"/>
+									<IF COND="IsVariable.currSelectedAssocValue=true">
+									<THEN>
+										<IF COND="Variables.currSelectedAssocValue=Variables.relatedTagCounters.currentItem">
+										<THEN>
+											<SETVAR NAME="savedAssocValue" VALUE="Variables.name"/>
+											<SETVAR NAME="savedAssocId" VALUE="Variables.assoc"/>
+											<SETVAR NAME="savedAssocType" VALUE="Variables.assoc_type"/>
+										</THEN>  
+										<ELSE>
+											<SETVAR NAME="savedAssocValue" VALUE="Variables.currSelectedAssocValue"/>
+											<IF COND="Variables.savedAssocValue=Variables.emptyValue">
+											<THEN>
+												<SETVAR NAME="savedAssocId" VALUE="Variables.empty"/>
+												<SETVAR NAME="savedAssocType" VALUE="Variables.empty"/>
+											</THEN>
+											<ELSE>
+												<SETVAR NAME="savedAssocId" VALUE="Variables.currSelectedAssocIdValue"/>
+												<SETVAR NAME="savedAssocType" VALUE="Variables.currSelectedAssocTypeValue"/>
+											</ELSE>
+											</IF>
+										</ELSE>
+										</IF>
+									</THEN>
+									</IF>
+								
+									<!-- This hidden contains the id of the child asset -->
+									<STRING.ENCODE VARIABLE="savedAssocId" VARNAME="savedAssocIdEnc"/>
+									<INPUT TYPE="hidden" VALUE="Variables.savedAssocIdEnc" NAME="Variables.AssetType:Association-named:Variables.Assocname" REPLACEALL="Variables.AssetType,Variables.Assocname,Variables.savedAssocIdEnc"/>
+									<INPUT TYPE="hidden" NAME="Variables.AssetType:Association-named:Variables.Assocname_type" VALUE="Variables.savedAssocType" REPLACEALL="Variables.AssetType,Variables.Assocname,Variables.savedAssocType"/>
+									<!-- This is the form element that will be filled in by either the tree pick or the asset pick popup -->
+									<INPUT TYPE="text" SIZE="32" maxlength="32" NAME="relatedTagCounters.currentItem" onFocus="this.blur()" VALUE="Variables.savedAssocValue" REPLACEALL="Counters.currentItem,Variables.savedAssocValue"/>
+									<!--
+										End fix for #14167 - Adding from tree into an association and attribute together looses the association
+										End fix for #14134 - Data corruption issue in related fields when using pickfromtree attribute editor 
+									-->
+									<IF COND="Variables.showSiteTree=false">
+									<THEN>
+										<!-- Create a unique identifier to describe THIS asset popup -->
+										<SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+										<!-- Pick asset popup currently does not handle multiple asset types, and it is a considerable project to fix that -->
+										<IF COND="Variables.childassettype!=*">
+										<THEN>
+											<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+												<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+												<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+												<SATELLITE.ARGUMENT NAME="cs_PickAssetType" VALUE="Variables.childassettype"/>
+												<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+												<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+												<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+											</SATELLITE.LINK>
+										</THEN>
+										<ELSE>
+											<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+												<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+												<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+												<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+												<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+												<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+											</SATELLITE.LINK>
+										</ELSE>
+										</IF>
+										<script type="text/javascript">
+<![CDATA[
+                                      function PickAssetCallback_]]><STRING.STREAM VALUE="Variables.currentUniqueID"/><![CDATA[(SelectedAssets)
+                                      {
+                                        var AssetInfo = SelectedAssets.split(":");
+                                        document.forms[0].elements[']]><STRING.STREAM VALUE="relatedTagCounters.currentItem"/><![CDATA['].value = AssetInfo[2];
+										document.forms[0].elements[']]><STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname_type"/><![CDATA['].value = AssetInfo[0];
+                                        document.forms[0].elements[']]><STRING.STREAM VALUE="Variables.AssetType:Association-named:Variables.Assocname"/><![CDATA['].value = AssetInfo[1];
+                                      }
+]]>
+                                      function PickAssetPopup_<STRING.STREAM VALUE="Variables.currentUniqueID"/>() {
+                                        OpenPickAssetPopup('<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true"/>', GetBannerHistory());
+                                      }
+										</script>
+										<!-- draw the recent asset popup -->
+										<A HREF="#" ONCLICK="PickAssetPopup_Variables.currentUniqueID(Variables.currentUniqueID);return false;" TARGET="_blank" REPLACEALL="Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+										<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="_XLAT_"/>
+										<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="mouseover" ESCAPE="true"/>
+										<A HREF="javascript:void(0)" onclick="setRelatedAsset('relatedTagCounters.currentItem','Variables.emptyValue','Variables.AssetType:Association-named:Variables.Assocname','')" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Counters.currentItem,Variables.AssetType,Variables.Assocname,Variables.mouseover, Variables.emptyValue">
+											<img ALIGN="absmiddle" HSPACE="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" border="0" TITLE="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+										</A>
+									</THEN>
+									<ELSE>
+										<!-- Create a "pick-from-tree" link that fills in the text field we need to be filled in -->
+										<XLAT.LOOKUP KEY="dvin/UI/SelectonechildatdesctreeclickAdd" VARNAME="_XLAT_" ESCAPE="true"/>
+										<XLAT.LOOKUP KEY="dvin/AT/Common/SelectFromTree" VARNAME="_xlat_select"/>
+										<A HREF="javascript:void(0)" onclick="SelectFromTreeTypedTextField('relatedTagCounters.currentItem','Variables.AssetType:Association-named:Variables.Assocname','Variables.AssetType:Association-named:Variables.Assocname_type','Variables.legalchildassettypes','single')" OnMouseOver="window.status='Variables._XLAT_'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.name,Counters.currentItem,Variables.legalchildassettypes,Variables.AssetType,Variables.Assocname,Variables._XLAT_">
+											<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddSelectedItems"/></CALLELEMENT>
+										</A>
+										<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="_XLAT_"/>
+										<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="mouseover" ESCAPE="true"/>
+										<A HREF="javascript:void(0)" onclick="setRelatedAsset('relatedTagCounters.currentItem','Variables.emptyValue','Variables.AssetType:Association-named:Variables.Assocname','')" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Counters.currentItem,Variables.AssetType,Variables.Assocname,Variables.mouseover, Variables.emptyValue">
+											<img ALIGN="absmiddle" HSPACE="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" border="0" TITLE="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+										</A>
+									</ELSE>
+									</IF>
+
+								</ELSE>
+								</IF>
+							</TD>
+							<!-- I'm not sure what this is for; maybe it gets used during gather?  If so, where does that occur? -->
+							<![CDATA[<INPUT TYPE="hidden" NAME="Associates" VALUE="]]><STRING.STREAM VALUE="Variables.Assocname"/><![CDATA["/>]]>
+						</TR>
+						</TABLE>
+					</TD>
+				</TR> 
+				<INCCOUNTER NAME="currentItem" VALUE="1"/>
+			</LOOP>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</FTCS>

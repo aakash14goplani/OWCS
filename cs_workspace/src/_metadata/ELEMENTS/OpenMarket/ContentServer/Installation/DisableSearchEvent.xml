@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/ContentServer/Installation/DisableSearchEvent
+-
+- OUTPUT
+-
+-->
+<SETVAR NAME="result" VALUE="Variables.empty" />
+<CALLJAVA CLASS="com.fatwire.search.util.ManageSearchInstall" >
+		<ARGUMENT NAME="ENABLESEARCH" VALUE="false"/>
+</CALLJAVA>
+
+	<!-- set status for the installer -->
+	<if COND="Variables.result!=Variables.empty">
+	<then>
+		<logmsg STR="ContentServer Installation Error stopping the search engine: Variables.result"/>
+		##ERROR## <csvar NAME="Variables.result"/><BR/>
+	 </then>
+             <else>
+	 	##SUCCESS## <csvar NAME="Variables.result"/><BR/>
+	</else>
+	</if>
+
+ 
+ 
+</ftcs>

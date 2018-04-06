@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/PublishConsolePost
+-
+- INPUT
+-
+-    Variables.target -- target id
+-
+- OUTPUT
+-
+-->
+<!-- Continue only if conditions in prologactions are satisfied -->
+<if COND="Variables.doproceed=true">
+<then>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<callelement NAME="OpenMarket/Xcelerate/Actions/PublishFront">
+    <argument NAME="target" VALUE="Variables.target"/>
+</callelement>
+</then>
+</if>
+</FTCS> 

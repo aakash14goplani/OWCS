@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/FlexibleAssets/Filters/Tile</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/FlexibleAssets/Filters/Tile</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/FlexibleAssets/Filters/Tile.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/FlexibleAssets/Filters/Tile.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FFlexibleAssets%2FFilters%2FTile.xml
+@hashval=878673202
+key=@ELEMENTCATALOG-OpenMarket/Gator/FlexibleAssets/Filters/Tile
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

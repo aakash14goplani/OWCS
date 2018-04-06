@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">UI/Data/WebView/DeviceHtml</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>UI/Data/WebView/DeviceHtml</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>UI/Data/WebView/DeviceHtml.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/UI/Data/WebView/DeviceHtml.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FUI%2FData%2FWebView%2FDeviceHtml.jsp
+@hashval=1932643061
+key=@ELEMENTCATALOG-UI/Data/WebView/DeviceHtml
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

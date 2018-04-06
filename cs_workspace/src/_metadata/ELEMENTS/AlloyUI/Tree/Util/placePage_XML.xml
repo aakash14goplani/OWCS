@@ -1,0 +1,126 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+Notes:
+
+	This element is used for both PLACE pages and UNPLACE pages.
+	Most of the code here is taken from already existing code in CS 7.0 xml elements
+	i.e. OpenMarket/Xcelerate/PrologActions/PlacePageFront.xml
+	OpenMarket/Xcelerate/PrologActions/PlacePagePost.xml
+	
+	Input:
+		Parent asset id, asset type
+		CHild asset id, asset type
+		operation type (place page or unplace page)
+		index - rank for placing pages
+		
+	
+	- Sathish Paul Leo
+	
+-->	
+	<IF COND="Variables.pAssetType=Page">
+	<THEN>
+		<!-- If the parent node is another page, check if it is revision tracked, and check out the page if it is -->
+		
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+			<ARGUMENT NAME="AssetType" VALUE="Variables.pAssetType"/>
+		</CALLELEMENT>
+		<IF COND="Variables.trackingenabled=true">
+		<THEN>
+			<!-- Retrieve the history for the parent asset-->
+	        	<HISTORY TABLE="Page" ASSET="Variables.pAssetId" LIST="ItsHistory"/>
+       	     		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/LockIfNeeded">
+			        <ARGUMENT NAME="AssetType" VALUE="Variables.pAssetType"/>
+	        		<ARGUMENT NAME="id" VALUE="Variables.pAssetId"/>
+			</CALLELEMENT>
+			<IF COND="Variables.assetCheckedOutBySomeOtherUser=true" >
+			<THEN>
+				<SETVAR NAME="cannotCheckOutParentPage" VALUE="true" />
+				<SETVAR NAME="operationSuccess" VALUE="false" />
+			</THEN>
+			<ELSE>
+				<SETVAR NAME="alreadyLocked" VALUE="Variables.alreadylocked" />
+				<!-- Add entry in CheckOutInfo for an implicit check out -->
+				<IF COND="Variables.checkoutmethod=implicit">
+				<THEN>
+					<USERMANAGER.GETLOGINUSER VARNAME="userID"/>
+					<IMPLICITCHECKOUT.LOGIMPLICITCHECKOUT ASSETTYPE="Variables.pAssetType" ASSETID="Variables.pAssetId" USER="Variables.userID" FUNCTION="placepage"/>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>
+		</THEN>
+		</IF>
+		
+		<!-- Load the parent asset, retrieve its site node id and load the site plan node corresponding to the parent page) -->
+		<ASSET.LOAD NAME="parentAsset" TYPE="Page" OBJECTID="Variables.pAssetId" />
+		<ASSET.GETSITENODE NAME="parentAsset" OUTPUT="parentNodeId"/>
+		<SITEPLAN.LOAD NAME="parentNode" NODEID="Variables.parentNodeId" />
+	</THEN>
+	<ELSE>
+		<!-- Parent is not a page, load the current site and try to place the page under the current site-->
+		<PUBLICATION.LOAD NAME="parentAsset" OBJECTID="SessionVariables.pubid"/>
+		<!-- retrieve the root of the site plan tree, i.e. the current publication -->
+		<SITEPLAN.ROOT LIST="PubRoot" OBJECTID="SessionVariables.pubid"/>			
+		<!--Load the root node -->
+		<SITEPLAN.LOAD NAME="parentNode" NODEID="PubRoot.nid"/>		
+	</ELSE>
+	</IF>		
+
+	<IF COND="Variables.cAssetType=Page" >
+	<THEN>
+		<ASSET.LOAD NAME="childAsset" TYPE="Variables.cAssetType" OBJECTID="Variables.cAssetId" />
+		
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+			<ARGUMENT NAME="AssetType" VALUE="Page"/>
+			<ARGUMENT NAME="assetObjectName" VALUE="childAsset"/>
+			<ARGUMENT NAME="Function" VALUE="placepage"/>
+		</CALLELEMENT>
+		
+		<IF COND="Variables.PrivsFailed=true">
+		<THEN>
+			<SETVAR NAME="operationSuccess" VALUE="false" />
+			<SETVAR NAME="noPrivileges" VALUE="true" />
+		</THEN>
+		<ELSE>
+			<ASSET.GETSITENODE NAME="childAsset" OUTPUT="childNodeId" />
+			
+			<IF COND="Variables.operationType=place_page_operation_type" >
+			<THEN>
+				<!-- Call the jsp element to place the given child node and also to properly place the other 
+					child nodes if there is a rank collision -->
+				<CALLELEMENT NAME="AlloyUI/Tree/Util/placeChildrenByRank">
+				      <ARGUMENT NAME="parentNodeName" VALUE="parentNode"/>
+				      <ARGUMENT NAME="childNodeId" VALUE="Variables.childNodeId" />
+				      <ARGUMENT NAME="childIndex" VALUE="Variables.childIndex" />
+				</CALLELEMENT>
+			</THEN>
+			<ELSE>
+				<!-- Unplace the given page from the parent page -->
+				<SITEPLAN.UNPLACE NAME="parentNode" NODEID="Variables.childNodeId" />
+			</ELSE>
+			</IF>
+			<SITEPLAN.SAVE NAME="parentNode"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>	
+	<!-- Check in the asset if it is checked-out -->
+	<IF COND="IsVariable.alreadyLocked=true">
+	<THEN>
+		<IF COND="Variables.alreadyLocked!=true">
+		<THEN>
+			<XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/VersionbyPlacePage" VARNAME="_xlat_version"/>
+			<ASSET.CHECKIN NAME="parentAsset" ANNOTATION="Variables._xlat_version" CHECKOUT="false"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	<!-- Remove the entry from the CheckOutInfo table -->
+	<IF COND="Variables.pAssetType!=Publication">
+	<THEN>
+		<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.pAssetType" ASSETID="Variables.pAssetId"/>
+	</THEN>
+	</IF>
+</ftcs>

@@ -1,0 +1,517 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/RemoteContentPost.xml $ 
+$Revision: 72 $ 
+$Modtime: 4/28/04 3:45p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of divine Inc.
+-					All Rights Reserved.
+-
+- RemoteContentPost.xml
+-
+- DESCRIPTION
+-    This element handles the posting of content by
+-    a remote client (XMLPost, or other)
+-
+-    INPUT:
+- 			Variables.AssetType (or Variables._ASSET_) - Required: An asset type.
+-			Variables.authusername	- Required, user will xceleditor privileges
+-			Variables.authpassword - Required password for authusername
+-			Variables.publication 	- publication name
+-					OR
+-			Variables.primarypubid	- pub,ication id
+-					OR
+-			Variables.publist		- list of publication names
+-->
+<!-- If Variables.AssetType is not specified, get it from Variables._ASSET_ -->
+<IF COND="IsVariable.AssetType!=true">
+<THEN>
+   <SETVAR NAME="AssetType" VALUE="Variables._ASSET_"/>
+</THEN>
+</IF>
+
+<!-- If delete operation is selected, then deleteData will get called. This is done to lower maintenance effort which is to have a single script for delete operation. Delete operation was not supported nor documented in RCP, but it was recommended to the field to use RCP for basic assets and flex sturctural assets only. 
+But to support delete operation of basic asset we have to make this change.
+-->
+<if COND="Variables.Action=delete">
+<then>
+	<CALLELEMENT NAME="OpenMarket/Gator/XMLPost/deleteData"/>
+</then>
+<else>
+
+<USERMANAGER.GETLOGINUSER VARNAME="usrname"/>
+<IF COND="IsVariable.usrname=true">
+<THEN>
+	<SETVAR NAME="loggedIn" VALUE="true"/>
+</THEN>
+<ELSE>
+	<USERMANAGER.LOGINUSER USERNAMEVARIABLE="authusername" PASSWORDVARIABLE="authpassword" VARNAME="loggedIn"/>
+	<if COND="Variables.loggedIn=false">
+	<then>
+		<XLAT.STREAM KEY="dvin/UI/Error/LoginfailedremotepostCheckauthusernamepassword"/>
+		<throwexception/>
+	</then>
+	</if>
+</ELSE>
+</IF>
+
+<if COND="IsVariable.AssetType!=true">
+    <then>
+    	<XLAT.STREAM KEY="dvin/UI/Error/AssetTypenotspecifiedpostargnamemust"/>
+		<throwexception/>
+    </then>
+</if>
+
+<IF COND="IsVariable.locale!=true"><THEN>
+    <SETSSVAR NAME="locale" VALUE="en_US"/>
+</THEN><ELSE>
+    <SETSSVAR NAME="locale" VALUE="Variables.locale"/>
+</ELSE></IF>
+
+
+<!-- Check for a valid publication -->
+<if COND="IsVariable.primarypubid=false">
+<then>
+	<if COND="IsVariable.publication=true">
+	<then>
+		<PUBLICATION.LOAD NAME="publication" FIELD="name" VALUE="Variables.publication"/>
+		<PUBLICATION.GET NAME="publication" FIELD="id" OUTPUT="primarypubid"/>
+	</then>
+	<else>
+		<!-- neither primarypubid nor publication provided -->
+		<PUBLICATION.LIST LIST="publist"/>
+		<if COND="publist.#numRows=1">
+		<then>
+			<SETVAR NAME="primarypubid" VALUE="publist.id"/>
+		</then>
+		</if>
+	</else>
+	</if>
+</then>
+<else>
+	<PUBLICATION.LOAD NAME="publication" OBJECTID="Variables.primarypubid"/>
+	<if COND="IsError.Variables.errno=true">
+	<then>
+		<XLAT.STREAM KEY="dvin/UI/Error/ErrorInvalidprimarypubid"/>
+		<throwexception/>
+	</then>
+	</if>
+</else>
+</if>
+
+<if COND="IsVariable.publist=true">
+<then>
+	<STRINGLIST NAME="pubs" STR="Variables.publist" DELIM=","/>
+	<SETVAR NAME="pubidlist" VALUE="Variables.empty"/>
+	<LOOP LIST="pubs">
+		<PUBLICATION.LOAD NAME="publication" FIELD="name" VALUE="pubs.ITEM"/>
+		<PUBLICATION.GET NAME="publication" FIELD="id" OUTPUT="nextpubid"/>
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<if COND="Variables.pubidlist=Variables.empty">
+			<then>
+				<SETVAR NAME="pubidlist" VALUE="Variables.nextpubid"/>
+				<if COND="IsVariable.primarypubid=false">
+				<then>
+					<SETVAR NAME="primarypubid" VALUE="Variables.nextpubid"/>
+				</then>
+				</if>
+ 			</then>
+			<else>
+				<SETVAR NAME="pubidlist" VALUE="Variables.pubidlist;Variables.nextpubid"/>
+			</else>
+			</if>
+		</then>
+		</if>
+	</LOOP>
+      <SETVAR NAME="pubidlist" VALUE="Variables.pubidlist;Variables.primarypubid"/>
+</then>
+</if>
+
+<if COND="IsVariable.primarypubid=false">
+<then>
+	<XLAT.STREAM KEY="dvin/UI/Error/Missingorinvalidpublicationvariable"/>
+	<throwexception/>
+</then>
+  </if>
+
+<if COND="IsVariable.Action=false">
+	<then>
+	<setvar NAME="Action" VALUE="addrow"/>
+ 	<setvar NAME="Function" VALUE="create"/>
+ 	</then>
+    <else>
+  	    <setvar NAME="Function" VALUE="edit"/>
+    </else>
+</if>
+
+
+	<!-- Check Privs for an operation  -->
+
+	<setvar NAME="doproceed"  VALUE="true"/>
+	<if COND="Variables.Action=addrow">
+	<then>
+	  <!-- Action is Create -->
+	  <ASSET.CREATE TYPE="Variables.AssetType" NAME="theCurrentAsset"/>
+	  <setvar NAME="status" VALUE="RF"/>
+	  <setvar NAME="Function" VALUE="create"/>
+	</then>
+    <else>
+	<if COND="Variables.Action=update">
+	<then>
+	   <!-- Action is update -->
+	
+		<if COND="IsVariable.id=true">
+		<then>
+	       <if COND="Variables.id!=Variables.empty">
+	       <then>
+	           <!-- loading by id -->
+	           <ASSET.LOAD TYPE="Variables.AssetType"
+	               OBJECTID="Variables.id" NAME="theCurrentAsset" EDITABLE="true"/>
+	       </then>
+	       <else>
+	           <if COND="IsVariable._ITEMNAME_=true">
+				<then>
+					<!-- loading by _ITEMNAME_ 1 -->
+					<ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables._ITEMNAME_" NAME="theCurrentAsset" EDITABLE="true"/>
+				</then>
+				<else>
+				   <IF COND="IsVariable.name=true">
+					<THEN>
+						<!-- loading by name_ 1 -->
+						<ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables.name" NAME="theCurrentAsset" EDITABLE="true"/>
+					</THEN>	
+					<ELSE>
+						<IF COND="IsVariable.internalname=true">
+					<THEN>
+						<SETVAR NAME="name" VALUE="Variables.internalname"/>
+						<ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables.name" NAME="theCurrentAsset" EDITABLE="true"/> 
+					</THEN>
+					<ELSE>
+						<XLAT.STREAM KEY="dvin/UI/Error/InvalidAssetIdentifiersRCP" errno="Variables.errno" AssetType="Variables.AssetType" EVALALL="false"/> 
+						<throwexception/>
+					</ELSE>
+					</IF>	
+					</ELSE>
+				   </IF>
+				</else>
+				
+	          </if>
+	       </else>
+	      </if>
+	 </then>
+	  <else>
+	      <if COND="IsVariable._ITEMNAME_=true">
+	      <then>
+	          <!-- loading by _ITEMNAME_ -->
+	          <ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables._ITEMNAME_" NAME="theCurrentAsset" EDITABLE="true"/>
+	       </then>
+	       <else>
+			   <IF COND="IsVariable.name=true">
+				<THEN>
+					<!-- loading by name -->
+					<ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables.name" NAME="theCurrentAsset" EDITABLE="true"/>
+				</THEN>	
+				<ELSE>
+					<IF COND="IsVariable.internalname=true">
+					<THEN>
+						<SETVAR NAME="name" VALUE="Variables.internalname"/>
+						<ASSET.LOAD TYPE="Variables.AssetType" FIELD="name" VALUE="Variables.name" NAME="theCurrentAsset" EDITABLE="true"/>
+					</THEN>
+					<ELSE>
+						<XLAT.STREAM KEY="dvin/UI/Error/InvalidAssetIdentifiersRCP" errno="Variables.errno" AssetType="Variables.AssetType" EVALALL="false"/> 
+						<throwexception/>
+					</ELSE>
+					</IF>		
+				</ELSE>
+			   </IF>
+	         </else>
+	      </if>
+	 </else>
+	 </if>
+	</then>
+	</if>
+	
+	<ASSET.SET NAME="theCurrentAsset" FIELD="status" VALUE="ED"/>
+	<setvar NAME="status" VALUE="ED"/>
+	
+	</else>
+	</if>
+ 
+	<ASSET.GET NAME="theCurrentAsset" FIELD="id"/>
+        <!-- check to see if the table is tracked
+         if so, then the current record must
+         be locked by the current user -->
+    <setvar NAME="alreadylocked"  VALUE="false"/>
+    <if COND="Variables.Action!=addrow">
+	<then>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+            <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        </callelement>
+        <setvar NAME="checkoutmethod"  VALUE="Variables.empty"/>
+        <if COND="Variables.trackingenabled=true">
+        <then>
+            <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+            <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/LockIfNeeded">
+                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                <argument NAME="id" VALUE="Variables.id"/>
+            </callelement>
+        </then>
+        </if>
+    </then>
+    </if>
+        <if COND="Variables.doproceed=true">
+        <then>
+            <if COND="Variables.alreadylocked=false">
+            <then>
+                    <!--   this is not  locked  call preupdate now -->
+                    <callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/PreUpdate">
+                        <argument NAME="updatetype" VALUE="remotepost"/>
+                    </callelement>
+					
+					<!-- Locales are handled in a different way that is why not adding the same logic to MakeFieldListforRemotePost which expects two parameters i.e. Dimension-parent and Dimension -->
+					<IF COND="IsVariable.locale=true">
+						<THEN>
+							<ASSET.LOAD NAME="localeAsset" TYPE="Dimension" FIELD="name" VALUE="Variables.locale"/>
+							<IF COND="Variables.errno!=0">
+							<THEN>
+								<IF COND="IsVariable.xmlpostdebug=true">
+								<THEN>
+									<XLAT.STREAM KEY="dvin/UI/Admin/Error/InvalidLocale"/>
+								</THEN>
+								</IF>
+								
+								<THROWEXCEPTION/>
+								
+							</THEN>
+							<ELSE>
+								<!-- check whether to add to a dimension set -->
+							<IF COND="IsVariable.masterasset=true">
+							<THEN>
+								<setvar name="errno" value="0" />
+								<ASSET.LOAD NAME="dimparent" TYPE="Variables._ASSET_" FIELD="name" VALUE="Variables.masterasset" EDITABLE="false"/>
+								<IF COND="Variables.errno=0">
+								<THEN>			
+									<!--  check whether the dimension-parent has a dimension assigned-->
+									<asset.getlocales name="dimparent" list="dimparentlocale"/>
+									<IF COND="dimparentlocale.#numRows!=0">
+									<THEN>
+										<IF COND="Variables.Action=update">
+										<THEN>
+											<!-- check current dimension parent -->
+											<asset.getdimparents list="dimparentlist" name="theCurrentAsset"/>
+											<IF COND="dimparentlist.#numRows!=0" >
+											<THEN>
+												<!-- assuming single dimension group, Locale-->
+												<asset.removedimparents name="theCurrentAsset">
+													<asset.dimensionparentrelationship group="Locale" type="Variables._ASSET_" assetid="dimparentlist.OBJECTID"/>
+												</asset.removedimparents>
+											</THEN>
+											</IF>
+										</THEN>
+										</IF>
+										<!-- assuming dimension group as Locale -->
+										<asset.get name="dimparent" field="id" output="dimparentid"/>	
+										<asset.setdimparents name="theCurrentAsset">
+											<asset.dimensionparentrelationship type="Variables._ASSET_" assetid="Variables.dimparentid" group="Locale"/>
+										 </asset.setdimparents>
+									</THEN>
+									<ELSE>
+										<XLAT.STREAM KEY="dvin/UI/Error/dimensionParentLocaleNotAssigned"/>
+										<THROWEXCEPTION/>
+									</ELSE>
+									</IF>					 
+								</THEN>
+								<ELSE>
+									<XLAT.STREAM KEY="dvin/UI/Error/dimensionParentUnableToLoad"/>
+									<THROWEXCEPTION/>
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.Action=update">
+								<THEN>
+									<!--  check whether the asset has locale -->
+									<asset.getlocales name="theCurrentAsset" list="theCurrentAssetlocalelist"/>
+									<IF COND="theCurrentAssetlocalelist.#numRows!=0">
+									<THEN>
+										<asset.removedimension name="theCurrentAsset" dimensionid="theCurrentAssetlocalelist.OBJECTID" />
+									</THEN>		
+									</IF>
+								</THEN>
+								</IF>		
+							</ELSE>
+							</IF>							
+								<ASSET.GET NAME="localeAsset" FIELD="id" OUTPUT="localeId"/>
+								<ASSET.SETDIMENSIONS NAME="theCurrentAsset">
+									<ASSET.ASSET TYPE="Dimension" ASSETID="Variables.localeId"/>
+								</ASSET.SETDIMENSIONS>
+							</ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.Action=update">
+							<THEN>
+								<!-- check whether the asset has locale -->
+								<asset.getlocales name="theCurrentAsset" list="currentAssetLocaleList" />
+								<IF COND="currentAssetLocaleList.#numRows!=0">
+								<THEN>									
+									<asset.removedimension name="theCurrentAsset" dimensionid="currentAssetLocaleList.OBJECTID"/>
+								</THEN>
+								</IF>
+							</THEN>
+							</IF>
+						</ELSE>
+						</IF>					
+
+						<setvar NAME="errno"  VALUE="0"/>
+
+						<ASSET.SAVE NAME="theCurrentAsset"/>
+
+						<if COND="IsError.Variables.errno=true">
+                        <then>
+                        	<XLAT.STREAM KEY="dvin/UI/Error/RemotePostSavefailedSameAssetTypeexists" errno="Variables.errno" AssetType="Variables.AssetType" EVALALL="false"/> 
+                     	    <XLAT.STREAM KEY="dvin/UI/Error/Detailserrdetail1" errdetail1="Variables.errdetail1" EVALALL="false"/>
+                          <throwexception/>
+                        </then>
+                    </if>
+                    
+                    <ASSET.GET NAME="theCurrentAsset" FIELD="id"/>
+                    <ASSET.GET NAME="theCurrentAsset" FIELD="name"/>
+                    
+                     <if COND="IsVariable.pubidlist=true">
+                    <then>
+                    	<ASSET.SHARE NAME="theCurrentAsset" PUBLIST="Variables.pubidlist"/>
+                      </then>
+                    </if>
+                    
+                    <if COND="IsError.Variables.errno=true">
+                        <then>
+                        	<XLAT.STREAM KEY="dvin/UI/Error/RemotePostShareFailed"  errno="Variables.errno" AssetType="Variables.AssetType" id="Variables.id" pubidlist="Variables.pubidlist" EVALALL="false"/> 
+                          <throwexception/>
+                        </then>
+                    </if>
+                    <if COND="IsVariable.startmenu=true">
+                    <then>
+                    	<STARTMENU.LOAD NAME="Variables.startmenu" OBJVARNAME="si" ITEMTYPE="ContentForm"/>
+                    	<if COND="IsError.Variables.errno=true">
+                    	<then>
+                        	<XLAT.STREAM KEY="dvin/UI/Error/RemotePostCannotsetloadstartmenuworkflow" errno="Variables.errno" AssetType="Variables.AssetType" id="Variables.id" name="Variables.name" EVALALL="false"/> 
+                    	</then>
+                    	<else>	
+                    		<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+                    		<PROCESSLIST.GETALL NAME="currentProc" VARNAME="__WORKFLOWPROCID__"/>
+                            <IF COND="Variables.__WORKFLOWPROCID__!=Variables.empty">
+                            <THEN>
+                         		<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType"
+                        								  ID="Variables.id"
+                        								  OBJVARNAME="workflowasset" />
+                        		<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.__WORKFLOWPROCID__" SITE="Variables.primarypubid" VARNAME="canstartworkflow"/>
+                        		<if COND="Variables.canstartworkflow=true">
+                        		<then>
+                        			<STARTMENUITEM.GETPARTICIPANTS NAME="si" OBJVARNAME="currentParts"/>
+                        			<PARTICIPANTLIST.GETREQUIRED NAME="currentParts" OBJVARNAME="partsList"/>
+															<!--
+                        			<WORKFLOWENGINE.SETOBJECTPARTICIPANTS OBJECT="workflowasset" PARTICIPANTS="partsList"/>
+															-->
+                        			<WORKFLOWENGINE.STARTOBJECTWORKFLOWPROCESS SITE="Variables.primarypubid"
+                        																	 OBJECT="workflowasset" 
+                        																	 ID="Variables.__WORKFLOWPROCID__"
+																													 PARTICIPANTS="partsList"/>
+                        		</then>
+                        		<else>
+                        	    	<XLAT.STREAM KEY="dvin/UI/Error/RemotePostUsernotpermittedstartwfinpub" errno="Variables.errno" AssetType="Variables.AssetType" id="Variables.id" name="Variables.name" authusername="Variables.authusername" primarypubid="Variables.primarypubid" EVALALL="false"/> 
+                        		</else>
+                        		</if>
+                            </THEN>
+                            </IF>
+                    	</else>
+                    	</if>
+                    </then>
+                    </if>
+                    
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Search/ManageSeIndex">
+                        <argument NAME="msicommand" VALUE="Add"/>
+                    </callelement>
+                    
+                    <callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/PostUpdate">
+                        <argument NAME="updatetype" VALUE="remotepost"/>
+                    </callelement>
+                
+                    <!-- decide whether to commit and create a new version.
+                             If the item was already locked, then no commit is
+                             needed. Else commit and ensure that it does not stay
+                             locked -->
+        
+                    <!-- If we already checkout and saved alright, check it in now -->
+                     <IF COND="Variables.checkoutmethod=implicit">
+                        <THEN>
+                            <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/VersionbyNew" VARNAME="_xlat_version"/>
+                            <ASSET.CHECKIN NAME="theCurrentAsset" ANNOTATION="Variables._xlat_version" CHECKOUT="false"/>
+                            <setvar NAME="didmycheckin"  VALUE="true"/>
+                        </THEN>
+                    </IF>
+        
+                 
+                     <!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+                	<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+                	<!-- SETVAR NAME="errno" VALUE="0"/>
+                	<SETVAR NAME="assetid" VALUE="Variables.id"/>
+                	<SETVAR NAME="username" VALUE="SessionVariables.username"/>
+                	<SELECTTO LIST="COI" FROM="CheckOutInfo" WHAT="checkout" WHERE="assetid,username"/>
+                	<IF COND="Variables.errno=0">
+                		<THEN>
+                			<CATALOGMANAGER SCOPED="STACKED">
+                		        <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+                		        <ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+                		        <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+                    		</CATALOGMANAGER>
+                		</THEN>
+                	</IF -->
+              </then>
+             <else>
+                      <XLAT.STREAM KEY="dvin/UI/FailedToCheckoutAsset"/>
+              </else>
+            </if>
+       </then>
+       </if> 
+
+
+<!-- DELETE Operation ends -->
+</else>
+</if>
+
+<!-- COMMON Operation begins -->
+      
+<if COND="IsError.Variables.errno=false">
+    <then>
+        <!-- all went well -->
+        <XLAT.STREAM KEY="dvin/UI/SuccessAssetTypenameidsaved"/>
+    </then>
+    <else>
+         <if COND="Variables.errno=-101">
+             <then>
+                  <XLAT.STREAM KEY="dvin/UI/SuccessAssetTypenameidsaved"/>
+             </then>
+         </if>
+    </else>
+</if>
+
+  
+<if COND="Variables.killsession=true">
+	<then>
+<!-- killsession is true if this is the last post in a sequence -->
+		<CATALOGMANAGER>
+ 	   	<ARGUMENT NAME="ftcmd" VALUE="logout"/>
+			<ARGUMENT NAME="killsession" VALUE="true"/>
+		</CATALOGMANAGER>
+	</then>
+</if>	
+
+</FTCS>

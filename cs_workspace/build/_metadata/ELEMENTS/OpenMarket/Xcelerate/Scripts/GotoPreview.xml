@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/GotoPreview.xml $
+$Revision: 17 $
+$Modtime: 2/19/04 10:15a $
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- gotoPreview.xml
+-
+- DESCRIPTION
+-
+-
+- HISTORY
+  [2008-02-12 KGF] #16212 fix:
+  Added conditional within openPreview to prevent infinite recursion and
+  correctly handle the case of being called from within a popup.
+-->
+<callelement NAME="OpenMarket/Xcelerate/Scripts/GetSourceWindow"/>
+<Script Language="Javascript">
+<if COND="Variables.cs_environment!=ucform">
+<then>
+<![CDATA[
+function openPreview( url )
+{
+	//need to open it from top so that we can keep track of the window via csWindowButtons.js.
+    if (window.top === self)
+    { //#16212
+		var w = getSourceWindow(self.opener, 'openPreview');		
+        if (w.openPreview) {			
+			w.openPreview(url);
+		}
+    }
+    else
+	{
+		var w =  getSourceWindow(window.parent, 'openPreview');
+        w.openPreview( url );
+	}	
+}
+]]>
+</then>
+<else>
+function openPreview( url )
+{
+	showPreview (url);
+}
+</else>
+</if>
+
+<![CDATA[
+function showPreview(pURL)
+{
+	PreviewWindow = window.open(pURL, "PreviewContent", "width=640,height=480,scrollbars=yes,toolbar=yes,location=yes,status=yes,menubar=yes,resizable=yes,directories=yes");
+	PreviewWindow.focus();
+}
+
+function preShowDocument()
+{
+	if (document.applets.length && dojo.isMac && dojo.isWebKit)
+	{
+		document.applets[0].blur();
+	}
+}
+
+function postShowDocument()
+{
+}
+]]>
+</Script>
+</FTCS>

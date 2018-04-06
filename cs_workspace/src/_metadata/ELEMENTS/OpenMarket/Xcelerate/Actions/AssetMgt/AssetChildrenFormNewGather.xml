@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/AssetChildrenForm.xml $ 
+$Revision: 62 $ 
+$Modtime: 8/16/04 2:27p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-
+- Part of the 2-part widget for managing multi-valued asset relationships
+- with a pleasing UI.
+-
+- Converts posted values (in Variables.AssetType:<whatever>) to variables
+- of the proper form for ASSET.GATHER to make sense of them.  Therefore,
+- this widget MUST preceed all ASSET.GATHER operations on the form.
+-
+- This widget will only do anything for asset relations that are multivalued.
+- Single-valued relations do not need any help because they post in a form
+- that matches what GATHER expects for them.
+-
+- Input variables:
+-   (a) Variables.AssetType - the asset type being edited
+-   (b) theCurrentAsset - name of the current (loaded) asset object
+-   (c) Variables.childassettype - optional variable with the desired child asset type
+-   (d) What has been posted by AssetChildrenFormNew, including Variables.AssetChildrenFormNew indicating
+-       whether data from this element has been posted
+-
+-->
+
+<if COND="IsVariable.AssetChildrenFormNew=false">
+<then>
+	<setvar NAME="AssetChildrenFormNew" VALUE="false"/>
+</then>
+</if>
+
+<if COND="Variables.AssetChildrenFormNew=true">
+<then>
+	<!-- Loop through all the assocnamed entries applying to this asset, and convert each multivalued
+	      one to the proper form -->
+
+	<!-- Get the list of possible child associations for this asset for all children or a single child assettype  -->
+	<!-- Find Any subtype associated with this asset type -->
+	<ASSET.GETSUBTYPE NAME="theCurrentAsset"/>
+	<IF COND="IsVariable.childassettype=true">
+	<THEN>
+		<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" CHILDTYPE="Variables.childassettype" SUBTYPE="Variables.subtype" ORDER="name desc" PUBID="SessionVariables.pubid"/>
+	</THEN>
+	<ELSE>
+		<IF COND="IsVariable.subtype=true">
+    	<THEN>
+			<ASSOCNAMEDMANAGER.LIST   LISTVARNAME="associations" TYPE="Variables.AssetType" SUBTYPE="Variables.subtype" ORDER="childassettype,name desc" PUBID="SessionVariables.pubid"/>
+        </THEN>
+		<ELSE>
+			<ASSOCNAMEDMANAGER.LIST  LISTVARNAME="associations" TYPE="Variables.AssetType"  ORDER="childassettype,name desc" PUBID="SessionVariables.pubid"/>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+
+	<!-- Basically we need to repeat what was done for the AssetChildrenFormNew loop -->
+
+	<IF COND="IsList.associations=true">
+	<THEN>
+		<IF COND="associations.#numRows!=0">
+		<THEN>
+			<SETCOUNTER NAME="newCurrentItem" VALUE="1"/>
+			<LOOP LIST="associations">
+				<IF COND="associations.multivalued=T">
+				<THEN>
+					<!-- The post for each multivalued asset relationship will consist of a multivalued
+					    selectbox where the elements are "<type>,<id>".  The following code picks all
+					    that apart and instead builds scatter-form variables from it -->
+					
+					<SETVAR NAME="Assocname" VALUE="associations.name"/>
+
+					<SETCOUNTER NAME="datumIndex" VALUE="0"/>
+					<IF COND="IsVariable.relMultiTagCounters.newCurrentItem=true">
+					<THEN>
+						<SETVAR NAME="strtouse" VALUE="Variables.relMultiTagCounters.newCurrentItem"/>
+						<STRINGLIST NAME="postedvarlist" STR="Variables.strtouse" DELIM=";"/>
+						<IF COND="postedvarlist.#numRows!=0">
+						<THEN>
+							<LOOP LIST="postedvarlist">
+								<INDEXOF STR="postedvarlist.ITEM" WHAT="," OUTSTR="position" INDEX="0"/>
+								<SUBSTRING STR="postedvarlist.ITEM" OUTSTR="otype" ENDINDEX="Variables.position"/>
+								<SUBSTRING STR="postedvarlist.ITEM" OUTSTR="tempoid" INDEX="Variables.position"/>
+								<SUBSTRING STR="Variables.tempoid" OUTSTR="oid" INDEX="1"/>
+								
+								<SETVAR NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.datumIndex:ref" VALUE="Variables.oid"/>
+								<SETVAR NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.datumIndex:ref_type" VALUE="Variables.otype"/>
+								<CALCULATOR.GO VALUE="Counters.datumIndex 1 +" VARNAME="rank"/>
+								<SETVAR NAME="Variables.AssetType:Association-named:Variables.Assocname:Counters.datumIndex:rank" VALUE="Variables.rank"/>
+								
+								<INCCOUNTER NAME="datumIndex" VALUE="1"/>
+							</LOOP>
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+					<SETVAR NAME="Variables.AssetType:Association-named:Variables.Assocname:Total" VALUE="Counters.datumIndex"/>
+				</THEN>
+				</IF>
+				<INCCOUNTER NAME="newCurrentItem" VALUE="1"/>
+			</LOOP>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+</then>
+</if>
+
+</FTCS>

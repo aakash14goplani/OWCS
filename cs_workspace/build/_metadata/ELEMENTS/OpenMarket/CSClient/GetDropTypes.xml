@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/GetDropTypes
+-
+- INPUT
+-  lCurrentAT from assettype.list
+-  pubid
+-  clientid
+-  lParentDefs list with assetid column
+-  currentSubtype - optional
+-
+- OUTPUT
+-  hasit
+-  AllowedDocTypes
+-->
+
+<FATM.GETALL ASSETTYPE="lCurrentAT.assettype" LISTVARNAME="lFlexFamily"/>
+<ATM.LOCATE VARNAME="gm" TYPE="lFlexFamily.templatetype"/>
+<FLEXTEMPLATES.GETALLTYPES NAME="gm" SITE="Variables.pubid" LIST="lParentDefs" PARTIAL="true" LISTVARNAME="lLegalSubtypes"/>
+<SETVAR NAME="AllowedDocTypes" VALUE="Variables.empty"/>
+<IF COND="IsList.lLegalSubtypes=true">
+<THEN>
+   <IF COND="lLegalSubtypes.#numRows!=0">
+   <THEN>
+      <HASH.CREATE NAME="hLegalDocTypes"/>
+      <HASH.CREATE NAME="hAvailSubtypes"/>
+      <LOOP LIST="lLegalSubtypes">
+         <EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lDropField" SUBTYPE="lLegalSubtypes.subtype" ACTION="acceptdocs" NOTVALUE="No"/>
+         <IF COND="IsList.lDropField=true">
+         <THEN>
+            <IF COND="lDropField.#numRows!=0">
+            <THEN>
+               <HASH.ADD NAME="hAvailSubtypes" VALUE="lLegalSubtypes.subtype"/>
+               <STRINGLIST STR="lDropField.value" NAME="lCurrentDocTypes" DELIM=","/>
+               <LOOP LIST="lCurrentDocTypes">
+                  <HASH.CONTAINS NAME="hLegalDocTypes" VALUE="lCurrentDocTypes.ITEM" VARNAME="hasit"/>
+                  <IF COND="Variables.hasit=false">
+                  <THEN>
+                     <HASH.ADD NAME="hLegalDocTypes" VALUE="lCurrentDocTypes.ITEM"/>
+                  </THEN>
+                  </IF>
+               </LOOP>
+            </THEN>
+            </IF>
+         </THEN>
+         </IF>
+      </LOOP>
+      <HASH.HASDATA NAME="hLegalDocTypes" VARNAME="hasit"/>
+      <IF COND="Variables.hasit=true">
+      <THEN>
+         <HASH.CONTAINS NAME="hLegalDocTypes" VALUE="*.*" VARNAME="allFiles"/>
+         <IF COND="Variables.allFiles=true">
+         <THEN>
+            <SETVAR NAME="AllowedDocTypes" VALUE="*.*"/>
+         </THEN>
+         <ELSE>
+            <HASH.TOSTRING NAME="hLegalDocTypes" VARNAME="AllowedDocTypes" DELIM=","/>
+         </ELSE>
+         </IF>
+         <HASH.TOSTRING NAME="hAvailSubtypes" VARNAME="AvailSubtypes" DELIM=","/>
+         <INSPECTOR.GETMAXFILESIZE SUBTYPES="Variables.AvailSubtypes" PUBID="Variables.pubid" CLIENTAPP="CSDocLink" ASSETTYPEID="lCurrentAT.assettype" VARNAME="maxFileSize"/>
+      </THEN>
+      </IF>
+   </THEN>
+   <ELSE>
+      <SETVAR NAME="hasit" VALUE="false"/>
+   </ELSE>
+   </IF>
+</THEN>
+</IF>
+
+</FTCS> 

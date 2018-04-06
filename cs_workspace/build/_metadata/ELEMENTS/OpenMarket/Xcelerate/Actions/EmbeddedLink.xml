@@ -1,0 +1,1497 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+        <SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- OpenMarket/Xcelerate/Actions/EmbeddedLink
+-
+- INPUT
+-
+  Reason: Ported from FCKEDITOR and migrated TO CKEditor
+          and removed all FCKeditor Interface and selection element
+          node operation(s).
+
+         C K E D I T O R  3.2  O B J E C T
+
+         Used for  Link Asset and Create New and Link
+               1)  Link Asset
+               2   Create New Asset on the fly  and link to selected text / element
+               3)  Context Menu / Change Asset
+               4)  Context Menu Edit Asset Properties.
+
+   May  26, 2010     PR#22862  - CKEditor: It is not currently possible to change an
+                     included/linked asset.
+                     Also this should work via the layer.
+                     It is also not possible to remove an included asset.
+
+- OUTPUT
+-
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<html>
+<head>
+<TITLE><XLAT.STREAM KEY="dvin/UI/AddEmbeddedLink"/></TITLE>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+<link href="Variables.cs_imagedir/../js/fw/css/ui/global.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir"/>
+<PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+<IF COND="IsVariable.docDomain=true">
+<THEN>
+    <IF COND="Variables.docDomain!=Variables.empty">
+    <THEN>
+        <SCRIPT LANGUAGE="JavaScript">
+        document.domain = '<STRING.STREAM VALUE="Variables.docDomain"/>';
+        </SCRIPT>
+    </THEN>
+    </IF>
+</THEN>
+</IF>
+	<STRING.ENCODE VARIABLE="charset" VARNAME="charset"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<STRING.ENCODE VARIABLE="EditingStyle" VARNAME="EditingStyle"/>
+	<STRING.ENCODE VARIABLE="IFCKEditor" VARNAME="IFCKEditor"/>
+	<STRING.ENCODE VARIABLE="modeType" VARNAME="modeType"/>
+	<STRING.ENCODE VARIABLE="formFieldName" VARNAME="formFieldName"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/FCKEditorRenderer" outstring="urlFCKEditorRenderer">
+	<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	<satellite.argument name="cs_imagedir" value="Variables.cs_imagedir"/>
+</SATELLITE.LINK>
+
+<link href="CS.Property.ft.cgipath/Xcelerate/data/css/en_US/common.css" rel="styleSheet" type="text/css"  REPLACEALL="CS.Property.ft.cgipath"/>
+<replaceall list="CS.Property.ft.cgipath,Variables.urlFCKEditorRenderer,Variables.fieldname,Variables.modeType,Variables.theLinkText,
+Variables.fielddesc,Variables.tn_id,Variables.tn_AssetType,SessionVariables.PublicationName,Variables.formFieldName,Variables.IFCKEditor,Variables.EditingStyle">
+<script type="text/javascript" src="CS.Property.ft.cgipathjs/prototype.js"></script>
+<!-- Extract the asset id and asset properties if the modeType is editProperties-->
+<if cond="IsVariable.hrefOrIdString=true">
+<then>
+	<STRINGLIST 
+   NAME="editPropertiesList"
+   STR="Variables.hrefOrIdString"
+   DELIM="%26"/>
+<LOOP LIST="editPropertiesList">
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_cid_=" OUTSTR="indexAssetId" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="tn_id"
+           INDEX="6"/>
+        <STRING.ENCODE VARIABLE="tn_id" VARNAME="tn_id"/>
+	</THEN>
+	</IF>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_c_=" OUTSTR="indexAssetType" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="tn_AssetType"
+           INDEX="4"/>
+        <STRING.ENCODE VARIABLE="tn_AssetType" VARNAME="tn_AssetType"/>
+	</THEN>
+    </IF>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_frag_=" OUTSTR="indexLinkAnchor" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="theLinkAnchor"
+           INDEX="7"/>
+        <STRING.ENCODE VARIABLE="theLinkAnchor" VARNAME="theLinkAnchor"/>
+	</THEN>
+    </IF>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_PAGENAME_=" OUTSTR="indexPageName" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="_page_"
+           INDEX="11"/>
+		<SUBSTITUTE STR="Variables._page_"
+            OUTSTR="_pagename_" 
+            WHAT="%2F"
+            WITH="/"/>
+        <STRING.ENCODE VARIABLE="_page_" VARNAME="_page_"/>
+        <STRING.ENCODE VARIABLE="_pagename_" VARNAME="_pagename_"/>
+	</THEN>
+    </IF>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_ADDITIONALPARAMS_=" OUTSTR="indexAdditionalParams" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="_additionalparams_"
+           INDEX="19"/>
+        <STRING.ENCODE VARIABLE="_additionalparams_" VARNAME="_additionalparams_"/>
+	</THEN>
+    </IF>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<INDEXOF STR="editPropertiesList.ITEM" WHAT="_WRAPPER_=" OUTSTR="indexWrapper" INDEX="0"/>
+    <IF COND="Variables.errno=1">
+	<THEN>
+		<SUBSTRING STR="editPropertiesList.ITEM" 
+           OUTSTR="_wrapper_"
+           INDEX="10"/>
+		<SUBSTITUTE STR="Variables._wrapper_"
+            OUTSTR="_wrapperpage_" 
+            WHAT="%2F"
+            WITH="/"/>
+        <STRING.ENCODE VARIABLE="_wrapper_" VARNAME="_wrapper_"/>
+        <STRING.ENCODE VARIABLE="_wrapperpage_" VARNAME="_wrapperpage_"/>
+	</THEN>
+    </IF>
+</LOOP>
+</then>
+<else>
+<SETVAR NAME="hrefOrIdString" VALUE=""/>
+</else>
+</if>
+<if cond="IsVariable.theLinkAnchor=false">
+<then>
+<SETVAR NAME="theLinkAnchor" VALUE=""/>
+</then>
+</if>
+<if cond="IsVariable.iHeight=false">
+<then>
+	<SETVAR NAME="iHeight" VALUE="-1"/>
+</then>
+</if>
+<if cond="IsVariable.iWidth=false">
+<then>
+	<SETVAR NAME="iWidth" VALUE="-1"/>
+</then>
+</if>
+<if cond="IsVariable.EditingStyle=false">
+<then>
+	<SETVAR NAME="EditingStyle" VALUE="single"/>
+</then>
+</if>
+<if cond="IsVariable.name=false">
+<then>
+<setvar name="name" value=""/>
+</then>
+</if>
+<if cond="IsVariable.fieldname=false">
+<then>
+	<SETVAR NAME="fieldname" VALUE="Variables.formFieldName"/>
+</then>
+</if>
+<STRING.ENCODE VARIABLE="tn_id" VARNAME="tn_id"/>
+<STRING.ENCODE VARIABLE="tn_AssetType" VARNAME="tn_AssetType"/>
+<STRING.ENCODE VARIABLE="fielddesc" VARNAME="fielddesc"/>
+<STRING.ENCODE VARIABLE="fieldname" VARNAME="fieldname"/>
+<script language="JavaScript"><![CDATA[
+var contentWindow = window.opener;		
+if( contentWindow == null){
+    contentWindow = window.parent.opener;
+}
+
+var mytextrange;
+var mytext;
+var theLinkText='';]]>
+<if cond="IsVariable.theLinkText=true">
+<then><![CDATA[
+	theLinkText= ']]><STRING.JSESCAPE VARIABLE="theLinkText"/><![CDATA[';
+]]>
+</then>
+<else>
+<SETVAR NAME="theLinkText" VALUE=""/>
+</else>
+</if><![CDATA[
+var fieldname = 'Variables.fieldname';
+var modeType = 'Variables.modeType';
+var fielddesc = 'Variables.fielddesc';
+var tn_id = 'Variables.tn_id';
+var tn_AssetType = 'Variables.tn_AssetType';
+var pubName = 'SessionVariables.PublicationName';
+var formFieldName = 'Variables.formFieldName';
+var useCKEditor = 'Variables.IFCKEditor';
+useCKEditor = 'true' === useCKEditor;
+var ckUtils = contentWindow.CKUtilities;
+var editingStyle = 'Variables.EditingStyle';
+var instanceName;
+if ('single' == editingStyle || 'S' == editingStyle)
+	instanceName = formFieldName;
+else 
+	instanceName = formFieldName.substr(0,formFieldName.lastIndexOf('_'));
+	
+// The New CKEditor  MovetoFW Custom Node ..
+function MoveToFWCustomIncludeNode ()
+{
+	var nodeTagNames = new Array('SPAN','DIV');	
+	var nodeLinkTagName = 'A';
+	var nodeAttributeName = '_fwid';
+	var ancestorNode;
+	if(!oCKEditor.getSelection())
+			return null;
+		for(var i=0; i < nodeTagNames.length ; i ++ ){
+			var nodeTagName = nodeTagNames[i];						
+			if(oCKEditor.getSelection().getType() === contentWindow.CKEDITOR.SELECTION_ELEMENT && oCKEditor.getSelection().getSelectedElement()) {
+				ancestorNode = oCKEditor.getSelection().getSelectedElement();
+			} else	{
+				ancestorNode = oCKEditor.getSelection().getStartElement();						
+			}					
+			//PR#19599 FCKSelection.GetSelectedElement() doesn't work for IE(when selection is not control type like for example image) and if the user right clicks twice on the included asset in IE we need to make sure that the included asset custom element still gets selected and shows the context menu.Here is the workaround.
+			var regexp = /<(?:span|div) [^>]*_fwid=(["'])(.+?)\1.*?>/gi;
+			
+			while ( ancestorNode!=null ) {														
+				if ((ancestorNode.getName().toUpperCase()== nodeTagName ) && ancestorNode.getAttribute(nodeAttributeName)&& ancestorNode.getAttribute(nodeAttributeName).indexOf('_CSEMBEDTYPE_') != -1){								
+					return ancestorNode ;
+				}
+				ancestorNode = ancestorNode.getParent();							
+			}						
+		}
+	return null ;
+}
+
+// CKeditor Get the Included File Please
+function MoveToFWCustomLinkNode ()
+{
+    var nodeTagName = 'a';
+	var nodeAttributeName = '_fwhref';
+
+    // Get the Attribute's running CKEditor Instance Handle
+	oCKEditor = contentWindow.CKEDITOR.instances[instanceName];
+
+    // Get The User's Selected Element Node
+    var selection = oCKEditor.getSelection();
+
+    // Do we have an Ancestor Node
+    if ( selection.getSelectedElement() )
+	{
+	    ancestorNode = selection.getSelectedElement();
+    }
+    else
+	{
+	    // Need to simulate CKEditor Move to Ancestor Node for IE
+        // ancestorNode = FCKSelection.MoveToAncestorNode(nodeTagName);
+        // Need to perform some level one transversing of
+        // common Ancestors
+        var ranges = selection.getRanges();
+
+      	// Apply the style to the ranges.
+		for ( var i = 0 ; i < ranges.length ; i++ )
+		{
+           var node = ranges[i]  ;
+           var ancestor = node.getCommonAncestor() ;
+           var parents = ancestor.getParents(true)   ;
+
+           for ( var p = 0 ; p < parents.length ; ++p )
+           {
+              var anode = parents[p]    ;
+              if ( parents[p].getName )
+               {
+                 var tagname = anode.getName() ;
+                 
+                 // This is the first Immediate Ancestor Candidate Node
+                 ancestorNode = parents[p] ;
+
+                 break ;
+                 }
+             }
+          }
+	 }
+
+	 // Transverse via Ancestor Paths untill we
+	 while ( ancestorNode )
+	 {
+		 // Get the Node Name
+		 nodeName = ancestorNode.getName() ;
+		 // Does it contain a specific Node Attribute
+		 // If yes it returns the value
+		 nodeAttribute = ancestorNode.getAttribute(nodeAttributeName) ;
+
+		 if ( nodeAttribute )
+			nodeAttributeValue = nodeAttribute.value ;
+
+		 // Span with specfic attribute and associated Constant Value  Its our Asset Include...
+		 if ((nodeName == nodeTagName ) && nodeAttribute && nodeAttribute.indexOf('_CSEMBEDTYPE_') != -1)
+		 {
+              return ancestorNode ;
+		 }
+
+         ancestorNode = ancestorNode.getParent() ;
+	 }
+	 return null ;
+}
+
+
+
+
+
+function populateKeyValueFields(form,elm){
+	for (i=0; i<elm.options.length; i++){
+		if(elm.options[i].selected){
+			if(elm.options[i].value && elm.options[i].value !=-1)
+			var keyValArray = (elm.options[i].value).split('=');
+			form.elements['paramValue'].value=keyValArray[1];
+			var keyElm = form.elements['legalname'];
+			for (j=0; j<keyElm.options.length; j++){
+				if('fp:'+keyElm.options[j].text==keyValArray[0]){
+					keyElm.options[j].selected=true;
+				}
+			}
+		}
+	}
+}
+function GotoNextStep(form,ourPage){
+	var obj = document.forms[0];
+	if(obj.elements['theTemplate'].value === 'None')
+		return;
+	selAllAll();
+	var basePage = "OpenMarket/Xcelerate/Actions/";
+	var	newpage = basePage + ourPage;
+	form.pagename.value = newpage;
+	form.submit();
+	return true;
+}
+
+function selAllAll(){
+	var obj = document.forms[0];
+	var temphrefOrIdString='';
+	var hrefOrIdElm = obj.elements['hrefOrIdString'];
+	var tmpcnt=0;
+	if(hrefOrIdElm){
+		var hrefOrIdKeyValues = hrefOrIdElm.value.split('&');
+		for(var i=0;i<hrefOrIdKeyValues.length;i++){
+			if(hrefOrIdKeyValues[i].indexOf('_frag_')==-1 && hrefOrIdKeyValues[i].indexOf('_ADDITIONALPARAMS_')==-1 && hrefOrIdKeyValues[i].indexOf('_PAGENAME_')==-1 && hrefOrIdKeyValues[i].indexOf('_WRAPPER_')==-1){
+				if(tmpcnt==0){
+					temphrefOrIdString = hrefOrIdKeyValues[i];
+				} else {
+					temphrefOrIdString = temphrefOrIdString + '&' + hrefOrIdKeyValues[i];
+				}
+				tmpcnt++;
+			}
+		}
+		
+	}
+	if(temphrefOrIdString.length > 0){
+		temphrefOrIdString=temphrefOrIdString + '&_frag_=' + obj.elements['theLinkAnchor'].value + '&_WRAPPER_=' + obj.elements['theWrapper'].value + '&_PAGENAME_=' + obj.elements['theTemplate'].value;
+	} else {
+		temphrefOrIdString='_frag_=' + obj.elements['theLinkAnchor'].value + '&_WRAPPER_=' + obj.elements['theWrapper'].value + '&_PAGENAME_=' + obj.elements['theTemplate'].value;
+	}
+	obj.elements['hrefOrIdString'].value=temphrefOrIdString;
+}
+	
+function movedefargright(srcname,target)
+	{
+		var items, newindex, newval, i, j,srcindex,srcval;
+
+        // find selected argument
+		for (i=0;i<srcname.options.length;i++)
+		{
+			if (srcname.options[i].selected)
+				srcindex=i;
+		}
+        // find selected value
+        srcval = document.forms[0].elements['paramValue'];
+		if(srcval.value == '[Value]' || srcval.value == ''){
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/SpecifyValue" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+			return false;
+		}
+        newval=srcval.value;
+		
+		items=new Option(srcname.options[srcindex].text+"="+newval,'fp:'+srcname.options[srcindex].text+"="+newval);
+
+		newindex=target.options.length;
+
+		// find and replace argument if already selected
+		for (i=0;i<target.options.length;i++)
+		{
+			if (target.options[i].text.indexOf(srcname.options[srcindex].text)==0)
+			{
+				newindex=i;
+			}
+
+		}
+        target.options[newindex]=items;
+		target.options[newindex].selected=false;
+
+		delNul(target);
+	}
+
+	function removearg(target)
+	{
+		var i=0;
+
+		while(i<target.options.length)
+		{
+			if(target.options[i].selected)
+			{
+				target.options[i]=null;
+			}
+			else
+				i++;
+		}
+		delNul(target);
+	}
+	
+	function delNul(lst){
+		i = 0;
+		while (i<lst.options.length)
+		{
+			if (lst.options[i].value==-1)
+				lst.options[i]=null
+			else
+				i = i + 1;
+		}
+	}
+
+function getSelForSingleValue(txtAreaElementName) {
+	var txtarea = contentWindow.document.getElementsByName(txtAreaElementName).item(0);	
+
+	
+	if(txtarea == null)
+	{
+		txtarea = contentWindow.document.getElementById("contentPaneMainBodySubView:"+formFieldName);
+	}
+	//IE support
+	if( contentWindow.document.selection && contentWindow.document.selection.createRange )
+	{
+		var textRange = contentWindow.document.selection.createRange();
+		var selection = textRange.text;	
+	
+	}
+	else
+	{//For other browsers
+		var selStart = txtarea.selectionStart;
+		var selEnd = txtarea.selectionEnd;
+		var begin = txtarea.value.substr(0, selStart);
+		var selection =(txtarea.value).substring(selStart, selEnd);
+		var end = txtarea.value.substr(selEnd);
+	}
+	return selection;
+}
+
+
+function getSel(txtAreaElementName) {
+	var editingStyle = ']]><STRING.STREAM VARIABLE="EditingStyle"/><![CDATA[';
+	if ('single' == editingStyle)
+		return getSelForSingleValue(txtAreaElementName);
+	else 
+		return getSelForMultiValue(txtAreaElementName);
+}
+
+
+	function getSelForMultiValue(txtAreaElementName) 
+	{
+		var reqDijit = contentWindow.dijit.byId(txtAreaElementName);
+		return getSelectedValue(reqDijit);
+	}
+
+	function getSelectedValue(reqDijit) {
+		var reqVal = '';
+		if (reqDijit.editor.containerNode) {
+			var cNode = reqDijit.editor.containerNode;
+			reqVal = reqDijit.editor.get('value');
+			
+			if( contentWindow.document.selection && contentWindow.document.selection.createRange )
+			{ // IE support
+				return contentWindow.document.selection.createRange().text;
+			} else {
+				console.log('Before - reqVal: ', reqVal, cNode.selectionStart, cNode.selectionEnd);
+				return reqVal.substring(cNode.selectionStart, cNode.selectionEnd);
+			}
+		}		
+		return reqVal;
+	}
+	
+function writeLinkBack(txtAreaElementName, mytext){	
+	var editingStyle = ']]><STRING.STREAM VARIABLE="EditingStyle"/><![CDATA[';
+	if ('single' == editingStyle){
+		if(navigator.userAgent.toLowerCase().indexOf('msie') != -1){
+			mytextrange.text = mytext;//for IE
+		} else {
+			writeLinkBackForSingleVal(txtAreaElementName, mytext);
+		}
+	} else {
+		return writeLinkBackForMultiVal(txtAreaElementName, mytext);
+	}
+}	
+
+		
+
+function writeLinkBackForSingleVal(txtAreaElementName, mytext){
+
+    //This handles only non IE browsers
+	var txtarea = contentWindow.document.getElementsByName(txtAreaElementName).item(0);
+    if(txtarea == null)
+    {
+	txtarea = contentWindow.document.getElementById("contentPaneMainBodySubView:"+formFieldName);
+    }
+    var selStart = txtarea.selectionStart;
+    var selEnd = txtarea.selectionEnd;
+    var begin = txtarea.value.substr(0, selStart);
+    var selection =(txtarea.value).substring(selStart, selEnd);
+    var end = txtarea.value.substr(selEnd);
+    txtarea.value =begin + mytext +end;
+
+}
+
+
+function writeLinkBackForMultiVal(txtAreaElementName, mytext){
+	var reqDijit = contentWindow.dijit.byId(txtAreaElementName);
+	var cNode = reqDijit.editor.containerNode;
+	var val = reqDijit.editor.get('value');
+	
+	var begin, selection, end;
+	
+	if (dojo.isIE) {
+	    //Get the actual range from the textarea
+		var actualRange = contentWindow.document.selection.createRange();
+		actualRange.text=mytext;
+		
+		if (typeof(reqDijit._onEditorValueChange) === 'function') 
+			reqDijit._onEditorValueChange();
+	} else {
+	    begin = val.substr(0, cNode.selectionStart);
+	    end = val.substr(cNode.selectionEnd);
+	    
+	    if (typeof(reqDijit.putEditorValue) === 'function')
+			reqDijit.putEditorValue(begin + mytext + end);
+	}
+	
+	reqDijit.editor.focus();
+}
+
+
+
+// Is CKEditor Loaded and Instane running for this attribute ?
+if( useCKEditor )
+{
+   // Get the CKEditor Instance Handle
+      oCKEditor = contentWindow.CKEDITOR.instances[instanceName];
+	  if(typeof(oCKEditor) =='undefined')
+		useCKEditor = false;
+}
+
+var editpro = contentWindow.document.getElementById('ewep' +fieldname);
+
+//When we install/build Real objects into the edit screen, we set up a hidden field by the name
+// REAL_OBJECTS_INSTALLED_FOR_..fieldname that will help us identify if real objects is being
+//used for the current attribute. If that hidden element is not null, 
+//go ahead and retrieve the reference to the real object editor
+
+if(contentWindow.document.getElementById('REAL_OBJECTS_INSTALLED_FOR_'+fieldname) != null)
+{
+	realobject = eval("contentWindow.eop"+fieldname);
+}
+
+
+var useEditPro = editpro != null;
+
+
+var selectedHTML="";
+var selectedText="";
+if ( useEditPro ) {
+	// use eWebEditPro
+	// NOTE: due to eWebEditPro defect, getSelectedHTML() not always return correct value.
+	// Assign value to local variable at first invocation, use the variable for the rest code of the function.
+	selectedHTML = eval("contentWindow.document.forms[0]."+fieldname+"_SelectedTextForEmbeddedLink").value;
+	if (selectedHTML == "") {
+		]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Noselectionortheselectionisinvalid" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+		closeWindow();
+	}
+} else if( useCKEditor ){	
+	// Moves the selection focus to the editing are space in the editor.
+	oCKEditor.focus() ;
+    selectedText = ckUtils.getCKEditorSelection(oCKEditor);
+    var morphAsset = oCKEditor.config.morphAsset  ;
+	if (selectedText == "" && modeType!='edit' && morphAsset!='Yes') {
+		]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Noselectionortheselectionisinvalid" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+		closeWindow();
+	}
+} else {
+     selectedText = mytext = getSel( fieldname);     
+	if (contentWindow.document.selection && contentWindow.document.selection.createRange) {
+    	//IE support
+        mytextrange = contentWindow.document.selection.createRange();
+        if (mytextrange.parentElement().name != fieldname) {
+        	if(selectedText.length < 1)
+        	{
+            ]]>
+            alert("<XLAT.STREAM KEY="dvin/UI/Noselectionortheselectionisinvalid" ESCAPE="true" ENCODE="false"/>");
+            <![CDATA[
+            closeWindow();
+            }
+        } else {
+			//retrieve the text selected
+			selectedText = mytextrange.text;
+		}
+    } else {
+		//Browser is Not IE
+		if(selectedText.length<1) { // for mozilla and safari
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/Noselectionortheselectionisinvalid"/>");
+			<![CDATA[
+				closeWindow();
+		}
+	}
+}
+
+function closeWindow()
+{
+	window.close();
+}
+
+function cancelAddLink()
+{
+	closeWindow();
+}
+
+function saveAddLink()
+{
+    var obj = document.forms[0];
+	if (tn_AssetType != 'Link') {
+        var index = obj.elements['theTemplate'].selectedIndex;
+        if (index == -1 || index == 0) {
+            ]]>
+            alert("<XLAT.STREAM KEY="dvin/UI/Error/chooseatemplateforthislink" ESCAPE="true" ENCODE="false"/>");
+            <![CDATA[
+            return false;
+        }
+    }
+
+    var newlinktext = obj.elements['theLinkText'].value;
+	
+    if (newlinktext == "" && !selectedNode) {
+        ]]>
+        alert("<XLAT.STREAM KEY="dvin/UI/Error/specifylinktext" ESCAPE="true" ENCODE="false"/>");
+        <![CDATA[
+        return false;
+    } 
+    var linkAnchor = obj.elements['theLinkAnchor'].value;
+	var isclean = isCleanString(linkAnchor, '<"%>\'\\', true);
+	
+	if (!isclean) {
+		alert("< \" \' \\ % >]]><XLAT.STREAM KEY="dvin/AT/Common/Charactersnotpermitted" ESCAPE="true" ENCODE="false"/><XLAT.STREAM KEY="dvin/Common/LinkAnchor"/><![CDATA[");
+		obj.elements['theLinkAnchor'].focus();
+		return false;
+	}
+	var fckParams = obj.elements['FCK:AdditionalParams'];
+
+	var extraParams='';
+	var cnt=0;
+	if(fckParams)
+	for(var i=0;i<fckParams.options.length;i++)
+	{
+		if(fckParams.options[i].value!='-1'){
+			var value = fckParams.options[i].value;
+			var key = value.substring(0, value.indexOf("="));
+			value = value.substring(value.indexOf("=")+1, value.length);
+			if(cnt==0){
+				extraParams=key + '=' + encodeURIComponent(value);
+			} else {
+				extraParams=extraParams + '&' + key + '=' + encodeURIComponent(value);
+			}
+			cnt++;
+		}
+		
+	}
+	var link;
+
+	if (tn_AssetType != 'Link') {
+	 
+        var pname = obj.elements['theTemplate'].value;
+		var wname = obj.elements['theWrapper'].value;
+        //Put &nbsp; for IE as IE in few scenarios fails to get the selected element in FCKEditor.
+		if(useCKEditor && contentWindow.CKEDITOR.env.ie && modeType!='edit')
+			link = '&nbsp;<a href="_CSEMBEDTYPE_=internal'; 
+		else			
+            link = '<a href="_CSEMBEDTYPE_=internal';
+		
+	    if (wname != "")
+           link = link + "&_WRAPPER_=" + encodeURIComponent(wname);
+	    link = link + "&_PAGENAME_=" + encodeURIComponent(pname);
+	    link = link + "&_cid_=" + tn_id + "&_c_=" + tn_AssetType;
+	    if (linkAnchor != "")
+          link = link + "&_frag_=" + escapeHTML(linkAnchor);
+	    if (extraParams != "")
+		{
+          link = link + "&_ADDITIONALPARAMS_=" + encodeURIComponent(extraParams);
+		}
+
+	    link = link + '">'; /* TARGET="_blank" for external link */	    
+		if(selectedNode && selectedNode.getAttribute('_fwid')) {
+		
+		   link = link + '<span id="' + selectedNode.getAttribute('_fwid') + '">&nbsp;</span>';
+	    }
+	    else
+	    {
+		   link = link + escapeHTML(newlinktext);
+	     }
+
+	]]>
+    } else {
+        <![CDATA[
+		if(useCKEditor && modeType!='edit')
+			link = '&nbsp;<a href="_CSEMBEDTYPE_=external';
+		else
+            link = ' <a href="_CSEMBEDTYPE_=external';
+		link = link + "&_cid_=" + tn_id;
+
+        if (linkAnchor != "")
+          link = link + "&_frag_=" + escapeHTML(linkAnchor);
+	    if (extraParams != "")
+        link = link + "&_PACKEDARGS_=" + escape(extraParams);
+	     link = link + '" TARGET="_blank">';
+	    if(selectedNode && selectedNode.getAttribute('_fwid'))
+	    {
+		    link = link + '<span id="' + selectedNode.getAttribute('_fwid').value + '">&nbsp;</span>';
+	    }
+	    else
+	    {
+	    	link = link + escapeHTML(newlinktext);
+	    }
+	}
+
+	if(useCKEditor && contentWindow.CKEDITOR.env.ie && modeType!='edit')
+		link = link + "</a>&nbsp;";
+	else
+		link = link + "</a>";
+
+
+
+    if (typeof(realobject) == "object")
+    {
+        // use RealObject
+        realobject.insertHTMLData(link);
+        realobject.pumpEvents();
+		closePopUp();
+    }
+    else if ( useEditPro ) {
+        // use eWebEditPro        		
+		window.opener.pasteInEwebeditPro(link , fieldname);
+		closePopUp();
+    } else if( useCKEditor ){
+		url = 'Variables.urlFCKEditorRenderer' ;
+		insertRenderedData(link);			
+	} else {
+		writeLinkBack( fieldname,link);
+		closePopUp();
+	}
+}
+
+function swap(currentImage, newImageName)
+{
+	if (document.images)
+	{
+		currentImage.src = newImageName;
+	}
+}
+
+// Send a Request to Render Data
+function insertRenderedData(link){				
+		var linkNode;					
+		   if(modeType=='edit'){						
+			// Get the Asset Include Node
+			var linkNode = ckUtils.MoveToFWCustomNode(oCKEditor,'link');							
+			if(linkNode == null){
+				
+				linkNode = oCKEditor.getSelection().getCommonAncestor();
+			}
+		
+			if(((linkNode==null) || (linkNode.getAttribute('_fwhref')==null))){
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/FCKEditorSelectionChanged" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+			return false;
+			}
+
+			
+		   //Check that selection has not changed befor submitting the popup
+		   var selectedNodeIdValue = document.forms[0].elements['hrefOrIdString'].value;
+		   //Check for presence of _cid_ in selectedNodeIdValue because on template change hrefOrIdString will be repopulated.
+		   if(selectedNodeIdValue.length > 0 && (selectedNodeIdValue.indexOf('_cid_') != -1) &&
+			  (selectedNodeIdValue.indexOf('_c_') != -1) && linkNode.getAttribute('_fwid') && linkNode.getAttribute('_fwid').value){
+
+			var passedValues = parseQueryString(selectedNodeIdValue);
+
+			var newValues = parseQueryString(linkNode.getAttribute('_fwid').value);
+				if((passedValues['_cid_'][0]  != newValues['_cid_'][0])  || (passedValues['_c_'][0]  != newValues['_c_'][0])){
+				]]>
+					alert("<XLAT.STREAM KEY="dvin/UI/FCKEditorSelectionChanged" ESCAPE="true" ENCODE="false"/>");
+				<![CDATA[
+				return false;
+			}
+			}
+			}
+			//IsSafari
+			if(navigator.userAgent.search(/Version\/[5-9][\d\.\s]+Safari/) != -1)
+				oCKEditor.getSelection().unlock(true);
+			ckUtils.insertHTML(oCKEditor,link,modeType);
+			closePopUp();		
+}
+function showLoading(waitingDiv){
+	$(waitingDiv).style.cursor ='wait';
+    $('ajaxLoading').style.display='block';
+}
+function hideLoading(waitingDiv){
+	$(waitingDiv).style.cursor ='default'
+    $('ajaxLoading').style.display='none';
+}
+
+function closePopUp() {
+    contentWindow.focus();
+	closeWindow();
+}
+
+//Strip any html or body or link tag in the rendered data since this would break fckeditor.
+//Remove line feeds/tab/carriage return etc.Also remove any comments from the html string.
+//Satellite server may send <!--FTCACHE-1--> with the html data so remove it as well.
+function filterRenderedData (renderedData){
+	return renderedData.replace(/^\s+|\s+$/g,'').replace(/[\r\n\t]/g,"").replace(/<!(?:--[\s\S]*?--\s*)?>\s*/g,"").replace(/<head[^>]*>.*?<\/head[^>]*>/gi,"").replace(/<script[^>]*>.*?<\/script[^>]*>/gi,"").replace(/<\/?(body|html)[^>]*?>/gi,"");
+}
+
+//Method to parse the query string and create a map 
+
+function parseQueryString(queryString){
+
+  // define an object to contain the parsed query data
+  var result = {};
+
+  // if a query string wasn't specified, use the query string from the URI
+  if (queryString == undefined){
+    queryString = location.search ? location.search : '';
+  }
+
+  // remove the leading question mark from the query string if it is present
+  if (queryString.charAt(0) == '?') queryString = queryString.substring(1);
+
+  // replace plus signs in the query string with spaces
+  queryString = queryString.replace('+', ' ');
+
+  // split the query string around ampersands and semicolons
+  var queryComponents = queryString.split(/[&;]/g);
+
+  // loop over the query string components
+  for (var i = 0; i < queryComponents.length; i++){
+
+    // extract this component's key-value pair
+    var keyValuePair = queryComponents[i].split('=');
+    var key = decodeURIComponent(keyValuePair[0]);
+    var value = decodeURIComponent(keyValuePair[1]);
+
+    // update the parsed query data with this component's key-value pair
+    if (!result[key]) result[key] = [];
+    result[key].push((keyValuePair.length == 1) ? '' : value);
+
+  }
+
+  // return the parsed query data
+  return result;
+
+}
+
+function escapeHTML(text) {
+	var code = {
+		'"':"&#34;",
+		'&':"&#38;",
+		'<':"&#60;",
+		'>':"&#62;",
+		'ˆ':"&#710;",
+		'˜':"&#732;",
+		'–':"&#8211;",
+		'—':" &#8212;",
+		'‘':"&#8216;",
+		'’':"&#8217;",
+		'‚':"&#8218;",
+		'“':"&#8220;",
+		'”':"&#8221;",
+		'„':"&#8222;",
+		'†':"&#8224;",
+		'‡':"&#8225;",
+		'‰':"&#8240;",
+		'‹':"&#8249;",
+		'›':"&#8250;",
+		' ':"&#160;"
+	}
+ if(text) {
+	  text += "";
+	  for(key in code) {	  	
+	  	text = text.replace(new RegExp(key,"g"),code[key]);
+	  }
+	  return text;
+ }
+ return "";
+};
+]]>
+
+</script>
+</replaceall>
+</head>
+<body class="fw" topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
+<ASSET.LOAD NAME="treenode" TYPE="Variables.tn_AssetType" OBJECTID="Variables.tn_id" />
+<ASSET.GET NAME="treenode" FIELD="name" OUTPUT="tn_assetname" />
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST">
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" width="100%" height="100%">
+	<STRING.ENCODE VARIABLE="iHeight" VARNAME="iHeight"/>
+	<INPUT TYPE="HIDDEN" ID="iHeight" NAME="iHeight" VALUE="Variables.iHeight" REPLACEALL="Variables.iHeight"/>
+	<STRING.ENCODE VARIABLE="iWidth" VARNAME="iWidth"/>
+	<INPUT TYPE="HIDDEN" ID="iWidth"  NAME="iWidth" VALUE="Variables.iWidth" REPLACEALL="Variables.iWidth"/>
+	<INPUT TYPE="HIDDEN" NAME="fieldname" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+	<STRING.ENCODE VARIABLE="name" VARNAME="nameEnc"/>
+	<INPUT TYPE="HIDDEN" NAME="name" VALUE="Variables.nameEnc" REPLACEALL="Variables.nameEnc"/>
+	<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetTypeEnc"/>
+	<INPUT TYPE="HIDDEN" NAME="AssetType" VALUE="Variables.AssetTypeEnc" REPLACEALL="Variables.AssetTypeEnc"/>
+	<INPUT TYPE="HIDDEN" NAME="fielddesc" VALUE="Variables.fielddesc" REPLACEALL="Variables.fielddesc"/>
+	<INPUT TYPE="HIDDEN" NAME="EditingStyle" VALUE="Variables.EditingStyle" REPLACEALL="Variables.EditingStyle"/>
+	<INPUT TYPE="HIDDEN" NAME="IFCKEditor" VALUE="Variables.IFCKEditor" REPLACEALL="Variables.IFCKEditor"/>
+	<INPUT TYPE="HIDDEN" NAME="formFieldName" VALUE="Variables.formFieldName" REPLACEALL="Variables.formFieldName"/>	
+	<INPUT TYPE="HIDDEN" NAME="modeType" VALUE="Variables.modeType" REPLACEALL="Variables.modeType"/>
+	<INPUT TYPE="HIDDEN" NAME="tn_id" VALUE="Variables.tn_id" REPLACEALL="Variables.tn_id"/>
+	<INPUT TYPE="HIDDEN" NAME="tn_AssetType" VALUE="Variables.tn_AssetType" REPLACEALL="Variables.tn_AssetType"/>
+	<INPUT TYPE="HIDDEN" NAME="hrefOrIdString" VALUE="Variables.hrefOrIdString" REPLACEALL="Variables.hrefOrIdString"/>
+	<INPUT TYPE="HIDDEN" NAME="pagename" VALUE=""/>
+    <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.charset" REPLACEALL="Variables.charset"/>	
+    <INPUT TYPE="HIDDEN"  NAME="cs_environment" VALUE="Variables.cs_environment" REPLACEALL="Variables.cs_environment"/>	
+    <INPUT TYPE="HIDDEN"  NAME="cs_formmode" VALUE="Variables.cs_formmode" REPLACEALL="Variables.cs_formmode"/>
+<tr>
+    <td></td>
+    <td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+    <td></td>
+</tr>
+<tr>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+    <td>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tbody>
+		<tr style="height:20px;"><td background="Variables.cs_imagedir/graphics/common/screen/grad.gif" class="tile-a" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td background="Variables.cs_imagedir/graphics/common/screen/grad.gif" class="tile-b" REPLACEALL="Variables.cs_imagedir" nowrap="nowrap">
+			<DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AddEmbeddedLink" /></DIV>
+		</td>
+		<td colspan="2" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" class="tile-b" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td background="Variables.cs_imagedir/graphics/common/screen/grad.gif" class="tile-c" REPLACEALL="Variables.cs_imagedir"></td>
+		</tr>
+		<tr class="tile-row-highlight">
+            <td><BR /></td>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Name"/>:</td>
+		<td><BR /></td>
+            <td class="form-inset" colspan="2"><STRING.STREAM VARIABLE="tn_assetname"/></td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <tr class="tile-row-highlight">
+            <td><BR /></td>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Type"/>:</td>
+		<td><BR /></td>
+            <td class="form-inset" colspan="2"><STRING.STREAM VARIABLE="tn_AssetType"/></td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        <if COND="Variables.tn_AssetType=Link">
+        <then>
+            <tr class="tile-row-highlight">
+                <td><BR /></td>
+
+                <td nowrap="nowrap" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/HREF"/>:</td>
+                <TD class="form-inset" colspan="2">
+                    <ASSET.GET NAME="treenode" FIELD="href" OUTPUT="tn_href"/>
+                    <STRING.STREAM VARIABLE="tn_href" />
+                </TD>
+                <td><BR /></td>
+            </tr>
+        </then>
+        <else>
+            <tr class="tile-row-highlight">
+                <td><BR /></td>
+                <td nowrap="nowrap" class="form-label-text"><XLAT.STREAM KEY="dvin/UI/SelectTemplate" ENCODE="false"/>:</td>
+				<td><BR /></td>
+                <TD class="form-inset" colspan="2">
+                <ASSET.GET NAME="treenode" FIELD="template" OUTPUT="tn_defTemplate"/>
+                <SELECT NAME="theTemplate" ONCHANGE="return GotoNextStep(this.form,'EmbeddedLink');">
+                <OPTION VALUE="None"/>--<XLAT.STREAM KEY="dvin/UI/SelectTemplate"/>--
+                     <!-- get a list of valid templates for the asset type and optionally the subtype -->
+                     <ASSET.GETSUBTYPE NAME="treenode" OUTPUT="tn_subtype"/>
+                     <TEMPLATEMANAGER.GetTemplateIds TTYPE="l" LISTVARNAME="Templates" ASSETTYPE="Variables.tn_AssetType" SUBTYPE="Variables.tn_subtype" PUBID="SessionVariables.pubid" EXCLUDEVARIANTS="true"/>
+                    <IF COND="Templates.#numRows!=0">
+                    <THEN>
+                        <loop LIST="Templates">
+                             <TEMPLATE.GETPAGENAME OUTNAME="pname" SUBTYPE="Variables.tn_AssetType" NAME="Templates.name"/>
+                            <if cond="IsVariable._pagename_=true">
+							<then>
+						<IF COND="Variables.pname=Variables._pagename_">
+						<THEN>
+							<OPTION VALUE="Variables.pname" SELECTED="SELECTED" REPLACEALL="Variables.pname"/><STRING.STREAM LIST="Templates" COLUMN="name"/>
+							<SETVAR NAME="selectedTempId" VALUE="Templates.id"/>
+						</THEN>
+						<ELSE>
+							<OPTION VALUE="Variables.pname" REPLACEALL="Variables.pname"/><STRING.STREAM LIST="Templates" COLUMN="name"/>
+						</ELSE>
+						</IF>
+					</then>
+					<else>
+						<IF COND="Templates.name=Variables.tn_defTemplate">
+						<THEN>
+							<OPTION VALUE="Variables.pname" SELECTED="SELECTED" REPLACEALL="Variables.pname"/><STRING.STREAM LIST="Templates" COLUMN="name"/>
+							<SETVAR NAME="selectedTempId" VALUE="Templates.id"/>
+							<SETVAR NAME="_pagename_" VALUE="Variables.pname"/>
+						</THEN>
+						<ELSE>
+							<OPTION VALUE="Variables.pname" REPLACEALL="Variables.pname"/><STRING.STREAM LIST="Templates" COLUMN="name"/>
+						</ELSE>
+						</IF>
+					</else>
+					</if>
+                        </loop>
+                    </THEN>
+                    </IF>
+                </SELECT>
+			<!-- get a list of valid wrapper pages for the asset type -->
+            <SETVAR NAME="showWrapperOptions" VALUE="false"/>
+            <SETVAR NAME="currWrapper" VALUE="Variables.empty"/>
+            <ASSET.LIST TYPE="SiteEntry" LIST="SEWrappers" FIELD1="cs_wrapper" VALUE1="y" PUBID="SessionVariables.pubid" EXCLUDEVOIDED="true"/>
+            <IF COND="IsList.SEWrappers=true">
+            <THEN>
+            <IF COND="SEWrappers.#numRows!=0">
+            <THEN>
+            <IF COND="Variables.currWrapper=Variables.empty">
+            <THEN>
+                <SETVAR NAME="currWrapper" VALUE="SEWrappers.name"/>
+            </THEN>
+            </IF>
+
+			<IF COND="SEWrappers.#numRows!=0">
+			<THEN>
+				<SETVAR NAME="showWrapperOptions" VALUE="true"/>
+			</THEN>
+		    <ELSE>
+			    <SETVAR NAME="showWrapperOptions" VALUE="false"/>
+		    </ELSE>
+			</IF>
+            
+			</THEN>
+            </IF>
+            </THEN>
+            </IF>
+
+        <IF COND="Variables.showWrapperOptions=false">
+        <THEN>
+            <input type="hidden" name="theWrapper" value="Variables.currWrapper" REPLACEALL="Variables.currWrapper"/>
+        </THEN>
+        </IF>
+
+        </TD>
+          </tr>
+		<tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <IF COND="Variables.showWrapperOptions=true">
+        <THEN>
+              <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+              <tr>
+                  <!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>-->
+              </tr>
+
+              <tr class="tile-row-highlight">
+                <td><BR /></td>
+
+                <td nowrap="nowrap" class="form-label-text"><XLAT.STREAM KEY="dvin/UI/SelectWrapper" ENCODE="false"/>:</td>
+				<td><BR /></td>
+                <TD class="form-inset" colspan="2">
+
+                <SELECT NAME="theWrapper">
+                    <OPTION VALUE="Variables.empty" REPLACEALL="Variables.empty"/>--<XLAT.STREAM KEY="dvin/UI/SelectWrapperpage"/>--
+
+                    <loop LIST="SEWrappers">
+					<if cond="IsVariable._wrapperpage_=true">
+							<then>
+						<IF COND="Variables._wrapperpage_=SEWrappers.name">
+						<THEN>
+							<OPTION VALUE="SEWrappers.name" SELECTED="SELECTED" REPLACEALL="SEWrappers.name"><STRING.STREAM LIST="SEWrappers" COLUMN="name"/></OPTION>
+						</THEN>
+						<ELSE>
+							<OPTION VALUE="SEWrappers.name" REPLACEALL="SEWrappers.name"><STRING.STREAM LIST="SEWrappers" COLUMN="name"/></OPTION>
+						</ELSE>
+						</IF>
+					</then>
+					<else>
+						<IF COND="Variables.modeType=edit">
+						<THEN>
+							<OPTION VALUE="SEWrappers.name" REPLACEALL="SEWrappers.name"><STRING.STREAM LIST="SEWrappers" COLUMN="name"/></OPTION>
+						</THEN>
+						<ELSE>
+						<IF COND="Variables.currWrapper=SEWrappers.name">
+						<THEN>
+							<OPTION VALUE="SEWrappers.name" SELECTED="SELECTED" REPLACEALL="SEWrappers.name"><STRING.STREAM LIST="SEWrappers" COLUMN="name"/></OPTION>
+						</THEN>
+						<ELSE>
+							<OPTION VALUE="SEWrappers.name" REPLACEALL="SEWrappers.name"><STRING.STREAM LIST="SEWrappers" COLUMN="name"/></OPTION>
+							</ELSE>
+							</IF>
+						</ELSE>
+						</IF>
+					</else>
+					</if>
+                    </loop>
+                </SELECT>
+
+                </TD>
+              </tr>
+        </THEN>
+        </IF>
+        </else>
+        </if>
+
+
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        <tr style="height:10px;color:#ffffff;background-color:#555555;">
+            <td><BR /></td>
+            <td><div class="insite-section-title"><XLAT.STREAM KEY="dvin/UI/To"/></div></td>
+            <td colspan="3"><BR /></td>
+        </tr>
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+      <tr class="tile-row-highlight">
+          <td><BR /></td>
+          <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Name"/>:</td>
+		  <td><BR /></td>
+          <td class="form-inset" colspan="2"><STRING.STREAM VARIABLE="name"/></td>
+      </tr>
+		<tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+        <ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+        <tr class="tile-row-highlight">
+            <td><BR /></td>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Type"/>:</td>
+		 <td><BR /></td>
+		 <td class="form-inset" colspan="2"><STRING.STREAM VARIABLE="ATdesc"/></td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <tr class="tile-row-highlight">
+        <td><BR /></td>
+        <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Field"/>:</td>
+		<td><BR /></td>
+        <td class="form-inset" colspan="2"><STRING.STREAM VARIABLE="fielddesc"/></td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="10" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        <tbody id="_linkText">
+		<tr>
+            <!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>-->
+        </tr>
+
+        <tr class="tile-row-highlight">
+            <td><BR /></td>
+            <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/LinkText"/>:</td>
+			<td><BR /></td>
+            <td  class="form-inset" colspan="2">
+                <textarea name="theLinkText" rows="3" cols="30" wrap="virtual">
+                </textarea>
+            </td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="5" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+		<tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		</tbody>
+	</tbody>
+	<tbody id="_extraParamRows">
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		<tr class="tile-row-highlight">
+            <td><BR /></td>
+            <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/ExtraParameters"/>:</td>
+            <td><BR /></td>
+			<td>
+				<IF COND="IsVariable.selectedTempId=true">
+				<THEN>
+					<!-- Get the list of arguments from the template -->
+						<ASSET.LOAD NAME="selectedTemplate"  TYPE="Template" OBJECTID="Variables.selectedTempId" EDITABLE="true"/>
+						<ASSET.SCATTER NAME="selectedTemplate" FIELDLIST="*" PREFIX="template"/>
+						<SETVAR NAME="extraParams" VALUE="Variables.empty"/>
+						<SETCOUNTER NAME="critn" VALUE="0"/>
+						<SETCOUNTER NAME="paramCounter" VALUE="0"/>
+						<LOOP COUNT="Variables.template:pagecriteria:Total">
+							<SETVAR NAME="errno" VALUE="0"/>
+							<SETVAR NAME="tempVar" VALUE="Variables.template:pagecriteria:Counters.critn"/>
+							<INDEXOF STR="Variables.tempVar" WHAT="fp:" OUTSTR="paramIndex" INDEX="0"/>
+							<IF COND="Variables.errno=1">
+							<THEN>
+								<SUBSTRING STR="Variables.tempVar" OUTSTR="validParam" INDEX="3"/>
+								<IF COND="Counters.paramCounter=0">
+								<THEN>
+									<SETVAR NAME="extraParams" VALUE="Variables.validParam"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="extraParams" VALUE="Variables.extraParams;Variables.validParam"/>
+								</ELSE>
+								</IF>
+								<INCCOUNTER NAME="paramCounter" VALUE="1"/>
+							</THEN>
+							</IF>
+							<INCCOUNTER NAME="critn" VALUE="1"/>
+						</LOOP>
+						<STRINGLIST NAME="lLegalArgs" STR="Variables.extraParams" DELIM=";"/>
+						<IF COND="IsList.lLegalArgs=true">
+						<THEN>
+                            <IF COND="lLegalArgs.#numRows!=0">
+							<THEN>
+								<TABLE CELLSPACING="0" CELLPADDING="5" BORDER="0">
+								<TR>
+									<TD nowrap="nowrap" valign="top">
+										<XLAT.STREAM KEY="dvin/Common/Name"/>: <SELECT NAME="legalname" SIZE="1" style="width:100px;">
+										<LOOP LIST="lLegalArgs">
+											<OPTION><STRING.STREAM VALUE="lLegalArgs.ITEM"/></OPTION>
+										</LOOP>
+										</SELECT><BR/><BR/>
+                                        <XLAT.STREAM KEY="dvin/Common/Value"/>:
+                                        <INPUT TYPE="TEXT" NAME="paramValue" VALUE="[Value]" SIZE="32" ID="val" style="width:100px;"/>
+                                    </TD>
+									<TD valign="top">
+										<A HREF="javascript:void(0);" ONCLICK="movedefargright(document.forms[0].elements['legalname'], document.forms[0].elements['FCK:AdditionalParams']);"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Add"/></CALLELEMENT></A><BR/><BR/>
+										<A HREF="javascript:void(0);" ONCLICK="removearg(document.forms[0].elements['FCK:AdditionalParams'])"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Remove"/></CALLELEMENT></A>
+									</TD>
+									<TD>
+										<SELECT NAME="FCK:AdditionalParams" SIZE="6" style="width:200px;" MULTIPLE="yes" ONCHANGE="populateKeyValueFields(this.form,this)" ONMOUSEOUT="window.status=' ';return true;">
+										<RENDER.GETADDITIONALPARAMSLIST ADDITIONALPARAMS="Variables._additionalparams_" NAME="eParamList"/>
+										<IF COND="eParamList.#numRows!=0">
+										<THEN>
+											<SETCOUNTER NAME="currentArg" VALUE="0"/>
+											<LOOP LIST="eParamList">
+												<SUBSTITUTE STR="eParamList.key" OUTSTR="argkey" WHAT="fp:" WITH=""/>
+												<![CDATA[<OPTION VALUE="]]><STRING.STREAM VALUE="eParamList.key=eParamList.value"/><![CDATA[">]]><STRING.STREAM VALUE="Variables.argkey=eParamList.value"/><![CDATA[</OPTION>]]>
+												<INCCOUNTER NAME="currentArg" VALUE="1"/>
+											</LOOP>
+										</THEN>
+										</IF>
+										<OPTION VALUE="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</OPTION>
+										</SELECT>
+									</TD>
+								</TR>
+								</TABLE>
+							</THEN>
+                            <ELSE>
+                                <XLAT.STREAM KEY="dvin/UI/ParametersNotAvailable"/>
+                            </ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+                            <XLAT.STREAM KEY="dvin/UI/ParametersNotAvailable"/>
+                            </ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<XLAT.STREAM KEY="dvin/UI/ParametersNotAvailable"/>
+						</ELSE>
+						</IF>
+				</td>
+        </tr>
+		<tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+<tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		</tbody>
+		<tbody>
+        <tr class="tile-row-highlight">
+            <td><BR /></td>
+            <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/LinkAnchor"/>:</td>
+            <td><BR /></td>
+			<td class="form-inset" colspan="2">
+                <input name="theLinkAnchor" type="text" size = "30" value="Variables.theLinkAnchor" replaceall="Variables.theLinkAnchor"/>
+            </td>
+        </tr>
+        <tr class="tile-row-highlight">
+			<td colspan="5">
+			<img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif"
+					height="10" REPLACEALL="Variables.cs_imagedir" />
+			</td>
+		</tr>
+		 <tr>
+		    <td colspan="5" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+		</tr>
+
+		<tr style="height:5px;">
+		    <td colspan="5" background="Variables.cs_imagedir/graphics/common/controlpanel/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+		</tr>
+        </tbody>
+        <tbody>
+
+        <tr class="tile-row-highlight"><td colspan="20"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        <tr class="tile-row-highlight">
+		    <XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+		    <td><BR/></td>
+   		    <td><BR/></td>
+   		    <td><BR/></td>
+			<td style="padding: 10px 0;">
+			<A style="text-decoration: none; color: #FFFFFF" HREF="javascript:void(0)" onclick="return cancelAddLink()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+			</A>
+			<XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+			<A style="text-decoration: none; color: #FFFFFF" HREF="javascript:void(0)" onclick="return saveAddLink();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Common/saveAndClose"/></CALLELEMENT>
+			</A></td>
+		</tr>
+		<tr class="tile-row-highlight"><td colspan="20"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+    </tbody>
+    </table>
+    </td>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+</tr>
+</TABLE>
+</SATELLITE.FORM>
+<replaceall list="Variables.theLinkText,Variables.iHeight,Variables.iWidth">
+<![CDATA[
+<SCRIPT>
+var selectedNode;
+	var iWidth = 0;
+	var iHeight = 0;
+	
+	if ( useEditPro ) {
+        // use eWebEditPro
+		var selectedHTML =  eval("contentWindow.document.forms[0]."+fieldname+"_SelectedTextForEmbeddedLink").value;
+        //[2007-11-12 KG] #16277
+        selectedHTML = selectedHTML.replace(/<\/?p( [^>]*)?>/ig, '');
+		//[2009-08-18 RSK] # 20948
+		selectedHTML = selectedHTML.replace(/[\n\r]+/g, '');
+        
+        document.forms[0].elements["theLinkText"].value = selectedHTML;
+    } else if(useCKEditor) {
+		//Calling MoveToFWCustomNode (CKEditor) to validate if the link is getting created on the included image.
+		selectedNode = ckUtils.MoveToFWCustomNode(oCKEditor,'include');		
+		if(selectedNode){
+			document.getElementById('_linkText').style.display = 'none';
+		} else if(theLinkText == ''){
+			// Moves the selection focus to the editing are space in the editor.
+			oCKEditor.focus() ;
+
+           selectedText = ckUtils.getCKEditorSelection(oCKEditor);
+
+		   if(modeType != 'edit')
+		   {
+				if(selectedText)
+				{
+					document.forms[0].elements["theLinkText"].value = selectedText;
+				}
+				else
+				{
+					var anchorNode = mySelection.getRanges();
+					var selectedAnchorNode = anchorNode[0].getEnclosedNode();
+				  	if(selectedAnchorNode && selectedAnchorNode.getName()=='A'){
+						if (selectedAnchorNode.getText()) {
+							document.forms[0].elements["theLinkText"].value = selectedAnchorNode.getText();
+						}else {
+							document.forms[0].elements["theLinkText"].value = selectedAnchorNode.getHtml();
+						}
+					}
+				}
+			}
+			else
+			{
+
+			    // Edit Change the Linked Asset to A Different Asset
+			    selectedAnchorNode = ckUtils.MoveToFWCustomNode(oCKEditor,'link');				
+                if(selectedAnchorNode)
+				{
+					if (selectedAnchorNode.getText()) {
+							document.forms[0].elements["theLinkText"].value = selectedAnchorNode.getText();
+					}else {
+						document.forms[0].elements["theLinkText"].value = selectedAnchorNode.getHtml();
+					}				
+					
+					
+        		}
+			}
+		} else {
+				
+				document.forms[0].elements["theLinkText"].value = theLinkText;
+		}
+	}
+    else {
+		document.forms[0].elements["theLinkText"].value = mytext;
+    }
+	
+	]]>
+	<IF COND="Variables.iWidth!=-1">
+	<THEN>
+		<![CDATA[
+		iWidth = parseInt("Variables.iWidth");
+		]]>
+	</THEN>
+	<ELSE>
+		<![CDATA[
+		iWidth = 70 + document.body.scrollWidth;
+		document.getElementById('iWidth').value=iWidth; 
+		]]>
+	</ELSE>
+	</IF>
+	<IF COND="Variables.iHeight!=-1">
+	<THEN>
+		<![CDATA[
+		iHeight = parseInt("Variables.iHeight");
+		]]>
+	</THEN>
+	<ELSE>
+		<![CDATA[
+		iHeight = 70 + document.body.scrollHeight;
+	    if(!document.all)
+			iHeight += 30;
+		document.getElementById('iHeight').value=iHeight; 
+		]]>
+	</ELSE>
+	</IF>
+<![CDATA[
+	window.resizeTo(iWidth, iHeight);
+    window.focus();
+</SCRIPT>
+]]>
+</replaceall>
+<div id="ajaxLoading" style="width:200px;height:100px;position:absolute; top: 100px;display:none; left: 80px;" bgcolor="white">
+<table width="100%" cellspacing="0" cellpadding="0" bgcolor="#ffffff" align="center" style="border: 1px solid rgb(204,204,204);">
+<tbody>
+<tr>
+<td valign="middle" align="center">
+<img src="Variables.cs_imagedir/graphics/common/icon/wait_ax.gif" REPLACEALL="Variables.cs_imagedir"/>
+<br/>
+<br/>
+<b>
+<span id="loadingMsg"><XLAT.STREAM KEY="dvin/UI/Loading"/></span>
+<img src="Variables.cs_imagedir/graphics/common/icon/short_Progress.gif" REPLACEALL="Variables.cs_imagedir"/>
+</b>
+<a id="hider2" style="cursor: pointer; text-decoration: underline;"/>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/ValidateInputForXSS" />
+</body>
+</html>
+</FTCS>

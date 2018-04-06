@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/Publish/PublishEventPost
+-
+- INPUT
+-
+-     Variables.target
+-     Variables.days_of_week
+-     Variables.days_of_month
+-     Variables.months
+-     Variables.hours
+-     Variables.minutes
+-
+-->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt:"/>
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="eventname" VALUE="PublishEvent_Variables.target" />
+<verifyevent NAME="Variables.eventname"/>
+<if COND="Variables.errno=1">
+<then>
+	<destroyevent NAME="Variables.eventname"/>
+</then>
+</if>
+<setvar NAME="errno" VALUE="0"/>
+<if COND="Variables.action=destroy">
+<then>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/PublishEventDestroyedForDestination"/>: <STRING.STREAM VALUE="Variables.pubtgt:name" /></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	<P/>
+</then>
+<else> <!-- command is Schedule -->
+    <APPEVENT NAME="Variables.eventname"
+        GUID="CS.Property.ft.contentserver"
+        TIMES="Variables.time">
+        <ARGUMENT NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/EventPublish"/>
+        <ARGUMENT NAME="target" VALUE="Variables.target"/>
+        <ARGUMENT NAME="scheduledby" VALUE="SessionVariables.username"/>
+    </APPEVENT>
+
+    <if COND="IsError.Variables.errno=false">
+    <then>
+    </then>
+    <else>
+        <P><XLAT.STREAM KEY="dvin/UI/Admin/Error/notsubmitpublisheventerrno" errno="Variables.errno" EVALALL="false"/>
+        </P>
+    </else>
+    </if>
+
+		<IF COND="Variables.enabled=yes">
+    	<THEN>
+			<ENABLEEVENT NAME="PublishEvent_Variables.target"/>
+		</THEN>
+		</IF><!-- enable -->
+
+		<IF COND="Variables.enabled=no">
+		<THEN>
+			<DISABLEEVENT NAME="PublishEvent_Variables.target"/>
+		</THEN>
+		</IF><!-- disable -->
+</else>
+</if>
+<if cond="Variables.cs_environment=portal">
+<then>
+    <CALLELEMENT NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+</then>
+<else>
+      <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/DestEdit">
+      	<ARGUMENT NAME="action" VALUE="details"/>
+      	<ARGUMENT NAME="pagetype" VALUE="front"/>
+      	<ARGUMENT NAME="id" VALUE="Variables.target"/>
+      </CALLELEMENT>
+</else>
+</if>
+</FTCS>

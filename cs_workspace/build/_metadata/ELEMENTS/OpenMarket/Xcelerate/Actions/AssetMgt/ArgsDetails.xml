@@ -1,0 +1,152 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ArgsDetails
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<if COND="IsVariable.ContentDetails:Arguments:Total=true">
+<then>
+	<if COND="Variables.ContentDetails:Arguments:Total!=0">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+		<tr>
+			<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/LegalArgs"/>:</td>
+			<td></td>
+			<td class="form-inset">
+      		<SETCOUNTER NAME="colspan_count" VALUE="11"/>
+ 				<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+     				<tr>
+					<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>	
+					<tr>
+					<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td >
+					<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+						<tr><td colspan="Counters.colspan_count" class="tile-highlight" REPLACEALL="Counters.colspan_count"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/><BR /></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/RequiredArgument?"/></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+	               <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/LegalValues"/></DIV></td>
+	               <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/ValueDescription"/></DIV></td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						</tr>
+						
+						<setvar NAME="separatorLine" VALUE="0"/>
+						<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETCOUNTER NAME="nthArg" VALUE="0"/>
+						<LOOP COUNT="Variables.ContentDetails:Arguments:Total">
+							<IF COND="Variables.separatorLine=1">
+							<THEN>
+							<tr>
+								<!--<td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+							</tr>
+							</THEN>
+							</IF>					
+							<setvar NAME="separatorLine" VALUE="1"/>
+							<tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:name"/>
+								</DIV>
+								</td>
+								
+								<td><BR /></td><td VALIGN="TOP" ALIGN="CENTER" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+ 									<setvar NAME="required" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:required"/>
+									<if COND="Variables.required=true">
+									<then>
+										<XLAT.STREAM KEY="dvin/Common/Yes"/>
+									</then>
+									<else>
+										<XLAT.STREAM KEY="dvin/Common/No"/>
+									</else>
+									</if>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:description"/>
+								</DIV>
+								</td>
+							<SETCOUNTER NAME="numValues" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:values:Total"/>
+							<if COND="Counters.numValues!=0">
+							<then>
+								<SETCOUNTER NAME="nthValue" VALUE="0"/>
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+              				<DIV class="small-text-inset">
+              					<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:value"/>
+								</DIV></td>
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+              				<DIV class="small-text-inset">
+              					<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:description"/>&nbsp;
+								</DIV></td><td><br /></td>
+								<INCCOUNTER NAME="nthValue" VALUE="1"/>
+								<INCCOUNTER NAME="numValues" VALUE="-1"/>
+							</then>
+							<else>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>&nbsp;</td><td><br/></td>
+							</else>
+							</if>
+							</tr>
+							<if COND="Counters.numValues!=0">
+							<then>
+								<LOOP COUNT="Counters.numValues">
+									<tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 				<DIV class="small-text-inset">
+                 					<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:value"/>
+									</DIV></td>
+									<td></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 				<DIV class="small-text-inset">
+                 					<STRING.STREAM VARIABLE="ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:description"/>&nbsp;
+									</DIV></td><td><br /></td>
+									</tr>
+									<INCCOUNTER NAME="nthValue" VALUE="1"/>
+								</LOOP>
+							</then>
+							</if>
+							<INCCOUNTER NAME="nthArg" VALUE="1"/>
+							<IF COND="Variables.rowStyle=tile-row-normal">
+							<THEN>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+							</ELSE>
+							</IF>
+						</LOOP>
+					</table>
+					</td>
+				<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+				<tr>
+				<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+				<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+			</table>
+		</td>
+		</tr>
+	</then>
+	</if> 
+</then>
+</if>
+
+
+
+</FTCS>

@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/CDRecommendations
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<ASSET.LOAD NAME="theCurrentAsset" OBJECTID="Variables.id" TYPE="Variables.AssetType"/>
+<ASSET.SCATTER NAME="theCurrentAsset" PREFIX="ContentDetails"/>
+<IF COND="IsVariable.ContentDetails:Relationships:Total=true">
+<THEN>
+	<IF COND="Variables.ContentDetails:Relationships:Total!=0">
+	<THEN>
+		<SETCOUNTER NAME="curRel" VALUE="0"/>
+		<HASH.CREATE NAME="relHash"/>
+		<LOOP COUNT="Variables.ContentDetails:Relationships:Total">
+			<HASH.ADD NAME="relHash" VALUE="Variables.ContentDetails:Relationships:Counters.curRel:relid"/>
+			<setvar NAME="SetVariables.ContentDetails:Relationships:Counters.curRel:relid"  VALUE="set"/>
+			<INCCOUNTER NAME="curRel" VALUE="1"/>
+		</LOOP>
+		<HASH.TOSTRING NAME="relHash" VARNAME="RelStr" DELIM=","/>
+			 
+		<if COND="IsVariable.RelStr=true">
+		<then>
+			<STRINGLIST NAME="UniqueRecList" STR="Variables.RelStr" DELIM=","/>
+			<LOOP LIST="UniqueRecList">
+				<ASSET.LOAD NAME="recinst" TYPE="AdvCols" FIELD="id" VALUE="UniqueRecList.ITEM"/>
+				<ASSET.SCATTER NAME="recinst" PREFIX="advcol"/>
+		
+				<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/AssetListTable">
+					<argument NAME="list" VALUE="ContentDetails:Relationships"/>
+					<argument NAME="recname"  VALUE="Variables.advcol:name"/>
+					<argument NAME="recid"  VALUE="Variables.advcol:id"/>
+				</callelement>
+			</LOOP>
+		</then>
+		<else>
+			<table>
+				<tr>
+					<td><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/NoRecommendationsDef"/></td>
+					<td> </td>
+				</tr>
+			</table>
+		</else>
+		</if>
+	</THEN>
+	<ELSE>
+		<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+</ELSE>
+</IF>
+<ATM.LOCATE TYPE="Variables.templatetype" VARNAME="ptmgr"/>
+<IF COND="Variables.tagtype=asset">
+<THEN>
+	<FLEXTEMPLATES.GETDERIVEDINFO NAME="ptmgr" ID="Variables.templateid" ASSETTYPE="Variables.templatetype" GROUPTYPE="Variables.grouptype" VARNAME="oFilterInfo"/>
+</THEN>
+<ELSE>
+	<FLEXGROUPTEMPLATES.GETDERIVEDINFO NAME="ptmgr" ID="Variables.templateid" ASSETTYPE="Variables.templatetype" GROUPTYPE="Variables.AssetType" VARNAME="oFilterInfo"/>
+</ELSE>
+</IF>
+
+<!-- derived relationships are in the following form -->
+
+<!--
+ContentDetails:DReco_1025295073206Burlington Special:0:asset_type = Page
+ContentDetails:DReco_1025295073206Burlington Special:0:confidence = 1.0
+ContentDetails:DReco_1025363343531Similar products:0:asset_type = Page
+ContentDetails:DReco_1025363343531Similar products:0:confidence = 1.0
+ContentDetails:DReco_1025295073206Burlington Special:0:asset = 961606314421
+ContentDetails:DReco_1025295073206Burlington Special:Total = 1
+ContentDetails:DReco_1025363343531Similar products:0:asset = 961606314421
+ContentDetails:DReco_1025363343531Similar products:Total = 1
+-->
+
+<IF COND="IsList.lFilterList=true">
+<THEN>
+	<IF COND="lFilterList.#numRows!=0">
+	<THEN>
+		<LOOP LIST="lFilterList">
+			<FILTERINFO.GETRELINFO NAME="oFilterInfo" ID="lFilterList.assetid" LISTVARNAME="reclist"/>
+			<IF COND="IsList.reclist=true">
+			<THEN>
+				<IF COND="reclist.#numRows!=0">
+				<THEN>
+					<LOOP LIST="reclist">
+						<ASSET.LIST TYPE="AdvCols" FIELD1="id" VALUE1="reclist.assetid" LIST="currentRec"/>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<ICS.RESOLVEVARIABLES NAME="$(Variables.ContentDetails:DReco_$(lFilterList.assetid)$(currentRec.name):Total)" OUTPUT="currentVal" DELIMITED="true"/>
+						<IF COND="Variables.errno=0">
+						<THEN>
+							<IF COND="Variables.currentVal!=0">
+							<THEN>
+								<ASSET.LIST TYPE="Variables.filtertype" FIELD1="id" VALUE1="lFilterList.assetid" LIST="currentFilt"/>
+								(<STRING.STREAM LIST="currentFilt" COLUMN="name"/>)
+								<SETVAR NAME="ContentDetails:DReco_lFilterList.assetidcurrentRec.name:0:relid" VALUE="currentRec.id"/>
+								<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/AssetListTable">
+									<argument NAME="list" VALUE="ContentDetails:DReco_lFilterList.assetidcurrentRec.name"/>
+									<argument NAME="recname"  VALUE="currentRec.name"/>
+									<argument NAME="recid"  VALUE="currentRec.id"/>
+								</callelement>
+							</THEN>
+							</IF>
+						</THEN>
+						</IF>
+					</LOOP>
+				</THEN>
+				</IF>
+			</THEN>
+			</IF>
+		</LOOP>
+	</THEN>
+	<ELSE>
+		<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+	</ELSE>
+	</IF>
+</THEN>
+</IF>
+
+</FTCS> 

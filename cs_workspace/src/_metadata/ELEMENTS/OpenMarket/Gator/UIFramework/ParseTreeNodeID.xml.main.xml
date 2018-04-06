@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/UIFramework/ParseTreeNodeID</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/UIFramework/ParseTreeNodeID</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/UIFramework/ParseTreeNodeID.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/UIFramework/ParseTreeNodeID.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FUIFramework%2FParseTreeNodeID.xml
+@hashval=-836440431
+key=@ELEMENTCATALOG-OpenMarket/Gator/UIFramework/ParseTreeNodeID
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

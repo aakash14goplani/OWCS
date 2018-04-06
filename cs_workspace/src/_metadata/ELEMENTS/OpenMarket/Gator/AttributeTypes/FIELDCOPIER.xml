@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/AttributeTypes/FIELDCOPIER
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<IF COND="IsCounter.FC_Count=false">
+	<THEN>
+		<SETCOUNTER NAME="FC_Count" VALUE="1"/>
+	</THEN>
+</IF>
+
+
+<IF COND="Variables.MultiValueEntry=yes">
+<THEN>
+	<setvar NAME="doDefaultDisplay" VALUE="no"/>
+	<setvar NAME="errno"  VALUE="0"/>
+
+	<!-- the following tag is undocumented -->
+	<!-- Get all parameters from Attribute Editor xml -->
+	<!-- Note: SOURCEFIELD is defined in the presentationobject.dtd -->
+	<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="SOURCEFIELD" VARNAME="FIELDCOPIER_field"/>
+
+	<!-- form field name must be unique, hence the need for FC_Count -->
+   <INPUT TYPE="HIDDEN" NAME="FIELDCOPIER_fieldCounters.FC_Count" VALUE="Variables.FIELDCOPIER_field" REPLACEALL="Variables.FIELDCOPIER_field,Counters.FC_Count"/>
+
+   <!-- because no UI, then no need to callelement "OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName" either -->
+   <!-- gather needs the following stuff to be safe (but not really used)-->
+   <IF COND="Variables.EditingStyle=single">
+   <THEN>
+      <INPUT TYPE="HIDDEN" NAME="Variables.cs_SingleInputName" VALUE="FIELDCOPIER" REPLACEALL="Variables.cs_SingleInputName"/>
+   </THEN>
+   <ELSE>
+      <INPUT TYPE="HIDDEN" NAME="Variables.cs_SingleInputName" VALUE="FIELDCOPIER" REPLACEALL="Variables.cs_SingleInputName"/>
+   </ELSE>
+   </IF>
+   <setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.AttrName*ReqFalse*string!"/>
+   <INPUT TYPE="hidden" NAME="Variables.AttrNumberRequireInfo" VALUE="Variables.RequireInfo" REPLACEALL="Variables.AttrNumber,Variables.RequireInfo"/>
+   <INCCOUNTER NAME="FC_Count" VALUE="1"/>
+
+</THEN>
+</IF>
+
+</ftcs>

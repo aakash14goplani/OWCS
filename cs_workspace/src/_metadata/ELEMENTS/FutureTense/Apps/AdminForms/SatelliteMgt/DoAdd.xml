@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+-
+- INPUT
+-	SSProtocol : Protocol used by Satellite Server
+-  	SSHost      : Hostname on which Satellite Server resides
+-	SSPort	     : Port number on which Satellite Server resides
+-	cgipath	     : Cgipath used by Satellite Server
+-	SSUser	     : Satellite Server admin username
+-	SSPassword : Satellite Server admin password
+- OUTPUT
+-
+-->
+
+<setvar NAME="result" VALUE="Variables.empty"/>
+  
+<!-- Branch on the command -->
+<if COND="Variables.command=addSS">
+<then>
+ 
+	<!-- addrow to the systemsatellite table -->
+	<catalogmanager>
+		<argument name="ftcmd" value="addrow"/>
+		<argument name="tablename" value="SystemSatellite"/>	
+		<argument name="id" value="CS.UniqueID"/>
+		<argument name="description" value="Installer registered co-resident Satellite Engine"/> 
+		<argument name="protocol" value="Variables.SSProtocol"/> 
+		<argument name="host" value="Variables.SSHost"/> 
+		<argument name="port" value="Variables.SSPort"/> 
+		<argument name="satelliteservletpath" value="Variables.cgipathSatellite"/> 
+		<argument name="flushservletpath" value="Variables.cgipathFlushServer"/> 
+		<argument name="inventoryservletpath" value="Variables.cgipathInventory"/> 
+		<argument name="pastramiservletpath" value="Variables.cgipathPastrami"/> 
+		<argument name="username" value="Variables.SSUser"/> 
+		<argument name="password" value="Variables.SSPassword"/> 
+	</catalogmanager>
+
+	<!-- check to see if we encountered an error in adding the row -->
+	<if cond="Variables.errno!=0">
+	<then>		 
+ 		<setvar NAME="result" value="Variables.errno"/>		 
+	</then>
+	</if>
+ 
+</then> 
+<else>	
+	<setvar name="result" value="Unknown Command"/>
+</else>
+</if>
+ 
+
+
+<!-- set status for display -->
+<if COND="Variables.result!=Variables.empty">
+<then>
+      <XLAT.STREAM KEY="dvin/AdminForms/FailedAddSatellite" errno="Variables.errno" EVALALL="false"/>
+</then>
+<else>
+	<XLAT.STREAM KEY="dvin/AdminForms/SuccessAddSatellite"/>
+</else>
+</if>
+ 
+</ftcs>
+ 

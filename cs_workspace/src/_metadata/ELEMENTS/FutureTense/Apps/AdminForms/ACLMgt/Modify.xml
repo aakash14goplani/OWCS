@@ -1,0 +1,101 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- ACLMgt/Modify                                                           -->
+<!-- Copyright, FutureTense, Inc.                                            -->
+<!-- ####################################################################### -->
+
+<FONT SIZE="3" FACE="Arial, Helvetica">
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST">
+    <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+    <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+    <INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+    <INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+    <STRING.ENCODE VARIABLE="key" VARNAME="OutputQString"/>
+    <acl.load name="modacl" acl="Variables.OutputQString"/>
+<acl.scatter name="modacl"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/CSAdminForms/ModifyACL"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<TABLE class="width-outer-50" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+  			<XLAT.STREAM KEY="dvin/UI/CSAdminForms/ACLName"/>:
+		</TD>
+        <TD class="form-inset" align="left">
+			<STRING.ENCODE VARIABLE="aclname" VARNAME="OutputQString"/>
+			<REPLACEALL LIST="Variables.OutputQString,Variables.aclname">
+				Variables.OutputQString
+				<INPUT TYPE="hidden" NAME="aclname" VALUE="Variables.OutputQString"/>
+			</REPLACEALL>
+    	</TD>
+    </TR>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+   			<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+		</TD>
+        <TD class="form-inset" align="left">
+			<STRING.ENCODE VARIABLE="description" VARNAME="OutputQString"/>
+			<INPUT TYPE="text" NAME="description" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>            
+		</TD>
+    </TR>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD  class="form-label-text" align="right" NOWRAP="true" VALIGN="BASELINE">
+       		<XLAT.STREAM KEY="dvin/AdminForms/AccessPrivileges"/>:
+    		<BR/>
+        </TD>
+        <TD align="left" VALIGN="BASELINE">
+            <XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/Read" VARNAME="XRead"/>
+            <XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/Retrieve" VARNAME="XRetrieve"/>
+            <XLAT.LOOKUP KEY="dvin/Common/Create" VARNAME="XCreate"/>
+            <XLAT.LOOKUP KEY="dvin/Common/Write" VARNAME="XWrite"/>
+            <XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="XDelete"/>
+            <XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/RevisionTrackingAudit" VARNAME="XRTAudit"/>
+            <XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/RevisionTrackingAdmin" VARNAME="XRTAdmin"/>           
+
+    		<SCRIPT LANGUAGE="JavaScript">
+    		    <REPLACEALL LIST="Variables.cataccess,Variables.XRead,Variables.XWrite,Variables.XRetrieve,Variables.XCreate, Variables.XDelete,Variables.XRTAudit,Variables.XRTAdmin">
+            		<![CDATA[
+            			document.writeln('<INPUT TYPE="HIDDEN" NAME="cataccess" VALUE="">');
+            			var accessBegin = '<INPUT TYPE="checkbox" NAME="FTcheckbox';
+            			document.writeln(accessBegin + 'Read" ' + shouldCheck(1,Variables.cataccess) + '>Variables.XRead<BR>');
+            			document.writeln(accessBegin + 'Retrieve" ' + shouldCheck(16,Variables.cataccess) + '>Variables.XRetrieve<BR>');
+            			document.writeln(accessBegin + 'Write" ' + shouldCheck(2,Variables.cataccess) + '>Variables.XWrite<BR>');
+            			document.writeln(accessBegin + 'Create" ' + shouldCheck(4,Variables.cataccess) + '>Variables.XCreate<BR>');
+            			document.writeln(accessBegin + 'Delete" ' + shouldCheck(8,Variables.cataccess) + '>Variables.XDelete<BR>');
+            			document.writeln(accessBegin + 'Audit" ' + shouldCheck(32,Variables.cataccess) + '>Variables.XRTAudit<BR>');
+            			document.writeln(accessBegin + 'Admin" ' + shouldCheck(64,Variables.cataccess) + '>Variables.XRTAdmin<BR>');
+            	    ]]>
+            	</REPLACEALL>
+    		</SCRIPT>
+    	</TD>
+    </TR>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<TR>
+        <TD></TD><TD>
+    		<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+			<INPUT TYPE="hidden" NAME="tool" VALUE="ACLMgt"/>
+			<INPUT TYPE="hidden" NAME="form" VALUE="DoModify"/>
+   			<XLAT.LOOKUP KEY="dvin/AdminForms/Modify" VARNAME="_XLAT_"/>
+    		<A onClick='if(checkModifyInput(document.forms[0]))document.forms[0].submit();' HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/Modify"/></CALLELEMENT></A> 
+        </TD>
+    </TR>
+</TABLE>
+</SATELLITE.FORM>
+</FONT>
+</FTCS>

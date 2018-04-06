@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/CSClient/Login</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/CSClient/Login</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/CSClient/Login.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/CSClient/Login.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FCSClient%2FLogin.xml
+@hashval=-1804197795
+key=@ELEMENTCATALOG-OpenMarket/CSClient/Login
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

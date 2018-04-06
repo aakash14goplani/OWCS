@@ -1,0 +1,268 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ReferencesTile
+
+ INPUT
+     Variables.command  preview or report
+     Variables.PREFIX  prefix of Export keys, required if command is preview
+     Variables.publishoutput  publish output from batch, required if report 
+     Variables.folder  VIRTUALFOLDER for absolute URL or ROOTFOLDER for relative URL, required if report
+
+ OUTPUT
+
+-->
+
+<Script Language="Javascript">
+function showExportedRef(pURL)
+    {
+        exportWindow = window.open(pURL, "ShowExportedRef", "width=640,height=480,scrollbars=yes,toolbar=yes,location=yes,status=yes,menubar=yes,resizable=yes,directories=yes");
+        exportWindow.focus();
+    }	
+</Script>
+
+<callelement NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+<if COND="Variables.command=preview">
+<then>
+     <setvar NAME="theCount" VALUE="Variables.Variables.PREFIXTotal" />
+</then>
+<else>
+     <STRINGLIST NAME="strlist1" STR="Variables.publishoutput" DELIM="%0a"/>
+     <setvar NAME="theCount" VALUE="strlist1.#numRows" />
+     <INDEXOF STR="strlist1.ITEM" WHAT="#errormsg:" OUTSTR="index" />
+     <if COND="Variables.errno=1">
+     <then>
+          <SUBSTRING STR="strlist1.ITEM" OUTSTR="temp" INDEX="Variables.index" />
+    	  <SUBSTRING STR="Variables.temp" OUTSTR="errormsg" INDEX="10" />
+    	  <STRING.STREAM VALUE="Variables.errormsg" />
+    	  <setvar NAME="AbortFlag" VALUE="true"/>
+     </then>
+     <else>
+          <span class="form-label-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/Exportedreferences"/>:</span>
+     </else>
+     </if>
+</else>
+</if>
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+    <table border="0" cellpadding="0" cellspacing="0">
+    <tr>
+       <td colspan="11" class="dark-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    <tr>
+       <td colspan="11"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    <tr>
+       <td></td><td>&nbsp;&nbsp;</td>
+	   <td>&nbsp;&nbsp;</td>
+       <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/AssetName"/></span></td><td>&nbsp;&nbsp;</td>
+       <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/Common/Type"/></span></td><td>&nbsp;&nbsp;</td>
+       <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/Template"/></span></td><td>&nbsp;&nbsp;</td>
+       <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/OtherArguments"/></span></td>
+    </tr>
+    
+    <tr>
+       <td colspan="11"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    <tr>
+       <td colspan="11" class="dark-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    <tr>
+       <td colspan="11"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+    </tr>
+    
+    <setvar NAME="separatorLine" VALUE="0"/>
+    
+    <if COND="Variables.theCount!=0">
+    <then>
+    
+    <if COND="Variables.command=preview">
+    <then>
+        <setcounter NAME="count" VALUE="0"/>
+    </then>
+    <else>
+        <setcounter NAME="count" VALUE="1"/>
+    </else>
+    </if>
+        
+    <loop FROM="0" COUNT="Variables.theCount">
+        <setvar NAME="continue" VALUE="true"/>
+        <if COND="Variables.command=preview">
+        <then>
+            <EXPORTKEY.GETREFERENCE NAME="Variables.PREFIXCounters.count" REFERENCE="reference"/>
+            <EXPORTKEY.SCATTER NAME="Variables.PREFIXCounters.count" PREFIX="ref"/>
+        </then>
+        <else> <!-- report -->
+            <GOTOROW LIST="strlist1" ROWNUM="Counters.count"/>
+            <BEGINS STR="strlist1.ITEM" WHAT="#exporting"/>
+            <if COND="Variables.errno=1">
+            <then>              
+                <STRINGLIST NAME="strlist2" STR="strlist1.ITEM" DELIM="%09"/>
+                <GOTOROW LIST="strlist2" ROWNUM="2"/>
+                <setvar NAME="assetid" VALUE="strlist2.ITEM"/>
+                <GOTOROW LIST="strlist2" ROWNUM="3"/>
+                <setvar NAME="reference" VALUE="strlist2.ITEM"/>
+                <GOTOROW LIST="strlist2" ROWNUM="4"/>
+                <setvar NAME="diskname" VALUE="strlist2.ITEM"/>
+                <EXPORTKEY.CREATE ID="Variables.assetid" REFERENCE="Variables.reference" OBJVARNAME="refobj"/>
+                <EXPORTKEY.SCATTER NAME="refobj" PREFIX="ref"/>
+        	</then>
+        	<else>
+                <BEGINS STR="strlist1.ITEM" WHAT="#renderfailed"/>
+                <if COND="Variables.errno=1">
+                <then>
+                    <STRINGLIST NAME="strlist2" STR="strlist1.ITEM" DELIM="%09"/>
+                    <GOTOROW LIST="strlist2" ROWNUM="3"/>
+                    <setvar NAME="reference" VALUE="strlist2.ITEM"/>
+                    <tr>
+                        <td COLSPAN="9">                 
+                            <table border="1" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td class="message-bg-color">
+                                <table border="0" cellspacing="0" cellpadding="3">
+                                <tr>
+                                    <td valign="top"><img src="Variables.cs_imagedir/graphics/common/msg/warning.gif" width="25" height="22" REPLACEALL="Variables.cs_imagedir,Variables.severity"/></td>
+                                    <td>
+                                        <XLAT.STREAM KEY="dvin/UI/AssetMgt/Renderfailedforreference"/> <STRING.STREAM VALUE="Variables.reference"/>  
+                                    </td>
+                                </tr>
+                                </table>
+                                </td>
+                            </tr>
+                            </table>
+                        </td>
+                    </tr>  
+                </then>
+                <else>
+                    <tr>
+                        <td colspan="11" class="message-bg-color">
+                            <String.stream LIST="strlist1" COLUMN="ITEM" />
+                        </td>
+             		</tr>
+                </else>
+                </if>                          
+                <setvar NAME="continue" VALUE="false"/>
+        	 </else>
+        	 </if>
+        </else>
+        </if>
+    
+        <if COND="Variables.continue=true">
+        <then>
+            <IF COND="Variables.separatorLine=1">
+            <THEN>
+                 <tr>
+                    <!--<td colspan="11" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+                 </tr>
+            </THEN>
+            </IF>
+        
+            <setvar NAME="separatorLine" VALUE="1"/>
+        
+            <tr>	
+                <td valign="middle" NOWRAP="">
+                    <if COND="Variables.command=preview">
+                    <then>
+                        <XLAT.LOOKUP KEY="dvin/UI/Previewthisreference" VARNAME="_XLAT_"/>
+                        <XLAT.LOOKUP KEY="dvin/UI/Previewthisreference" VARNAME="mouseover" ESCAPE="true"/>
+                        <PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="Variables.ref:c" ASSETID="Variables.ref:cid" PUBID="SessionVariables.pubid"/>
+						<A HREF="javascript:void(0)" onclick="showPreview('Variables.previewURL');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.previewURL,Variables.mouseover"><img height="14" width="14" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+                    </then>
+                    <else>
+					<!-- Below code tries to refer to the exported folder which might be any where in the machine so the link below will generate an invalid url.Commenting this code for now.-->
+                        <!--<ENDS STR="Variables.folder" WHAT="/"/>
+                        <if COND="Variables.errno=1">
+                        <then>
+                            <setvar NAME="exportref" VALUE="Variables.folderVariables.diskname" />
+                        </then>
+                        <else>
+                            <setvar NAME="exportref" VALUE="Variables.folder/Variables.diskname" />
+                        </else>
+                        </if>
+                        <XLAT.LOOKUP KEY="dvin/UI/Showthisexportedreference" VARNAME="_XLAT_"/>
+                        <XLAT.LOOKUP KEY="dvin/UI/Showthisexportedreference" VARNAME="mouseover" ESCAPE="true"/>
+						<A HREF="javascript:void(0)" onclick="showExportedRef('Variables.exportref');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.exportref,Variables.mouseover"><img height="14" width="14" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>-->
+                        
+                    </else>
+                    </if>
+                </td>
+                <td></td>
+                <if COND="Variables.ref:c=Variables.empty">
+                   <then>
+					<td valign="middle" NOWRAP="">
+                        <STRING.STREAM VALUE="Variables.ref:cid" />
+					</td>
+					<td/>
+                   </then>
+                   <else>
+						<td valign="middle" NOWRAP="">
+                        <ASSET.LOAD TYPE="Variables.ref:c" OBJECTID="Variables.ref:cid" NAME="asset"/>
+                        <IF COND="Variables.showUnapprove!=false">
+						<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/UnapproveThisItem" VARNAME="_XLAT_"/>
+                        <XLAT.LOOKUP KEY="dvin/Common/UnapproveThisItem" VARNAME="mouseover" ESCAPE="true"/>
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+                            <ARGUMENT NAME="assettype" VALUE="Variables.ref:c"/>
+                            <ARGUMENT NAME="assetid" VALUE="Variables.ref:cid"/>
+                            <ARGUMENT NAME="varname" VALUE="urlUnapproveItem"/>
+                            <ARGUMENT NAME="function" VALUE="unapprove"/>
+                        </CALLELEMENT>
+                        <A href="Variables.urlUnapproveItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlUnapproveItem,Variables.mouseover"><img hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconUnapproveContent.gif" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+						</THEN>
+						</IF>
+						</td>
+						<if COND="Variables.errno=0">
+                        <then>
+                            <td valign="middle" NOWRAP="">
+							<ASSET.GET NAME="asset" FIELD="name" OUTPUT="ref:name" />
+                             <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_" ESCAPE="true"/>
+					 					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+											<ARGUMENT NAME="assettype" VALUE="Variables.ref:c"/>
+											<ARGUMENT NAME="assetid" VALUE="Variables.ref:cid"/>
+											<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+											<ARGUMENT NAME="function" VALUE="inspect"/>
+										</CALLELEMENT>
+							<STRING.LENGTH VALUE="Variables.ref:name" VARNAME="strlen" />
+							<CALCULATOR.GO VALUE="Variables.strlen 30 GT" VARNAME="result"/>
+							<IF COND="Variables.result=1">
+							<THEN>
+								<SUBSTRING STR="Variables.ref:name" OUTSTR="shortName" ENDINDEX="25" />
+								<SETVAR NAME="shortName" VALUE="Variables.shortName..."/>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="shortName" VALUE="Variables.ref:name" />
+							</ELSE>
+							</IF>
+							<STRING.ENCODE VARIABLE="ref:name" VARNAME="ref:name"/>
+                            <A href="Variables.urlInspectItem" OnMouseOver="window.status='Variables._XLAT_'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlInspectItem,Variables._XLAT_,Variables.ref:name" title="Variables.ref:name"><span><STRING.STREAM VARIABLE="shortName"/></span></A>
+							</td>
+                        </then>
+                        <else>
+							<td valign="middle" NOWRAP="">
+								<STRING.STREAM VALUE="Variables.ref:cid" />
+							</td>
+                        </else>
+                        </if>
+                   </else>
+                   </if>
+                <td></td>
+                <td valign="middle"><STRING.STREAM VALUE="Variables.ref:c" /></td>
+                <td></td>
+                <td valign="middle"><STRING.STREAM VALUE="Variables.ref:pagename" /></td>
+                <td></td>
+                <td valign="middle"><STRING.STREAM VALUE="Variables.ref:pidandothers" /></td>
+            </tr>
+        </then>
+        </if>
+        <inccounter NAME="count" VALUE="1"/>   
+    </loop>
+    </then>
+    </if>
+    </table>
+</then>
+</if>
+
+</FTCS> 

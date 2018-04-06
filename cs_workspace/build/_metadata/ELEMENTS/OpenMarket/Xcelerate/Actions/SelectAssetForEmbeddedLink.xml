@@ -1,0 +1,271 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/SelectAssetForEmbeddedLink
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<html>
+<head>
+    <TITLE>
+        <if COND="Variables.embedtype=link">
+        <then>
+            <XLAT.STREAM KEY="dvin/UI/AddEmbeddedLink"/>
+        </then>
+        <else>
+            <XLAT.STREAM KEY="dvin/UI/AddInclusion"/>
+        </else>
+        </if>
+    </TITLE>
+    <PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+    <IF COND="IsVariable.docDomain=true">
+    <THEN>
+        <IF COND="Variables.docDomain!=Variables.empty">
+        <THEN>
+            <SCRIPT LANGUAGE="JavaScript">
+            document.domain = "<CSVAR NAME="Variables.docDomain"/>";
+            </SCRIPT>
+        </THEN>
+        </IF>
+    </THEN>
+    </IF>
+    
+    <link href="Variables.cs_imagedir/graphics/common/controlpanel/insite.css" rel="styleSheet" type="text/css"  REPLACEALL="Variables.cs_imagedir,Variables.cs_imagedir"/>         
+</head>
+
+<script language="JavaScript">
+<![CDATA[
+
+function cancelAddLink()
+{
+    window.close();
+}
+
+function selectAssetForEmbeddedLink(id, type)
+{
+    var obj = document.forms[0].elements[0];
+    var assetid = obj.form.elements['id'].value;
+    var assettype = obj.form.elements['AssetType'].value;
+    if ( assetid == id && assettype == type )
+    {
+       ]]>
+       alert("<XLAT.STREAM KEY="dvin/UI/CannotAddSelfLinkInclude" ESCAPE="true" ENCODE="false"/>");
+       <![CDATA[
+       return;
+    }
+    obj.form.elements['tn_id'].value = id;
+   obj.form.elements['tn_AssetType'].value = type;
+   obj.form.submit();
+}
+]]>
+
+</script>
+<body topmargin="0" leftmargin="0" marginheight="0" marginwidth="0">
+
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST" name="form1">
+	<STRING.ENCODE VARIABLE="charset" VARNAME="charset"/>
+    <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.charset" REPLACEALL="Variables.charset"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+    <INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.cs_environment" REPLACEALL="Variables.cs_environment"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+    <INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.cs_formmode" REPLACEALL="Variables.cs_formmode"/>
+
+<STRING.ENCODE VARIABLE="fieldname" VARNAME="fieldname"/>
+<INPUT TYPE="HIDDEN" NAME="fieldname" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+<STRING.ENCODE VARIABLE="fieldname" VARNAME="fieldname"/>
+<INPUT TYPE="HIDDEN" NAME="formFieldName" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+<STRING.ENCODE VARIABLE="fielddesc" VARNAME="fielddesc"/>
+<INPUT TYPE="HIDDEN" NAME="fielddesc" VALUE="Variables.fielddesc" REPLACEALL="Variables.fielddesc"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<INPUT TYPE="HIDDEN" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<INPUT TYPE="HIDDEN" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+
+<STRING.ENCODE VARIABLE="tn_id" VARNAME="tn_id"/>
+<INPUT TYPE="HIDDEN" NAME="tn_id" VALUE="Variables.tn_id" REPLACEALL="Variables.tn_id"/>
+<STRING.ENCODE VARIABLE="tn_AssetType" VARNAME="tn_AssetType"/>
+<INPUT TYPE="HIDDEN" NAME="tn_AssetType" VALUE="Variables.tn_AssetType" REPLACEALL="Variables.tn_AssetType"/>
+
+<if COND="Variables.embedtype=link">
+<then>
+    <input type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/EmbeddedLink"/>
+</then>
+<else>
+    <input type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/AddInclusion"/>
+</else>
+</if>
+
+<TABLE BORDER="0" CELLSPACING="0" CELLPADDING="0" width="100%">
+<tr>
+    <td></td>
+    <td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+    <td></td>
+</tr>
+<tr>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+    <td>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+        <tr>
+            <td colspan="5" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+        </tr>
+        <tr>
+            <td class="tile-a" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            <td nowrap="1" class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" colspan="2" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/ActiveList"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" align="right" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            <td class="tile-c" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="5" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+        </tr>
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>  
+
+        <USERMANAGER.GETLOGINUSER VARNAME="currentUser"/>
+        <ACTIVELIST.GETUSERLIST USER="Variables.currentUser" SITE="SessionVariables.pubid" PREFIX="AL:"/>
+
+        <IF COND="Variables.AL:Total!=0">
+        <THEN>
+            <SETCOUNTER NAME="currentItem" VALUE="0"/>
+            
+            <LOOP COUNT="Variables.AL:Total">   
+            <tr>
+                <td><BR /></td>
+                <td colspan="3">
+                    <ACTIVEITEM.GETASSETID NAME="AL:Counters.currentItem" VARNAME="ID"/>
+                    <ACTIVEITEM.GETASSETTYPE NAME="AL:Counters.currentItem" VARNAME="AssetType"/>
+                    <SETVAR NAME="errno" VALUE="0"/>
+                    <ASSET.LIST TYPE="Variables.AssetType" LIST="currentAsset" FIELD1="id" VALUE1="Variables.ID"/>
+                    <ASSETTYPE.LIST LIST="ThisType" FIELD1="assettype" VALUE1="Variables.AssetType"/>
+                    <STRING.ENCODE VARIABLE="ID" VARNAME="ID"/>
+					<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+                    <A HREF="#" ONCLICK="selectAssetForEmbeddedLink('Variables.ID','Variables.AssetType');" REPLACEALL="Variables.ID,Variables.AssetType">
+                        <STRING.STREAM VALUE="currentAsset.name (ThisType.description)"/>
+                    </A>
+                </td>
+                <td></td>
+            </tr>
+            <INCCOUNTER NAME="currentItem" VALUE="1"/>
+            </LOOP>
+        </THEN>
+        <ELSE>
+            <XLAT.LOOKUP KEY="dvin/Common/NoItemsActiveList" VARNAME="_XLAT_" ESCAPE="true"/>
+            <tr>
+                <td><BR /></td>
+                <td colspan="3">
+                    <STRING.STREAM VALUE="Variables._XLAT_" />
+                </td>
+                <td></td>
+            </tr>
+        </ELSE>
+        </IF>
+
+        
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>  
+        <tr>
+            <!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>-->
+        </tr>
+        <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>  
+        
+        <IF COND="IsVariable.history=true">
+        <THEN>
+            <SETVAR NAME="errno" VALUE="0"/>
+            <SETVAR NAME="tablename" VALUE="AssetPublication"/>
+            
+            <STRINGLIST NAME="histlist" STR="Variables.history" DELIM=","/>
+            <SETVAR NAME="isValid" VALUE="true"/>
+            <LOOP LIST = "histlist">
+            	<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<argument NAME="columnvalue" VALUE="histlist.ITEM"/>
+					<argument NAME="type" VALUE="Long"/>
+				</callelement>
+				<ics.getvar name="validatedstatus" output="dataValid"/>
+				<IF COND="Variables.dataValid=false">
+  				<THEN>
+  					<SETVAR NAME="isValid" VALUE="flase"/>
+ 				</THEN>
+ 				</IF>	
+    		</LOOP>
+            <IF COND="Variables.isValid=true">
+  			<THEN>
+            	<EXECSQL LIST="theAssets" SQL="SELECT * FROM AssetPublication WHERE assetid IN (Variables.history) AND pubid=SessionVariables.pubid"/>
+			</THEN>
+ 			</IF>
+ 			
+            <tr>
+                <td colspan="5" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+            </tr>
+            <tr>
+                <td class="tile-a" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                <td nowrap="1" class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" colspan="2" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/History"/></DIV></td>
+                <td class="tile-b" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" align="right" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                <td class="tile-c" background="Variables.cs_imagedir/graphics/common/controlpanel/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="5" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+            </tr>
+            <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+            <IF COND="IsList.theAssets=true">
+            <THEN>
+                <LOOP LIST="theAssets">
+                    <ASSET.LIST TYPE="theAssets.assettype" LIST="currentAsset" FIELD1="id" VALUE1="theAssets.assetid"/>
+                    <ASSETTYPE.LIST LIST="ThisType" FIELD1="assettype" VALUE1="theAssets.assettype"/>
+                    <tr>
+                        <td><BR /></td>
+                        <td colspan="4">
+                            <A HREF="#" ONCLICK="selectAssetForEmbeddedLink('theAssets.assetid','theAssets.assettype');" REPLACEALL="theAssets.assetid,theAssets.assettype">
+                                <STRING.STREAM VALUE="currentAsset.name (ThisType.description)"/>
+                            </A>
+                        </td>
+                    </tr>
+                </LOOP>
+            </THEN>
+            </IF>
+
+            <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>  
+            <tr>
+                <!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>-->
+            </tr>
+            <tr class="tile-row-highlight"><td colspan="5"><img src="Variables.cs_imagedir/graphics/common/controlpanel/spacer.gif" height="5"  REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        </THEN>
+        </IF>
+    </table>
+    </td>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+</tr>
+<tr>
+    <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+
+<tr class="tile-row-highlight">
+    <td><BR /></td>
+    <td colspan="2"><XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+    <IMG WIDTH="3" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/>
+    <A HREF="javascript:void(0)" onclick="return cancelAddLink()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A></td>
+</tr>
+<tr>
+    <td></td>
+    <td background="Variables.cs_imagedir/graphics/common/controlpanel/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/controlpanel/dotclear.gif"  REPLACEALL="Variables.cs_imagedir"/></td>
+    <td></td>
+</tr>
+</TABLE>
+</SATELLITE.FORM>
+</body>
+</html>
+
+
+<![CDATA[
+<SCRIPT>  
+    var iHeight = 20 + document.body.scrollHeight;
+    var iWidth = 10 + document.body.scrollWidth;
+    window.resizeTo(iWidth, iHeight);
+    window.focus();
+</SCRIPT>
+]]>
+
+
+</FTCS>

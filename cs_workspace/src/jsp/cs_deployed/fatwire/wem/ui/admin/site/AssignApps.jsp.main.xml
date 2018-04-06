@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/wem/ui/admin/site/AssignApps</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/wem/ui/admin/site/AssignApps</string>
+        <string>Assign applications to the site</string>
+        <string></string>
+        <string></string>
+        <string>fatwire/wem/ui/admin/site/AssignApps.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/fatwire/wem/ui/admin/site/AssignApps.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2Ffatwire%2Fwem%2Fui%2Fadmin%2Fsite%2FAssignApps.jsp
+@hashval=1574354652
+key=@ELEMENTCATALOG-fatwire/wem/ui/admin/site/AssignApps
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

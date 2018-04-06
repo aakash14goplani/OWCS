@@ -1,0 +1,152 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ComposableDetails
+-
+- INPUT  - asset has been loaded and scattered with ContentDteails prefix
+- OUTPUT
+-
+-->
+
+<if COND="IsVariable.ContentDetails:Composition:Total=true">
+<then>
+	<if COND="Variables.ContentDetails:Composition:Total!=0">
+	<then>
+		<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+		<tr>
+			<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Slots"/>:</td>
+			<td></td>
+			<td>
+			</td>
+		</tr>
+		<SETCOUNTER NAME="nthSlot" VALUE="0"/>
+		<LOOP COUNT="Variables.ContentDetails:Composition:Total">
+			<tr>
+			<setvar NAME="numMembers" VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Total"/>
+			<if COND="Variables.numMembers!=0">
+			<then>
+				<td class="form-label-text"><STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:slot"/>:</td>
+				<td></td>
+				<td class="form-inset">
+  				<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+     				<tr>
+					<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>	
+					<tr>
+					<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td >
+					<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+						<tr><td colspan="15" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Site"/><BR /></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/context"/></DIV></td>
+	               <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Template"/></DIV></td>
+	               <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Variant"/></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/AssetType"/></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Asset"/></DIV></td>
+	            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Arguments"/></DIV></td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						</tr>
+						
+						<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETCOUNTER NAME="nthContext" VALUE="0"/>
+						<LOOP COUNT="Variables.numMembers">							 
+							<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:site"/>
+								</DIV>
+								</td>
+								
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:context"/>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:tname"/>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:theme"/>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:assettype"/>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+                 			<DIV class="small-text-inset">
+                 				<setvar NAME="assetid" VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:assetid"/>
+									<if COND="Variables.assetid!=Variables.empty">
+									<then>
+										<setvar NAME="assettype" VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:assettype"/>
+										<ASSET.LIST TYPE="Variables.assettype" FIELD1="id" VALUE1="Variables.assetid" LIST="assetlist"/>
+										<if COND="assetlist.#numRows=1">
+										<then>
+											<STRING.STREAM VALUE="assetlist.name"/>
+										</then>
+										<else>
+											<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:assetid"/>
+										</else>
+										</if>
+									</then>
+									</if>
+								</DIV>
+								</td>
+
+								<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT" NOWRAP="NOWRAP">
+                 			<DIV class="small-text-inset">
+									<setvar NAME="numArgs" VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:targs:Total"/>
+									<if COND="Variables.numArgs!=0">
+									<then>
+										<SETCOUNTER NAME="nthArg" VALUE="0"/>
+										<LOOP COUNT="Variables.numArgs">
+											<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:targs:Counters.nthArg:name"/>=
+											<STRING.STREAM VALUE="Variables.ContentDetails:Composition:Counters.nthSlot:members:Counters.nthContext:targs:Counters.nthArg:value"/><br/>												
+											<INCCOUNTER NAME="nthArg" VALUE="1"/>
+										</LOOP>
+									</then>
+									</if>
+								</DIV>
+								</td>
+							</tr>
+							<INCCOUNTER NAME="nthContext" VALUE="1"/>
+							<IF COND="Variables.rowStyle=tile-row-normal">
+							<THEN>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+							</ELSE>
+							</IF>		
+						</LOOP>
+					</table>
+					</td>
+				<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+				<tr>
+				<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+				<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+				</table>
+				</td>
+			</then>
+			</if>
+			<INCCOUNTER NAME="nthSlot" VALUE="1"/>
+		</tr>
+		</LOOP>
+	</then>
+	</if> 
+</then>
+</if>
+
+</FTCS>

@@ -1,0 +1,122 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+	<!-- FutureTense/Apps/AdminForms/SiteMgt
+	-
+	- INPUT
+	-
+	- OUTPUT
+	-
+	-->
+	<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+	<STRING.ENCODE VARIABLE="NewPagename" VARNAME="NewPagename"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardVariables"/>
+	<HTML>
+	<HEAD>
+	<SETVAR NAME="locale" VALUE="SessionVariables.locale" />
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/common.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/content.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="common.css,content.css"/>
+	</callelement>
+	</HEAD>
+	<BODY>
+		<!--Set the titlestring depending on the Operation-->
+		<XLAT.LOOKUP KEY="dvin/AdminForms/Variables.Operation" VARNAME="titlestring"/>
+		<!--This code copies the pagename0-N into NewPagename so that success/failure messages save what has been changed
+					variable is set in "front" page.-->
+		<IF COND="Variables.rollupvariables=true">
+			<THEN>
+				<SETVAR NAME="stop" VALUE="false"/>
+				<SETCOUNTER NAME="pgcount" VALUE="0"/>
+				<SETVAR NAME="first" VALUE="true"/>
+				<LOOP UNTIL="Variables.stop=true">
+					<SETVAR NAME="ourpage" VALUE="pagenameCounters.pgcount"/>
+					<IF COND="IsVariable.Variables.ourpage=true">
+						<THEN>
+							<IF COND="Variables.first=true">
+								<THEN>
+									<SETVAR NAME="NewPagename" VALUE="Variables.Variables.ourpage"/>
+									<SETVAR NAME="first" VALUE="false"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="NewPagename" VALUE="Variables.NewPagename,Variables.Variables.ourpage"/>
+								</ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<SETVAR NAME="stop" VALUE="true"/>
+						</ELSE>
+					</IF>
+					<INCCOUNTER NAME="pgcount" VALUE="1"/>
+				</LOOP>                                                                       
+			</THEN>
+		</IF>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+		<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text"><STRING.STREAM VARIABLE="titlestring"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+		<div class="width-outer-70">
+			<SETVAR NAME="pagename" VALUE="Variables.NewPagename"/>
+			<ICS.CLEARERRNO/>
+			<CATALOGMANAGER>
+			</CATALOGMANAGER>
+			<IF COND="Variables.errno=0">
+				<THEN>
+					<XLAT.LOOKUP KEY="dvin/AdminForms/PageOperationSuccess" VARNAME="_XLAT_"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+						<ARGUMENT NAME="severity" VALUE="info"/>
+					</CALLELEMENT>
+				</THEN>
+				<ELSE>
+					<SETVAR NAME="saveerrno" VALUE="Variables.errno"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+						<ARGUMENT NAME="columnvalue" VALUE="Variables.NewPagename"/>
+						<ARGUMENT NAME="type" VALUE="String"/>
+					</CALLELEMENT>
+					<IF cond="Variables.validatedstatus=true">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/AdminForms/PageOperationFailure"  EVALALL="false" errno="Variables.errno" NewPagename="Variables.NewPagename" VARNAME="_XLAT_"/>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+							<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+							<ARGUMENT NAME="severity" VALUE="error"/>
+						</CALLELEMENT>
+					</THEN>
+					</IF>							
+					<IF COND="Variables.saveerrno=-103">
+							<THEN>
+								<XLAT.LOOKUP KEY="dvin/AdminForms/NoSuchTable" VARNAME="_XLAT_"/>
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+									<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+									<ARGUMENT NAME="severity" VALUE="error"/>
+								</CALLELEMENT>
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.saveerrno=-104">
+									<THEN>
+										<XLAT.LOOKUP KEY="dvin/AdminForms/NoTableDefinition" VARNAME="_XLAT_"/>
+										<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+											<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+											<ARGUMENT NAME="severity" VALUE="error"/>
+										</CALLELEMENT>	
+									</THEN>
+								</IF>
+							</ELSE>
+					</IF>	
+					<XLAT.LOOKUP KEY="dvin/AdminForms/ExceptionThrown" VARNAME="_XLAT_"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+						<ARGUMENT NAME="severity" VALUE="error"/>
+					</CALLELEMENT>
+				</ELSE>
+			</IF>
+		</div>
+		</BODY>
+	</HTML>
+</FTCS>

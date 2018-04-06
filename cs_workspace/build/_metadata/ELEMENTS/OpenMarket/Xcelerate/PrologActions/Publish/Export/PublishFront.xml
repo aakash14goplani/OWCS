@@ -1,0 +1,146 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Export/PublishFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<table class="width-outer-70" border="0" cellpadding="0" cellspacing="0">
+
+	<tr>
+		<td><span class="title-text"><XLAT.STREAM KEY="dvin/UI/Publishdestination"/>:  </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.pubtgt:name"/></span></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+
+	<tr>
+	<td>
+	
+	<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td NOWRAP="NOWRAP" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Destination"/>:</td>
+		<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		<td class="form-inset"><XLAT.STREAM KEY="dvin/UI/Publish/pubtgtnameusingpubdtname"/></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Arguments"/>:</td>
+		<td><BR/></td>
+		<td class="form-inset"><STRINGLIST   NAME="factorsList" STR="Variables.pubtgt:factors" DELIM="%26"/>
+		<loop LIST="factorsList">
+		<INDEXOF STR="factorsList.ITEM" WHAT="EMAILIDS" OUTSTR="index" INDEX="0"/>
+		<IF COND="Variables.errno=0">
+			<THEN>
+				<span><STRING.STREAM VALUE="factorsList.ITEM"/><BR/></span>
+			</THEN>
+		</IF>
+		</loop>
+		</td>
+	</tr>
+
+	<tr>
+	<td colspan="2"><BR/></td>
+	<td>
+	
+	<if COND="Variables.AbortFlag!=true">
+	<then>
+		<ApprovedAssets.GetPerm TARGET="Variables.target" OBJVARNAME="publishpoints" />
+		<PUBLISHPOINTS.GetAll NAME="publishpoints" PREFIX="refs" />
+		<if COND="Variables.refsTotal=0">
+		<then>
+		   <P><XLAT.STREAM KEY="dvin/UI/Error/Nopublishstartingpointsdefinedexportdest"/></P>
+		   <setvar NAME="AbortFlag" VALUE="true"/>
+		</then>
+		</if>
+	</then>
+	</if>
+	
+	<if COND="Variables.AbortFlag!=true">
+	<then>
+	     <PROPERTY.GET PARAM="xcelerate.batchhost" INIFILE="futuretense_xcel.ini" VARNAME="batchhost"/>
+	     <if COND="Variables.batchhost=Variables.empty">
+	     <then>
+	          <P><XLAT.STREAM KEY="dvin/UI/Error/notfoundxceleratepropertybatchhost"/>
+	          </P>
+	          <setvar NAME="AbortFlag" VALUE="true"/>
+	     </then>
+	     </if>
+	</then>
+	</if>
+	
+	<if COND="Variables.AbortFlag!=true">
+	<then>
+	    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Publish/HeldPublishableAssets">
+			<ARGUMENT NAME="target" VALUE="Variables.target"/>
+			<ARGUMENT NAME="targettype" VALUE="export"/>
+			<ARGUMENT NAME="allowLinks" VALUE="true"/>
+		</CALLELEMENT>
+	</then>
+	</if>
+	
+	</td>
+	</tr>
+    
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+
+<USERISMEMBER GROUP="xcelpublish"/>
+<IF COND="Variables.errno=1">
+<THEN>
+	<tr>
+		<td colspan="2"><BR/></td>
+		<td align="left">
+		<SETVAR NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<IF COND="Variables.errno=1">
+		<THEN>	
+		
+		<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/Admin/Publish/DestEdit" outstring="urlConfdest">
+			<satellite.argument name="action" value="details"/>
+			<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+            <satellite.argument name="id" value="Variables.pubtgt:id"/>
+		</satellite.link>
+		<A HREF="Variables.urlConfdest" REPLACEALL="Variables.urlConfdest"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/ConfigureDestination_"/></CALLELEMENT></A>
+		<img height="1" width="20" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+		<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/Admin/Publish/PublishEventEdit" outstring="urlConfSch">
+			<satellite.argument name="action" value="edit"/>
+			<satellite.argument name="target" value="Variables.pubtgt:id"/>
+			<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>                                 
+		</satellite.link>
+		<A HREF="Variables.urlConfSch" REPLACEALL="Variables.urlConfSch"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/EditPublishSchedule_"/></CALLELEMENT></A>
+		</THEN>
+		</IF>
+		<img height="1" width="100" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+		<if COND="Variables.AbortFlag!=true">
+			<then>
+			<if COND="Variables.publishIsRunning!=true">
+				<then>
+				<if COND="Variables.PublishableAssetsCount!=0">
+					<then>
+						<XLAT.LOOKUP KEY="dvin/UI/Publish" VARNAME="_XLAT_" ESCAPE="true"/>
+						<A HREF="javascript:void(0)" onclick="return setCheck(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Publish"/></CALLELEMENT></A>
+	                </then>
+	            </if>
+	            </then>
+	        </if>
+			</then>
+	    </if>
+		<XLAT.LOOKUP KEY="dvin/UI/CancelPublish" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="javascript:void(0)" onclick="return CancelHandler()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+	   </td>
+	</tr>
+</THEN>
+</IF>
+
+	</table>
+	</td>
+	</tr>
+</table>
+</ftcs>

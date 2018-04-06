@@ -1,0 +1,180 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+	<!-- OpenMarket/Xcelerate/Admin/AssetTypeForDocLinkConfigPost
+	-
+	- INPUT
+	-
+	- OUTPUT
+	-
+	-->
+
+	<!--
+	- Confidential and Proprietary Information of Open Market, Inc.
+	-					All Rights Reserved.
+	-
+	- DESCRIPTION
+	-	Admin control of specifying attributes of an external client for each of
+	-     of the columns for a given asset type, subtype, pubid and clientapplication.
+	-     Known Attributes for CSDocLink:  
+	-     	name:  enable  ; values:  true,false
+	-		name:  acceptdocs  ; values:  null, *, comma separated list of MimeType extensions
+	-
+	- INPUT
+	-   action   - list,edit  when pagetype is front, empty when pagetype is post
+	-   pagetype - front,post
+	-   clientid - id of the row in externalclients table 
+	-               (assettypeid,clientapp,pubid combination)
+	-   subtype -   asset subtype
+	-->
+
+	<!-- type is either front or post -->
+
+			<!--  process posted form from Edit.  For each matrix element, add a row to
+			externalclientsconfig table 
+			 -->
+			
+               <if COND="IsVariable.subtype=false">
+					<then>
+						<SETVAR NAME="subtype" VALUE="Variables.empty"/>
+					</then>
+					</if>
+
+					<STRINGLIST NAME="aTypeList" STR="Variables.rowList" DELIM=","/>
+					<STRINGLIST NAME="lActionList" STR="acceptdocs,enable,maxfilesize" DELIM=","/>
+                    <LOOP LIST="aTypeList">
+						<LOOP LIST="lActionList">
+							<IF COND="lActionList.ITEM=enable">
+							<THEN>
+                                <SETVAR NAME="errno" VALUE="0"/>
+                                <ICS.RESOLVEVARIABLES NAME="$(Variables.$(aTypeList.ITEM)-enable)" OUTPUT="tmp" DELIMITED="true"/>
+								<IF COND="Variables.errno=0">
+									<THEN>
+										<SETVAR NAME="attribVal" VALUE="true"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="attribVal" VALUE="false"/>
+									</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+                        <IF COND="aTypeList.ITEM=Variables.docField">
+                        <THEN>
+                           <IF COND="lActionList.ITEM=acceptdocs">
+                           <THEN>
+                              <SUBSTITUTE STR="Variables.allowedDocs" WHAT=";" WITH="," OUTSTR="allowedDocs"/>
+                              <SETVAR NAME="errno" VALUE="0"/>
+                              <BEGINS STR="Variables.allowedDocs" WHAT="*"/>
+                              <IF COND="Variables.errno=1">
+                              <THEN>
+                                 <SETVAR NAME="allowedDocs" VALUE="*.*"/>
+                              </THEN>
+                              </IF>
+                              <SETVAR NAME="attribVal" VALUE="Variables.allowedDocs"/>
+                              <SETVAR NAME="aTypeList.ITEM-enable" VALUE="true"/>
+                           </THEN>
+                           <ELSE>
+                              <SETVAR NAME="attribVal" VALUE="Variables.maxSize"/>
+                              <IF COND="IsVariable.maxSize=false">
+                              <THEN>
+                                 <SETVAR NAME="attribVal" VALUE="unlimited"/>
+                              </THEN>
+                              </IF>
+                           </ELSE>
+                           </IF>
+                        </THEN>
+                        <ELSE>
+                           <SETVAR NAME="attribVal" VALUE="No"/>
+                        </ELSE>
+                        </IF>
+							</ELSE>
+							</IF>
+							<!-- check if the row exists, then update or insert as appropriate -->
+							<SETVAR NAME="errno"  VALUE="0"/>
+							<SETVAR NAME="toSave" VALUE="false"/>
+							<EXTERNALCLIENTSCONFIGMANAGER.LOADFROMFIELDS OBJVARNAME="aRec" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="aTypeList.ITEM" ACTION="lActionList.ITEM"/>
+							<IF COND="Variables.errno=0">
+								<THEN>
+									<EXTERNALCLIENTSCONFIGITEM.GETVALUE NAME="aRec"  VARNAME="dbVal"/>
+									<IF COND="Variables.dbVal!=Variables.attribVal">
+										<THEN>
+											<SETVAR NAME="toSave" VALUE="true"/>
+											<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.attribVal"/>
+										</THEN>
+									</IF>
+								</THEN>
+								<ELSE>
+									<!-- no row found, null object returned -->
+									<IF COND="Variables.errno=-12052">
+										<THEN>
+											<!-- add a row to externalclientsconfig table  -->
+											<SETVAR NAME="toSave" VALUE="true"/>
+											<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+											<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+											<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+											<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="lActionList.ITEM"/>
+											<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.attribVal"/>
+											<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeList.ITEM"/>
+										</THEN>
+										<ELSE>
+											<XLAT.STREAM KEY="dvin/UI/Admin/Error/enablingassettypesubtypeCSDocLinkint"/>
+											<BR/>
+											<XLAT.STREAM KEY="dvin/UI/Admin/field"/>
+	:
+											<STRING.STREAM LIST="aTypeList" COLUMN="ITEM"/>
+											<BR/>
+											<XLAT.STREAM KEY="dvin/UI/Admin/attribute"/>
+	:
+											<STRING.STREAM LIST="lActionList" COLUMN="ITEM"/>
+											<BR/>
+											<XLAT.STREAM KEY="dvin/UI/Admin/value"/>
+	:
+											<STRING.STREAM VARIABLE="attribVal"/>
+											<BR/>
+											<XLAT.STREAM KEY="dvin/UI/Admin/ErrorNumberiserrno" errno="Variables.errno" EVALALL="false"/>
+											<BR/>
+											<THROWEXCEPTION/>
+										</ELSE>
+									</IF>
+								</ELSE>
+							</IF>
+							<SETVAR NAME="errno" VALUE="0"/>
+							<IF COND="Variables.toSave=true">
+								<THEN>
+									<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+								</THEN>
+							</IF>
+							<IF COND="Variables.errno!=0">
+								<THEN>
+									<XLAT.STREAM KEY="dvin/UI/Admin/Error/enablingassettypesubtypeCSDocLinkint"/>
+									<BR/>
+									<XLAT.STREAM KEY="dvin/UI/Admin/field"/>
+	:
+									<STRING.STREAM LIST="aTypeList" COLUMN="ITEM"/>
+									<BR/>
+									<XLAT.STREAM KEY="dvin/UI/Admin/attribute"/>
+	:
+									<STRING.STREAM LIST="lActionList" COLUMN="ITEM"/>
+									<BR/>
+									<XLAT.STREAM KEY="dvin/UI/Admin/value"/>
+	:
+									<STRING.STREAM VARIABLE="attribVal"/>
+									<BR/>
+									<XLAT.STREAM KEY="dvin/UI/Admin/ErrorNumberiserrno" errno="Variables.errno" EVALALL="false"/>
+									<BR/>
+									<THROWEXCEPTION/>
+								</THEN>
+							</IF>
+							<REMOVEVAR NAME="tmp"/>
+						</LOOP>
+					</LOOP>
+					<!-- call this element again to redisplay the new status -->
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeForDocLinkConfigFront">
+						<ARGUMENT NAME="action" VALUE="list"/>
+						<ARGUMENT NAME="clientid" VALUE="Variables.clientid"/>
+						<!--ARGUMENT NAME="subtype" VALUE="Variables.subtype"/-->
+					</CALLELEMENT>
+			
+		
+
+</FTCS>

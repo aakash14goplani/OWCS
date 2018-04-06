@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory</string>
+        <string>Clear out the list of remembered assets</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FXcelerate%2FScripts%2FClearRecentAssetHistory.xml
+@hashval=1464279436
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

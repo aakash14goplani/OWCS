@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/FlexibleAssets/Attributes/ValueStyle</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/FlexibleAssets/Attributes/ValueStyle</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/FlexibleAssets/Attributes/ValueStyle.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/FlexibleAssets/Attributes/ValueStyle.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FFlexibleAssets%2FAttributes%2FValueStyle.xml
+@hashval=2118031849
+key=@ELEMENTCATALOG-OpenMarket/Gator/FlexibleAssets/Attributes/ValueStyle
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

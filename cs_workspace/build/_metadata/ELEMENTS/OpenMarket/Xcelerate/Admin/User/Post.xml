@@ -1,0 +1,334 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/User/Post.xml $ 
+$Revision: 25 $ 
+$Modtime: 10/08/02 1:25p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- User/Post.xml
+-
+- DESCRIPTION
+-	Add/Remove user access to publication.
+-   In:
+-       Variables.pubid
+-	Variables.checkers: Count of tuples to process.
+-	Variables.set_NX: exists if ACL should be granted.
+-	Variables.orig_NX: string list of usermame,acl,checked 
+-
+- HISTORY 
+-->
+
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<argument NAME="columnvalue" VALUE="Variables.PubUser"/>
+		<argument NAME="type" VALUE="String"/>
+ </callelement>
+  
+<IF COND="Variables.validatedstatus=false">
+<THEN>
+		 <STRING.ENCODE VARIABLE="PubUser" VARNAME="PubUser"/>
+</THEN>
+</IF>
+
+<if COND="IsVariable.frompage=true">
+<then>
+        
+        
+        <!-- move the following usermanager related stuff to accessuserpublication ?  -->
+        <IF COND="IsVariable.thisuserid=true">
+			<THEN>
+				  <USERMANAGER.GETUSER USER="Variables.thisuserid"  OBJVARNAME="myobj" />
+			</THEN>
+			<ELSE>
+				  <USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.PubUser"/>
+			</ELSE>
+		</IF>
+        <IF COND="Variables.errno!=-13051">
+        <THEN>
+        <CCUSER.GETID NAME="myobj" VARNAME="useridvarname"/>
+	    <ROLEMANAGER.GETROLENAMES LISTVARNAME="ACLs"/>
+            <!-- dir.groupmemberships name="Variables.useridvarname" list="ACLs"/ -->
+        </THEN>
+        </IF>
+
+        <if COND="IsVariable.ACLList=true">
+        <then>
+        
+              <stringlist NAME="tACLList" STR="Variables.ACLList" DELIM=";"/> 
+		<HASH.CREATE NAME="myHashObject" LIST="tACLList" COLUMN="ITEM"/>
+                    <LOOP LIST="ACLs">
+			    <HASH.CONTAINS NAME="myHashObject" VALUE="ACLs.aclname" VARNAME="boolean"/>
+                            <IF COND="Variables.boolean=true">
+                            <THEN>
+                                 <!-- this role is being selected, so add it if it already doesn't exist -->
+                                 <callelement NAME="Variables.propmanageuserpub">
+                                    <argument NAME="upcommand" VALUE="AddRole"/>
+                                    <argument NAME="username" VALUE="Variables.useridvarname"/>
+                                    <argument NAME="acl" VALUE="ACLs.aclname"/>
+                                    <argument NAME="pubid" VALUE="Variables.pubid"/>
+                                </callelement>
+                                
+                                <if COND="Variables.roleexists!=true">
+                                <then>
+                                        <if COND="Variables.errno!=0">
+                                            <then>
+                                                <if COND="Variables.errno=2">
+                                                <then>
+                                                </then>
+                                                <else>
+                                                 	<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/grantingACLsaclnameaccesstoPubUser" VARNAME="message" ENCODE="false" />
+	                                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+												        <argument NAME="msgtext" VALUE="Variables.message"/>
+												        <argument NAME="severity" VALUE="error"/>
+												    </callelement>                                                      
+                                                </else>
+                                                </if>
+                                            </then>
+                                            <else>
+												<if COND="Variables.siteAdminNotUpdated=true">
+												<then>
+                                                 	<XLAT.LOOKUP KEY="dvin/UI/Admin/revokingSiteAdminACLForAdminSite" VARNAME="message" ENCODE="false" />
+	                                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+												        <argument NAME="msgtext" VALUE="Variables.message"/>
+												        <argument NAME="severity" VALUE="info"/>
+												    </callelement>    													
+													<ICS.SETVAR KEY="siteAdminNotUpdated" VALUE="false"/>
+												</then>
+												<else>
+                                                 	<XLAT.LOOKUP KEY="dvin/UI/Admin/GrantedACLsaclnameaccesstoPubUser" VARNAME="message" ENCODE="false" />
+	                                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+												        <argument NAME="msgtext" VALUE="Variables.message"/>
+												        <argument NAME="severity" VALUE="info"/>
+												    </callelement>    													
+												</else>
+												</if>
+                                            </else>
+                                        </if>
+                                </then>
+                                </if>
+    
+                            </THEN>
+                            <ELSE>
+                                <!-- revoke this role as this is not being selected -->
+                                <callelement NAME="Variables.propmanageuserpub">
+                                    <argument NAME="upcommand" VALUE="RevokeRole"/>
+                                    <argument NAME="username" VALUE="Variables.useridvarname"/>
+                                    <argument NAME="pubid" VALUE="Variables.pubid"/>
+                                    <argument NAME="acl" VALUE="ACLs.aclname"/>
+                                </callelement>
+                                <IF COND="Variables.roleexists=true">
+                        		<THEN>
+                                        <if COND="Variables.errno!=0">
+                                            <then>
+                                                <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/revokingACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+											        <argument NAME="msgtext" VALUE="Variables.message"/>
+											        <argument NAME="severity" VALUE="error"/>
+											    </callelement>                                                
+                                            </then>
+                                            <else>
+                                                <XLAT.LOOKUP KEY="dvin/UI/Admin/RevokedACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+											        <argument NAME="msgtext" VALUE="Variables.message"/>
+											        <argument NAME="severity" VALUE="info"/>
+											    </callelement> 
+                                            </else>
+                                        </if>
+                               </THEN>
+                               </IF>
+                            </ELSE>
+                            </IF>
+                        </LOOP>
+        </then>
+        <else>
+           <!-- Revoke All roles since nothing is selected ? -->
+           <IF COND="IsList.ACLs=true">
+            <THEN>
+                <LOOP LIST="ACLs">
+                    <SETVAR NAME="errno" VALUE="0"/>
+                          <callelement NAME="Variables.propmanageuserpub">
+                            <argument NAME="upcommand" VALUE="RevokeRole"/>
+                            <argument NAME="username" VALUE="Variables.useridvarname"/>
+                            <argument NAME="pubid" VALUE="Variables.pubid"/>
+                            <argument NAME="acl" VALUE="ACLs.aclname"/>
+                        </callelement>
+                        <IF COND="Variables.roleexists=true">
+                        <THEN>
+                                <if COND="Variables.errno!=0">
+                                    <then>
+                                          <XLAT.LOOKUP KEY="dvin/UI/Admin/Error/revokingACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                          <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+										  	<argument NAME="msgtext" VALUE="Variables.message"/>
+										    <argument NAME="severity" VALUE="error"/>
+										  </callelement> 
+                                    </then>
+                                    <else>
+                                        <XLAT.LOOKUP KEY="dvin/UI/Admin/RevokedACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+									        <argument NAME="msgtext" VALUE="Variables.message"/>
+									        <argument NAME="severity" VALUE="info"/>
+									    </callelement> 
+                                    </else>
+                                </if>
+                       </THEN>
+                       </IF>
+                  </LOOP>
+            </THEN>
+            </IF>
+         </else>
+        </if>
+</then>
+<else>
+
+        <setcounter NAME="checkers" VALUE="1"/>
+        
+        <loop FROM="1" COUNT="Variables.checkers">
+            <setvar NAME="orig_str" VALUE="Variables.orig_Counters.checkersX"/>
+            <STRINGLIST NAME="orig_values" STR="Variables.orig_str" DELIM=","/>
+            <GOTOROW LIST="orig_values" ROWNUM="1"/>
+            <!-- if _comma_ is part of the actual userid , not madeup useid, we will run into problems-->
+            
+            <SUBSTITUTE STR="orig_values.ITEM"
+                        WHAT="_comma_"
+                        WITH =","
+                        OUTSTR="username"/>
+        
+            <GOTOROW LIST="orig_values" ROWNUM="2"/>
+            <setvar NAME="acl" VALUE="orig_values.ITEM"/>
+            <GOTOROW LIST="orig_values" ROWNUM="3"/>
+            <setvar NAME="checked" VALUE="orig_values.ITEM"/>
+            <GOTOROW LIST="orig_values" ROWNUM="4"/>
+            <setvar NAME="CheckedUser" VALUE="orig_values.ITEM"/>
+        
+                <if COND="IsVariable.set_Counters.checkersX=false">
+                <then>
+                        <setvar NAME="UserPost:EditOccured" VALUE="1"/>
+                        <!-- Remove access -->
+                        <callelement NAME="Variables.propmanageuserpub">
+                            <argument NAME="upcommand" VALUE="RevokeRole"/>
+                            <argument NAME="username" VALUE="Variables.username"/>
+                            <argument NAME="pubid" VALUE="Variables.pubid"/>
+                            <argument NAME="acl" VALUE="Variables.acl"/>
+                        </callelement>
+                        <IF COND="Variables.roleexists=true">
+                		<THEN>
+	                    	<if COND="Variables.errno!=0">
+                            <then>
+                            	<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/revokingACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                 <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+							  		<argument NAME="msgtext" VALUE="Variables.message"/>
+							    	<argument NAME="severity" VALUE="error"/>
+							  	</callelement>                                         
+							</then>
+                            <else>
+                               	<XLAT.LOOKUP KEY="dvin/UI/Admin/RevokedACLsaclnameaccessfromPubUser" VARNAME="message" ENCODE="false" />
+                                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+							  		<argument NAME="msgtext" VALUE="Variables.message"/>
+							    	<argument NAME="severity" VALUE="info"/>
+							  	</callelement>                                                                         
+                            </else>
+                          	</if>
+                       </THEN>
+                       </IF>
+            </then>
+            <else>
+                <!-- Currently not set.  Change to set? -->
+                <setvar NAME="UserPost:EditOccured" VALUE="1"/>
+                <!-- Grant access -->
+                
+                 <callelement NAME="Variables.propmanageuserpub">
+                    <argument NAME="upcommand" VALUE="AddRole"/>
+                    <argument NAME="username" VALUE="Variables.username"/>
+                    <argument NAME="acl" VALUE="Variables.acl"/>
+                    <argument NAME="pubid" VALUE="Variables.pubid"/>
+                </callelement>
+                
+                <if COND="Variables.roleexists!=true">
+                <then>
+                        <if COND="Variables.errno!=0">
+                            <then>
+                            	<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/grantingACLsaclnameaccesstoPubUser" VARNAME="message" ENCODE="false" />
+                           		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+								    <argument NAME="msgtext" VALUE="Variables.message"/>
+								    <argument NAME="severity" VALUE="error"/>
+								</callelement>                            
+                            </then>
+                            <else>
+                                <if COND="Variables.siteAdminNotUpdated=true">
+								<then>
+	                            	<XLAT.LOOKUP KEY="dvin/UI/Admin/revokingSiteAdminACLForAdminSite" VARNAME="message" ENCODE="false" />
+	                           		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+									    <argument NAME="msgtext" VALUE="Variables.message"/>
+									    <argument NAME="severity" VALUE="info"/>
+									</callelement>  								
+									<ICS.SETVAR KEY="siteAdminNotUpdated" VALUE="false"/>
+								</then>
+								<else>
+	                            	<XLAT.LOOKUP KEY="dvin/UI/Admin/GrantedACLsaclnameaccesstoPubUser" VARNAME="message" ENCODE="false" />
+	                           		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+									    <argument NAME="msgtext" VALUE="Variables.message"/>
+									    <argument NAME="severity" VALUE="info"/>
+									</callelement>  								
+								</else>
+								</if>
+                            </else>
+                        </if>
+                </then>
+                </if>
+           </else>
+           </if>
+           <inccounter NAME="checkers" VALUE="1"/>
+        </loop>
+        
+</else>
+</if>
+<if COND="Variables.errno=0">
+<then>
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/ModificationSuccessfulE" VARNAME="message" ENCODE="false" />
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <argument NAME="msgtext" VALUE="Variables.message"/>
+		    <argument NAME="severity" VALUE="info"/>
+		</callelement>  
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/Modify">
+        	<ARGUMENT NAME="PubUser" VALUE="Variables.PubUser"/>
+        	<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+        	<ARGUMENT NAME="action" VALUE="details"/>
+        	<ARGUMENT NAME="singleUser" VALUE="no"/>
+        	<ARGUMENT NAME="ValidUser" VALUE="yes"/>
+        </CALLELEMENT>
+</then>
+<else>
+        <if COND="Variables.errno=2">
+        <then>
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/ModificationSuccessfulE" VARNAME="message" ENCODE="false" />
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="msgtext" VALUE="Variables.message"/>
+			    <argument NAME="severity" VALUE="info"/>
+			</callelement>         
+          <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/Modify">
+        	<ARGUMENT NAME="PubUser" VALUE="Variables.PubUser"/>
+        	<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+        	<ARGUMENT NAME="action" VALUE="details"/>
+        	<ARGUMENT NAME="singleUser" VALUE="no"/>
+        	<ARGUMENT NAME="ValidUser" VALUE="yes"/>
+        </CALLELEMENT>
+        </then>
+        <else>
+        	<XLAT.LOOKUP KEY="dvin/Common/Error" VARNAME="message" ENCODE="false" />
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<argument NAME="msgtext" VALUE="Variables.message"/>
+			    <argument NAME="errno" VALUE="Variables.errno"/>
+			    <argument NAME="severity" VALUE="error"/>
+			</callelement>   
+        </else>
+        </if>
+</else>
+</if>
+      
+</FTCS>

@@ -1,0 +1,123 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="key" VARNAME="key"/>
+<!-- first check to see if the user is logged in or not -->
+
+	<SETVAR NAME="errno" VALUE="0"/>
+	<USERISMEMBER GROUP="xceleditor"/>
+	<if COND="Variables.errno=0">
+	<!-- user is not logged in. Display logout screen -->
+		<then> 
+			<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/Security/TimeoutError" OUTSTRING="urlTimeoutError"/>
+				<script LANGUAGE="JavaScript">
+					parent.parent.location="<ics.resolvevariables NAME="Variables.urlTimeoutError"/>";
+				</script>
+			<throwexception/>
+		</then>
+	</if>
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<IF COND="IsVariable.tool=false">
+	<THEN>
+		<SETVAR NAME="tool" VALUE="Login"/>
+	</THEN>
+</IF>
+<IF COND="IsVariable.form=false">
+	<THEN>
+		<SETVAR NAME="form" VALUE="main"/>
+	</THEN>
+</IF>
+
+<SETVAR NAME="ExpirePage" VALUE="true"/>
+<IF COND="Variables.form=main">
+	<THEN>
+		<SETVAR NAME="ExpirePage" VALUE="false"/>
+	</THEN>
+</IF>
+<IF COND="Variables.tool=Login">
+	<THEN>
+		<SETVAR NAME="ExpirePage" VALUE="true"/>
+	</THEN>
+</IF>
+<IF COND="Variables.tool=ACLMgt">
+	<THEN>
+		<SETVAR NAME="ExpirePage" VALUE="true"/>
+	</THEN>
+</IF>
+<IF COND="Variables.tool=CatalogMgt">
+    <THEN>
+        <IF COND="Variables.form=Mirror">
+            <THEN>
+				<SETVAR NAME="ExpirePage" VALUE="false"/>
+			</THEN>
+			<ELSE><IF COND="Variables.form=Create">
+			    <THEN>
+    				<SETVAR NAME="ExpirePage" VALUE="false"/>
+			    </THEN>
+			</IF></ELSE>
+		</IF>
+    </THEN>
+</IF>
+<IF COND="Variables.tool=SiteMgt">
+    <THEN>
+        <IF COND="Variables.form=ViewList">
+            <THEN>
+                <SETVAR NAME="ExpirePage" VALUE="false"/>
+            </THEN>
+        </IF>
+    </THEN>
+</IF>
+<IF COND="Variables.tool=SatelliteMgt">
+	<THEN>
+		<SETVAR NAME="ExpirePage" VALUE="false"/>
+	</THEN>
+</IF>
+
+<HTML>
+    <HEAD>
+		<IF COND="Variables.ExpirePage=true">
+			<THEN>
+				<META HTTP-EQUIV="Expires" CONTENT="Fri, 15 Aug 1971 12:00:00 GMT"/>
+			</THEN>
+		</IF>
+        <TITLE>FutureTense IPS: Content Server Site Management Tools</TITLE>
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+        <![CDATA[
+      	<SCRIPT type="text/javascript">
+			if(dojo){
+				dojo.addOnLoad(function() {
+					if(typeof(dijit.byId('dijit_layout_BorderContainer_0')) != 'undefined'){
+						dijit.byId('dijit_layout_BorderContainer_0').resize();
+					}
+					//The following code is needed to remove the underline from the text in the dojo buttons..
+					var buttonsAndTitles = dojo.query('span.fwButton, div.new-table-title');
+					for(var i=0; i < buttonsAndTitles.length; i++){
+						var anchorNode = buttonsAndTitles[i].parentNode;
+						if(anchorNode && anchorNode.nodeName.toLowerCase() === 'a'){
+							anchorNode.className+=" button-anchor";
+						}
+					}
+					}
+				);
+			}
+		</SCRIPT>
+		]]>
+		<link href="Variables.cs_imagedir/../js/fw/css/ui/global.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir"/>
+		<link href="Variables.cs_imagedir/data/css/SessionVariables.locale/common.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale"/>
+		<link href="Variables.cs_imagedir/data/css/SessionVariables.locale/content.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale"/>
+		<link href="Variables.cs_imagedir/../js/fw/css/UIInput.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir"/>
+		<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+			<argument NAME="cssFilesToLoad" VALUE="common.css,content.css"/>
+		</callelement>
+        <CALLELEMENT NAME="FutureTense/Apps/AdminForms/Variables.tool/header"/>
+    </HEAD>
+	<BODY BGCOLOR="#ffffff">
+        <!-- FutureTense Publish  -->
+		<CALLELEMENT NAME="FutureTense/Apps/AdminForms/Variables.tool/Variables.form"/>
+		<!-- FutureTense Publish  -->
+	</BODY>
+</HTML>
+</FTCS>

@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssignHistoryFront.xml $ 
+$Revision: 34 $ 
+$Modtime: 12/17/03 12:30p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- Display the history of assignments associated with this item
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<WorkflowAsset.GetObjectName OBJECT="workflowasset" VARNAME="objectname" />
+
+     <XLAT.LOOKUP KEY="dvin/UI/ThisAssetHasNoWorkflowHistory" VARNAME="NoTileText" />
+     <WORKFLOWENGINE.GETFILTEREDASSIGNMENTS PREFIX="allAssignments:" STATUS="notactive" OBJECT="workflowasset"
+		SORTSTYLE="assigneddate" DESCENDING="true"/>
+    <setvar NAME="ResultLimit" VALUE="10000"/>
+    <setvar NAME="report_assets" VALUE="all"/>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/TileReportAssignments">
+        <argument NAME="showSelect" VALUE="false"/>
+        <argument NAME="showType" VALUE="false"/>
+        <argument NAME="showId" VALUE="false"/>
+        <argument NAME="showAssignedBy" VALUE="false"/>
+        <argument NAME="showAssignedDate" VALUE="true"/>
+        <argument NAME="showAssignedTo" VALUE="true"/>
+        <argument NAME="showClearedBy" VALUE="true"/>
+        <argument NAME="showClearedDate" VALUE="true"/>
+        <argument NAME="showActionTaken" VALUE="true"/>
+        <argument NAME="showActionToTake" VALUE="false"/>
+	<argument NAME="showStepTaken" VALUE="false"/>
+        <argument NAME="showWorkflowStatus" VALUE="false"/>
+	<argument NAME="showIsActive" VALUE="true"/>
+        <argument NAME="showClearAssignment" VALUE="false"/>
+	<argument NAME="showDeadlocked" VALUE="false"/>
+       <argument NAME="NoTileText" VALUE="Variables.NoTileText"/>
+    </callelement>
+
+</FTCS>

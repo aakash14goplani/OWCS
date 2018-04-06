@@ -1,0 +1,613 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/CSClient/AskFinishInfo
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="doproceed" value="true"/>
+<asset.load TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<asset.get NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+<asset.get NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+<asset.getassettype NAME="theAsset" OUTNAME="type"/>
+<assettype.get NAME="type" FIELD="description" OUTPUT="atDescription"/>
+<STRING.ENCODE VARIABLE="assetname" VARNAME="assetname"/>
+<STRING.ENCODE VARIABLE="atDescription" VARNAME="atDescription"/>
+<IF COND="Variables.finish:AssignmentID:SET=true">
+<THEN>
+	<SETVAR NAME="assignmentid" VALUE="Variables.finish:AssignmentID"/>
+</THEN>
+<ELSE>
+	<workflowassignment.getid NAME="workflow_assignments0" VARNAME="assignmentid" />
+</ELSE>
+</IF>
+
+<!-- Decide, based on what is scattered here, exactly what the action is.  There are three
+	potential actions we need to distinguish:
+	(1) Finish
+	(2) Delegate
+	(3) Abstain
+	Of course, Delegate and Abstain are not always permitted for a given workflow step etc.,
+	so we don't always have a chance of getting to those.
+-->
+
+<!-- We key off the existence of the action comment to decide if we are done requesting info or not -->
+<setvar NAME="cs_datacomplete" VALUE="false"/>
+<if COND="Variables.finish:Action:SET=true">
+<then>
+	<!-- Action was chosen, see if the rest has been chosen too -->
+	<if COND="Variables.finish:Action=finish">
+	<then>
+		<IF COND="Variables.finish:ActionToTake:SET=true">
+		<THEN>
+			<!-- actually finish the assignment -->
+			<CALLELEMENT NAME="OpenMarket/CSClient/DoFinish"/>
+			<setvar NAME="cs_datacomplete" VALUE="true"/>
+		</THEN>
+		</IF>
+	</then>
+	</if>
+	
+	<if COND="Variables.finish:Action=abstain">
+	<then>
+		<IF COND="Variables.finish:ActionToTake:SET=true">
+		<THEN>
+			<!-- Perform the delegation -->
+			<CALLELEMENT NAME="OpenMarket/CSClient/DoAbstain"/>
+			<setvar NAME="cs_datacomplete" VALUE="true"/>
+		</THEN>
+		</IF>
+	</then>
+	</if>
+	
+	<if COND="Variables.finish:Action=delegate">
+	<then>
+		<IF COND="Variables.finish:ActionToTake:SET=true">
+		<THEN>
+			<!-- Perform the delegation -->
+			<CALLELEMENT NAME="OpenMarket/CSClient/DoDelegate"/>
+			<setvar NAME="cs_datacomplete" VALUE="true"/>
+		</THEN>
+		</IF>
+	</then>
+	</if>
+
+</then>
+</if>
+
+<if COND="Variables.cs_datacomplete=false">
+<then>
+	<workflowengine.getassignmentid OBJVARNAME="assignment" ID="Variables.assignmentid" />
+	<workflowassignment.getassigneduserrole NAME="assignment" VARNAME="assignrole"/>
+	<workflowassignment.getstatus NAME="assignment" VARNAME="status" />
+	<if cond="Variables.status!=active">
+	<then>
+		<if cond="Variables.status=queued">
+		<then>
+			<xlat.lookup KEY="dvin/UI/ReVoteMyAssignmentForAsset" VARNAME="_XLAT_"/>
+			<setvar NAME="titletext" value="Variables._XLAT_" />
+			<xlat.lookup KEY="dvin/UI/AssignmentAlreadyVoted" VARNAME="_XLAT_"/>
+			<setvar NAME="message" value="Variables._XLAT_" />
+			<workflowassignment.getqueuedworkflowstepid NAME="assignment" VARNAME="queuedstepid" />
+		</then>
+		<else>
+			<xlat.lookup KEY="dvin/UI/VoteMyAssignmentForAsset" VARNAME="_XLAT_"/>
+			<setvar NAME="titletext" value="Variables._XLAT_" />
+			<xlat.lookup KEY="dvin/UI/YouAbstainedFromVoting" VARNAME="_XLAT_"/>
+			<setvar NAME="message" value="Variables._XLAT_" />
+			<setvar NAME="queuedstepid" value="Variables.empty" />
+		</else>
+		</if>
+		<!--callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="msgtext" value="Variables.message"/>
+			<argument NAME="severity" value="info"/>
+		</callelement-->
+	</then>
+	<else>
+		<xlat.lookup KEY="dvin/UI/FinishMyAssignmentForAsset" VARNAME="_XLAT_"/>
+		<setvar NAME="titletext" value="Variables._XLAT_" />
+		<setvar NAME="queuedstepid" value="Variables.empty" />
+	</else>
+	</if>
+    
+	<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+		<REQUIREDINFORMATION TITLE="Variables.titletext" REPLACEALL="Variables.titletext">
+
+			<workflowengine.getobjectworkflowprocess OBJECT="workflowasset" VARNAME="workflowid" />
+			<workflowengine.getprocessid ID="Variables.workflowid" OBJVARNAME="workflowobj" />
+			<workflowprocess.getprocessname NAME="workflowobj" VARNAME="workflowname" />
+			<workflowassignment.getstateid NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+			<workflowengine.getstateid ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+			<workflowstate.getstatedescription NAME="workflow_state" VARNAME="statedesc" />
+		    
+			<!-- determine if user is workflowadmin -->
+		    
+			<PUBLICATION.LOAD NAME="site" OBJECTID="Variables.primarypubid"/>
+			<PUBLICATION.GET NAME="site" FIELD="name" OUTPUT="cs_SiteName"/>
+			<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+			<USERMANAGER.GETLOGINUSER VARNAME="userid"/>
+			<callelement NAME="Variables.propmanageuserpub">
+				<argument NAME="upcommand" VALUE="GetACLs"/>
+				<argument NAME="username" VALUE="Variables.userid"/>
+				<argument NAME="publication" VALUE="Variables.cs_SiteName"/>
+				<argument NAME="aclname" VALUE="cs_pubacls"/>
+				<argument NAME="forceACLFetch" VALUE="true"/>
+			</callelement>
+			<setvar NAME="userisworkflowadmin" value="false"/>
+			<workflowprocess.getadminroles NAME="workflowobj" OBJVARNAME="adminrolesobj"/>
+			<rolelist.isall NAME="adminrolesobj" VARNAME="roleisall"/>
+			<!-- roleisall=true means Any role -->
+			<if cond="Variables.roleisall=true">
+			<then>
+				<setvar NAME="userisworkflowadmin" value="true"/>
+			</then>
+			<else>
+				<rolelist.getall NAME="adminrolesobj" VARNAME="admnroles"/>
+				<if cond="Variables.admnroles!=Variables.empty">
+				<then>
+					<stringlist NAME="rlist" str="Variables.admnroles" delim=","/>
+					<loop list="rlist">
+						<setvar NAME="errno" value="0"/>
+						<isinlist str="Variables.cs_pubacls" item="rlist.ITEM"/>
+						<if cond="Variables.errno=1">
+						<then>
+							<setvar NAME="userisworkflowadmin" value="true"/>
+						</then>
+						</if>
+					</loop>
+				</then>
+				</if>
+			</else>
+			</if>
+			
+			<xlat.lookup KEY="dvin/Common/WorkflowProcess" VARNAME="_XLAT_"/>
+		    
+			<!-- Display the workflow process and the state -->
+			<REQUIREDVALUE NAME="WorkflowProcess" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="true" READONLY="true" DEFAULTVALUE="Variables.workflowname - Variables.statedesc" REPLACEALL="Variables._XLAT_,Variables.workflowname,Variables.statedesc"/>
+		    
+
+			<!-- All actions require an assignment to be chosen -->
+			<setvar NAME="cs_AssignmentChosen" VALUE="false"/>
+			<if cond="Variables.workflow_assignmentsTotal=1" >
+			<then>
+				<!-- Only one assignment -->
+				<workflowassignment.getid NAME="workflow_assignments0" VARNAME="cur_assignid" />
+				<xlat.lookup KEY="dvin/UI/AssignedUserRole" VARNAME="_XLAT_"/>
+				<REQUIREDVALUE NAME="AssignmentID" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+					<OPTIONS>
+						<if cond="IsVariable.assignrole=true" >
+						<then>
+							<SETVAR NAME="currentValue" VALUE="Variables.assignrole"/>
+						</then>
+						<else>
+							<xlat.lookup KEY="dvin/Common/Unknown" VARNAME="currentValue"/>
+							<SETVAR NAME="currentValue" VALUE="(Variables.currentValue)"/>
+						</else>
+						</if>
+						<OPTION VALUE="Variables.cur_assignid" SELECTED="true" DISPLAYVALUE="Variables.currentValue" REPLACEALL="Variables.currentValue,Variables.cur_assignid"/>
+					</OPTIONS>
+				</REQUIREDVALUE>
+				<SETVAR NAME="cs_AssignmentChosen" VALUE="true"/>
+			</then>
+			<else>
+				<!-- Multiple assignments apply -->
+				<!-- If the assignment ID is already set, show the steps; otherwise we have to pick which assignment it is first -->
+				<IF COND="Variables.finish:AssignmentID:SET=true">
+				<THEN>
+					<xlat.lookup KEY="dvin/UI/AssignedUserRole" VARNAME="_XLAT_"/>
+					<SETVAR NAME="cs_AssignmentChosen" VALUE="true"/>
+				</THEN>
+				<ELSE>
+					<XLAT.LOOKUP KEY="dvin/UI/PickaUserRole" VARNAME="_XLAT_"/>
+				</ELSE>
+				</IF>
+				<REQUIREDVALUE NAME="AssignmentID" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+					<OPTIONS>
+						<setcounter NAME="count" value="0"/>
+						<loop count="Variables.workflow_assignmentsTotal">
+							<workflowassignment.getassigneduserrole NAME="workflow_assignmentsCounters.count" VARNAME="cur_assignrole"/>
+							<workflowassignment.getid NAME="workflow_assignmentsCounters.count" VARNAME="cur_assignid" />
+							<if cond="Variables.assignmentid=Variables.cur_assignid">
+							<then>
+								<OPTION VALUE="Variables.cur_assignid" SELECTED="true" DISPLAYVALUE="Variables.cur_assignrole" REPLACEALL="Variables.cur_assignid,Variables.cur_assignrole"/>
+							</then>
+							<else>
+								<IF COND="Variables.finish:AssignmentID:SET!=true">
+								<THEN>
+									<OPTION VALUE="Variables.cur_assignid" SELECTED="false" DISPLAYVALUE="Variables.cur_assignrole" REPLACEALL="Variables.cur_assignid,Variables.cur_assignrole"/>
+								</THEN>
+								</IF>
+							</else>
+							</if>
+							<inccounter NAME="count" value="1"/>
+						</loop>
+					</OPTIONS>
+				</REQUIREDVALUE>
+					
+			</else>
+			</if>
+
+			<!-- Choose what we want to do based on the action chosen -->
+			<IF COND="Variables.cs_AssignmentChosen=true">
+			<THEN>
+
+			
+				<!-- The next thing to display is the choice of action.  So let's figure out whether this user can delegate or abstain at this point. -->
+				
+				<SETCOUNTER NAME="actioncounter" VALUE="1"/>
+				
+				<!-- Assess ability to abstain first -->
+				<setvar NAME="abstainallowed" VALUE="false"/>
+				<workflowengine.isfunctionlegal SITE="Variables.primarypubid" OBJECT="workflowasset" FUNCTIONNAME="abstainfromvoting" VARNAME="result"/>
+				<if COND="IsError.Variables.errno=false">
+				<then>
+					<if COND="Variables.result=true">
+					<then>
+						<!-- Abstain is allowed; now confirm that it is possible -->
+						<workflowengine.getfilteredassignments SITE="Variables.primarypubid" OBJECT="workflowasset" STATUS="active,queued"  PREFIX="abstain_assignments"/>
+						<if COND="IsError.Variables.errno=false">
+						<then>
+							<CALCULATOR.GO VALUE="Variables.abstain_assignmentsTotal 2 GTE" VARNAME="result"/>
+							<if COND="Variables.result=1">
+							<then>
+								<!-- Okay, passed all checks, add abstain to the list -->
+								<setvar NAME="abstainallowed" VALUE="true"/>
+								<INCCOUNTER NAME="actioncounter" VALUE="1"/>
+							</then>
+							</if>
+						</then>
+						</if>
+					</then>
+					</if>
+				</then>
+				</if>
+				
+				<!-- Now, calculate ability to delegate -->
+				<setvar NAME="delegateallowed" VALUE="false"/>
+				<workflowengine.isfunctionlegal SITE="Variables.primarypubid" OBJECT="workflowasset" FUNCTIONNAME="delegate" VARNAME="result"/>
+				<if COND="IsError.Variables.errno=false">
+				<then>
+					<if COND="Variables.result=true">
+					<then>
+						<!-- Delegation is allowed -->
+						<!-- See if delegation is possible, though -->
+						<WORKFLOWENGINE.GetDelegateeCandidates SITE="Variables.primarypubid" ID="Variables.assignmentid" LISTVARNAME="delegatees" />
+						<if COND="IsList.delegatees=true">
+						<then>
+							<if COND="delegatees.#numRows!=0">
+							<then>
+								<setvar NAME="delegateallowed" VALUE="true"/>
+								<INCCOUNTER NAME="actioncounter" VALUE="1"/>
+							</then>
+							</if>
+						</then>
+						</if>
+					</then>
+					</if>
+				</then>
+				</if>
+
+				<!-- The UI flow here is a bit tricky; the constraints are as follows:
+					(1) For delegate, you need an assignment id, an optional comment, and a delegatee chosen from the list of candidate
+					     delegatees.
+					(2) For abstain, you need an assignment id and an optional comment.
+					(3) For finish, you need an assignment id, an optional action taken, an optional action to take, a step to take,
+					     and perhaps a choice of assignees.
+					Since the requirements are rather different, if there's any choice available to the user, we ask about the action first,
+					and proceed from there.
+				-->
+				
+				<!-- If there is only one action kind, we know what it is -->
+				<setvar NAME="cs_ShowActionData" VALUE="false"/>
+				<if COND="Counters.actioncounter=1">
+				<then>
+					<!-- It must be "finish", so display it that way -->
+					<xlat.lookup KEY="dvin/UI/Action" VARNAME="_XLAT_"/>
+					<REQUIREDVALUE NAME="Action" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" READONLY="true" REPLACEALL="Variables._XLAT_">
+						<OPTIONS>
+							<xlat.lookup KEY="dvin/UI/FinishAction" VARNAME="_XLAT_"/>
+							<OPTION VALUE="finish" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+						</OPTIONS>
+					</REQUIREDVALUE>
+					<setvar NAME="cs_ShowActionData" VALUE="true"/>
+					<setvar NAME="cs_action" VALUE="finish"/>
+				</then>
+				<else>
+					<!-- Multiple action choices apply -->
+					<xlat.lookup KEY="dvin/Common/WorkflowAction" VARNAME="_XLAT_"/>
+
+					<!-- If the choice has been made, go with it, otherwise display a selection -->
+					<if COND="Variables.finish:Action:SET=true">
+					<then>
+						<!-- Choice has been made; display it as readonly -->
+						<REQUIREDVALUE NAME="Action" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" READONLY="true" REPLACEALL="Variables._XLAT_">
+							<OPTIONS>
+								<if COND="Variables.finish:Action=finish">
+								<then>
+									<xlat.lookup KEY="dvin/Common/CompleteAssignment" VARNAME="_XLAT_"/>
+									<OPTION VALUE="finish" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								</then>
+								</if>
+								<if COND="Variables.finish:Action=abstain">
+								<then>
+									<xlat.lookup KEY="dvin/Common/AbstainFromVoting" VARNAME="_XLAT_"/>
+									<OPTION VALUE="abstain" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								</then>
+								</if>
+								<if COND="Variables.finish:Action=delegate">
+								<then>
+									<xlat.lookup KEY="dvin/Common/DelegateAssignment" VARNAME="_XLAT_"/>
+									<OPTION VALUE="delegate" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								</then>
+								</if>
+							</OPTIONS>
+						</REQUIREDVALUE>
+						<setvar NAME="cs_ShowActionData" VALUE="true"/>
+						<setvar NAME="cs_action" VALUE="Variables.finish:Action"/>
+					</then>
+					<else>
+						<!-- Choice has NOT been made; enumerate the actions -->
+						<REQUIREDVALUE NAME="Action" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+							<OPTIONS>
+								<xlat.lookup KEY="dvin/Common/CompleteAssignment" VARNAME="_XLAT_"/>
+								<OPTION VALUE="finish" SELECTED="false" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								<if COND="Variables.abstainallowed=true">
+								<then>
+									<xlat.lookup KEY="dvin/Common/AbstainFromVoting" VARNAME="_XLAT_"/>
+									<OPTION VALUE="abstain" SELECTED="false" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								</then>
+								</if>
+								<if COND="Variables.delegateallowed=true">
+								<then>
+									<xlat.lookup KEY="dvin/Common/DelegateAssignment" VARNAME="_XLAT_"/>
+									<OPTION VALUE="delegate" SELECTED="false" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+								</then>
+								</if>
+							</OPTIONS>
+						</REQUIREDVALUE>
+					</else>
+					</if>
+				</else>
+				</if>
+
+				<!-- The next part depends on the action -->
+				<if COND="Variables.cs_ShowActionData=true">
+				<then>
+
+					<if COND="Variables.cs_action=finish">
+					<then>
+				
+						<!-- Finish assignment -->
+						<if cond="IsVariable.assignrole=true">
+						<then>
+							<workflowengine.getlegalnextworkflowsteps OBJECT="workflowasset" ROLE="Variables.assignrole" SITE="Variables.primarypubid" PREFIX="nextsteps" />
+						</then>
+						<else>
+							<workflowengine.getlegalnextworkflowsteps OBJECT="workflowasset" SITE="Variables.primarypubid" PREFIX="nextsteps" />
+						</else>
+						</if>
+
+						<IF COND="Variables.finish:ChooseStep:SET=true">
+						<THEN>
+							<STRINGLIST NAME="lSplitIDs" STR="Variables.finish:ChooseStep" DELIM=","/>
+							<SETROW LIST="lSplitIDs" ACTION="LAST"/>
+							<SETVAR NAME="chosenstepid" VALUE="lSplitIDs.ITEM"/>
+						</THEN>
+						</IF>
+						
+						<!-- chosenstepid is the id of the step chosen if more than one steps are possible from a state 
+						      See next comment. This variable is set while reposting the page -->
+						<setvar NAME="stepdeadlinetype" value="default" />
+						<if cond="IsVariable.chosenstepid!=true">
+						<then>
+							<setvar NAME="chosenstepid" value="Variables.empty"/>
+							<if cond="Variables.queuedstepid!=Variables.empty">
+							<then>
+								<workflowengine.getstepid ID="Variables.queuedstepid" OBJVARNAME="queuedstepobj" />
+								<workflowstep.getdeadlinetype NAME="queuedstepobj" VARNAME="stepdeadlinetype"/>
+								<WorkflowStep.GetStepType NAME="queuedstepobj" VARNAME="steptype" />
+							</then>
+							</if>
+						</then>
+						<else>
+							<workflowengine.getstepid ID="Variables.chosenstepid" OBJVARNAME="chosenstepobj" />
+							<workflowstep.getdeadlinetype NAME="chosenstepobj" VARNAME="stepdeadlinetype"/>
+							<WorkflowStep.GetStepType NAME="chosenstepobj" VARNAME="steptype" />
+						</else>
+						</if>
+					    
+					
+						<if cond="Variables.nextstepsTotal!=0">
+						<then>
+							<XLAT.LOOKUP KEY="dvin/UI/ChooseStepState" VARNAME="_XLAT_"/>
+							<REQUIREDVALUE NAME="ChooseStep" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+								<OPTIONS>
+									<setcounter NAME="stepcount" value="0"/>
+									<loop from="0" count="Variables.nextstepsTotal">
+										<setvar NAME="workflow_route" value="nextstepsCounters.stepcount" />
+										<workflowstep.getid NAME="Variables.workflow_route" VARNAME="stepid" />
+										<workflowstep.getname NAME="Variables.workflow_route" VARNAME="stepname" />
+										<workflowstep.getdeadlinetype NAME="Variables.workflow_route" VARNAME="deadlinetype"/>
+										<workflowstep.getendstate NAME="Variables.workflow_route" VARNAME="targetstate" />
+										<if cond="IsVariable.targetstate=true">
+										<then>
+											<setvar NAME="tablename" value="WorkflowStatusCode" />
+											<execsql list="MyStatusCode" sql="select description from Variables.tablename where ID=Variables.targetstate"/>
+											<setvar NAME="currentDisplay" VALUE="Variables.stepname->MyStatusCode.description"/>
+											<removevar NAME="endstate_deadline" />
+											<workflowengine.getstateid ID="Variables.targetstate" OBJVARNAME="targetobj" />
+											<workflowstate.getestimatedstatetime NAME="targetobj" VARNAME="endstate_deadline" />
+										</then>
+										<else>
+											<xlat.lookup KEY="dvin/UI/nullstate" VARNAME="_XLAT_"/>
+											<setvar NAME="currentDisplay" VALUE="Variables.stepname->(Variables._XLAT_)"/>
+										</else>
+										</if>
+								
+										<if cond="IsVariable.endstate_deadline!=true">
+										<then>
+											<setvar NAME="endstate_deadline" value="-1" />
+										</then>
+										</if>
+							    
+						
+										<!--input TYPE="hidden" NAME="StepCounters.stepcount" value="Variables.endstate_deadline" replaceall="Counters.stepcount,Variables.endstate_deadline" /-->
+						
+										<!-- We need deadlinetype of the next step to be taken.
+											If it is ask, the form can contain the deadline part,
+											if user is workflowadmin, or if not, privs allow.
+											Otherwise, the user should not be given a choice to  set deadline for the step.
+											If a single step is possible from a state it is easy. 
+											For more than one steps possible, from a sate, choosing a step will repost the page
+											if the chosen step has different deadline type with the current step's deadline type.
+										-->
+										<if cond="Variables.nextstepsTotal=1">
+										<then>
+											<OPTION VALUE="Variables.assignmentid,Variables.stepid" SELECTED="true" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.assignmentid,Variables.stepid,Variables.currentDisplay"/>
+											<setvar NAME="chosenstepid" value="Variables.stepid"/>
+											<workflowengine.getstepid ID="Variables.chosenstepid" OBJVARNAME="chosenstepobj" />
+											<workflowstep.getdeadlinetype NAME="chosenstepobj" VARNAME="stepdeadlinetype"/>
+											<WorkflowStep.GetStepType NAME="chosenstepobj" VARNAME="steptype" />
+											<SETVAR NAME="cs_ShowDeadline" VALUE="true"/>
+										</then>
+										<else>
+											<if cond="Variables.chosenstepid=Variables.empty">
+											<then>
+												<if cond="Variables.stepid=Variables.queuedstepid">
+												<then>
+													<OPTION VALUE="Variables.assignmentid,Variables.stepid" SELECTED="true" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.assignmentid,Variables.stepid,Variables.currentDisplay"/>
+												</then>
+												<else>
+													<OPTION VALUE="Variables.assignmentid,Variables.stepid" SELECTED="false" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.assignmentid,Variables.stepid,Variables.currentDisplay"/>
+												</else>
+												</if>
+											</then>
+											<else>
+												<if cond="Variables.stepid=Variables.chosenstepid">
+												<then>
+													<OPTION VALUE="Variables.assignmentid,Variables.stepid" SELECTED="true" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.assignmentid,Variables.stepid,Variables.currentDisplay"/>
+													<SETVAR NAME="cs_ShowDeadline" VALUE="true"/>
+												</then>
+												</if>
+											</else>
+											</if>
+										</else>
+										</if>
+								
+										<inccounter NAME="stepcount" value="1"/>
+									</loop>
+								</OPTIONS>
+							</REQUIREDVALUE>
+						</then>
+						<else>
+							<xlat.lookup KEY="dvin/UI/Accordingworkflowdefnostatechangepossible" VARNAME="_XLAT_"/>
+							<REQUIREDVALUE NAME="NoStateChange" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="true" READONLY="true" DEFAULTVALUE="No State change" REPLACEALL="Variables._XLAT_"/>
+						</else>
+						</if>
+				    
+						<IF COND="Variables.cs_ShowDeadline=true">
+						<THEN>
+							<!-- set deadline presented only if deadlinetype of step is ask. No function privs for this -->
+					
+							<IF COND="Variables.finish:Deadline:SET=true">
+							<THEN>
+								<SETVAR NAME="cs_ShowComments" VALUE="true"/>
+							</THEN>
+							</IF>
+
+							<if cond="Variables.stepdeadlinetype=ask">
+							<then>
+								<XLAT.LOOKUP KEY="dvin/UI/Common/AssignmentDeadline" VARNAME="_XLAT_"/>
+								<REQUIREDVALUE NAME="Deadline" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+									<OPTIONS>
+										<IF COND="Variables.finish:Deadline!=SetDeadline">
+										<THEN>
+											<xlat.lookup KEY="dvin/Common/Usedefault" VARNAME="_XLAT_"/>
+											<OPTION VALUE="UseDefault" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+										</THEN>
+										</IF>
+
+										<xlat.lookup KEY="dvin/UI/Common/SetAssignmentDeadline" VARNAME="_XLAT_"/>
+										<IF COND="Variables.finish:Deadline=SetDeadline">
+										<THEN>
+											<OPTION VALUE="SetDeadline" SELECTED="true" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+										</THEN>
+										<ELSE>
+											<OPTION VALUE="SetDeadline" SELECTED="false" DISPLAYVALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+										</ELSE>
+										</IF>
+									</OPTIONS>
+								</REQUIREDVALUE>
+								<IF COND="Variables.finish:Deadline=SetDeadline">
+								<THEN>
+									<xlat.lookup KEY="dvin/Common/Due" VARNAME="_XLAT_"/>
+									<REQUIREDVALUE NAME="DueDate" DISPLAYNAME="Variables._XLAT_" DATATYPE="Date" REQUIRED="true" READONLY="false"  REPLACEALL="Variables._XLAT_"/>
+								</THEN>
+								</IF>
+							</then>
+							<else>
+								<SETVAR NAME="cs_ShowComments" VALUE="true"/>
+							</else>
+							</if>
+					
+						</THEN>
+						</IF>
+						<IF COND="Variables.cs_ShowComments=true">
+						<THEN>
+
+							<IF COND="Variables.steptype=ask">
+							<THEN>
+								<WORKFLOWENGINE.GetCompleteAssignmentCandidateAssignees SITE="Variables.primarypubid" ID="Variables.assignmentid" NEXTSTEP="Variables.chosenstepid" OBJVARNAME="partsobj" />
+								<callelement name="OpenMarket/CSClient/AskForAssignees"/>
+							</THEN>
+							</IF>
+
+							<xlat.lookup KEY="dvin/Common/ActionTaken" VARNAME="_XLAT_"/>
+							<REQUIREDVALUE NAME="ActionTaken" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="false" READONLY="false"  REPLACEALL="Variables._XLAT_"/>
+					
+							<xlat.lookup KEY="dvin/Common/ActionlctoTake" VARNAME="_XLAT_"/>
+							<REQUIREDVALUE NAME="ActionToTake" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="false" READONLY="false" REPLACEALL="Variables._XLAT_"/>
+						</THEN>
+						</IF>
+					</then>
+					</if>
+					
+					<if COND="Variables.cs_action=abstain">
+					<then>
+						<xlat.lookup KEY="dvin/Common/ActionlctoTake" VARNAME="_XLAT_"/>
+						<REQUIREDVALUE NAME="ActionToTake" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="false" READONLY="false"  REPLACEALL="Variables._XLAT_"/>
+					</then>
+					</if>
+					
+					<if COND="Variables.cs_action=delegate">
+					<then>
+						<xlat.lookup KEY="dvin/Common/DelegationUser" VARNAME="_XLAT_"/>
+						<REQUIREDVALUE NAME="DelegateTo" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+							<OPTIONS>
+								<loop LIST="delegatees">
+									<UserManager.GetDisplayableUserName USER="delegatees.ITEM" VARNAME="uname" />
+									<OPTION VALUE="delegatees.ITEM" SELECTED="false" DISPLAYVALUE="Variables.uname" REPLACEALL="delegatees.ITEM,Variables.uname"/>
+								</loop>
+							</OPTIONS>
+						</REQUIREDVALUE>
+						<xlat.lookup KEY="dvin/Common/ActionlctoTake" VARNAME="_XLAT_"/>
+						<REQUIREDVALUE NAME="ActionToTake" DISPLAYNAME="Variables._XLAT_" DATATYPE="String" REQUIRED="false" READONLY="false"  REPLACEALL="Variables._XLAT_"/>
+					</then>
+					</if>
+				
+				</then>
+				</if>
+					
+			</THEN>
+			</IF>
+				
+		</REQUIREDINFORMATION>
+	</ERROR>
+</then>
+</if>
+
+</ftcs>

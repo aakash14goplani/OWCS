@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/AssetMaker/BuildEditRadioButtonLocalized</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/AssetMaker/BuildEditRadioButtonLocalized</string>
+        <string>Build the edit form radio button fields Localized</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/AssetMaker/BuildEditRadioButtonLocalized.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/AssetMaker/BuildEditRadioButtonLocalized.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FAssetMaker%2FBuildEditRadioButtonLocalized.xml
+@hashval=-2025568677
+key=@ELEMENTCATALOG-OpenMarket/AssetMaker/BuildEditRadioButtonLocalized
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/DeadlockActions/SendEmailToAssignees
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- This is an action element called by step actions SendAssignmentEmail and SendRejectionEmail-->
+
+<XLAT.LOOKUP KEY="dvin/UI/Wf/DeadLockActionSendEmail" VARNAME="displayMsg" />
+<!-- load email object -->
+<EMAILMANAGER.LOAD NAME="Variables.emailname" OBJVARNAME="emailobject"/>
+
+ 
+<!-- get total steps -->
+<if COND="IsVariable.StepTotal=true">
+<then>
+<setvar NAME="NumOfSteps" VALUE="Variables.StepTotal"/>
+</then>
+<else>
+<setvar NAME="NumOfSteps" VALUE="0"/>
+</else>
+</if>
+	
+<removevar NAME="Step"/>
+<setvar NAME="Header" VALUE="The following users have chosen the corresponding steps that has resulted in a deadlock. Please take appropriate actions to resolve deadlock:"/>
+<setvar NAME="Message" VALUE="Variables.empty"/>
+
+<!-- For each assignment object, get asignee -->
+<setcounter NAME="COUNT" VALUE="0"/>
+<if COND="Variables.NumOfSteps!=0">
+<then>
+	<loop FROM="0" COUNT="Variables.NumOfSteps">
+		<!-- get assigner -->
+
+		<setvar NAME="userid" VALUE="Variables.StepUserCounters.COUNT"/>
+		<!-- get email address -->
+		<USERMANAGER.GETUSER USER="Variables.userid" OBJVARNAME="userobj"/>
+		<CCUSER.GETDISPLAYABLENAME NAME="userobj" VARNAME="user_name"/>
+		<CCUSER.GETEMAIL NAME="userobj" VARNAME="EmailAddress"/>
+
+		<WORKFLOWSTEP.GETNAME NAME="StepCounters.COUNT" VARNAME="stepname"/>
+		<WORKFLOWSTEP.GETSTARTSTATE NAME="StepCounters.COUNT" VARNAME="startstate"/>
+		<WORKFLOWSTEP.GETENDSTATE NAME="StepCounters.COUNT" VARNAME="endstate"/>
+
+		<WORKFLOWSTATE.GETSTATENAME NAME="Variables.startstate" VARNAME="startstatename"/>
+		<WORKFLOWSTATE.GETSTATENAME NAME="Variables.endstate" VARNAME="endstatename"/>
+
+
+		<setvar NAME="Message" VALUE="Variables.Message Variables.user_name: Variables.stepname - "/>
+
+		<!-- get asset -->
+		<WORKFLOWABLEOBJECT.GETDISPLAYABLENAME OBJECT="Object" VARNAME="assetname"/>
+		
+		<!-- Create an encoded parameter that holds required parameters in encoded form.  -->
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/DeadlockActions/EncodeUtil">
+					<ARGUMENT NAME="username" VALUE="Variables.user_name"/>
+					<ARGUMENT NAME="header" VALUE="Variables.Header"/>
+					<ARGUMENT NAME="message" VALUE="Variables.Message"/>
+					<ARGUMENT NAME="assetname" VALUE="Variables.assetname"/>
+				</CALLELEMENT>
+
+		<!-- translate subject -->
+		<EMAIL.TRANSLATESUBJECT NAME="emailobject" PARAMS="Variables.params" VARNAME="subject" DECODE="true"/>
+
+		<!-- translate body -->
+		<EMAIL.TRANSLATEBODY NAME="emailobject" PARAMS="Variables.params" VARNAME="body" DECODE="true"/>
+		
+		<!-- send mail -->
+        <MAIL.SEND TO="Variables.EmailAddress" SUBJECT="Variables.subject" BODY="Variables.body" CONTENTTYPE="text/html" />
+	<inccounter NAME="COUNT" VALUE="1"/>
+	</loop>
+</then>
+</if>
+<XLAT.LOOKUP KEY="dvin/UI/Wf/emailmessageHeaderMessage" VARNAME="mainMsg"/>
+<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.mainMsg" />
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<ARGUMENT NAME="severity" VALUE="info"/>
+		<ARGUMENT NAME="msgtext" VALUE="Variables.displayMsg"/>
+	</CALLELEMENT>
+</FTCS> 

@@ -1,0 +1,699 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/> 
+<STRING.ENCODE VARIABLE="ThisPage" VARNAME="ThisPage"/> 
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/> 
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/> 
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/> 
+
+<IF COND="IsVariable.id!=true">
+<THEN>
+<SETVAR NAME="id" VALUE="Variables.groupid" />
+</THEN>
+</IF>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/WorkflowGroupParticipantScript"/>
+<!-- Hidden variables so we repost to the same page with the same workflow group, regardless -->
+<INPUT TYPE="HIDDEN" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/Variables.ThisPage" REPLACEALL="Variables.ThisPage"/>
+
+<!-- load and scatter the group -->
+<WORKFLOWENGINE.GETGROUPID ID="Variables.id" OBJVARNAME="group"/>
+<WORKFLOWGROUP.SCATTER PREFIX="wfg:" NAME="group"/>
+<setvar NAME="name" VALUE="Variables.wfg:name"/>
+<substitute STR="Variables.wfg:editrolesroles" WHAT="," WITH=";" OUTSTR="editroles"/>
+<substitute STR="Variables.wfg:deleterolesroles" WHAT="," WITH=";" OUTSTR="removeroles"/>
+<if COND="Variables.wfg:groupactionsactionTotal!=0">
+<then>
+	<setvar NAME="grpactions" VALUE="Variables.empty"/>
+	<setcounter NAME="DLGACTIONS" VALUE="0"/>
+	<loop FROM="0" COUNT="Variables.wfg:groupactionsactionTotal">
+		<setvar NAME="tmp" VALUE="Variables.wfg:groupactionsactionCounters.DLGACTIONS"/>
+		<setvar NAME="grpactions" VALUE="Variables.grpactions;Variables.tmp"/>
+		<inccounter NAME="DLGACTIONS" VALUE="1"/>
+	</loop>
+</then>
+</if>
+<substring STR="Variables.grpactions" OUTSTR="grpactions" INDEX="1"/>
+
+<!-- check privs for edit, delete -->
+<WORKFLOWENGINE.CANDELETEGROUP SITE="SessionVariables.pubid" ID="Variables.wfg:id" VARNAME="canedit"/>
+
+<table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">  
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/WorkflowGroup"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.wfg:name"/></span>
+	</td></tr>
+	
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+
+	<!-- workflow group action bar -->
+	<!--
+		- The Action bar should not be visible for Workflow screens inside UC1 Forms
+	-->
+	<IF COND="Variables.cs_environment!=ucform">
+	<THEN>
+	<tr>
+		<td class="form-label-text" colspan="3">
+			<table border="0" cellpadding="0" cellspacing="0" class="legacyAbar">
+				<tr>
+					<td>
+						<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_"/>
+						<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="mouseover" ESCAPE="true"/>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront" outstring="urlwfgrpdetfront">
+							<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+							<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+							<satellite.argument name="id" value="Variables.id"/>
+						</SATELLITE.LINK>
+						<A HREF="Variables.urlwfgrpdetfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwfgrpdetfront,Variables.mouseover"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContentUp.gif" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+					</td>
+					<td>
+						<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+						<A HREF="Variables.urlwfgrpdetfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlwfgrpdetfront,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Inspect"/></span></A>
+					</td>
+
+
+					<if COND="Variables.canedit=true">
+					<then>
+						<WORKFLOWENGINE.GETGROUPMEMBERS GROUPID="Variables.id" PREFIX="GroupItems"/>
+						<SETVAR NAME="isGroupActive" VALUE="false"/>
+						<IF COND="Variables.GroupItemsTotal!=0">
+						<THEN>
+							<setcounter name="count" value="0"/>
+							<LOOP FROM="0" COUNT="Variables.GroupItemsTotal">
+								<WorkflowEngine.IsObjectAssignedToGroup OBJECT="GroupItemsCounters.count" VARNAME="isAssigned"/>
+								<IF COND="Variables.isAssigned=true">
+								<THEN>
+									<SETVAR NAME="isGroupActive" VALUE="true"/>
+								</THEN>
+								</IF>
+								<INCCounter Name="count" Value="1"/>
+							</LOOP>
+						</THEN>
+						</IF>
+
+						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<!-- Active Group Cannot be edited -->
+						<IF COND="Variables.isGroupActive=true">
+						<THEN>
+							<XLAT.LOOKUP KEY="dvin/UI/GroupContainsActiveItems" VARNAME="_XLAT_"/>
+							<td><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></td>
+							<td><span class="action-text" ><XLAT.STREAM KEY="dvin/Common/Edit"/></span></td>
+						</THEN>
+						<ELSE>
+							<td>
+								<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_"/>
+								<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="mouseover" ESCAPE="true"/>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/EditWorkflowGroupFront" outstring="urleditwfgrpfront">
+									<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+									<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+									<satellite.argument name="id" value="Variables.id"/>
+									<satellite.argument name="action" value="update"/>
+								</SATELLITE.LINK>
+								<A HREF="Variables.urleditwfgrpfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urleditwfgrpfront,Variables.mouseover"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentUp.gif"  border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+							</td>
+							<td>
+								<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+								<A HREF="Variables.urleditwfgrpfront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.id,Variables.name,Variables.editroles,Variables.removeroles,Variables.grpactions,Variables.urleditwfgrpfront,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Edit"/></span></A>
+							</td>
+						</ELSE>
+						</IF>
+
+						<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+						<IF COND="Variables.GroupItemsTotal=0">
+						<THEN>
+							<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_"/>
+							<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="mouseover" ESCAPE="true"/>
+							<td>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DeleteGroupFront" outstring="urldelgrpfront">
+									<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+									<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+									<satellite.argument name="id" value="Variables.id"/>
+								</SATELLITE.LINK>
+								<A HREF="Variables.urldelgrpfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.id,Variables.name,Variables.urldelgrpfront,Variables.mouseover"><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentUp.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+							</td>
+							<td>
+								<A HREF="Variables.urldelgrpfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.id,Variables.name,Variables.urldelgrpfront,Variables.mouseover"><span class="action-text" ><XLAT.STREAM KEY="dvin/Common/Delete"/></span></A>
+							</td>
+						</THEN>
+						<ELSE>
+							<XLAT.LOOKUP KEY="dvin/UI/GroupMustBeEmptyToDelete" VARNAME="_XLAT_"/>     
+							<td><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentX.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></td>
+							<td><span class="action-text" ><XLAT.STREAM KEY="dvin/Common/Delete"/></span></td>
+						</ELSE>
+						</IF>
+					</then>
+					</if>
+					<SETVAR NAME="tablename" VALUE="WorkflowGroups"/>
+					<SETVAR NAME="select" VALUE="Select WorkflowGroups.id, WorkflowGroups.name from WorkflowGroups, WorkflowGroups_Sites "/>
+					<SQLEXP OUTSTR="clause" TYPE="AND" VERB="%3c" STR="Variables.name" COLNAME="name"/>
+					<SETVAR NAME="clause" VALUE="Variables.clause AND pubid = SessionVariables.pubid AND WorkflowGroups_Sites.ownerid = WorkflowGroups.id" />
+					<EXECSQL LIST="prevGroup" SQL="Variables.select WHERE Variables.clause ORDER BY lower(name) DESC" TABLE="WorkflowGroups,WorkflowGroups_Sites"/>
+
+					<SQLEXP OUTSTR="clause" TYPE="AND" VERB="%3e" STR="Variables.name" COLNAME="name"/>
+					<SETVAR NAME="clause" VALUE="Variables.clause AND pubid = SessionVariables.pubid AND WorkflowGroups_Sites.ownerid = WorkflowGroups.id" />
+					<EXECSQL LIST="nextGroup" SQL="Variables.select WHERE Variables.clause ORDER BY lower(name)" TABLE="WorkflowGroups,WorkflowGroups_Sites"/>
+					<td ALIGN="RIGHT" WIDTH="100%">
+						<TABLE ALIGN="RIGHT">
+							<TR>
+								<TD>
+									<IF COND="IsList.prevGroup=true">
+									<THEN>
+										<IF COND="prevGroup.#numRows!=0">
+										<THEN>
+											<XLAT.LOOKUP KEY="dvin/UI/PreviousWorkflowGroup" VARNAME="_TITLE_"/>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront" outstring="urlwfgrpdetfront">
+												<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="action" value="contents"/>
+												<satellite.argument name="id" value="prevGroup.id"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.urlwfgrpdetfront" TITLE="Variables._TITLE_" REPLACEALL="Variables.urlwfgrpdetfront,Variables._TITLE_"><IMG src="Variables.cs_imagedir/graphics/common/icon/leftArrow.gif" HEIGHT="12" WIDTH="11" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="prevGroup.name"/></A>
+										</THEN>
+										</IF>
+									</THEN>
+									</IF>
+								</TD>
+								<TD>
+									<IF COND="IsList.nextGroup=true">
+									<THEN>
+										<IF COND="nextGroup.#numRows!=0">
+										<THEN>
+											<XLAT.LOOKUP KEY="dvin/UI/NextWorkflowGroup" VARNAME="_TITLE_"/>
+											<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront" outstring="urlwfgrpdetfront">
+												<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+												<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+												<satellite.argument name="action" value="contents"/>
+												<satellite.argument name="id" value="nextGroup.id"/>
+											</SATELLITE.LINK>
+											<A HREF="Variables.urlwfgrpdetfront" TITLE="Variables._TITLE_" REPLACEALL="Variables.urlwfgrpdetfront,Variables._TITLE_"><STRING.STREAM VALUE="nextGroup.name"/><IMG src="Variables.cs_imagedir/graphics/common/icon/rightArrow.gif" HEIGHT="12" WIDTH="11" BORDER="0" REPLACEALL="Variables.cs_imagedir"/></A>
+										</THEN>
+										<ELSE>
+											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+										</ELSE>
+										</IF>
+									</THEN>
+									</IF>
+								</TD>
+							</TR>
+						</TABLE>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</THEN>
+	</IF>
+	<!-- Group name. description -->
+	<tr>
+		<td>
+			<table border="0" cellpadding="0" cellspacing="0">
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar">
+					<argument NAME="SpaceAbove" VALUE="No"/>
+				</callelement>-->
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</td>
+					<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td class="form-inset" WIDTH="100%"><STRING.STREAM VALUE="Variables.wfg:name"/></td>
+				</tr>
+
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Description"/>:</td>
+					<td></td>
+					<td class="form-inset"><STRING.STREAM VALUE="Variables.wfg:description"/></td>
+				</tr>
+
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+					<td></td>
+					<td class="form-inset"><STRING.STREAM VALUE="Variables.wfg:id"/></td>
+				</tr>
+				<IF COND="Variables.action!=contents">
+				<THEN>
+					<SUBSTITUTE STR="Variables.wfg:editrolesroles" OUTSTR="editroles" WHAT="," WITH=", "/>
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+	     
+					<WORKFLOWENGINE.GETPROCESSID ID="Variables.wfg:process" OBJVARNAME="processObject"/>
+					<WORKFLOWPROCESS.GETPROCESSNAME NAME="processObject" VARNAME="processName"/>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:</td>
+						<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						<td class="form-inset"><STRING.STREAM VALUE="Variables.processName"/></td>
+					</tr>
+
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Participants"/>:</td>
+						<td></td>
+						<td class="form-inset">
+							<if COND="Variables.wfg:participantsroleTotal!=0">
+							<then>
+								<setcounter NAME="RCOUNT" VALUE="0"/>
+								<SETVAR NAME="allRoles" VALUE="Variables.empty"/>
+								<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+									<tr>
+										<td></td>
+										<td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+									</tr>
+									<tr>
+										<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+										<td>
+											<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="6" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+												<tr>
+													<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+													<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Role"/></DIV></td>
+													<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Users"/></DIV></td>
+													<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												</tr>
+												<tr>
+													<td colspan="6" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+												</tr>
+												<!-- Loop over all search results. -->
+												<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+												<SETVAR NAME="separatorLine" VALUE="0"/>
+
+												<loop FROM="0" COUNT="Variables.wfg:participantsroleTotal">
+													<IF COND="Variables.separatorLine=1">
+													<THEN>
+														<tr>
+															<!--<td colspan="6" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+														</tr>
+													</THEN>
+													</IF>
+													<SETVAR NAME="separatorLine" VALUE="1"/>
+													<SETVAR NAME="currentRole" VALUE="Variables.wfg:participantsroleCounters.RCOUNT"/>
+													<IF COND="Variables.allRoles=Variables.empty">
+													<THEN>
+														<SETVAR NAME="allRoles" VALUE="Variables.currentRole"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="allRoles" VALUE="Variables.allRoles,Variables.currentRole"/>
+													</ELSE>
+													</IF>
+													<setcounter NAME="UCOUNT" VALUE="0"/>
+													<SETVAR NAME="currentUsers" VALUE="Variables.empty"/>
+													<SETVAR NAME="numUsers" VALUE="Variables.wfg:participantsroleCounters.RCOUNTuserTotal"/>
+													<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+														<td><BR/></td>
+														<td><BR/></td>
+														<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+															<DIV class="small-text-inset">
+																<STRING.STREAM VALUE="Variables.wfg:participantsroleCounters.RCOUNT:"/>
+															</DIV>
+														</td>
+														<td><BR/></td>
+														<td VALIGN="TOP" ALIGN="LEFT">
+															<DIV class="small-text-inset">
+                        <XLAT.LOOKUP KEY="dvin/UI/ShowSelectedUsers" VARNAME="_XLAT_"/><STRING.ENCODE VARIABLE="currentRole" VARNAME="currentRole" />
+						<STRING.ENCODE VARIABLE="currentRole" VARNAME="currentRole" />
+                        <span id="linkVariables.currentRole" REPLACEALL="Variables.currentRole">
+                            <A HREF="javascript:showUsers('Variables.currentRole','linkVariables.currentRole');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;"
+                               REPLACEALL="Variables.currentRole,Variables._XLAT_"><STRING.STREAM VALUE="Variables._XLAT_"/></A>
+                        </span>
+																<loop COUNT="Variables.numUsers">
+																	<setvar NAME="tmp" VALUE="Variables.wfg:participantsroleCounters.RCOUNTuserCounters.UCOUNT"/>
+																	<STRING.ENCODE VARIABLE="tmp" VARNAME="tmp" />
+																	<INPUT TYPE="hidden" NAME="Variables.currentRole" VALUE="Variables.tmp" REPLACEALL="Variables.currentRole,Variables.tmp"/>
+																	<inccounter NAME="UCOUNT" VALUE="1"/>
+																</loop>
+																
+															</DIV>
+														</td>
+														<td><BR/></td>
+													</tr>
+													<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+													</IF>
+													<inccounter NAME="RCOUNT" VALUE="1"/>
+												</loop>
+											</table>
+										</td>
+										<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR/></td>
+									</tr>
+									<tr>
+										<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										<td></td>
+									</tr>
+								</table> 
+								<INPUT TYPE="hidden" NAME="allRoles" VALUE="Variables.allRoles" REPLACEALL="Variables.allRoles"/>
+							</then>
+							<else>
+								&nbsp;
+							</else>
+							</if>
+						</td>
+					</tr>
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Common/ProcessDeadline"/>:</td>
+						<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						<td class="form-inset">
+							<WORKFLOWENGINE.GETGROUPNAME OBJVARNAME="groupobj" NAME="Variables.name"/>
+							<WorkflowGroup.GetAbsDeadline NAME="groupobj" VARNAME="ProcessDeadline"/>
+
+							<if COND="Variables.ProcessDeadline!=0">
+							<then>
+								<setvar NAME="IsProcessDeadline" VALUE="true"/>
+								&nbsp;<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.ProcessDeadline" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+								<STRING.STREAM VALUE="Variables.formatteddateFullVersion"/><br/>
+
+							</then>
+							<else>
+								&nbsp;-
+							</else>
+							</if>
+						</td>
+					</tr>    
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+					<IF cond= "Variables.wfg:editrolesroles=_ALL_">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/UI/ALL" VARNAME="editroles"/>
+					</THEN>
+					</IF>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+	       
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Rolestoaddremoveassets" ENCODE="false"/>:</td>
+						<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						<td class="form-inset"><STRING.STREAM VALUE="Variables.editroles"/></td>
+					</tr>
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+					<IF cond= "Variables.wfg:deleterolesroles=_ALL_">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/UI/ALL" VARNAME="deleteroles"/>
+					</THEN>
+					<ELSE>
+					<SUBSTITUTE STR="Variables.wfg:deleterolesroles" OUTSTR="deleteroles" WHAT="," WITH=", "/>
+					</ELSE>
+					</IF>
+					
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Rolestoeditdeletegroup" ENCODE="false"/>:</td>
+						<td></td>
+						<td class="form-inset"><STRING.STREAM VALUE="Variables.deleteroles"/></td>
+					</tr>
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+					<setvar NAME="groupactions" VALUE="Variables.empty" />
+					<setvar NAME="tablename" VALUE="WorkflowGrpActions"/>
+					<if COND="IsVariable.wfg:groupactionsactionTotal=true">
+					<then>
+						<if COND="Variables.wfg:groupactionsactionTotal!=0">
+						<then>
+							<setcounter NAME="DLGACTIONS" VALUE="0"/>
+							<loop FROM="0" COUNT="Variables.wfg:groupactionsactionTotal">
+								<setvar NAME="tmp" VALUE="Variables.wfg:groupactionsactionCounters.DLGACTIONS"/>
+								<WORKFLOWENGINE.GETGROUPACTIONID ID="Variables.tmp" OBJVARNAME="groupactionObject"/>
+								<WORKFLOWACTION.GETNAME NAME="groupactionObject" VARNAME="actionName"/>
+								<if COND="Variables.groupactions=Variables.empty">
+								<then>
+									<setvar NAME="groupactions" VALUE="Variables.actionName"/>
+								</then>
+								<else>
+									<setvar NAME="groupactions" VALUE="Variables.groupactions, Variables.actionName"/>
+								</else>
+								</if>
+								<inccounter NAME="DLGACTIONS" VALUE="1"/>
+							</loop>
+						</then>
+						</if>
+					</then>
+					</if>
+
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/GroupDeadlockActions"/>:</td>
+						<td></td>
+						<td class="form-inset"><STRING.STREAM VALUE="Variables.groupactions"/></td>
+					</tr> 
+				</THEN>
+				<ELSE>
+					<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+					<INPUT TYPE="HIDDEN" NAME="action" VALUE="Variables.action" REPLACEALL="Variables.action"/>
+				</ELSE>
+				</IF>
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/GroupContents"/>:</td>
+					<td></td>
+					<td class="form-inset">
+						<setvar NAME="TileText" VALUE="The workflow group Variables.wfg:name contains"/>
+						<XLAT.LOOKUP KEY="dvin/UI/WorkflowGroupEmpty" VARNAME="NoTileText"/>
+
+						<setvar NAME="errno" VALUE="0"/>
+						<setvar NAME="groupid" VALUE="Variables.wfg:id"/>
+
+						<setvar NAME="ResultLimit" VALUE="10000"/>
+						<setvar NAME="report_assets" VALUE="all"/>
+
+						<WORKFLOWENGINE.GETGROUPMEMBERS PREFIX="allAssignments:" GROUPID="Variables.groupid"/>
+						<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/TileGroupMembers">
+							<argument NAME="showSelect" VALUE="false"/>
+							<argument NAME="showType" VALUE="true"/>
+							<argument NAME="showKey" VALUE="true"/>
+							<argument NAME="showDescription" VALUE="false"/>
+							<argument NAME="showId" VALUE="false"/>
+							<argument NAME="showAssignedBy" VALUE="false"/>
+							<argument NAME="showAssignedDate" VALUE="false"/>
+							<argument NAME="showAssignedTo" VALUE="false"/>
+							<argument NAME="showClearedBy" VALUE="false"/>
+							<argument NAME="showClearedDate" VALUE="false"/>
+							<argument NAME="showDueDate" VALUE="false"/>
+							<argument NAME="showActionTaken" VALUE="false"/>
+							<argument NAME="showActionToTake" VALUE="false"/>
+							<argument NAME="showWorkflowStatus" VALUE="true"/>
+							<argument NAME="showIsActive" VALUE="true"/>
+							<argument NAME="showClearAssignment" VALUE="true"/>
+							<argument NAME="showDeadlocked" VALUE="true"/>
+							<argument NAME="showStepTaken" VALUE="false"/>
+							<argument NAME="TileText" VALUE="Variables.TileText"/>
+							<argument NAME="NoTileText" VALUE="Variables.NoTileText"/>
+						</callelement>
+					</td>
+				</tr>
+				<!--Code for chase-->
+	<WORKFLOWENGINE.CANEDITGROUP ID="Variables.groupid" SITE="SessionVariables.pubid" VARNAME="canAddToGroup" />
+	<IF COND="Variables.canAddToGroup=true">
+	<THEN>		
+		<WORKFLOWENGINE.GETPROCESSID ID="Variables.wfg:process" OBJVARNAME="processObject"/>
+		<WORKFLOWPROCESS.SCATTER PREFIX="wfp:" NAME="processObject"/>
+		<INPUT TYPE="HIDDEN" NAME="wfpassetlist" VALUE="Variables.wfp:typestypes" REPLACEALL="Variables.wfp:typestypes"/>
+			
+		<SCRIPT LANGUAGE="JavaScript">
+function AddToGroup(ourPage,where,wfid)
+{  
+	var obj = document.forms[0].elements[0];
+			
+	var assetlist =  obj.form.elements['wfpassetlist'].value;
+			
+			
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections() + '';
+	var idArray = EncodedString.split(',');
+	var assetcheck = unescape(idArray[0]);
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+		var DecodedString = unescape(EncodedString); 
+		obj.form.elements[where].value = DecodedString;
+		var assetArray = DecodedString.split(":");
+
+<![CDATA[
+		var allok = 0;
+		if ( assetlist != "_ALL_" )
+		{
+			for ( var i = 0 ; (i < assetArray.length-1) && (allok == 0) ; i++ )
+			{
+				var thisItem = assetArray[i];
+				var theItemArray = thisItem.split(',');
+				var theAssetTypeLong = theItemArray[1];
+				var theAssetType = theAssetTypeLong.slice( theAssetTypeLong.indexOf("=") + 1 );
+				if ( assetlist.indexOf( theAssetType) == -1 )
+				{
+					allok++;
+				}
+			}
+		}
+]]>
+		if ( allok == 0 )
+		{
+			obj.form.id.value = wfid;
+			var basePage = "OpenMarket/Xcelerate/Actions/";
+			var	newpage = basePage + ourPage;
+			obj.form.pagename.value = newpage;
+			document.forms[0].submit();
+		}
+		else
+		{
+			var replacestr=/\bVariables.AssetType\b/ ;
+			var xlatstr="<XLAT.STREAM KEY="dvin/UI/Wf/InvalidAssetforWorkflowProcess" ESCAPE="true" ENCODE="false" EVALALL="false"/>";
+			var newstr=xlatstr.replace(replacestr, theAssetType) ;
+			alert(newstr);
+		}
+	}
+	else
+	{
+		alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree"/>");
+	}
+				
+	return false;
+}
+		</SCRIPT>
+			
+		<IF COND="IsVariable.TreeSelectStr=true">
+		<THEN>
+			<STRING.ENCODE VARNAME="TreeSelectStr" VARIABLE="TreeSelectStr" />
+			<INPUT TYPE="HIDDEN" NAME="TreeSelectStr" VALUE="Variables.TreeSelectStr" REPLACEALL="Variables.TreeSelectStr"/>
+		</THEN>
+		<ELSE>
+			<INPUT TYPE="HIDDEN" NAME="TreeSelectStr" VALUE=""/>
+		</ELSE>
+		</IF>
+
+		<WorkflowGroup.GetWorkflowProcessID NAME="group" VARNAME="workflowid" />
+				
+		<WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+		<WorkflowProcess.getinitialstepid NAME="workflow" VARNAME="startstep"/>
+		<WorkflowProcess.getstep NAME="workflow" VALUE="Variables.startstep" OBJVARNAME="startstepobj"/>			
+				
+		<WorkflowStep.GetAuthorizationRoles NAME="startstepobj" OBJVARNAME="rolesobj"/>
+		<RoleList.GetAll NAME="rolesobj" VARNAME="aroles"/>
+		<stringlist NAME="rolesofcurrentuser" STR="SessionVariables.currentpubACLs" DELIM=","/>
+		<!-- if roles of curent user can take the statrt step in the process of the group --->
+		<setvar NAME="userallowedtotakestep" VALUE="false"/>
+		<loop LIST="rolesofcurrentuser">
+			<setvar NAME="errno" VALUE="0"/>
+			<ISINLIST ITEM="rolesofcurrentuser.ITEM" STR="Variables.aroles"/>
+			<if COND="Variables.errno=1">
+			<then>
+				<setvar NAME="userallowedtotakestep" VALUE="true"/>
+			</then>
+			</if>	
+		</loop>
+					
+		<if COND="Variables.userallowedtotakestep=true">
+		<then>
+			<tr>
+				<td colspan="2"><BR/></td>
+				<td>
+					<XLAT.LOOKUP KEY="dvin/UI/AddtoWorkflowGroup" VARNAME="_XLAT_" ESCAPE="true"/>
+					<IF COND="Variables.showSiteTree=true">
+					<THEN>
+						<A HREF="javascript:void(0);" OnClick="return AddToGroup('BulkAddtoGroupFront','TreeSelectStr','Variables.id');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.ThisPage,Variables.id">
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddtoGroup"/></CALLELEMENT>
+						</A>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/PickAssetPopup"/>
+						<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+							<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+							<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+							<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="multiple"/>
+							<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+							<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="Variables.name"/>
+						</SATELLITE.LINK>
+						<script type="text/javascript">
+<![CDATA[
+function PickAssetCallback_]]><STRING.STREAM VALUE="Variables.currentUniqueID"/><![CDATA[(SelectedAssets)
+{
+	var obj = document.forms[0].elements[0];
+                            
+	var AssetList = SelectedAssets.split(";");
+	var assetIDs = '';
+	var assetlist =  obj.form.elements['wfpassetlist'].value;
+	var allok = 0;
+	for (var z = 0; z < AssetList.length; z++)
+	{
+		var AssetInfo = AssetList[z].split(":");
+		if (z == 0)
+			assetIDs = 'id='+AssetInfo[1]+',assettype='+AssetInfo[0];
+		else
+			assetIDs += ':id='+AssetInfo[1]+',assettype='+AssetInfo[0];
+                                
+		if ( assetlist != "_ALL_" )
+		{
+			if (assetlist.indexOf(AssetInfo[0]) == -1)
+				allok++;
+		}
+	}
+                		
+	if ( allok == 0 )
+	{
+		obj.form.id.value = ]]><STRING.STREAM VALUE="Variables.id"/><![CDATA[;
+		obj.form.pagename.value = "OpenMarket/Xcelerate/Actions/BulkAddtoGroupFront";
+		document.forms[0].elements['TreeSelectStr'].value = assetIDs;
+		document.forms[0].submit();
+	}
+	else
+	{
+		var replacestr=/\bVariables.AssetType\b/ ;
+		var xlatstr="]]><XLAT.STREAM KEY="dvin/UI/Wf/InvalidAssetforWorkflowProcess" ESCAPE="true" ENCODE="false" EVALALL="false"/><![CDATA[";
+		var newstr=xlatstr.replace(replacestr, theAssetType) ;
+		alert(newstr);
+	}
+                            
+}
+                          
+]]>
+
+function PickAssetPopup_<STRING.STREAM VALUE="Variables.currentUniqueID"/>()
+{
+	OpenPickAssetPopup('<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true"/>', GetBannerHistory());
+}
+						</script>
+						<A HREF="#" ONCLICK="javascript:PickAssetPopup_Variables.currentUniqueID(); return false;" REPLACEALL="Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+					</ELSE>
+					</IF>
+				</td>
+			</tr>
+		</then>
+		</if>
+		<!--End code for chase-->
+	</THEN>
+	</IF>
+			</table>
+		</td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<tr>
+	   <td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+</table>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowWorkflowFront" outstring="urlshwffront">
+	<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+	<satellite.argument name="action" value="groups"/>
+</SATELLITE.LINK>
+<DIV class="width-outer-70">
+	<A HREF="Variables.urlshwffront" REPLACEALL="Variables.urlshwffront"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Listallworkflowgroups"/></A>
+</DIV>
+<P/>
+
+</FTCS> 
+

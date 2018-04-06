@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Publish/HeldPublishableAssets
+-
+- INPUT
+-  Variables.target - destination id
+-  Variables.targettype - export or mirror
+-  Variables.allowLinks - true if we want links to held and publishable assets, false if we want just the message
+- OUTPUT
+-
+-->
+<setvar NAME="showHeldLink" VALUE="Variables.allowLinks"/>
+<setvar NAME="showPublishableLink" VALUE="Variables.allowLinks"/>
+
+<ApprovedAssets.CountHeldAssets TARGET="Variables.target" VARNAME="heldAssetsCount"/>
+<if COND="Variables.heldAssetsCount!=0">
+<then>
+	<if COND="Variables.heldAssetsCount=1">
+   <then>
+   	<XLAT.LOOKUP KEY="dvin/UI/Publish/OneHeldAsset" VARNAME="heldMsg"/>
+   </then>
+   <else>
+   	<XLAT.LOOKUP KEY="dvin/UI/Publish/SomeHeldAssets" VARNAME="heldMsg"/>
+   </else>
+   </if>
+</then>
+</if>
+
+<ApprovedAssets.CountAssetsToPublish TARGET="Variables.target" VARNAME="PublishableAssetsCount" />
+<if COND="Variables.PublishableAssetsCount=0">
+<then>
+   <setvar NAME="showPublishableLink" VALUE="false"/>
+   <if COND="Variables.targettype=export">
+   <then>
+   	<XLAT.LOOKUP KEY="dvin/UI/Publish/NoReferencesToPublish" VARNAME="publishableMsg"/>
+   </then>
+   <else>
+   	<XLAT.LOOKUP KEY="dvin/UI/Publish/NoAssetsToPublish" VARNAME="publishableMsg"/>
+   </else>
+   </if>
+</then>
+<else>
+  <if COND="Variables.targettype=export">
+  <then>
+  		<if COND="Variables.PublishableAssetsCount=1">
+  		<then>
+  			<XLAT.LOOKUP KEY="dvin/UI/Publish/OnePublishableReference" VARNAME="publishableMsg"/>
+  		</then>
+  		<else>
+  			<XLAT.LOOKUP KEY="dvin/UI/Publish/SomePublishableReferences" VARNAME="publishableMsg"/>
+	   </else>
+	   </if>
+  </then>
+  <else>
+  		<if COND="Variables.PublishableAssetsCount=1">
+  		<then>
+   		<XLAT.LOOKUP KEY="dvin/UI/Publish/OnePublishableAsset" VARNAME="publishableMsg"/>
+  		</then>
+  		<else>
+   		<XLAT.LOOKUP KEY="dvin/UI/Publish/SomePublishableAssets" VARNAME="publishableMsg"/>
+ 	   </else>
+	   </if>
+   </else>
+ 	</if>
+</else>
+</if>
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Publish/CountTagsToPublish">
+	<ARGUMENT NAME="target" VALUE="Variables.target"/>
+</CALLELEMENT>
+<if COND="Variables.PublishableTagsCount!=0">
+<then>
+	<setvar NAME="showPublishableLink" VALUE="true"/>
+	<XLAT.LOOKUP KEY="dvin/UI/Publish/SomePublishableTags" VARNAME="publishableTagMsg"/>
+</then>
+<else>
+	<setvar NAME="publishableTagMsg" VALUE=""/>
+</else>
+</if>
+
+<if COND="IsVariable.heldMsg=true">
+<then>
+	<if COND="Variables.showHeldLink=false">
+	<then>
+	    	<csvar NAME="Variables.heldMsg"/>
+	</then>
+	<else>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowHeldAssetsFront" outstring="urlshheldasstfront">
+            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                              <satellite.argument name="target" value="Variables.target"/>
+                                                               </SATELLITE.LINK>
+	    <A href="Variables.urlshheldasstfront" REPLACEALL="Variables.urlshheldasstfront">
+	    	<csvar NAME="Variables.heldMsg"/></A><br/>
+	    
+	</else>
+	</if>
+</then>
+</if>
+ 
+<if COND="Variables.showPublishableLink=false">
+<then>  
+	<csvar NAME="Variables.publishableMsg"/>
+</then>
+<else>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowPublishableAssetsFront" outstring="urlshpubasstfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                              <satellite.argument name="target" value="Variables.target"/>
+                                                               </SATELLITE.LINK>
+    <A href="Variables.urlshpubasstfront" REPLACEALL="Variables.urlshpubasstfront">
+	    <csvar NAME="Variables.publishableMsg"/></A>
+    <if COND="Variables.targettype=export">
+	<then>  
+	    
+             <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishPointsFront" outstring="urlpubpointtfront">
+                 <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                              <satellite.argument name="target" value="Variables.target"/>
+                                                               </SATELLITE.LINK>
+	        <A HREF="Variables.urlpubpointtfront" REPLACEALL="Variables.urlpubpointtfront">
+	        <XLAT.STREAM KEY="dvin/UI/Publish/Referencescalculatedstartingpts"/></A>
+	</then>
+	</if>
+	
+</else>
+</if>
+<csvar NAME="Variables.publishableTagMsg"/>
+
+  
+</FTCS>

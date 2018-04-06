@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/ExportXML/ApproveAssets
+-
+- INPUT
+-
+-      Variables.list -- IList of assets to be approved
+-      Variables.recursive -- (boolean)approve dependencies or not
+-      Variables.force -- (boolean)(boolean)force approval or not
+-      Variables.target -- target id      
+- OUTPUT
+-
+-->
+
+<!-- find unapproved assets -->
+<if COND="Variables.force=false">
+<then>
+     <ApprovedAssets.FindUnapprovedAssets LISTVARNAME="unApprovedList"
+        LIST="Variables.list"
+        TEMPLATEDEPS="true"
+        TARGET="Variables.target" />
+</then>
+<else>
+    <COPYLIST LIST="unApprovedList" FROM="Variables.list"/>
+</else>
+</if>
+
+<!-- create approvals -->
+<if COND="IsError.Variables.errno=false">
+<then>
+     <Approvals.create OBJVARNAME="approvals" />
+</then>
+</if>
+
+<if COND="IsError.Variables.errno=false">
+<then>
+
+	<!-- approve the selected assets  -->
+	<LOOP LIST="unApprovedList">
+		<ASSET.LOAD NAME="anAsset" TYPE="unApprovedList.assettype" OBJECTID="unApprovedList.assetid"/>
+
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<!-- create an entry in the PubKeyTable-->
+			<callelement NAME="OpenMarket/Xcelerate/PrologActions/Publish/ExportXML/PreApprove">
+				<argument NAME="assetname" VALUE="anAsset"/>
+				<argument NAME="target" VALUE="Variables.target"/>
+			</callelement>
+			
+			<!-- get asset dependents and add them -->
+			<ASSET.GETPUBDEPS NAME="anAsset" DEPTH="1" LIST="myDeps"/>				
+			<if COND="IsList.myDeps=true">
+			<then>
+				<if COND="myDeps.#numRows!=0">
+				<then>
+					<LOOP LIST="myDeps">
+						<if COND="myDeps.deptype=V">
+						<then>
+							<ASSET.LIST TYPE="myDeps.otype" LIST="depAsset" FIELD1="id" VALUE1="myDeps.oid"/>
+							<if COND="depAsset.#numRows=1">
+							<then>
+								<APPROVALDEPENDENCIES.ADDEXACT TYPE="myDeps.otype" ID="myDeps.oid" DATE="depAsset.updateddate" MODE="reference"/>
+							</then>
+							</if>
+						</then>
+						<else>
+							<APPROVALDEPENDENCIES.ADDEXISTS TYPE="myDeps.otype" ID="myDeps.oid" MODE="reference"/>
+						</else>
+						</if>
+					</LOOP>
+				</then>
+				</if>
+			</then>
+			</if>
+	       <!-- note it in the in-memory approvals object -->
+	       <Approvals.add NAME="approvals" ASSET="anAsset" />
+		</then>
+		<else>
+			<XLAT.STREAM KEY="dvin/UI/Error/loadingassetassettypeunApprovedList" errno="Variables.errno" assettype="unApprovedList.assettype" assetid="unApprovedList.assetid" EVALALL="false"/><br/>
+		</else>
+		</if>
+	</LOOP>
+
+
+	<!-- now we should have all assets to approve in the Approvals structure, now actually approve them -->
+    <APPROVEDASSETS.APPROVEASSETS
+        OBJECT="approvals"
+        TARGET="Variables.target" 
+        TEMPLATEDEPS="true"/>
+    <if COND="IsError.Variables.errno=true">
+    <then>
+    	<SETVAR NAME="saveerrno" VALUE="Variables.errno"/>
+    	<XLAT.STREAM KEY="dvin/UI/Error/approveassetsError" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false"/><br/>
+		<SETVAR NAME="errno" VALUE="Variables.saveerrno"/>
+    </then>
+    </if>
+    
+
+</then>
+<else>
+	<XLAT.STREAM KEY="dvin/UI/Error/derivinglistofassetstoapprove" errno="Variables.errno" EVALALL="false"/><br/>
+</else>
+</if>
+
+
+</FTCS> 

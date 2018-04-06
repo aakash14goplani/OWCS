@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Errors/NoTemplateElement.xml $ 
+$Revision: 7 $ 
+$Modtime: 11/04/02 1:37p $ 
+-->
+<!--
+- Confidential and Proprietary Information of divine, Inc.
+-					All Rights Reserved.
+-->
+
+
+<if COND="Variables.render:element=Variables.empty">
+<then>
+<XLAT.STREAM KEY="dvin/UI/Admin/Error/RootElementNameMissing" ESCAPE="false" ENCODE="false"/>
+</then>
+<else>
+<XLAT.STREAM KEY="dvin/UI/Admin/Error/RootElementNotExists" ESCAPE="false" ENCODE="false"/>
+</else>
+</if>
+</P>
+
+</FTCS>

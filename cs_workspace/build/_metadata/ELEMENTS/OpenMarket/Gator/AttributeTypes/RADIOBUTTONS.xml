@@ -1,0 +1,322 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/AttributeTypes/RADIOBUTTONS
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+	<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="FONTSIZE" VARNAME="size"/>
+	<presentation.getprimaryattributevalue NAME="Variables.PresInst" ATTRIBUTE="LAYOUT" VARNAME="layout"/>
+	<presentation.getprimarychildvalues NAME="Variables.PresInst" ELEMENT="QUERYASSETNAME" LISTVARNAME="queryasset"/>
+	
+	<IF COND="IsVariable.size=false">
+	<THEN>
+		<SETVAR NAME="size" VALUE=""/>
+	</THEN>
+	<ELSE>
+		<SETVAR NAME="size" VALUE="Variables.size"/>
+	</ELSE>
+	</IF>
+	<IF COND="IsVariable.layout=false">
+	<THEN>
+		<SETVAR NAME="layout" VALUE="VERTICAL"/>
+	</THEN>
+	<ELSE>
+		<SETVAR NAME="layout" VALUE="Variables.layout"/>
+	</ELSE>
+	</IF>
+	
+	<IF COND="Variables.layout=HORIZONTAL">
+	<THEN>
+		<SETVAR NAME="displayInline" VALUE="inline"/>
+	</THEN>
+	</IF>
+	
+	<IF COND="IsList.queryasset=true">
+	<THEN>
+		<IF COND="queryasset.#numRows!=0">
+		<THEN>
+			<setvar NAME="errno" VALUE="0"/>
+			<ASSET.LOAD NAME="aQuery" TYPE="Query" FIELD="name" VALUE="queryasset.value"/>
+			<if COND="IsError.Variables.errno=false">
+			<then>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Query/ExecuteQuery" SCOPED="LOCAL">
+					<ARGUMENT NAME="list" VALUE="templist"/>
+					<ARGUMENT NAME="assetname" VALUE="aQuery"/>
+					<ARGUMENT NAME="ResultLimit" VALUE="-1"/>
+				</CALLELEMENT>
+				<COPYLIST LIST="RadioValues" FROM="templist"/>
+			</then>
+			<else>
+				<br/> <XLAT.STREAM KEY="dvin/AT/Forms/ErrorOnLoad" errno="Variables.errno"  queryassetvalue="queryasset.value" EVALALL="false"/>
+			</else>
+			</if>
+		</THEN>
+		<ELSE>
+			<presentation.getvalues NAME="Variables.PresInst" LISTVARNAME="RadioValues"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	
+	<tr>
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+		<if COND="Variables.RequiredAttr=true">
+		<then>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqTrue*Variables.type*radio!"/>
+		</then>
+		<else>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_SingleInputName*Variables.currentAttrName*ReqFalse*Variables.type*radio!"/>
+		</else>
+		</if>
+		
+		<setvar NAME="defaultFormStyleClass" VALUE="" />
+		<if COND="Variables.defaultFormStyle=true">
+		<then>
+			<setvar NAME="defaultFormStyleClass" VALUE="defaultFormStyle" />
+		</then>
+		</if>
+		
+		<td></td>
+		<td> 
+			<setvar NAME="doDefaultDisplay" VALUE="no"/>
+			<if COND="IsList.RadioValues=true">
+			<then>
+				<if COND="RadioValues.#numRows!=0">
+				<then>
+					<IF COND="Variables.RequiredAttr!=true">
+					<THEN>
+						<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+						<IF COND="AttrValueList.#numRows=0">
+						<THEN>
+							<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.empty" CHECKED="yes" REPLACEALL="Variables.empty,Variables.cs_SingleInputName"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="[No value]"/></FONT>
+						</THEN>
+						<ELSE>
+							<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.empty" REPLACEALL="Variables.empty,Variables.cs_SingleInputName"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="[No value]"/></FONT>
+						</ELSE>
+						</IF>
+						</div>
+					</THEN>
+					</IF>					
+					<IF COND="Variables.AttrType=asset">
+					<THEN>
+						<loop LIST="RadioValues">
+							<IF COND="IsList.AttrValueList=true">
+							<THEN>
+								<IF COND="AttrValueList.#numRows!=0">
+								<THEN>
+									<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+										<if COND="RadioValues.assetid=AttrValueList.value">
+										<then>
+											<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.assetid" CHECKED="yes" REPLACEALL="Variables.cs_SingleInputName,RadioValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+										</then>
+										<else>
+											<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.assetid" REPLACEALL="Variables.cs_SingleInputName,RadioValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+										</else>
+										</if>
+									</div>
+								</THEN>
+								<ELSE>
+									<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+										<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.assetid" REPLACEALL="Variables.cs_SingleInputName,RadioValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+									</div>
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+								<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+									<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.assetid" REPLACEALL="Variables.cs_SingleInputName,RadioValues.assetid"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+								</div>
+							</ELSE>
+							</IF>
+						</loop>
+					</THEN>
+					<ELSE>
+						<IF COND="Variables.AttrType=float">
+						<THEN>
+   							<loop LIST="RadioValues">
+								<IF COND="IsList.AttrValueList=true">
+								<THEN>
+									<IF COND="AttrValueList.#numRows!=0">
+									<THEN>
+										<CALCULATOR.GO VALUE="RadioValues.value AttrValueList.value =" VARNAME="equal"/>
+										<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+											<if COND="Variables.equal=1">
+											<then>
+												<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" CHECKED="yes" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+											</then>
+											<else>
+												<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+											</else>
+											</if>
+										</div>
+									</THEN>
+									<ELSE>
+										<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+											<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+										</div>
+									</ELSE>
+									</IF>
+								</THEN>
+								<ELSE>
+									<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+										<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+									</div>
+								</ELSE>
+								</IF>
+							</loop>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.AttrType=money">
+							<THEN>
+								<loop LIST="RadioValues">
+									<IF COND="IsList.AttrValueList=true">
+									<THEN>
+										<IF COND="AttrValueList.#numRows!=0">
+										<THEN>
+											<CALCULATOR.GO VALUE="RadioValues.value AttrValueList.value =" VARNAME="equal"/>
+											<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+												<if COND="Variables.equal=1">
+												<then>
+													<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" CHECKED="yes" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+												</then>
+												<else>
+													<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+												</else>
+												</if>
+											</div>
+										</THEN>
+										<ELSE>
+											<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+												<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+											</div>
+										</ELSE>
+										</IF>
+									</THEN>
+									<ELSE>
+										<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+											<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+										</div>
+									</ELSE>
+									</IF>
+								</loop>
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.AttrType=date">
+								<THEN>
+									<loop LIST="RadioValues">
+										<INDEXOF STR="RadioValues.value" WHAT="." OUTSTR="indx" INDEX="0"/>
+										<SUBSTRING STR="RadioValues.value" OUTSTR="milliSec" INDEX="Variables.indx" />
+										
+										<callelement NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+											<argument NAME="fromTimeZone" VALUE="server" />
+											<argument NAME="toTimeZone" VALUE="client" />
+											<argument NAME="inputDate" VALUE="RadioValues.value" />
+										</callelement>
+										
+										<!--bug 16176040 Ignoring the milliseconds as it is not stored in db -->
+										<INDEXOF STR="Variables.outputDate" WHAT="." OUTSTR="indx" INDEX="0"/>
+										<SUBSTRING STR="Variables.outputDate" OUTSTR="radioVal" INDEX="0" ENDINDEX="Variables.indx" />
+
+										<!-- concatenate string -->
+										<SETVAR NAME="displayRadioVal" VALUE="Variables.radioValVariables.milliSec" />
+										
+										<IF COND="IsList.AttrValueList=true">
+										<THEN>
+											<IF COND="AttrValueList.#numRows!=0">
+											<THEN>
+												<callelement NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+													<argument NAME="fromTimeZone" VALUE="server" />
+													<argument NAME="toTimeZone" VALUE="client" />
+													<argument NAME="inputDate" VALUE="AttrValueList.value" />
+												</callelement>
+												<!--bug 16176040 Ignoring the milliseconds as it is not stored in db -->
+												<INDEXOF STR="Variables.outputDate" WHAT="." OUTSTR="indx" INDEX="0"/>
+												<SUBSTRING STR="Variables.outputDate" OUTSTR="attrVal" INDEX="0" ENDINDEX="Variables.indx" />
+												
+												
+												<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+													<if COND="Variables.radioVal=Variables.attrVal">
+													<then>
+														<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.displayRadioVal" CHECKED="yes" REPLACEALL="Variables.cs_SingleInputName,Variables.displayRadioVal"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="Variables.displayRadioVal"/></FONT>
+													</then>
+													<else>
+														<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.displayRadioVal" REPLACEALL="Variables.cs_SingleInputName,Variables.displayRadioVal"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="Variables.displayRadioVal"/></FONT>
+													</else>
+													</if>
+												</div>
+											</THEN>
+											<ELSE>
+												<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+													<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.displayRadioVal" REPLACEALL="Variables.cs_SingleInputName,Variables.displayRadioVal"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="Variables.displayRadioVal"/></FONT>
+												</div>
+											</ELSE>
+											</IF>
+										</THEN>
+										<ELSE>
+											<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+												<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="Variables.displayRadioVal" REPLACEALL="Variables.cs_SingleInputName,Variables.displayRadioVal"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="Variables.displayRadioVal"/></FONT>
+											</div>
+										</ELSE>
+										</IF>
+										<REMOVEVAR NAME="outputDate"/>
+									</loop>
+								</THEN>
+								<ELSE> <!-- for all other attribute types -->
+									<loop LIST="RadioValues">
+										<IF COND="IsList.AttrValueList=true">
+										<THEN>
+											<IF COND="AttrValueList.#numRows!=0">
+											<THEN>
+												<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+													<if COND="RadioValues.value=AttrValueList.value">
+													<then>
+														<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" CHECKED="yes" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" 										REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+													</then>
+													<else>
+														<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size"
+															REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+													</else>
+													</if>
+												</div>
+											</THEN>
+											<ELSE>
+												<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+													<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+												</div>
+											</ELSE>
+											</IF>
+										</THEN>
+										<ELSE>
+											<div class='Variables.defaultFormStyleClass' style="word-wrap: break-word;display: Variables.displayInline" REPLACEALL="Variables.defaultFormStyleClass,Variables.displayInline">
+												<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.cs_SingleInputName" VALUE="RadioValues.value" REPLACEALL="Variables.cs_SingleInputName,RadioValues.value"/><FONT SIZE="Variables.size" REPLACEALL="Variables.size"><STRING.STREAM VALUE="RadioValues.value"/></FONT>
+											</div>
+										</ELSE>
+										</IF>
+									</loop>
+								</ELSE>
+								</IF> <!-- end of if attribute type is date -->
+							</ELSE>
+							</IF> <!-- end of if attribute type is money -->
+						</ELSE>
+						</IF> <!-- end of if attribute type is float -->
+					</ELSE>
+					</IF> <!-- end of if attribute type is asset -->
+				</then>
+				<else>
+					<XLAT.STREAM KEY="dvin/AT/Forms/NoValuesAvailable"/>
+				</else>
+				</if>
+			</then>
+			</if>
+		</td>
+	</tr> 
+	
+	<REMOVEVAR NAME='displayInline'/>
+	<REMOVEVAR NAME='defaultFormStyleClass'/>
+
+</FTCS> 

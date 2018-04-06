@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/ShowSiteTree.xml $ 
+$Revision: 33 $ 
+$Modtime: 3/15/01 12:48p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Display the Site Structure in the form of a tree
+-->
+
+<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+
+	<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/ShowSiteTreeVariables.proptreetype=true">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/ShowSiteTreeVariables.proptreetype">
+			</callelement>		
+		</then>
+		<else>
+			<PROPERTY.GET PARAM="xcelerate.showSiteTree" INIFILE="futuretense_xcel.ini" VARNAME="propshowsitetree"/>
+			<if COND="Variables.propshowsitetree=true">
+				<then>
+					<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+						<argument NAME="error" VALUE="UnrecognizedTree"/>
+					</callelement>
+				</then>
+			</if>				
+		</else>		
+	</if>   
+</FTCS>
+

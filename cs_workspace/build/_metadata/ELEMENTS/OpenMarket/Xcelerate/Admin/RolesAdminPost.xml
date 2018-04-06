@@ -1,0 +1,179 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/RolesAdminPost.xml $ 
+
+-->
+<!-- OpenMarket/Xcelerate/Admin/RolesAdminPost
+
+ INPUT
+
+ OUTPUT
+
+ HISTORY
+ [2007-09-18 KGF]
+ * XSS fixes (adapted from 6.3 fixes):
+   * isCleanString function usage
+   * CSVAR -> STRING.STREAM
+ * changed definitions of 'obj' to just forms[0] (not .elements[0])
+ [2008-02-25 KGF]
+ * further XSS fix: encode html special chars in description field
+-->
+
+
+
+<!-- process deletion of stuff -->
+<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+    <if COND="Variables.action=cancel">
+    <then>
+        <TABLE BGCOLOR="#FFFFFF" CELLSPACING="0" CELLPADDING="0">
+            <TR>
+                <TD BGCOLOR="#FFFFFF" COLSPAN="2">
+                <FONT FACE="Arial, Helvetica" SIZE="2">
+                <h3>
+		<if COND="IsVariable.name=true">
+		<then>
+                <STRING.STREAM VALUE="Cancel Role Variables.name"/>
+		</then>
+		<else>
+                <STRING.STREAM VALUE="Cancel Role"/>			
+		</else>
+		</if>
+                </h3>
+                </FONT>
+                </TD>
+            </TR>
+            <TR>
+                <TD BGCOLOR="#FFFFFF">
+                    <XLAT.STREAM KEY="dvin/UI/Cancelsuccessful"/>
+                </TD>
+            </TR>
+        </TABLE>
+    </then>
+    </if>
+
+
+    <!-- process deletion of stuff -->
+    <if COND="Variables.action=delete">
+    <then>
+				<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+					<tr><td>
+						<span class="title-text"><STRING.STREAM VALUE="Delete Role: Variables.name"/></span>
+					</td></tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+				</table>
+                <setvar NAME="errno" VALUE="0"/>
+	  
+					 <ROLEMANAGER.DELETE NAME="Variables.name"/>
+
+                <if COND="Variables.errno!=0">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="DeleteFailed"/>
+                    </callelement>            
+                </then>
+                <else>
+                    <XLAT.STREAM KEY="dvin/UI/Deletesuccessful"/>
+                </else>
+                </if>
+                
+					  <callelement NAME="OpenMarket/Xcelerate/Admin/RolesAdminFront">
+							<argument NAME="name" VALUE="Variables.name"/>
+							<argument NAME="action" VALUE="list"/>
+							<argument NAME="showtitle" VALUE="false"/>
+					  </callelement>
+                
+    </then>
+    </if>
+
+    <!-- process addition of stuff -->
+    <if COND="Variables.action=new">
+    <then>
+                <setvar NAME="hasit" VALUE="false"/>
+		<ROLEMANAGER.GETROLENAMES LISTVARNAME="acls"/>
+		<LOOP LIST="acls">
+			<if COND="Variables.name=acls.aclname">
+			<then>
+				<setvar NAME="hasit" VALUE="true"/>
+			</then>
+			</if>
+		</LOOP>
+
+		<!-- Show this error message only if add new -->
+		<if COND="IsVariable.edit!=true">
+		<then>
+			<if COND="Variables.hasit=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+					<argument NAME="error" VALUE="AlreadyExistingRole"/>
+				</callelement>            
+				<throwexception/>
+			</then>
+			</if>
+		</then>
+		</if>
+
+                <if COND="IsVariable.name!=true">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="NoName"/>
+                    </callelement>            
+                    <throwexception/>
+                </then>
+                </if>
+                <!-- insert the specified information
+                    into the table. Report any errors.
+                    Refresh the navigation -->
+                <if COND="IsVariable.description!=true">
+                <then>
+                    <setvar NAME="description" VALUE="Variables.empty"/>
+                </then>
+                </if>
+
+	        <if COND="Variables.existingrole=false">
+		    <then>
+				<ROLEMANAGER.CREATE NAME="Variables.name" OBJVARNAME="roleInst"/>
+            <ROLE.SETDESCRIPTION NAME="roleInst" VALUE="Variables.description"/>
+		    </then>
+		    <else>
+				<ROLEMANAGER.LOAD NAME="Variables.name" OBJVARNAME="roleInst"/>
+				<ROLE.SETDESCRIPTION NAME="roleInst" VALUE="Variables.description"/>
+		    </else>
+		    </if>	
+	  	    <ROLEMANAGER.SAVE OBJECT="roleInst"/>
+	  	    
+	  	    <IF COND="Variables.errno!=0">
+	  	    	<then>
+	  	    		<XLAT.LOOKUP KEY="fatwire/wem/admin/common/ErrorWhileAddingRole" ESCAPE="true" VARNAME="_XLAT_"/>
+	  	    		<div class="width-outer-70">
+				  <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_" />
+						<ARGUMENT NAME="severity" VALUE="error" />
+					</callelement>
+				</div>
+					<throwexception/>
+				</then>
+			</IF>
+			<callelement NAME="OpenMarket/Xcelerate/Admin/RolesAdminFront">
+					<argument NAME="name" VALUE="Variables.name"/>
+					<argument NAME="action" VALUE="details"/>
+					<argument NAME="showtitle" VALUE="true"/>
+				</callelement>
+               
+    </then>
+    </if>
+	 
+	 <PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+	<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+			<argument NAME="__TreeRefreshKeys__" VALUE="Self:Roles"/>
+		</callelement>		
+	</then>
+	</if>
+	 
+
+
+
+</FTCS> 

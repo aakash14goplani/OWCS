@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/Errors/WorkflowStatusCodeLength.xml $ 
+$Revision: 2 $ 
+$Modtime: 3/02/01 6:05p $ 
+-->
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-->
+
+<XLAT.STREAM KEY="dvin/UI/Admin/Error/WorkflowStatusCodeLength" ESCAPE="false" ENCODE="false"/>
+
+</FTCS>

@@ -1,0 +1,37 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/RemoteContentAssetPublish
+-
+-- INPUT
+--	pubsession
+
+--  assettype
+--
+-- OUTPUT
+--
+-->
+<!--  mirror Slots 14615247 temp fix -->
+<SETVAR NAME="PUBSESSIONID" VALUE="Variables.pubsession"/>
+
+<atm.locate TYPE="Variables.assettype" VARNAME="ourAtm"/>
+<if COND="IsError.Variables.errno=false">
+	<then>
+		<complexassets.saveobjects NAME="ourAtm" VALUE="Variables.pubsession"/>
+		<if COND="IsError.Variables.errno=true">
+			<then>
+				<setvar NAME="saveerrno" VALUE="Variables.errno"/>
+				<XLAT.LOOKUP VARNAME="result" KEY="dvin/UI/Error/complexassets.saveobjectspubsessiondetail1" errno="Variables.errno" pubsession="Variables.pubsession" errdetail1="Variables.errdetail1" EVALALL="false"/>
+				<setvar NAME="errno" VALUE="Variables.saveerrno"/>
+				<logmsg STR="Error from complexassets.saveobjects for pubsession Variables.pubsession Error Variables.errno (Variables.errdetail1)"/>
+			</then>
+		</if>
+	</then>
+	<else>
+		<setvar NAME="saveerrno" VALUE="Variables.errno"/>
+		<XLAT.LOOKUP VARNAME="result" KEY="dvin/UI/Error/atmlocateassettypeerrdetail1" errno="Variables.errno" assettype="Variables.assettype" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<setvar NAME="errno" VALUE="Variables.saveerrno"/>
+		<logmsg STR="Error from atm.locate for assettype Variables.assettype Error Variables.errno (Variables.errdetail1)"/>
+	</else>
+</if>
+</FTCS>

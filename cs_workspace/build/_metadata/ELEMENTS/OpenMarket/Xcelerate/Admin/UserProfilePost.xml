@@ -1,0 +1,206 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/UserProfilePost.xml $ 
+
+-->
+
+<!--
+- Confidential and Proprietary Information of Oracle Corp.
+-					All Rights Reserved.
+-
+- UserProfilePost.xml
+-
+- DESCRIPTION
+-	Allow an administrator to set the profile for users (email and locale preferences)
+-
+- HISTORY 
+-->
+
+ <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/UserProfileCommon"/>
+<!-- type is either front or post -->
+<!-- java script function to validate the password -->
+
+
+
+    <if COND="Variables.action!=delete">
+    <then>
+        <!-- check to ensure that a username is defined -->
+        <if COND="IsVariable.username!=true">
+        <then>
+            <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                <argument NAME="error" VALUE="NoUsername"/>                
+            </callelement>
+            <throwexception/>
+        </then>
+        </if>
+    </then>
+    </if>
+    <!-- process editing of stuff -->
+
+    <if COND="Variables.action=edit">
+    <then>
+    			<USERMANAGER.GETLOGINUSERNAME VARNAME="currentUserName" />
+    			<SETVAR NAME="allowed" VALUE="true" />
+    			<if COND="Variables.username!=Variables.currentUserName">
+    			<then>
+    				<USERISMEMBER GROUP="UserEditor"/>
+    				<LOGMSG STR="User Name : Variables.username, Loggedin User : Variables.currentUserName, Error Number : Variables.errno"/>
+					<if COND="Variables.errno=0">
+					<then>
+						<SETVAR NAME="allowed" VALUE="false" /> 
+					</then>
+					</if>
+    			</then>
+    			</if>
+    			
+    			<if COND="Variables.allowed=true">
+    			<then>
+					<!-- allow user to modify his or some one else attributes -->
+					<PROPERTY.GET PARAM="xcelerate.batchuser" INIFILE="futuretense_xcel.ini" VARNAME="batchuser"/>
+					<PROPERTY.GET PARAM="xcelerate.batchpass" INIFILE="futuretense_xcel.ini" VARNAME="batchpass"/>
+					<!-- login as super user to allow this change -->
+					<USER.SU USERNAME="Variables.batchuser" PASSWORD="Variables.batchpass">
+	  
+	                <USERMANAGER.GETUSERFROMNAME OBJVARNAME="myUserObj" USERNAME="Variables.username"/>
+	                <IF COND="Variables.errno!=-13051">
+	                <THEN>
+	                      <CCUSER.GETEMAIL NAME="myUserObj"  VARNAME="userEmail"/>    
+	                 </THEN>
+	                </IF>
+	
+					<!-- set email -->
+	                <if COND="IsVariable.email!=true">
+	                <then>
+	                    <setvar NAME="email" VALUE="Variables.empty"/>
+	                </then>
+	                </if>
+	                <CCUSER.SETEMAIL NAME="myUserObj"  VALUE="Variables.email"/>
+	                <USERMANAGER.SETUSER OBJECT="myUserObj"/>
+	
+					<IF COND="Variables.errno!=0">
+						<THEN>
+							<setvar NAME="ERRNO" VALUE="Variables.errno"/>
+							<XLAT.STREAM KEY="dvin/UI/Admin/Error/Errorsavinguserpreference"/><BR/>
+						</THEN>
+					</IF>
+	
+					<!-- set preferred locale -->
+					<IF COND="Variables.selectedLocale=None">
+					<THEN>
+							<SETVAR NAME="selectedLocale" VALUE="Variables.empty"/>
+					</THEN>
+					<ELSE>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+							<ARGUMENT NAME="columnvalue" VALUE="Variables.selectedLocale"/>
+							<ARGUMENT NAME="type" VALUE="Locale"/>
+						</CALLELEMENT>
+					</ELSE>
+					</IF>
+					
+					<IF COND="Variables.validatedstatus=true">
+					<THEN>
+						<CCUSER.SETLOCALE NAME="myUserObj" VALUE="Variables.selectedLocale"/>
+						<USERMANAGER.SETUSER OBJECT="myUserObj"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="selectedLocale" VALUE="Variables.empty"/>
+					</ELSE>
+					</IF>
+	
+					<IF COND="Variables.errno!=0">
+					<THEN>
+						<setvar NAME="ERRNO" VALUE="Variables.errno"/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/Error/Errorsavinguserpreference"/><BR/>
+					</THEN>
+					</IF>
+					
+					<!-- set preferred timezone -->
+					<IF COND="Variables.selectedTimezone=None">
+					<THEN>
+							<SETVAR NAME="selectedTimezone" VALUE="Variables.empty"/>
+					</THEN>
+					</IF>
+					<CCUSER.SETTIMEZONE NAME="myUserObj" VALUE="Variables.selectedTimezone"/>
+					<USERMANAGER.SETUSER OBJECT="myUserObj"/>
+
+					<IF COND="Variables.errno!=0">
+					<THEN>
+						<setvar NAME="ERRNO" VALUE="Variables.errno"/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/Error/Errorsavinguserpreference"/><BR/>
+					</THEN>
+					</IF>
+					</USER.SU>
+	
+	                <if COND="Variables.errno!=0">
+	                <then>
+	                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	                        <argument NAME="error" VALUE="UpdateFailed"/>
+	                    </callelement>            
+	                </then>
+	                </if>
+					<!-- modify the user password -->
+	
+					<if COND="Variables.modifyPassword=on">
+	                <then>
+					  <callelement NAME="FutureTense/Apps/AdminForms/UserMgt/ModifyPswd" /> 
+					  <if COND="Variables.errno!=0">
+	                   <then>
+	                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	                        <argument NAME="error" VALUE="UpdateFailed"/>
+	                    </callelement>            
+	                  </then>
+				       </if>
+	                </then>
+	                </if>
+							             
+	               </then>
+	               <else>
+	               		<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	                        <argument NAME="error" VALUE="UpdateFailed"/>
+	                    </callelement>
+	               </else>
+	               </if>
+     				<callelement NAME="OpenMarket/Xcelerate/Admin/UserProfileFront">
+	                        <argument NAME="username" VALUE="Variables.username"/>
+	                        <argument NAME="action" VALUE="details"/>
+	                        <argument NAME="showtitle" VALUE="false"/>
+	                </callelement>          
+    </then>
+    </if>
+
+	<!-- process deletion of stuff -->
+	<if COND="Variables.action=delete">
+	<then>
+		<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myUserObj" USERNAME="Variables.username"/>
+		<IF COND="Variables.errno!=-13051">
+		<THEN>
+			<CCUSER.GETEMAIL NAME="myUserObj"  VARNAME="userEmail"/>         
+		</THEN>
+		</IF>
+		<CCUSER.SETEMAIL NAME="myUserObj"  VALUE="Variables.empty"/>
+		<CCUSER.SETLOCALE NAME="myUserObj"  VALUE="Variables.empty"/>
+		<CCUSER.SETTIMEZONE NAME="myUserObj"  VALUE="Variables.empty"/>
+		<USERMANAGER.SETUSER OBJECT="myUserObj"/>
+		<if COND="Variables.errno!=0">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<argument NAME="error" VALUE="DeleteFailed"/>
+			</callelement>            
+		</then>
+		<else>
+			<XLAT.STREAM KEY="dvin/UI/Deletesuccessful"/>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/UserProfileFront">
+				<ARGUMENT NAME="username" VALUE="Variables.username"/>
+				<ARGUMENT NAME="action" VALUE="details"/>
+				<ARGUMENT NAME="showtitle" VALUE="false"/>
+			</CALLELEMENT>
+		</else>
+		</if>
+    </then>
+    </if>
+
+</FTCS>

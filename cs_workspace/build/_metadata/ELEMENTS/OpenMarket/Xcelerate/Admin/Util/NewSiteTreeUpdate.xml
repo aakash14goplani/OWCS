@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Installation/NewSiteTreeUpdate
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- add a site to existing tree tabs and sections -->
+<SETVAR NAME="results" VALUE="Variables.empty"/>
+<SETVAR NAME="resulterrno" VALUE="0"/>
+
+<SETVAR NAME="errno" VALUE="0"/>
+<PUBLICATION.LOAD NAME="publication" FIELD="name" VALUE="Variables.pubname"/>
+<IF COND="Variables.errno=0">
+<THEN>
+	<PUBLICATION.GET NAME="publication" FIELD="id" OUTPUT="pubid"/>
+	
+	<TTM.GETALLORDEREDTABS LISTVARNAME="tabs"/>
+	
+	<LOOP LIST="tabs">
+		<TTM.LOAD OBJVARNAME="tab" ID="tabs.id"/>
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeTabSysCheck" >
+			<ARGUMENT NAME="tabuid" VALUE="tabs.fw_uid" />
+		</CALLELEMENT>
+		
+    <IF COND="Variables.systab=true" >
+    <THEN>
+		<TREETAB.GETSITES NAME="tab" OBJVARNAME="sites"/>
+		<SITELIST.ADD NAME="sites" PUBID="Variables.pubid"/>
+		<TREETAB.SETSITES NAME="tab" OBJECT="sites"/>
+		
+		<TREETAB.GETSECTIONS NAME="tab" OBJVARNAME="sections"/>
+		<SECTIONLIST.GETALL NAME="sections" PREFIX="all:"/>
+		<SECTIONLIST.CLEAR NAME="sections"/>
+		<SETCOUNTER NAME="sectionNum" VALUE="0"/>
+      <LOOP UNTIL="Counters.sectionNum=Variables.all:Total">
+			<SECTION.GETSITES NAME="all:Counters.sectionNum" OBJVARNAME="sectsites"/>
+			<SITELIST.ADD NAME="sectsites" PUBID="Variables.pubid"/>
+			<SECTION.SETSITES NAME="all:Counters.sectionNum" OBJECT="sectsites"/>
+			<SECTIONLIST.SET NAME="sections" OBJECT="all:Counters.sectionNum"/>
+			<INCCOUNTER NAME="sectionNum" VALUE="1"/>
+		</LOOP>
+		<TREETAB.SETSECTIONS NAME="tab" OBJECT="sections"/>
+		
+		<TTM.SAVE OBJECT="tab"/>
+		<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<SETVAR NAME="result" VALUE="Variables.errdetail1 (Variables.errno)"/>
+			<SETVAR NAME="resulterrno" VALUE="Variables.errno"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	</LOOP>
+</THEN>
+<ELSE>
+	<SETVAR NAME="resulterrno" VALUE="Variables.errno"/>
+	<XLAT.LOOKUP VARNAME="result" KEY="dvin/UI/Admin/Couldnotloadsite"/>
+	<SETVAR NAME="result" VALUE="Variables.result: Variables.pubname; Variables.errdetail1 (Variables.errno)"/>
+</ELSE>
+</IF>
+
+<SETVAR NAME="errno" VALUE="Variables.resulterrno"/>
+<SETVAR NAME="errdetail1" VALUE="Variables.result"/>
+
+</FTCS> 

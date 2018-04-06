@@ -1,0 +1,203 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/EditFront.xml $ 
+$Revision: 48 $ 
+$Modtime: 6/28/04 1:10p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- EditFront.xml
+-
+- DESCRIPTION
+-	Prolog for edit
+-
+- HISTORY 
+-->
+<setvar NAME="doproceed" VALUE="true"/>
+
+<setvar NAME="assetname" VALUE="theCurrentAsset"/> <!--To be removed when conversion to assetObjectName is complete-->
+<setvar NAME="assetObjectName" VALUE="theCurrentAsset"/>
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetObjectName" EDITABLE="true"/>
+<if COND="IsError.Variables.errno=true">
+    <then>        
+        <setvar NAME="doproceed" VALUE="InvalidContentId"/>
+    </then>
+</if>
+
+<!-- check whether we can perform this function on this asset -->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/AccessCheck">
+	<ARGUMENT NAME="assetObjectName" VALUE="theCurrentAsset"/>
+	<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+	<ARGUMENT NAME="id" VALUE="Variables.id"/>
+	<ARGUMENT NAME="Function" VALUE="edit"/>
+</CALLELEMENT>
+<IF COND="Variables.error!=Variables.empty">
+<THEN>
+ 	<!-- -12069 means allow edit but display warning, any other error means prohibit edit -->
+ 	<if COND="Variables.errno=-12069">
+ 	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="elem" VALUE="EditNotAllowed"/>
+			<argument NAME="severity" VALUE="info"/>
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+		</callelement>
+	</then>
+	<else>
+     <setvar NAME="doproceed" VALUE="Variables.error"/>
+	</else>
+   </if>
+</THEN>
+</IF>
+<if COND="Variables.errno=-12034">
+<then>
+	<setvar name="preverr" value="-12034"/>
+</then>
+</if>
+<if COND="Variables.doproceed=true">
+<then>
+	
+	<callelement NAME="OpenMarket/Xcelerate/Scripts/ValidateInput"></callelement>
+	
+	<!-- Handle setting defaults to display in asset specific form -->
+	<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/PreUpdate">
+	    <argument NAME="updatetype" VALUE="editfront"/>
+	</callelement>
+	
+	<ASSET.SCATTER NAME="Variables.assetObjectName" PREFIX="ContentDetails" FIELDLIST="*"/>
+	        
+	<if COND="IsError.Variables.errno=true">
+	    <then>        
+	        <setvar NAME="doproceed" VALUE="InvalidContentId"/>
+	   </then>
+	</if>
+</then>
+</if>        
+
+<if COND="Variables.doproceed=true">
+<then>
+	<!-- check to see if the table is tracked
+     if so, then the current record must
+     be locked by the current user -->
+	<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+	    <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	</callelement>
+	<if COND="Variables.trackingenabled=true">
+	<then>
+	    <!-- If there's an 'alreadylocked' variable present, this is a repost, so just preserve it and do nothing else. -->
+	    <setvar NAME="lockIsNeeded" VALUE="false"/>
+	    <if COND="IsVariable.alreadylocked=false">
+	    <then>
+		<setvar NAME="lockIsNeeded" VALUE="true"/>
+	    </then>
+	    <else>
+		<if COND="Variables.alreadylocked=Variables.empty">
+		<then>
+		    <setvar NAME="lockIsNeeded" VALUE="true"/>
+		</then>
+		</if>
+	    </else>
+	    </if>
+
+	    <if COND="Variables.lockIsNeeded=true">
+	    <then>
+		<setvar NAME="alreadylocked" VALUE="false"/>
+
+		<!-- Use special element to do all the locking -->
+		<usermanager.getloginuser VARNAME="userID"/>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/SafelyLockIfNeeded">
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="CurrentUserID" VALUE="Variables.userID"/>
+			<argument NAME="CurrentUserName" VALUE="SessionVariables.username"/>
+			<argument NAME="Function" VALUE="Edit"/>
+		</callelement>
+		<!-- If there's no error, and there's been a checkout, note this -->
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<!-- In case of successfull checkout we need to publish checkout topic for dash board to update -->
+			<if COND="Variables.cs_environment=ucform">
+			<then>
+				<script type="text/javascript">
+					dojo.addOnLoad(function() {
+						SitesApp.notifyModelUpdate('versionStatus');
+					});
+				</script>
+			</then>
+			</if>
+			<if COND="Variables.LockStatus=oldlock">
+			<then>
+				<setvar NAME="alreadylocked" VALUE="true"/>
+			</then>
+			</if>
+			
+			<if COND="Variables.LockStatus=failure">
+			<then>
+				<setvar NAME="doproceed" VALUE="OtherLock"/>
+			</then>
+			</if>
+			
+			<if COND="Variables.LockStatus=newlock">
+			<then>
+				<!-- put out informational message: -->
+				<!-- Variables.atdescription has been checked out for Variables.function. -->
+				<ASSETTYPE.LOAD NAME="at" TYPE="Variables.AssetType"/>
+				<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="atdescription"/>
+				<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="function"/>
+				<XLAT.LOOKUP KEY="dvin/UI/AssetImplicitlyCheckout" VARNAME="msgtext"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<ARGUMENT NAME="severity" VALUE="info"/>
+				</CALLELEMENT>
+				<!-- Set the status as already locked  -->
+				<setvar NAME="alreadylocked" VALUE="true"/>
+			</then>
+			</if>	
+		</then>
+		</if>
+	    </then>
+	    </if>
+
+	    <!-- Whether we locked it, or whether it was locked at the beginning, preserve the status of the transaction -->
+	    <INPUT TYPE="HIDDEN" NAME="alreadylocked" VALUE="Variables.alreadylocked" REPLACEALL="Variables.alreadylocked"/>
+
+	</then>
+	</if>
+</then>
+</if>
+
+<!-- check for client edited assets -->
+
+<if COND="Variables.doproceed=true">
+<then>
+	<ASSET.GET NAME="Variables.assetObjectName" FIELD="externaldoctype" OUTPUT="assetMimeType"/>
+		<if COND="Variables.assetMimeType!=Variables.empty">
+	    <then>        
+	        
+						 
+	        <ASSET.GET NAME="Variables.assetObjectName" FIELD="name" OUTPUT="externaldocName"/>
+		
+			<!-- Check for admin privs -->
+			<SETVAR NAME="errno" VALUE="0"/>
+			<USERISMEMBER GROUP="xceladmin"/>
+			<IF COND="Variables.errno=1">
+				 <THEN>
+					 <setvar NAME="delinkOption" VALUE="ExternalDocAsset"/>
+				 </THEN>
+				 <ELSE>
+							 <!-- show error page and offer link to client download -->	
+							 <setvar NAME="doproceed" VALUE="ExternalDocAsset"/>
+				 </ELSE>
+			</IF>
+
+   	    </then>
+	</if>
+</then>
+</if>
+
+
+</FTCS>

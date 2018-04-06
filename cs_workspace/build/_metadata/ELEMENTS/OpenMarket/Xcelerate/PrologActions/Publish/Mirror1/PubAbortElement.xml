@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/PubAbortElement
+-
+-  Called on the publish destimation when publish of assets failed.
+-
+- INPUT
+-  	Variables.session - publishing session id
+- OUTPUT
+-
+-->
+
+<!-- uncheck the assets -->
+<ASSETPUBLISHLIST.UndoCheckout PUBSESSION="Variables.session"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Variables.result Error in undoing checkout of assets: Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+<!-- delete the AssetPublishList entries -->
+<ASSETPUBLISHLIST.DeleteSessionAssets PUBSESSION="Variables.session"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Variables.result Error in session cleanup: Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+</ftcs>

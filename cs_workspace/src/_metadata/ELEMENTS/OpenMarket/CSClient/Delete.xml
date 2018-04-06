@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/Delete
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+<SETVAR NAME="pubid" VALUE="Variables.Node1"/>
+
+<SETCOUNTER NAME="currentNode" VALUE="3"/>
+<LOOP UNTIL="IsVariable.NodeCounters.currentNode=false">
+	<INCCOUNTER NAME="currentNode" VALUE="1"/>
+</LOOP>
+<INCCOUNTER NAME="currentNode" VALUE="-2"/>
+
+<SETVAR NAME="errno" VALUE="0"/>
+<ASSET.LOAD NAME="ainst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.id" EDITABLE="true"/>
+
+<IF COND="Variables.errno=0">
+<THEN>
+   <!-- may need to checkout if rev tracked -->
+   <CALLELEMENT NAME="OpenMarket/CSClient/CheckOut">
+      <ARGUMENT NAME="Function" VALUE="delete"/>
+   </CALLELEMENT>
+   <IF COND="Variables.doproceed=true">
+   <THEN>
+   	<ASSET.VOID NAME="ainst"/>
+   	<IF COND="Variables.errno=0">
+   	<THEN>
+   		<AFFECTEDNODES>
+   			<ICS.RESOLVEVARIABLES NAME="$(Variables.Node$(Counters.currentNode))" OUTPUT="parentID" DELIMITED="true"/>
+            <NODE NODEID="Variables.Deleted" PARENTID="Variables.parentID" REPLACEALL="Variables.Edited,Variables.parentID"/>
+   		</AFFECTEDNODES>
+         <if COND="Variables.trackingenabled=true">
+         <then>
+	    <!-- clear implicit checkout -->
+	    <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+            <!-- SETVAR NAME="errno" VALUE="0"/>
+            <SETVAR NAME="assetid" VALUE="Variables.id"/>
+            <SETVAR NAME="username" VALUE="SessionVariables.username"/>
+            <SELECTTO LIST="COI" FROM="CheckOutInfo" WHAT="checkout" WHERE="assetid,username"/>
+            <IF COND="Variables.errno=0">
+            	<THEN>
+            		<CATALOGMANAGER SCOPED="STACKED">
+            	        <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+            	        <ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+            	        <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+             		</CATALOGMANAGER>
+            	</THEN>
+            </IF -->
+
+            <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/VersionbyDelete" VARNAME="_xlat_version"/>
+            <ASSET.CHECKIN NAME="ainst" ANNOTATION="Variables._xlat_version" CHECKOUT="false"/>
+         </then>
+         </if>
+   	</THEN>
+   	<ELSE>
+         <XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+   		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+   	</ELSE>
+   	</IF>
+   </THEN>
+   <ELSE>
+      <XLAT.LOOKUP KEY="dvin/CSDocLink/Variables.doproceed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+      <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+   </ELSE>
+   </IF>
+
+</THEN>
+</IF>
+
+</FTCS> 

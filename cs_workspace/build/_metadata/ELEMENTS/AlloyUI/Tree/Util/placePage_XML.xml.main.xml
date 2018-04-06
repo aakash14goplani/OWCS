@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">AlloyUI/Tree/Util/placePage_XML</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>AlloyUI/Tree/Util/placePage_XML</string>
+        <string>Get current user info</string>
+        <string></string>
+        <string></string>
+        <string>AlloyUI/Tree/Util/placePage_XML.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/AlloyUI/Tree/Util/placePage_XML.xml|null|_storable_type\=%2FELEMENTS%2FAlloyUI%2FTree%2FUtil%2FplacePage_XML.xml
+@hashval=-1079128722
+key=@ELEMENTCATALOG-AlloyUI/Tree/Util/placePage_XML
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

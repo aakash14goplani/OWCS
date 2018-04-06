@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Export/ApproveAssetsLegacy
+-
+- INPUT
+-      Variables.list -- IList of assets to be approved
+-      Variables.force -- (boolean)force approval or not
+-      Variables.target -- target id      
+-
+- OUTPUT
+-
+-->
+
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubfact:"/>
+<PUBTARGET.UNPACK NAME="pubtgt" PREFIX="pubfact:" FIELD="factors"/>
+
+<!-- find unapproved assets -->
+<if COND="Variables.force=false">
+<then>
+     <ApprovedAssets.FindUnapprovedAssets LISTVARNAME="unApprovedList"
+        LIST="Variables.list"
+        TEMPLATEDEPS="true"
+        TARGET="Variables.target" />
+</then>
+<else>
+    <COPYLIST LIST="unApprovedList" FROM="Variables.list"/>
+</else>
+</if>
+
+<!-- create approvals -->
+<if COND="IsError.Variables.errno=false">
+<then>
+     <Approvals.create OBJVARNAME="approvals" />
+</then>
+</if>
+
+<!-- loop through unapproved assets, get their deps, 
+     and add them to approvals -->
+<if COND="IsError.Variables.errno=false">
+<then>
+    <setvar NAME="emptyList" VALUE="true" />
+    <loop LIST="unApprovedList">
+        <setvar NAME="rendererror" VALUE="0" />
+        <setvar NAME="emptyList" VALUE="false" />
+        <ASSET.LOAD TYPE="unApprovedList.assettype" OBJECTID="unApprovedList.assetid" NAME="asset"/>
+        <if COND="IsError.Variables.errno=false">
+        <then>
+	        <setvar NAME="asset:pagename" VALUE="Variables.empty" />
+	        <if COND="Variables.pubfact:OLDTEMPLATE=true">
+	        <then>
+	           <setvar NAME="asset:pagename" VALUE="OpenMarket/Xcelerate/Export"/>
+	        </then>
+	        <else>
+	        	  <ASSET.GetTemplatePageName NAME="asset" TARGET="Variables.target" SITE="SessionVariables.PublicationName" OUTPUT="asset:pagename"/>
+	        	  <IF COND="IsError.Variables.errno=true">
+	        	  <THEN>
+		        		<!-- error getting pagename - do not approve it -->
+		        		<SETVAR NAME="rendererror" VALUE="-30"/>
+	              <ASSET.GET NAME="asset" FIELD="name" OUTPUT="asset:name"/>
+	              <XLAT.LOOKUP KEY="dvin/UI/Publish/renderedPageError" errno="Variables.rendererror" asset:pagename="Variables.asset:pagename" asset:name="Variables.asset:name" EVALALL="false" VARNAME="_xlat_render"/>
+	              <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                  <argument NAME="severity" VALUE="error"/>
+                  <argument NAME="msgtext" VALUE="Variables._xlat_render"/>
+                 </callelement>
+              </THEN>
+              </IF>
+	        </else>
+	        </if>
+          
+ 	        <if COND="IsVariable.asset:pagename=true">
+	        <then>
+	            <if COND="Variables.asset:pagename!=Variables.empty">
+	            <then>
+	            	 <SETVAR NAME="errno" VALUE="0"/>
+	            	 <INDEXOF STR="Variables.asset:pagename" WHAT="WRAPPERPAGE" OUTSTR="wrapperidx" INDEX="0"/>
+	            	 <IF COND="Variables.errno=0">
+	            	 <THEN>
+						 	<CALCULATOR.GO VALUE="Variables.wrapperidx 1 -" VARNAME="wrapperidx"/>
+	            	 	<!-- no wrapper page found -->
+		                <RENDER.GETDEPS PAGENAME="Variables.asset:pagename" cid="unApprovedList.assetid" c="unApprovedList.assettype" TARGET="Variables.target"/>
+						 </THEN>
+						 <ELSE>
+						 	<CALCULATOR.GO VALUE="Variables.wrapperidx 1 -" VARNAME="wrapperidx"/>
+						 	<!-- wrapper page, find the pagename and wrapperpagename parameters -->
+						 	 <SUBSTRING STR="Variables.asset:pagename" ENDINDEX="Variables.wrapperidx" OUTSTR="pname"/>
+						 	 <CALCULATOR.GO VALUE="Variables.wrapperidx 13 +" VARNAME="wrapperidx"/>
+						 	 <SUBSTRING STR="Variables.asset:pagename" INDEX="Variables.wrapperidx" OUTSTR="wrapperpname"/>
+			             <RENDER.GETDEPS PAGENAME="Variables.pname" WRAPPERPAGE="Variables.wrapperpname" cid="unApprovedList.assetid" c="unApprovedList.assettype" TARGET="Variables.target"/>
+					 	 </ELSE>
+					 	 </IF>
+	                <if COND="IsError.Variables.errno=true">
+	                <then>
+	                	<!-- ignore no children or no rows since these are generallynot errors -->
+	                	<if COND="Variables.errno!=-111">
+	                	<then>
+	                		<if COND="Variables.errno!=-101">
+	                		<then>
+		                    <!-- an error from the template does not necessarily mean the approval shouldn't happen --
+		                         display an informational error but continue -->
+		                    <SETVAR NAME="rendererror" VALUE="Variables.errno"/>
+		                    <ASSET.GET NAME="asset" FIELD="name" OUTPUT="asset:name"/>
+		                    <XLAT.LOOKUP KEY="dvin/UI/Publish/renderedPageError" errno="Variables.rendererror" asset:pagename="Variables.asset:pagename" asset:name="Variables.asset:name" EVALALL="false" VARNAME="_xlat_render"/>
+		                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		                        <argument NAME="severity" VALUE="info"/>
+		                        <argument NAME="msgtext" VALUE="Variables._xlat_render"/>
+		                    </callelement>
+								</then>
+								</if>
+							</then>
+							</if>
+	                </then>
+	                </if>
+	    			</then>
+	    			</if>
+	        	</then>
+	        	</if>
+	        	<!-- if error is pagenotfound, do not approve the asset -->
+				<IF COND="Variables.rendererror!=-30">
+				<THEN>	  	
+		        <Approvals.add NAME="approvals" ASSET="asset" />
+		      </THEN>
+		      </IF>
+	     </then>
+	     <else>
+	     	<XLAT.STREAM KEY="dvin/UI/Error/loadingassetassettypeunApprovedList" errno="Variables.errno" assettype="unApprovedList.assettype" assetid="unApprovedList.assetid" EVALALL="false"/><br/>
+	     </else>
+	     </if>
+	    </loop>
+   
+    <!-- now approve all the assets -->
+    <APPROVEDASSETS.APPROVEASSETS
+        OBJECT="approvals"
+        TARGET="Variables.target" 
+        TEMPLATEDEPS="true"/>
+    <if COND="IsError.Variables.errno=true">
+    <then>
+   	<SETVAR NAME="saveerrno" VALUE="Variables.errno"/>
+ 		<XLAT.STREAM KEY="dvin/UI/Error/approveassetsError" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false"/><br/>
+		<SETVAR NAME="errno" VALUE="Variables.saveerrno"/>
+     </then>
+    </if>
+</then>
+</if>
+
+</ftcs>

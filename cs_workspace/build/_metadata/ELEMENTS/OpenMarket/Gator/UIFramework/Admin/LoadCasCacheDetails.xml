@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadCasCacheDetails
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Summary Link -->
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="cacheToolSummary"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+
+<REMOVEVAR NAME="OKActions"/>
+<REMOVEVAR NAME="Description"/>
+<REMOVEVAR NAME="ExecuteURL"/>
+
+<XLAT.LOOKUP KEY="fatwire/SystemTools/ManageCache/summary" ENCODE="false" VARNAME="_XLAT_"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="ExecuteURL">
+	<satellite.argument name="page" value="summary"/>
+	<satellite.argument name="cachename" value="cas-cache"/>
+</SATELLITE.LINK>
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+
+<!-- Cluster Info -->
+
+<REMOVEVAR NAME="Description"/>
+<REMOVEVAR NAME="OKActions"/>
+<REMOVEVAR NAME="_XLAT_"/>
+<REMOVEVAR NAME="ExecuteURL"/>
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="casCacheClusterInfo"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+	
+<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/ManageCache" outstring="ExecuteURL">
+	<satellite.argument name="page" value="clusterInfo"/>
+	<satellite.argument name="cachename" value="cas-cache"/>
+</SATELLITE.LINK>
+	
+<XLAT.LOOKUP KEY="fatwire/SystemTools/ManageCache/clusterInfo" ENCODE="false" VARNAME="_XLAT_"/>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+</ftcs>

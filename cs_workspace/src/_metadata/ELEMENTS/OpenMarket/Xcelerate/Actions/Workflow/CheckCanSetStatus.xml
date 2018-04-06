@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateA/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Workflow/CheckCanSetStatus.xml $Revision:
+$Modtime:
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- CheckCanSetStatus.xml
+-
+- DESCRIPTION
+-	Check if SetStatus (Finish My Assignment) is allowed for the asset. Finish My Assignment
+-	is not allowed if any of the following is true:
+-	If the chosen step is a voting step and the asset is locked by the current user 
+-	If the chosen step is not a voting step and the asset is locked by anyone
+-	
+- ARGUMENTS
+-		id				: id of the current asset
+-		AssetType	    : type of the current asset
+-		Step			: WorkflowRoutes id of the chosen step
+-
+- SETS VARIABLES
+- 		foundcheckout		: true or false
+-		lockedby			: name of user by whom the (non-folder) asset is checked out
+-
+- HISTORY 
+-->
+    
+<setvar NAME="foundcheckout" VALUE="false"/>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+    <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+</callelement>
+<if COND="Variables.trackingenabled=true">
+<then>
+    <WorkflowEngine.GetStepID ID="Variables.Step" OBJVARNAME="stepobj"/>
+    <WorkflowStep.GetOverrideFlag NAME="stepobj" VARNAME="allvotes" />
+    
+    <if COND="Variables.allvotes=true">
+    <then>
+        <setvar NAME="locker" VALUE="SessionVariables.username"/>
+    </then>
+    <else>
+        <setvar NAME="locker" VALUE="Variables.empty"/>
+    </else>
+    </if>	
+                     
+    <history TABLE="Variables.AssetType" ASSET="Variables.id" LOCKER="Variables.locker" LIST="ItsHistory"/>
+    <if COND="ItsHistory.#numRows!=0">
+    <then>
+        <if COND="ItsHistory.lockedby!=Variables.empty">
+        <then>
+            <setvar NAME="foundcheckout" VALUE="true"/>
+            <setvar NAME="lockedby" VALUE="ItsHistory.lockedby"/>
+        </then>
+        </if>			
+    </then>
+    </if>	
+</then>
+</if>
+</FTCS>	
+
+
+
+

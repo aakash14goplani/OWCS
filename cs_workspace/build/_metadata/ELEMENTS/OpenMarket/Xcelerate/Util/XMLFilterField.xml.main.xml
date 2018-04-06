@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Util/XMLFilterField</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Util/XMLFilterField</string>
+        <string>Process XML file against a filter file</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Util/XMLFilterField.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Xcelerate/Util/XMLFilterField.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FXcelerate%2FUtil%2FXMLFilterField.xml
+@hashval=653460932
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Util/XMLFilterField
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

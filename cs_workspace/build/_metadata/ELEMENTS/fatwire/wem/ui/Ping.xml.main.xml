@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/wem/ui/Ping</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/wem/ui/Ping</string>
+        <string>Dummy element which spits back a valid json string</string>
+        <string></string>
+        <string></string>
+        <string>fatwire/wem/ui/Ping.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/fatwire/wem/ui/Ping.xml|null|_storable_type\=%2FELEMENTS%2Ffatwire%2Fwem%2Fui%2FPing.xml
+@hashval=-833929071
+key=@ELEMENTCATALOG-fatwire/wem/ui/Ping
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

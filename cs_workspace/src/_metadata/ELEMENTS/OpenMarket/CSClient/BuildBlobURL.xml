@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/BuildBlobURL
+-
+- INPUT
+-  AssetType
+-  asset prefix scatter
+-  lDropField client item list
+-  nameVal - filename
+- OUTPUT
+-  referURL
+-->
+
+<!-- build a BlobServer url -->
+<!-- get blob id -->
+
+<LISTOBJECT.CREATE NAME="assetList" COLUMNS="assetid"/>
+<IF COND="IsVariable.relativeassetid=false" >
+<THEN>
+<LISTOBJECT.ADDROW NAME="assetList" assetid="Variables.asset:id"/>
+</THEN>
+<ELSE>
+<LISTOBJECT.ADDROW NAME="assetList" assetid="Variables.relativeassetid"/>
+</ELSE>
+</IF>
+<LISTOBJECT.TOLIST NAME="assetList" LISTVARNAME="lBlobAsset"/>
+
+<SUBSTRING STR="Variables.cs_dropField" OUTSTR="realDocFieldName" INDEX="10"/>
+<IF COND="IsVariable._Variables.realDocFieldName_ID_=false">
+<THEN>
+   <ASSET.LOAD NAME="attrInst" TYPE="lFamily.attributetype" FIELD="name" VALUE="Variables.realDocFieldName"/>
+   <ASSET.SCATTER NAME="attrInst" PREFIX="attr"/>
+   <SETVAR NAME="_Variables.realDocFieldName_ID_" VALUE="Variables.attr:id"/>
+   <SETVAR NAME="_Variables.realDocFieldName_CT_" VALUE="Variables.attr:contenttype"/>
+</THEN>
+</IF>
+
+<FLEXASSETS.GETVALUES NAME="typeManager" ASSETS="lBlobAsset" ID="Variables._Variables.realDocFieldName_ID_" LISTVARNAME="lBlobID" TYPENAME="lFamily.attributetype" SITE="Variables.pubid"/> 
+
+<IF COND="Variables._Variables.realDocFieldName_CT_=Variables.empty">
+<THEN>
+   <!-- try getting from mimetype table -->
+   <STRINGLIST NAME="lFileExtension" STR="Variables.nameVal" DELIM="."/>
+   <SETROW LIST="lFileExtension" ACTION="LAST"/>
+   <IF COND="IsVariable._MT_lFileExtension.ITEM=true">
+   <THEN>
+      <SETVAR NAME="packedCT" VALUE="Variables._MT_lFileExtension.ITEM"/>
+   </THEN>
+   <ELSE>
+      <SETVAR NAME="packedCT" VALUE="application/unknown"/>
+   </ELSE>
+   </IF>
+</THEN>
+<ELSE>
+   <SETVAR NAME="packedCT" VALUE="Variables.attr:contenttype"/>
+</ELSE>
+</IF>
+
+<setvar NAME="blobwhere"  VALUE="lBlobID.value"/>
+<URL.PACK VALUE="Variables.nameVal" VARNAME="packedFilename"/>
+<URL.PACK VALUE="Variables.packedFilename" VARNAME="packedFilename"/>
+<SETVAR NAME="referURL" VALUE="Variables.cgipathapprootContentServer?pagename=OpenMarket/Xcelerate/Util/StreamBinary(?)blobwhere=Variables.blobwhere(?)mimetype=Variables.packedCT(?)filename=Variables.packedFilename(?)username=(Username)(?)password=(Password)(?)cs.session=false"/>
+
+</FTCS> 

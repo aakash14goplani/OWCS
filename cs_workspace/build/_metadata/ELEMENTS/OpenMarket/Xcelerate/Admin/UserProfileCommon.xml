@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/UserProfileCommon.xml $ 
+
+-->
+
+<!--
+- Confidential and Proprietary Information of Oracle Corp.
+-					All Rights Reserved.
+-
+- UserProfileCommon.xml
+-
+- DESCRIPTION
+-	Allow an administrator to set the profile for users (email and locale preferences)
+-
+- HISTORY 
+-->
+
+<!-- first check to see if the user is logged in or not -->
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceleditor"/>
+<if COND="Variables.errno=0">
+    <then>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Security/TimeoutError" outstring="urltimeouterror">
+        </SATELLITE.LINK>
+        <REPLACE STR="Variables.urltimeouterror">
+            <script LANGUAGE="JavaScript">
+                parent.parent.location="Variables.urltimeouterror";
+            </script>
+        </REPLACE>
+        <throwexception/>
+    </then>
+</if>
+
+
+</FTCS>

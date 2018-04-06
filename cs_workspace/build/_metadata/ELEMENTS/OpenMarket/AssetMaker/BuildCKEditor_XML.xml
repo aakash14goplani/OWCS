@@ -1,0 +1,429 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- 
+$Revision: 21 $ 
+$Modtime: 2/27/04 3:19p $ 
+-->
+
+<!--
+ Confidential and Proprietary Information of FutureTense Inc.
+					All Rights Reserved.
+
+
+ Comments:
+	This element is called from OpenMarket/AssetMaker/BuildCKEditor.jsp
+	This element builds an FCK Editor in the asset edit screen.
+	The set of xml code that follows this comment is the exact one that is used
+	to build a TEXT AREA in the asset edit screen. We just need to create a text area and 
+	then call the FCK Editor script to override that text area.
+	
+	The default width and height(and other parameters) are specified from the BuildFCKEditor.jsp. We try to read the
+	height and width for the fck editor from the Asset Descriptor file(if it is specified, and by using
+	Variables.assetmaker/property/Variables.fieldname/inputform/width height etc) and if they are null
+	we default to the original values specified by BuildCKEditor.jsp
+	
+	In order to pass the height, width, basepath, configuration and other such values to the script function
+	we need to create hidden fields and name them accordingly so that their values may be accessed from within 
+	the script
+
+
+-->
+<!--
+  [2008-04-01 KGF] (#16838)
+    store the FCK parameters in JS vars, not hidden fields.
+  [2008-04-10 KGF] (#16868)
+    My #16838 fix brought to light an issue with the fallback logic for
+    if width/height were not specified in the ADF.
+    (Namely, it wasn't actually working the whole time.)
+
+                    C K E D I T O R   3.2
+
+   Modified: April 06, 2010
+   By:       JAG
+   Reason:   Migrated, Ported to latest CKEditor  Dropped FCKEditor ( Not Supported )
+
+-->
+<replaceall list="Variables._genId">
+<script type="text/javascript">
+var ckproperties_Variables._genId = new Array();
+<IF COND="IsVariable.width=true">
+<THEN>
+	ckproperties_Variables._genId['width'] = '<STRING.STREAM VARIABLE="width"/>';
+</THEN>
+</IF>
+<IF COND="IsVariable.height=true">
+<THEN>
+	ckproperties_Variables._genId['height'] = '<STRING.STREAM VARIABLE="height"/>';
+</THEN>
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/script=true">
+<THEN>
+	ckproperties_Variables._genId['script'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/script"/><![CDATA["]]>;
+</THEN>
+<ELSE>
+    ckproperties_Variables._genId['script'] = "FALSE";
+	<ICS:SETVAR NAME="script" VALUE="false"/>
+</ELSE>
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/lazyload=true">
+<THEN>
+	ckproperties_Variables._genId['lazyload'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/lazyload"/><![CDATA["]]>;
+	<ICS:SETVAR NAME="lazyload" VALUE="true"/>
+</THEN>
+<ELSE>
+    ckproperties_Variables._genId['lazyload'] = "TRUE";
+	<ICS:SETVAR NAME="lazyload" VALUE="true"/>
+</ELSE>
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/imagepickerid=true">
+  <THEN>
+	ckproperties_Variables._genId['imagepickerid'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/imagepickerid"/><![CDATA["]]>;
+  </THEN>  
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/config=true">
+  <THEN>
+	ckproperties_Variables._genId['config'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/config"/><![CDATA["]]>;
+  </THEN>  
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/configobj=true">
+  <THEN>
+	ckproperties_Variables._genId['configobj'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/configobj"/><![CDATA["]]>;
+  </THEN>  
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/imageassettype=true">
+  <THEN>
+	ckproperties_Variables._genId['imageassettype'] = <![CDATA["]]><STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/imageassettype"/><![CDATA["]]>;
+  </THEN>  
+</IF>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/embeddedlinks=true">
+  <THEN>
+	ckproperties_Variables._genId['embeddedlinks'] = <![CDATA["]]>
+	<STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/embeddedlinks"/><![CDATA["]]>;
+  </THEN>
+  <ELSE>
+	ckproperties_Variables._genId['embeddedlinks'] = "false";
+  </ELSE>
+</IF>
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/toolbar=true">
+<THEN>
+	ckproperties_Variables._genId['toolbar'] = '<STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/toolbar"/>';
+</THEN>
+<ELSE>
+	ckproperties_Variables._genId['toolbar'] = '<STRING.STREAM VARIABLE="toolbar"/>';
+</ELSE>
+</IF>
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/resize=true">
+<THEN>
+	ckproperties_Variables._genId['resize'] = '<STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/resize"/>';
+	<SETVAR NAME="resize" VALUE=""/>
+</THEN>
+<ELSE>
+	ckproperties_Variables._genId['resize'] = '<STRING.STREAM VARIABLE="resize"/>';
+	<SETVAR NAME="resize" VALUE="resize:none;"/>
+</ELSE>
+</IF>
+<![CDATA[
+	ckproperties_Variables._genId['basepath'] = "]]><STRING.STREAM VARIABLE="basepath" ENCODE="false" ESCAPE="true"/><![CDATA[";
+	ckproperties_Variables._genId['assetType'] = "]]><STRING.STREAM VARIABLE="assetType" ENCODE="false" ESCAPE="true"/><![CDATA[";
+	ckproperties_Variables._genId['fieldname'] = "]]><STRING.STREAM VARIABLE="fieldname" ENCODE="false" ESCAPE="true"/><![CDATA[";
+	ckproperties_Variables._genId['ckeditorlocale'] = "]]><STRING.STREAM VARIABLE="ckeditorlocale" ENCODE="false" ESCAPE="true"/>";
+	
+</script>
+</replaceall>
+<ICS.GETPROPERTY NAME="ft.cgipath" FILE="futuretense.ini" OUTPUT="cgipath"/>
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+
+<setvar NAME="defaultFormStyleClass" VALUE=""/>
+<if COND="Variables.defaultFormStyle=true">
+<then>
+	<setvar NAME="defaultFormStyleClass" VALUE="defaultFormStyle"/>
+</then>
+</if>
+<div style="display: table;">
+<TEXTAREA class="Variables.defaultFormStyleClass besideHelpIconFloatLeft" NAME="Variables.AssetType:Variables.fieldname"  ID="Variables.AssetType:Variables.fieldname"
+	style="Variables.resize width:Variables.width; height: Variables.height;" 
+	WRAP="Variables.textareawrap" 
+	REPLACEALL="Variables.defaultFormStyleClass,Variables.resize,Variables.width,Variables.height,Variables.fieldname,Variables.fieldvalue,Variables.textareawrap,Variables.maxlength,Variables.AssetType">
+<STRING.STREAM VARIABLE="fieldvalue"/></TEXTAREA>
+<div class="besideHelpIcon"><IMG style="vertical-align: top; margin-left: 10px; display: inline-block;" SRC="Variables.helpimage" TITLE="Variables.alttext" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage"/></div>
+</div>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/embeddedlinks=true">
+<then>
+	<setvar NAME="embeddedlinks" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/embeddedlinks"/>
+	<if COND="Variables.embeddedlinks=YES">
+	<then>
+	   <td valign="top">
+		<setvar NAME="enableAddLink" VALUE="0"/>
+		<INDEXOF STR="CS.Header.User-Agent" WHAT="MSIE" OUTSTR="dummy" />
+		<if COND="Variables.errno!=1">
+		<then>
+			<setvar NAME="enableAddLink" VALUE="1"/>
+		</then>
+		<else>
+			<INDEXOF STR="CS.Header.User-Agent" WHAT="safari" OUTSTR="dummy" />
+			<if COND="Variables.errno!=1">
+			<then>
+				<setvar NAME="enableAddLink" VALUE="1"/>
+			</then>
+			<else>
+				<INDEXOF STR="CS.Header.User-Agent" WHAT="mozilla" OUTSTR="dummy" />
+				<if COND="Variables.errno!=1">
+				<then>
+					<setvar NAME="enableAddLink" VALUE="3"/>
+				</then>
+				</if>
+			</else>
+			</if>
+		</else>
+		</if>
+		</td>
+	</then>
+	<else>
+	<setvar NAME="enableAddLink" VALUE="0"/>
+	</else>
+	</if>
+</then>
+<else>
+	<setvar NAME="enableAddLink" VALUE="0"/>
+</else>
+</if>
+<setvar NAME="errno" VALUE="0" />
+<!-- a url field may be a TEXTAREA or UPLOAD, if it is text area, build up a list for the preUpdate element -->
+<BEGINS STR="Variables.fieldname" WHAT="url"/>
+<if COND="Variables.errno=1">
+<then>
+	<STRING.ENCODE VARIABLE="Variables.fieldname" VARNAME="Variables.fieldname"/>
+	<INPUT TYPE="hidden" NAME="editfileastext" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+</then>
+</if>
+
+<removevar NAME="alttext"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/FCKEditorRenderer" outstring="urlFCKEditorRenderer">
+	<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	<satellite.argument name="cs_imagedir" value="Variables.cs_imagedir"/>
+</SATELLITE.LINK>
+
+<IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/imagepickerid=true">
+<THEN>
+<callelement NAME="OpenMarket/AssetMaker/FCKIMAGEPICKER">
+	<argument name="imagepickerid" value="Variables.assetmaker/property/Variables.fieldname/inputform/imagepickerid" 
+	REPLACEALL="Variables.assetmaker"/>
+</callelement>
+</THEN>
+</IF>
+
+<REPLACEALL LIST="Variables.defaultFormStyleClass,Variables.cgipath,Variables._genId,Variables.fckeditorlocale,Variables.enableAddLink,Variables.ContentDetails:name,Variables.ContentDetails:id,Variables.fielddescription,Variables.showSiteTree,Variables.enableAddLink,Variables.cs_environment,Variables.urlFCKEditorRenderer,Variables.ip_assettypename,Variables.ip_attributetypename,Variables.ip_attributename,Variables.AssetType,Variables.fieldname">
+<script type="text/javascript"><![CDATA[
+	CKEDITOR.config.csRootContext = "../.." + Variables.cgipath ;
+	CKEDITOR.config.assetId = 'Variables.ContentDetails:id';
+	CKEDITOR.config.assetName = 'Variables.ContentDetails:name';
+	CKEDITOR.config.assetType = ckproperties_Variables._genId['assetType'];
+	CKEDITOR.config.urlFCKEditorRenderer = 'Variables.urlFCKEditorRenderer';
+	CKEDITOR.config.showSiteTree = 'Variables.showSiteTree';
+	// Retrieve one of the Attribute Property
+	// To determine if we allow Embedded Asset Links
+	CKEDITOR.config.cs_environment = 'Variables.cs_environment';
+	CKEDITOR.config.CSSitePath = 'Variables.cgipath';
+	CKEDITOR.config.AutoDetectLanguage = 'false';
+	CKEDITOR.config.editingstyle = 'single';
+	CKEDITOR.config.language = CKEDITOR.lang.detect('en',ckproperties_Variables._genId['ckeditorlocale']);
+	CKEDITOR.config.BasePath = ckproperties_Variables._genId['basepath'];
+	CKEDITOR.config.doHtml = "true"  ;
+	CKEDITOR.config.doHtmlEncoding = true ;
+	var DEFAULT_HEIGHT_VALUE = "200px";
+	var DEFAULT_WIDTH_VALUE = "";
+	var DEFAULT_TOOLBAR_VALUE = "CS";
+	if (ckproperties_Variables._genId['imagepickerid'])
+	{
+		ckproperties_Variables._genId['ip_assettypename'] = 'Variables.ip_assettypename';
+		ckproperties_Variables._genId['ip_attributetypename'] = 'Variables.ip_attributetypename';
+		ckproperties_Variables._genId['ip_attributename'] = 'Variables.ip_attributename';				
+	}
+	// Attaches all CKEditor Event Listeners
+	function setCKEventListeners_Variables._genId(editor)
+	{
+		// Fired when the attributes CKEDITOR instance is created, fully initialized,
+		// ALL FW plugins loaded and ready for interaction.
+		// Set Plugin Command Buttons DISABLED, etc depending on Configuration..
+		editor.on( 'instanceReady',
+			 function( e )
+			 {
+				 // Counter tracks the total initialized instances
+				 // Created and Initilized Running CKEditor instances..
+				 fck_loadCompleteCount++;
+			}) ;
+			
+			editor.on( 'mode',
+				 function( e )
+				 {
+					 // Editor is ready, loaded and intilized
+					 // Get the editor Handle Instance
+					 var ckeditor = e.editor ;
+					 // Get the editor Config
+					 var config = ckeditor.config ;
+					 // Set Configuration to HTML from Rendered Data  global flag
+					 
+					 // Get All FW Asset Link / Include plugin commands
+					 var cmdinclude 	= ckeditor.getCommand( 'fwincludeasset') ;
+					 var cmdlink    	= ckeditor.getCommand( 'fwlinkasset') ;
+					 var cmdincludenew	= ckeditor.getCommand( 'fwincludenewasset' ) ;
+					 var cmdlinknew    	= ckeditor.getCommand( 'fwlinknewasset') ;
+					 var cmdip 			= ckeditor.getCommand( 'fwimagepicker' ) ;
+	
+					 // If the attribute property Allow Embedded Links: is No
+					 // Then Disable THE TRAY of Include / Link Assets plus Image Picker  
+					 if(ckeditor.config.enableEmbeddedLinks=='0')
+					 {
+					   // No Allowed Embedded Links 
+					   if(cmdinclude) cmdinclude.setState(CKEDITOR.TRISTATE_DISABLED);
+					   if(cmdlink) cmdlink.setState(CKEDITOR.TRISTATE_DISABLED);
+					   if(cmdincludenew) cmdincludenew.setState(CKEDITOR.TRISTATE_DISABLED);
+					   if(cmdlinknew) cmdlinknew.setState(CKEDITOR.TRISTATE_DISABLED);                                   
+					   if(cmdip) cmdip.setState(CKEDITOR.TRISTATE_DISABLED);
+					 } else {
+						 if(ckeditor.mode === 'wysiwyg'&&cmdip){
+							if(!ckeditor.config.ip_assettypename)
+								cmdip.setState(CKEDITOR.TRISTATE_DISABLED);
+							else
+								cmdip.setState(CKEDITOR.TRISTATE_OFF);
+						}
+					}
+				}) ;
+    }
+
+    // Function to add the new keys to the config object
+	function addNewKeys(fromObj,toObj){
+		if(toObj['width'] == '#DEFAULT_WIDTH#' && fromObj['width']){
+			toObj['width'] = fromObj['width'];
+		}
+		
+		if(toObj['height'] == '#DEFAULT_HEIGHT#'  && fromObj['height']){
+			toObj['height'] = fromObj['height'];
+		} 
+		
+		if(toObj['toolbar'] == '#DEFAULT_TOOLBAR#'  && fromObj['toolbar']){
+			toObj['toolbar'] = fromObj['toolbar'];
+		}
+		
+		if(((toObj['resize_enabled'] && toObj['resize_enabled'].toString() == '') ||  typeof(toObj['resize_enabled']) == "undefined")  && fromObj['resize_enabled']){
+			toObj['resize_enabled'] = fromObj['resize_enabled'];
+		}
+		for (var key in fromObj) {
+			if(typeof toObj[key]=="undefined")
+				toObj[key] = fromObj[key];
+		}
+	}
+
+	function loadCkeditor_Variables._genId()
+    {
+		var ckid = ckproperties_Variables._genId['assetType'] + ':' + ckproperties_Variables._genId['fieldname'],configobj,
+			config_Variables._genId={};
+		if(CKEDITOR.config.cs_environment=="ucform"){
+	  		DEFAULT_TOOLBAR_VALUE = "SITES";
+		}		
+		if(ckproperties_Variables._genId['configobj'])
+		configobj=eval('('+(ckproperties_Variables._genId['configobj']).replace(/&#34;/g,'"').replace(/&#39;/g,"'")+')');
+		if(ckproperties_Variables._genId['config'])
+			config_Variables._genId.customConfig=ckproperties_Variables._genId['config'];
+		else
+		config_Variables._genId.customConfig="config.js";
+		config_Variables._genId.fieldName= ckproperties_Variables._genId['assetType'] + ':' + ckproperties_Variables._genId['fieldname'];
+		config_Variables._genId.fieldDesc = 'Variables.fielddescription';
+		config_Variables._genId.width = (ckproperties_Variables._genId['width']&&ckproperties_Variables._genId['width'] != '#DEFAULT_WIDTH#') ? ckproperties_Variables._genId['width'] : "#DEFAULT_WIDTH#";
+		config_Variables._genId.toolbar = (ckproperties_Variables._genId['toolbar']&&ckproperties_Variables._genId['toolbar'] != '#DEFAULT_TOOLBAR#') ? ckproperties_Variables._genId['toolbar'] : "#DEFAULT_TOOLBAR#";
+		config_Variables._genId.height = (ckproperties_Variables._genId['height']&&ckproperties_Variables._genId['height'] != '#DEFAULT_HEIGHT#') ? ckproperties_Variables._genId['height']:"#DEFAULT_HEIGHT#";
+		if(ckproperties_Variables._genId['resize'] != ''){
+			config_Variables._genId.resize_enabled= (ckproperties_Variables._genId['resize'].toUpperCase()=='TRUE')? true: false;
+		}
+		
+		config_Variables._genId.enableEmbeddedLinks = 'Variables.enableAddLink';
+		config_Variables._genId.ip_assettypename = ckproperties_Variables._genId['ip_assettypename'];
+		config_Variables._genId.ip_attributetypename = ckproperties_Variables._genId['ip_attributetypename'];
+		config_Variables._genId.ip_attributename = ckproperties_Variables._genId['ip_attributename'];						
+		
+		// Set the remaining inline parameters other than the default ones. 
+		if(configobj){
+			addNewKeys(configobj,config_Variables._genId);
+		}
+		config_Variables._genId.imageassettype = ckproperties_Variables._genId['imageassettype'];
+		config_Variables._genId.script= ckproperties_Variables._genId['script'];
+		var customConfig = CKEDITOR.getUrl( config_Variables._genId.customConfig);
+		//Load the custom configuration file
+		CKEDITOR.scriptLoader.load( customConfig, function()
+		{
+			//We dont need the custom config now so we can remove it
+			config_Variables._genId.customConfig = '';
+			//Create an empty object
+			var _temp = {};
+			//Read the custom config file into this temp object
+			if ( CKEDITOR.editorConfig )
+			 	CKEDITOR.editorConfig(_temp);
+			//Add only the new properites into the new config object
+			//Which means inline properties take precendence over the file config
+			
+			addNewKeys(_temp, config_Variables._genId );
+			//Remove the toolbar from the default config since CS uses its own default toolbar
+			CKEDITOR.config['toolbar']=undefined;
+			//Again add only those proprties from the default config which are
+			//not available in our new config object.
+			addNewKeys(CKEDITOR.config, config_Variables._genId );
+			if(config_Variables._genId['width'] == '#DEFAULT_WIDTH#'){
+				config_Variables._genId['width'] = DEFAULT_WIDTH_VALUE;
+			}
+			if(config_Variables._genId['height'] == '#DEFAULT_HEIGHT#'){
+				config_Variables._genId['height'] = DEFAULT_HEIGHT_VALUE;
+			}
+			if(config_Variables._genId['toolbar'] == '#DEFAULT_TOOLBAR#'){
+				config_Variables._genId['toolbar'] = DEFAULT_TOOLBAR_VALUE;
+			}
+			if(config_Variables._genId['resize_enabled'] && (config_Variables._genId['resize_enabled'] == '' || config_Variables._genId['resize_enabled'] == 'false')){
+				config_Variables._genId['resize_enabled'] = false;
+			}			
+			ckeditor = new CKEDITOR.replace( ckid , config_Variables._genId );
+			if(config_Variables._genId['width']==""||config_Variables._genId['width']=="px"){
+				ckeditor.on('instanceReady', function(e) {
+					dojo.addClass(ckeditor.container.$, 'Variables.defaultFormStyleClass');
+				});
+			}
+			setCKEventListeners_Variables._genId(ckeditor);
+		});
+	}
+	
+	if(ckproperties_Variables._genId['lazyload'] == 'FALSE')
+	{	
+		loadCkeditor_Variables._genId();
+	}
+	else
+	{	var textarea_Variables._genId = document.getElementById('Variables.AssetType:Variables.fieldname');
+		textarea_Variables._genId.onclick = function()
+		{	
+			loadCkeditor_Variables._genId();						
+		}   
+	}		
+ 
+
+]]></script>
+</REPLACEALL>
+<REMOVEVAR NAME="ip_assettypename"/>
+<REMOVEVAR NAME="ip_attributetypename"/>
+<REMOVEVAR NAME="ip_attributename"/>
+<REMOVEVAR NAME="defaultFormStyleClass"/>
+<REMOVEVAR NAME="width"/>
+</FTCS> 

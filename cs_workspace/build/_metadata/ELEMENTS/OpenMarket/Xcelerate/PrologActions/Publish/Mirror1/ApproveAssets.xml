@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/ApproveAssets
+    -
+    - INPUT
+    -
+    -      Variables.list -- IList of assets to be approved
+    -      Variables.recursive -- (boolean)approve dependencies or not
+    -      Variables.force -- (boolean)(boolean)force approval or not
+    -      Variables.target -- target id
+    -      Variables.dryrun -- whether this is a dry run or a real approval
+    - OUTPUT
+    -
+    -->
+
+    <!-- logmsg STR="In approve assets"/ -->
+
+    <!-- find unapproved assets -->
+    <if COND="Variables.force=false">
+        <then>
+            <ApprovedAssets.FindUnapprovedAssets LISTVARNAME="unApprovedList"
+                                                 LIST="Variables.list"
+                                                 TEMPLATEDEPS="true"
+                                                 TARGET="Variables.target" />
+        </then>
+        <else>
+            <COPYLIST LIST="unApprovedList" FROM="Variables.list" />
+        </else>
+    </if>
+
+    <!-- logmsg STR="Done finding unapproved assets"/ -->
+    <!-- create approvals -->
+    <if COND="IsError.Variables.errno=false">
+        <then>
+            <Approvals.create OBJVARNAME="approvals" />
+        </then>
+    </if>
+
+    <if COND="IsError.Variables.errno=false">
+        <then>
+
+            <HASH.CREATE NAME="AssetDT" />
+
+            <!-- if we are asked to do dependents of the selected assets -->
+            <IF COND="Variables.recursive=true">
+                <THEN>
+                    <!-- get all the dependencies of each into the approval system -->
+                    <LOOP LIST="unApprovedList">
+                        <ASSET.LOAD NAME="anAsset" TYPE="unApprovedList.assettype" OBJECTID="unApprovedList.assetid" />
+                        <if COND="IsError.Variables.errno=false">
+                            <then>
+                                <!-- call recursive element which only approves necessary number of dependency depths-->
+                                <CALLELEMENT NAME="OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/ApproveAssetsRecurseHelper"/>
+                            </then>
+                        </if>
+                    </LOOP>
+                </THEN>
+            </IF>
+
+            <!-- If dryrun is set, skip the approval part. Caller can find the approval candidates in the unApprovedList. -->
+            <if COND="Variables.dryrun!=true">
+            <then>
+                <!-- approve the selected assets  -->
+                <LOOP LIST="unApprovedList">
+                    <SETVAR NAME="errno" VALUE="0" />
+                    <!-- test if the asset by that name exists -->
+                    <ASSET.LOAD NAME="anAsset" TYPE="unApprovedList.assettype" OBJECTID="unApprovedList.assetid" />
+                    <if COND="IsError.Variables.errno=false">
+                        <then>
+                            <!-- Record the date-time stamp in case somebody needs it -->
+                            <ASSET.GET NAME="anAsset" FIELD="updateddate" />
+                            <HASH.ADD NAME="AssetDT" KEY="unApprovedList.assetid" VALUE="Variables.updateddate" />
+                            <CALLELEMENT NAME="OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/ApproveAsset">
+                                <ARGUMENT NAME="assetname" VALUE="anAsset" />
+                                <ARGUMENT NAME="target" VALUE="Variables.target" />
+                            </CALLELEMENT>
+                        </then>
+                        <else>
+                            <XLAT.STREAM KEY="dvin/UI/Error/loadingassetassettypeunApprovedList" errno="Variables.errno"
+                                         assettype="unApprovedList.assettype" assetid="unApprovedList.assetid"
+                                         EVALALL="false" />
+                            <br />
+                        </else>
+                    </if>
+                </LOOP>
+
+                <!-- now we should have all assets to approve in the Approvals structure, now actually approve them -->
+                <APPROVEDASSETS.APPROVEASSETS
+                        OBJECT="approvals"
+                        TARGET="Variables.target"
+                        TEMPLATEDEPS="true" />
+                <if COND="IsError.Variables.errno=true">
+                    <then>
+                        <SETVAR NAME="saveerrno" VALUE="Variables.errno" />
+                        <XLAT.STREAM KEY="dvin/UI/Error/approveassetsError" errno="Variables.errno"
+                                     errdetail1="Variables.errdetail1" EVALALL="false" />
+                        <br />
+                        <SETVAR NAME="errno" VALUE="Variables.saveerrno" />
+                    </then>
+                </if>
+            </then>
+            </if>
+        </then>
+        <else>
+            <XLAT.STREAM KEY="dvin/UI/Error/derivinglistofassetstoapprove" errno="Variables.errno" EVALALL="false" />
+            <br />
+        </else>
+    </if>
+</FTCS>

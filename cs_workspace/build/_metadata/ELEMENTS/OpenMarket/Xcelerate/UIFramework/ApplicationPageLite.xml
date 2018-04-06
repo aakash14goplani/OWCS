@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- OpenMarket/Xcelerate/UIFramework/ApplicationPageLite
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/ApplicationPageLite.xml $
+$Revision: 13 $
+$Modtime: 2/29/04 7:16a $
+-->
+
+<!--
+- Confidential and Proprietary Information of divine Inc.
+-					All Rights Reserved.
+-
+- Single frame application page - assumes no tree frame, no banner
+-
+- DESCRIPTION
+-	Given an action, call the element that corresponds to it
+-
+- HISTORY
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/EncodeFieldsValue"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardVariables"/>
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/ApplicationPageLiteBody"/>
+
+</FTCS>
+

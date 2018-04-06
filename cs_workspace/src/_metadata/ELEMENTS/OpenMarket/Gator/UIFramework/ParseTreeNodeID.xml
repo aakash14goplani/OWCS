@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/ParseTreeNodeID
+--
+-- INPUT
+--  Variables.TreeNodeID
+-- OUTPUT
+--  Variables.ID
+--  Variables.AssetType
+--  Variables.SiteID
+--  Variables.AdHoc
+-->
+
+<REMOVEVAR NAME="ID"/>
+<REMOVEVAR NAME="AssetType"/>
+<REMOVEVAR NAME="SiteID"/>
+<REMOVEVAR NAME="AdHoc"/>
+
+<URL.UNPACK VALUE="Variables.TreeNodeID" VARNAME="unpackedTreeNodeID"/>
+<STRINGLIST NAME="nodestr" STR="Variables.unpackedTreeNodeID" DELIM=","/>
+<SETROW LIST="nodestr" ACTION="FIRST"/>
+
+<STRINGLIST NAME="str" STR="nodestr.ITEM" DELIM="="/>
+<SETROW LIST="str" ACTION="FIRST"/>
+<SETVAR NAME="operation" VALUE="str.ITEM"/>
+
+<IF COND="Variables.operation=id">
+<THEN>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="ID" VALUE="str.ITEM"/>
+	<SETROW LIST="nodestr" ACTION="NEXT"/>
+
+	<STRINGLIST NAME="str" STR="nodestr.ITEM" DELIM="="/>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="AssetType" VALUE="str.ITEM"/>
+</THEN>
+</IF>
+
+
+<SETROW LIST="nodestr" ACTION="NEXT"/>
+<STRINGLIST NAME="str" STR="nodestr.ITEM" DELIM="="/>
+<SETROW LIST="str" ACTION="FIRST"/>
+<SETVAR NAME="operation" VALUE="str.ITEM"/>
+<IF COND="Variables.operation=assetname">
+<THEN>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="_parentAssetName" VALUE="str.ITEM"/>
+</THEN>
+</IF>
+
+<SETROW LIST="nodestr" ACTION="NEXT"/>
+<STRINGLIST NAME="str" STR="nodestr.ITEM" DELIM="="/>
+<SETROW LIST="str" ACTION="FIRST"/>
+<SETVAR NAME="operation" VALUE="str.ITEM"/>
+<IF COND="Variables.operation=assetsubtype">
+<THEN>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="_assetsubtype" VALUE="str.ITEM"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.operation=site">
+<THEN>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="SiteID" VALUE="str.ITEM"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.operation=adhoc">
+<THEN>
+	<SETROW LIST="str" ACTION="LAST"/>
+	<SETVAR NAME="AdHoc" VALUE="str.ITEM"/>
+</THEN>
+</IF>
+
+</FTCS> 

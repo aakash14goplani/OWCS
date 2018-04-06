@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AddToActiveListPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<P/>
+
+<IF COND="IsVariable.__NeedRefresh__=true">
+<THEN>
+	<XLAT.LOOKUP VARNAME="AddSuccess" KEY="dvin/UI/AssetMgt/ItemsuccessfullyaddedtoAL" theUserName="Variables.theUserName" EVALALL="false" ENCODE="false"/>
+	<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+	<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+				<argument NAME="__TreeRefreshKeys__" VALUE="Root:ActiveList"/>
+			</callelement>		
+		</then>
+	</if>
+</THEN>
+</IF>
+
+<IF COND="Variables.cs_environment=portal">
+<THEN>
+    <IF COND="Variables.doProceed=true">
+    <THEN>
+        <SETVAR NAME="doProceed" VALUE="false"/>
+        <CALLELEMENT NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+    </THEN>
+    </IF>
+</THEN>
+</IF>
+
+<IF COND="Variables.doProceed=alreadyThere">
+<THEN>
+	<XLAT.LOOKUP VARNAME="AddSuccess" KEY="dvin/UI/AssetMgt/ItemalreadyinAL" theUserName="Variables.theUserName" EVALALL="false"/>
+	<SETVAR NAME="doProceed" VALUE="true"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.doProceed=true">
+<THEN>
+	<div class="width-outer-70">
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="msgtext" VALUE="Variables.AddSuccess"/>
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>
+	</div>
+   
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/PrologActions/ShowMyActiveListFront"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/ShowMyActiveListFront"/>
+</THEN>
+</IF>
+
+</FTCS> 

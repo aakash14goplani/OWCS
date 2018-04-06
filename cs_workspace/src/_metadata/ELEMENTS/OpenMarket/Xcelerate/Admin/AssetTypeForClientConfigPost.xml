@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/AssetTypeForClientConfigPost.xml $
+
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Admin control of specifying attributes of an external client for each of
+-     of the columns for a given asset type, subtype, pubid and clientapplication.
+-     Known Attributes for MSWord:  
+-     	name:  enable  ; values:  true,false
+-		name:  preserveformat  ; values:  true,false
+-
+- INPUT
+-   action   - list,edit  when pagetype is front, empty when pagetype is post
+-   pagetype - front,post
+-   clientid - id of the row in externalclients table 
+-               (assettypeid,clientapp,pubid combination)
+-   subtype -   asset subtype
+-->
+
+
+<!-- type is either front or post -->
+
+
+		<if COND="IsVariable.subtype=false">
+		<then>
+			<SETVAR NAME="subtype" VALUE="Variables.empty"/>
+		</then>
+		</if>
+		<STRINGLIST NAME="aTypeList" STR="Variables.rowList" DELIM=","/>
+		<STRINGLIST NAME="attribList" STR="Variables.columnList" DELIM=","/>
+		<LOOP LIST="aTypeList">
+			<LOOP LIST="attribList">
+				<SETVAR NAME="errno" VALUE="0"/>
+                <ICS.RESOLVEVARIABLES NAME="$(Variables.$(aTypeList.ITEM)-$(attribList.ITEM))" OUTPUT="tmp" DELIMITED="true"/>
+                <IF COND="Variables.errno=0">
+				<THEN>
+					<SETVAR NAME="attribVal" VALUE="true"/>
+				</THEN>
+				<ELSE>
+					<SETVAR NAME="attribVal" VALUE="false"/>
+				</ELSE>
+				</IF>
+				<!-- check if the row exists, then update or insert as appropriate -->
+				<SETVAR NAME="errno"  VALUE="0"/>
+				<SETVAR NAME="toSave" VALUE="false"/>
+				<EXTERNALCLIENTSCONFIGMANAGER.LOADFROMFIELDS OBJVARNAME="aRec" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="aTypeList.ITEM" ACTION="attribList.ITEM"/>
+				<IF COND="Variables.errno=0"> 
+				<THEN>
+					<EXTERNALCLIENTSCONFIGITEM.GETVALUE NAME="aRec"  VARNAME="dbVal"/>
+					<IF COND="Variables.dbVal!=Variables.attribVal">
+					<THEN>
+						<SETVAR NAME="toSave" VALUE="true"/>
+						<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.attribVal"/>
+					</THEN>
+					</IF>
+				</THEN>
+				<ELSE>
+					<!-- no row found, null object returned -->
+					<IF COND="Variables.errno=-12052">
+					<THEN>
+						<!-- add a row to externalclientsconfig table  -->
+						<SETVAR NAME="toSave" VALUE="true"/>
+						<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+						<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+						<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+						<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="attribList.ITEM"/>
+						<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.attribVal"/>
+						<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeList.ITEM"/>
+					</THEN>
+					<ELSE>
+						<XLAT.STREAM KEY="dvin/UI/Admin/Error/enablingassettypesubtypeCSDesktopint"/><br/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/field"/>: <STRING.STREAM VALUE="aTypeList.ITEM"/> <br/> 
+						<XLAT.STREAM KEY="dvin/UI/Admin/attribute"/>: <STRING.STREAM VALUE="attribList.ITEM"/> <br/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/value"/>: <STRING.STREAM VALUE="Variables.attribVal"/><br/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/ErrorNumberiserrno" errno="Variables.errno" EVALALL="false"/><br/>
+						<THROWEXCEPTION/>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+				<SETVAR NAME="errno" VALUE="0"/>
+				<IF COND="Variables.toSave=true">
+				<THEN>
+					<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+				</THEN>
+				</IF>
+				<IF COND="Variables.errno!=0">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/UI/Admin/Error/enablingassettypesubtypeCSDesktopint"/><br/>
+					<XLAT.STREAM KEY="dvin/UI/Admin/field"/>: <STRING.STREAM VALUE="aTypeList.ITEM"/> <br/> 
+					<XLAT.STREAM KEY="dvin/UI/Admin/attribute"/>: <STRING.STREAM VALUE="attribList.ITEM"/> <br/>
+					<XLAT.STREAM KEY="dvin/UI/Admin/value"/>: <STRING.STREAM VALUE="Variables.attribVal"/><br/>
+					<XLAT.STREAM KEY="dvin/UI/Admin/ErrorNumberiserrno" errno="Variables.errno" EVALALL="false"/><br/>
+					<THROWEXCEPTION/>
+				</THEN>
+				</IF>    
+				<REMOVEVAR NAME="tmp"/>
+			</LOOP>
+		</LOOP>
+		<!-- call this element again to redisplay the new status -->
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeForClientConfigFront">
+				<ARGUMENT NAME="action" VALUE="list"/>
+				<ARGUMENT NAME="clientid" VALUE="Variables.clientid"/>
+				<ARGUMENT NAME="subtype" VALUE="Variables.subtype"/>
+		</CALLELEMENT>   
+
+
+</FTCS>

@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/StandardVariables.xml $ 
+$Revision: 7 $ 
+$Modtime: 5/27/04 2:24p $ 
+-->
+<!-- OpenMarket/Xcelerate/UIFramework/StandardVariables
+- Use this element to initialize all standard variables that should be "environmental".
+- This element should be called from all places in the standard edit frame where <HTML> is found.
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<if COND="IsVariable.cs_environment=false">
+<then>
+    <setvar NAME="cs_environment" VALUE="standard" />
+</then>
+</if>
+<if COND="IsVariable.cs_formmode=false">
+<then>
+    <setvar NAME="cs_formmode" VALUE="WCM"/>
+</then>
+</if>
+
+</FTCS>
+
+

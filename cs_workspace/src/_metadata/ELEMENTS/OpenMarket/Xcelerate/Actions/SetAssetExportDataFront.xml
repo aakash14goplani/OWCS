@@ -1,0 +1,552 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/SetAssetExportDataFront
+-
+- INPUT
+-	Variables from asset - id, name,updatedby, updateddate, description, status, filename,path
+-  Variables.atdescription - asset type name
+-  refsTotal - number of page references object, names refs[nn]
+-  Variables.ex:path, Variables.ex:filename - exiting target specific overrides
+-  Templates - (if OLDTEMPLAT!=true) list of templates
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function SetCancelFlag () {
+	var obj = document.forms[0].elements[0];
+
+	obj.form.elements['upcommand'].value="cancel";
+	obj.form.submit();
+	return false;
+}
+function checkfields()
+{
+	var obj = document.forms[0].elements[0];
+	if (obj.form.elements['ex:filename'].value!="")
+	{
+		if (obj.form.elements['ex:filename'].value.indexOf("/")!=-1 ||
+			obj.form.elements['ex:filename'].value.indexOf("\\")!=-1) {
+			]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/Filenamemustnotcontainslashes" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+			obj.form.elements['ex:filename'].focus();
+			return false;
+		}
+	}
+	
+	if ( obj.form.elements['ex:isPublishPoint'][0].checked==true) {
+		var numtemplates = obj.form.elements['numTemplates'].value;
+		var numsimplefilename = 0;
+		for ( var i=0 ; i < numtemplates ; i++ )
+		{
+			if ( obj.form.elements['ex:simplefilename'+i].checked==true ) {
+				numsimplefilename++;
+			}
+		}
+		if ( numsimplefilename > 1 ) {
+			]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/NoMoreThanOneTemplateUsingSpecifiedFilename" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+			return false;
+		}
+	}
+
+	if ( obj.form.elements['ex:isPublishPoint'][0].checked==true) {
+		var numtemplates = obj.form.elements['numTemplates'].value;
+		for ( var i=0 ; i < numtemplates ; i++ )
+		{
+			if ( obj.form.elements['ex:templates'+i].checked==true ) {
+				obj.form.submit();
+				return false;
+			}
+		}
+		]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Error/ToMakePublishStartingPointSelectTemplate" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+		return false;
+	}
+
+	obj.form.submit();
+	return false;
+}
+function setIsPublishPoint( ispubpoint )
+{
+	var obj = document.forms[0].elements[0];
+	var numtemplates = obj.form.elements['numTemplates'].value;
+	if ( ispubpoint ==false )
+	{
+		for ( var i=0 ; i < numtemplates ; i++ )
+		{
+			obj.form.elements['ex:templates'+i].checked=false;
+			obj.form.elements['ex:simplepath'+i].checked=false;
+			obj.form.elements['ex:simplefilename'+i].checked=false;
+			if ( obj.form.elements['ex:wrapperpage'+i].type=="select-one" )
+				obj.form.elements['ex:wrapperpage'+i].selectedIndex=0;
+		}
+	} 
+}
+
+function setTemplate( rownum )
+{
+	var obj = document.forms[0].elements[0];
+	if ( obj.form.elements['ex:templates'+rownum].checked==false )
+	{
+		obj.form.elements['ex:simplepath'+rownum].checked=false;
+		obj.form.elements['ex:simplefilename'+rownum].checked=false;
+		if ( obj.form.elements['ex:wrapperpage'+rownum].type=="select-one" )
+			obj.form.elements['ex:wrapperpage'+rownum].selectedIndex=0;
+	}
+	else {
+		obj.form.elements['ex:isPublishPoint'][0].checked=true;
+	}
+}
+function validatefilename()
+{
+	var obj = document.forms[0].elements[0];
+	if (obj.form.elements['ex:filename'].value!="")
+	{
+		if (obj.form.elements['ex:filename'].value.indexOf("/")!=-1 ||
+			obj.form.elements['ex:filename'].value.indexOf("\\")!=-1) {
+			]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/Filenamemustnotcontainslashes" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+			obj.form.elements['ex:filename'].focus();
+			return false;
+		}
+	}
+}
+]]>
+</SCRIPT>
+
+<SETVAR NAME="buttonSrc" VALUE="Save"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<INPUT TYPE="hidden" NAME="target" VALUE="Variables.target" REPLACEALL="Variables.target"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<INPUT TYPE="hidden" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+
+<if COND="Variables.doproceed=true">
+<then>
+	<!-- Action bar -->
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">
+	</callelement>
+	
+   <table class="width-outer-70" border="0" cellpadding="0" cellspacing="0">
+ 	<tr>
+		<td><span class="title-text"><STRING.STREAM VALUE="Variables.atDescription"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.name"/></span></td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+	<tr>
+        <td align="right">
+        <XLAT.LOOKUP KEY="dvin/UI/CancelSetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+        <A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+	  <if COND="Variables.pubfact:OLDTEMPLATE!=true">
+        <then>
+            <XLAT.LOOKUP KEY="dvin/UI/SetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+            <A HREF="javascript:void(0)" onclick="return checkfields();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.buttonSrc"/></CALLELEMENT></A>
+	  </then>
+        <else>
+            <XLAT.LOOKUP KEY="dvin/UI/SetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+            <A HREF="javascript:void(0)" onclick="document.forms[0].elements[0].form.submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.buttonSrc"/></CALLELEMENT></A>
+        </else>
+        </if>
+
+        </td>
+    </tr>
+
+
+	<tr>
+		<td>
+		<table border="0" cellpadding="0" cellspacing="0">
+			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar">
+				<argument NAME="SpaceAbove" VALUE="No"/>
+			</callelement>-->
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</td>
+				<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.name"/></td>
+			</tr>
+		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Description"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.description"/></td>
+			</tr>
+		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Template"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowTemplateDetails">
+									        <!--also depends on Variables.AssetType-->
+						<argument NAME="template" VALUE="Variables.template"/>
+					</callelement></td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Status"/>:</td>
+				<td></td>
+				<td class="form-inset">
+				<XLAT.LOOKUP KEY="dvin/AT/Common/ShowStatus" VARNAME="_ShowStatus_"/>
+				<XLAT.LOOKUP KEY="dvin/AT/Common/ShowStatus" VARNAME="mouseover" ESCAPE="true"/>
+				<XLAT.LOOKUP KEY="dvin/AT/Common/StatusCode-Variables.statuscode" VARNAME="_statuscodedescription_"/>
+                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/StatusDetailsFront" outstring="urlstatusdetfront">
+                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>  
+                                                               <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                              <satellite.argument name="id" value="Variables.id"/>
+                                                               </SATELLITE.LINK>
+				<A HREF="Variables.urlstatusdetfront" TITLE="Variables._ShowStatus_" ONMOUSEOVER="window.status='Variables.mouseover';return true;" ONMOUSEOUT="window.status='';return true" REPLACEALL="Variables.urlstatusdetfront,Variables._ShowStatus_,Variables.mouseover"><STRING.STREAM VALUE="Variables._statuscodedescription_"/></A>
+				</td>
+			</tr>
+
+			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.id"/></td>
+			</tr>
+			<!-- Analyics Performance indicator -->
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/form/ShowAnalyticsKPI"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Created"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.createddate" VALUETYPE="jdbcdate"  VARNAME="createddate"/>
+					<XLAT.STREAM KEY="dvin/UI/createddatebycreatedby"/>
+				</td>
+			</tr>
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Modified"/>:</td>
+				<td></td>
+				<td class="form-inset">
+				<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.updateddate" VALUETYPE="jdbcdate"  VARNAME="updateddate"/>
+				<XLAT.STREAM KEY="dvin/UI/updateddatebyupdatedby"/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Path"/>:</td>
+				<td></td>
+				<td class="form-inset"><CSVAR NAME="Variables.path"/></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Filename"/>:</td>
+				<td></td>
+				<td><STRING.STREAM VALUE="Variables.filename"/></td>
+			</tr>
+			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+		     
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/ForDestination"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VALUE="Variables.pt:name"/></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		   <tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Path"/>:</td>
+		   	<td></td>
+		   	<td class="form-inset">
+				<STRING.ENCODE VARIABLE="ex:path" VARNAME="ex:path"/>
+		   		<INPUT TYPE="text" NAME="ex:path" SIZE="32" MAXLENGTH="255" VALUE="Variables.ex:path" REPLACEALL="Variables.ex:path"/>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		   <tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Filename"/>:</td>
+		   	<td></td>
+		   	<td class="form-inset">
+				<STRING.ENCODE VARIABLE="ex:filename" VARNAME="ex:filename"/>
+		   		<INPUT TYPE="text" NAME="ex:filename" SIZE="32" MAXLENGTH="64" VALUE="Variables.ex:filename" REPLACEALL="Variables.ex:filename" onChange="validatefilename();"/>
+				</td>
+			</tr>
+			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar">
+			   <argument NAME="SpaceAbove" VALUE="No"/>
+			</callelement>-->
+
+	<tr>   
+		<td colspan="3">
+			<table border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				 <td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Isthisassetanexportstartingpoint"/></td>
+				 <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				 <if COND="Variables.refsTotal!=0">
+				 <then>
+						<td class="form-inset">
+							<INPUT TYPE="RADIO" NAME="ex:isPublishPoint" VALUE="yes" CHECKED="true" onClick="setIsPublishPoint(true)" /><XLAT.STREAM KEY="dvin/Common/Yes"/> 
+							<INPUT TYPE="RADIO" NAME="ex:isPublishPoint" VALUE="no" onClick="setIsPublishPoint(false)" /><XLAT.STREAM KEY="dvin/Common/No"/>
+						</td>
+				 </then>
+				 <else>
+					 <td class="form-inset">
+						<INPUT TYPE="RADIO" NAME="ex:isPublishPoint" VALUE="yes" onClick="setIsPublishPoint(true)" /><XLAT.STREAM KEY="dvin/Common/Yes"/> 
+						<INPUT TYPE="RADIO" NAME="ex:isPublishPoint" VALUE="no" CHECKED="true" onClick="setIsPublishPoint(false)" /><XLAT.STREAM KEY="dvin/Common/No"/>
+					 </td>
+				 </else>
+				 </if>
+			</tr>
+			</table>
+		</td>
+	</tr>
+	
+	<!-- see if there are any wrapper page SiteEntry for this site -->
+	<SETVAR NAME="hasWrapperPages" VALUE="false"/>
+	<ASSET.LIST LIST="wrapperpages" TYPE="SiteEntry" FIELD1="cs_wrapper" VALUE1="y" PUBID="SessionVariables.pubid" EXCLUDEVOIDED="true"/>
+	<IF COND="IsList.wrapperpages=true">
+	<THEN>
+		<IF COND="wrapperpages.#numRows!=0">
+		<THEN>
+			<SETVAR NAME="hasWrapperPages" VALUE="true"/>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	
+	 <if COND="Variables.refsTotal!=0">
+	 <then>
+		<setvar NAME="pagenameStr" VALUE="Variables.empty" />
+			<setcounter NAME="count" VALUE="0"/>
+			<loop FROM="0" COUNT="Variables.refsTotal">
+				<EXPORTKEY.SCATTER NAME="refsCounters.count" PREFIX="ref"/>
+				<INDEXOF STR="Variables.ref:others" WHAT="SIMPLEDIR=true" OUTSTR="dummy"/>
+				<if COND="Variables.errno=1">
+				<then>
+					<setvar NAME="Variables.ref:pagenameusesimplepath" VALUE="yes"/>
+				</then>
+				</if> 
+				<INDEXOF STR="Variables.ref:others" WHAT="SIMPLENAME=true" OUTSTR="dummy"/>
+				<if COND="Variables.errno=1">
+				<then>
+					<setvar NAME="Variables.ref:pagenameusesimplename" VALUE="yes"/>
+				</then>
+				</if> 
+				<if COND="Variables.pagenameStr=Variables.empty">
+				<then>
+						<setvar NAME="pagenameStr" VALUE="Variables.ref:pagename"/>
+				</then>
+				<else>
+						<setvar NAME="pagenameStr" VALUE="Variables.pagenameStr,Variables.ref:pagename"/>
+				</else>
+				</if>
+				<inccounter NAME="count" VALUE="1"/>
+			</loop>
+		</then>
+		</if>
+
+		<if COND="Variables.pubfact:OLDTEMPLATE!=true">
+			<then>				
+						
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		   <tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Usingtemplates"/>:</td>
+				<td></td>
+		   	<td class="form-inset">
+					<if COND="Variables.templateTotal!=0">
+					<then>
+						<IF COND="Variables.hasWrapperPages=true">
+						<THEN>
+							<SETVAR NAME="colspan" VALUE="9"/>
+						</THEN>
+						<ELSE>
+							<SETVAR NAME="colspan" VALUE="7"/>
+						</ELSE>
+						</IF>
+						
+						<table border="0" cellpadding="0" cellspacing="0">
+						<!-- Put in spacing and dark line -->
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="dark-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr>
+						<td class="table-header-text"></td><td>&nbsp;&nbsp;</td>
+						<td class="table-header-text"><XLAT.STREAM KEY="dvin/UI/Template"/></td><td>&nbsp;&nbsp;</td>
+						<IF COND="Variables.hasWrapperPages=true">
+						<THEN>
+							<td class="table-header-text"><XLAT.STREAM KEY="dvin/UI/WrapperPage"/></td><td>&nbsp;&nbsp;</td>
+						</THEN>
+						</IF>
+						<td align="center" class="table-header-text"><XLAT.STREAM KEY="dvin/UI/Forcespecifiedpath"/></td><td>&nbsp;&nbsp;</td>
+						<td align="center" class="table-header-text"><XLAT.STREAM KEY="dvin/UI/Forcespecifiedfilename"/></td>
+						</tr>
+						<!-- Put in spacing and dark line -->
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="dark-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					
+						<SETCOUNTER NAME="nthTemplate" VALUE="0"/>
+						<SETCOUNTER NAME="refCount" VALUE="0"/>
+						<LOOP COUNT="Variables.templateTotal">
+							<ASSET.GET NAME="templateCounters.nthTemplate" FIELD="name"/>
+		        			<TEMPLATEASSET.GETPAGENAMES NAME="templateCounters.nthTemplate" PUBNAME="SessionVariables.PublicationName" LISTVARNAME="pgnames"/>
+							<LOOP LIST="pgnames">
+								<tr>
+								<td>								
+								<!--[2008-05-01 KGF] #16565: need to URLencode to properly compare-->
+								<ICS.URLENCODE STR="pgnames.pagename" OUTPUT="encpagename" />
+								<IsInList STR="Variables.pagenameStr" ITEM="Variables.encpagename"/>
+								<if COND="Variables.errno=1">
+								<then>
+									<SETVAR NAME="hasref" VALUE="true"/>
+									<INPUT TYPE="CHECKBOX" NAME="ex:templatesCounters.refCount" CHECKED="true" VALUE="pgnames.pagename" onClick="setTemplate( Counters.refCount )" REPLACEALL="pgnames.pagename,Counters.refCount"/>	
+								</then>
+								<else>
+									<SETVAR NAME="hasref" VALUE="false"/>
+									<INPUT TYPE="CHECKBOX" NAME="ex:templatesCounters.refCount" VALUE="pgnames.pagename" onClick="setTemplate( Counters.refCount )" REPLACEALL="pgnames.pagename,Counters.refCount"/>	
+								</else>
+								</if>
+								</td>
+								<td></td>
+								<td>
+									<STRING.STREAM VARIABLE="name"/>
+									<!-- if there is a variant, mention it -->
+									<INDEXOF STR="pgnames.rootelement" WHAT=":" OUTSTR="index"/>
+									<if COND="Variables.errno=1">
+									<then>
+										<SUBSTRING STR="pgnames.rootelement" INDEX="Variables.index" OUTSTR="theme"/>
+										<STRING.STREAM VARIABLE="theme"/>
+									</then>
+									</if>
+									<if COND="pgnames.#numRows!=1">
+									<then>
+										(<STRING.STREAM LIST="pgnames" COLUMN="pagename"/>)
+									</then>
+									</if>
+								</td>
+								<!-- if this site has wrapper pages, then user can select one for start point -->								
+								<IF COND="Variables.hasWrapperPages=true">
+								<THEN>
+									<SETVAR NAME="wrappername" VALUE="Variables.empty"/>
+									<IF COND="Variables.hasref=true">
+									<THEN>
+										<!-- get the wrapper page name, if there is one -->
+										<INDEXOF STR="Variables.ref:others" WHAT="WRAPPERPAGE=" OUTSTR="idx"/>
+										<IF COND="Variables.errno=1">
+										<THEN>
+											<CALCULATOR.GO VALUE="12 Variables.idx +" VARNAME="idx"/>
+											<SUBSTRING STR="Variables.ref:others" INDEX="Variables.idx" OUTSTR="wrappername"/>
+										</THEN>
+										</IF>
+									</THEN>
+									</IF>
+														
+									<td></td>
+									<td><select NAME="ex:wrapperpageCounters.refCount" REPLACEALL="Counters.refCount">
+											<option value=""/>--<XLAT.STREAM KEY="dvin/Common/None"/>--
+											<LOOP LIST="wrapperpages">
+												<ICS.URLDECODE STR="Variables.wrappername" OUTPUT="wrappername" />
+												<IF COND="Variables.wrappername=wrapperpages.name">
+												<THEN>
+													<option value="wrapperpages.name" SELECTED="true" REPLACEALL="wrapperpages.name"/><STRING.STREAM LIST="wrapperpages" COLUMN="name"/>
+												</THEN>
+												<ELSE>
+													<option value="wrapperpages.name" REPLACEALL="wrapperpages.name"/><STRING.STREAM LIST="wrapperpages" COLUMN="name"/>
+												</ELSE>
+												</IF>
+											</LOOP>
+										  </select>
+									</td>
+								</THEN>
+								<ELSE>
+									<input type="hidden" name="ex:wrapperpageCounters.refCount" value="" REPLACEALL="Counters.refCount"/>
+								</ELSE>
+								</IF>
+								<td></td>
+								<td ALIGN="center">
+            					<ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.encpagename)usesimplepath)" DELIMITED="true" OUTPUT="usesimplepath"/>
+									<IF COND="Variables.usesimplepath=yes">
+									<THEN>
+										<INPUT TYPE="CHECKBOX" NAME="ex:simplepathCounters.refCount" CHECKED="true" REPLACEALL="Counters.refCount" />
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="CHECKBOX" NAME="ex:simplepathCounters.refCount" REPLACEALL="Counters.refCount"/>
+									</ELSE>
+									</IF>
+								</td>
+								<td></td>
+								<td ALIGN="center">
+            					<ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.encpagename)usesimplename)" DELIMITED="true" OUTPUT="usesimplename"/>
+									<IF COND="Variables.usesimplename=yes">
+									<THEN>
+										<INPUT TYPE="CHECKBOX" NAME="ex:simplefilenameCounters.refCount" CHECKED="true" REPLACEALL="Counters.refCount"/>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="CHECKBOX" NAME="ex:simplefilenameCounters.refCount" REPLACEALL="Counters.refCount"/>
+									</ELSE>
+									</IF>
+								</td>
+								</tr>
+								<INCCOUNTER NAME="refCount" VALUE="1"/>
+							</LOOP>
+							<INCCOUNTER NAME="nthTemplate" VALUE="1"/>	
+						</LOOP>
+						</table>
+					</then>
+					<else>
+						<XLAT.STREAM KEY="dvin/UI/Notemplatesfound"/>
+					</else>
+					</if>
+				</td>
+			</tr>
+				
+			<INPUT TYPE="hidden" NAME="numTemplates" VALUE="Counters.refCount" REPLACEALL="Counters.refCount"/>
+		</then>
+		</if>
+	</table>
+	</td>
+	</tr>
+	
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>	
+	<tr>
+        <td align="right">
+        <XLAT.LOOKUP KEY="dvin/UI/CancelSetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+        <A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+	  <if COND="Variables.pubfact:OLDTEMPLATE!=true">
+        <then>
+            <XLAT.LOOKUP KEY="dvin/UI/SetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+            <A HREF="javascript:void(0)" onclick="return checkfields();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.buttonSrc"/></CALLELEMENT></A>
+	  </then>
+        <else>
+            <XLAT.LOOKUP KEY="dvin/UI/SetPathFilename" VARNAME="_XLAT_" ESCAPE="true"/>
+            <A HREF="javascript:void(0)" onclick="document.forms[0].elements[0].form.submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.buttonSrc"/></CALLELEMENT></A>
+        </else>
+        </if>
+
+        </td>
+    </tr>
+	</table>
+</then>
+</if>
+
+
+<if COND="Variables.doproceed!=true">
+<then>
+	<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed"/>
+  <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="Variables.doproceed"/>
+  </callelement>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+    </callelement>
+</then>
+</if>
+
+</FTCS> 

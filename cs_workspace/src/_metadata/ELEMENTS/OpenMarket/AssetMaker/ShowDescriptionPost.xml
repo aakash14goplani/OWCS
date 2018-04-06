@@ -1,0 +1,208 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 28 $ 
+$Modtime: 8/06/04 1:08p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowDescriptionPost.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+
+<!-- process table creation -->
+<!--
+	What happens on CreateAssetTable:
+-->
+<if COND="Variables.AssetAction=CreateAssetTable">
+<then>
+
+	<ASSET.INSTALL TYPE="Variables.assettype" ACL="Browser,SiteGod,xceleditor,xceladmin" DIR="Variables.DefDir"/>
+<!--
+	Use the java code to parse the  descriptor file and create the asset table
+  <CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+          <ARGUMENT NAME="command" VALUE="createassettable"/>
+          <ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+          <ARGUMENT NAME="defdirvar" VALUE="DefDir"/>
+  </CALLJAVA>
+-->
+  <if COND="IsError.Variables.errno=true">
+  <then>
+		<XLAT.LOOKUP KEY="dvin/Assetmaker/CreateOperationFailed" assetmakererrno="Variables.assetmakererrno" errno="Variables.errno" assettype="Variables.assettype" EVALALL="false" VARNAME="_XLAT_"/>
+		<div class="width-outer-70">
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <argument NAME="severity" VALUE="error"/>
+		    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+		</callelement>  
+		</div>	
+  </then>
+  <else>
+      <FONT FACE="Arial, Helvetica" SIZE="2">
+      <h3>
+          <XLAT.STREAM KEY="dvin/UI/AssetType"/> : <STRING.STREAM VARIABLE="assettype"/>
+      </h3>
+	<XLAT.STREAM KEY="dvin/Assetmaker/SuccessCreateAsset"/> <br/><br/>
+
+	<if COND="IsVariable.addCategory=true">
+	<then>
+		<!--
+		check to see if it worked. If so, 
+		then add a "General" entry to the
+		Category table for this asset type.
+		-->
+		<!-- see if the g category already is there first -->
+		<setvar NAME="assettype" VALUE="Variables.assettype"/>
+		<setvar NAME="category" VALUE="g"/>
+		<SELECTTO FROM="Category" LIST="category" WHERE="assettype,category"/>
+		
+		<if COND="Variables.errno=-101">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/General" VARNAME="general"/>
+			<setvar NAME="id" VALUE="CS.UniqueID"/>
+			<setvar NAME="errno" VALUE="0"/>
+			<CATALOGMANAGER>
+				<ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+				<ARGUMENT NAME="tablename" VALUE="Category"/>
+				<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+				<ARGUMENT NAME="description" VALUE="Variables.general"/>
+				<ARGUMENT NAME="category" VALUE="g"/>
+			</CATALOGMANAGER>
+		</then>
+		</if>
+		
+		<if COND="IsError.Variables.errno=true">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/AddCategoryFailed" errno="Variables.errno" assettype="Variables.assettype" EVALALL="false" VARNAME="_XLAT_"/>
+			<div class="width-outer-70">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+			</callelement>           
+			</div>	
+		</then>
+		</if>
+	</then>
+	</if>
+	</FONT>
+  </else>
+  </if>
+</then>
+</if>
+
+<!--
+	What happens on RegisterAssetElements:
+	1.	Add the entries for the asset type to the ElementCatalog table.
+	2.	Add the entries for the asset type to the SystemSQL table.
+-->
+
+<!-- process asset registration -->
+<if COND="Variables.AssetAction=RegisterAssetElements">
+<then>
+<font FACE="Arial, Helvetica" SIZE="2">
+    <h3>
+        <XLAT.STREAM KEY="dvin/UI/AssetType"/> : <STRING.STREAM VARIABLE="assettype"/>
+    </h3>
+
+<!--	now ensure that all the "common"
+		asset-related queries are properly
+		copied into the Xcelerate AssetType
+		directory in the SQL subdirectory
+-->
+    <setvar NAME="errno" VALUE="0"/>
+    <CALLJAVA CLASS="com.openmarket.assetmaker.asset.CreateStubElements">
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLJAVA>
+    <if COND="IsVariable.assetmakererrno=true">
+    <then>
+		<div class="width-outer-70">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables.assetmakererrnomessage"/>
+			</callelement>   
+		</div>		
+    </then>
+    <else>
+	</else>
+	</if>
+</font>
+</then>
+</if>
+
+<!--
+	What happens on DeleteAsset:
+	0.	Prompt user (Done in AssetType.xml action=confirmdelete)
+	1.	Unregister the asset elements and queries
+	2.	Delete the database rows related to this asset type.
+-->
+
+<!-- process asset deletion -->
+<if COND="Variables.AssetAction=DeleteAsset">
+<then>
+<!--
+	Unregister all of the asset elements and queries.
+	NOTE:  This also deletes the files.
+-->
+	<SETVAR NAME="deletewarnings" VALUE="Variables.empty"/>
+    <setvar NAME="errno" VALUE="0"/>
+	<callelement NAME="OpenMarket/AssetMaker/UnRegisterAsset"/>
+    <if COND="Variables.errno=0">
+    <then>
+<!--
+	Now delete the asset table.  All data will be deleted.
+-->
+
+		<setvar NAME="errno" VALUE="0"/>
+		<callelement NAME="OpenMarket/AssetMaker/DeleteAsset"/>
+		<font FACE="Arial, Helvetica" SIZE="2">
+		<h3>
+			<XLAT.STREAM KEY="dvin/UI/AssetType"/> : <STRING.STREAM VARIABLE="assettype"/>
+		</h3>
+		<if COND="Variables.deletewarnings!=Variables.empty">
+		<then>
+			<STRING.STREAM VARIABLE="deletewarnings"/>
+		</then>
+		</if>
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<br/><XLAT.STREAM KEY="dvin/Assetmaker/AssetTypeDeleted"/>  <br/>
+		</then>
+		<else>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/AssetTypeDeleteFailed" errno="Variables.errno" assettype="Variables.assettype" EVALALL="false" VARNAME="_XLAT_"/>
+			<div class="width-outer-70">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+			</callelement>            
+			</div>
+		</else>
+		</if>
+		</font>
+    </then>
+    <else>
+		<XLAT.LOOKUP KEY="dvin/Assetmaker/AssetTypeUnRegisterFailed" errno="Variables.errno" assettype="Variables.assettype" EVALALL="false" VARNAME="_XLAT_"/>
+		<div class="width-outer-70">
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <argument NAME="severity" VALUE="error"/>
+		    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+		</callelement>   
+		</div>	
+   </else>
+    </if>
+</then>
+</if>
+<IF COND="Variables.AssetAction!=DeleteAsset">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetMakerFront">
+		<ARGUMENT NAME="action" VALUE="details"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+</FTCS> 

@@ -1,0 +1,64 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/WorkflowGroupParticipantScript
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/Util/GetUsernameList" outstring="userListURL"/>
+<script type="text/javascript">
+<![CDATA[
+function showUsers(thecurrentRole, callbackDiv)
+{
+	var arr = document.getElementsByName(thecurrentRole);
+	var list="";
+
+    for(var i=0;i<arr.length;i++)
+    {
+        list += encodeURIComponent(arr.item(i).value) + ';';
+    }
+
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+        xmlhttp=new window.XMLHttpRequest;
+    }
+    else {
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+
+    var params = "listusers="+list;
+    //using POST as GET can potentially runs into URL length limitation. 
+    xmlhttp.open("POST","]]><CSVAR NAME="Variables.userListURL"/><![CDATA[",true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	]]>
+	<IF COND="SessionVariables.X-CSRF-Token!=Variables.empty">
+	<THEN>
+	<REPLACEALL LIST="SessionVariables.X-CSRF-Token">
+	<![CDATA[
+		xmlhttp.setRequestHeader("X-CSRF-Token", "SessionVariables.X-CSRF-Token");
+	]]>
+	</REPLACEALL>
+	</THEN>
+	<ELSE>
+	<![CDATA[
+		xmlhttp.setRequestHeader("X-CSRF-Token", "X-CSRF-Token");
+	]]>
+	</ELSE>
+	</IF>
+    <![CDATA[
+    xmlhttp.onreadystatechange=function()
+    {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+            document.getElementById(callbackDiv).innerHTML = xmlhttp.responseText.replace(/^\s*/, "").replace(/\s*$/, "");
+        }
+    };
+    xmlhttp.send(params);
+}
+]]>
+</script>
+
+</ftcs>

@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/InspectFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<table  width="100%" valign="top" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+<tr>
+   <td height="2" colspan="6" bgcolor="#6785B7"></td>
+</tr>
+<tr>
+   <td bgcolor="#6785B7">&nbsp;</td>
+   <td align="middle" height="18"><strong><font color="#6785B7" size="1" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/UI/Common/TextListEdits"/></font></strong></td>
+   <td align="middle" height="18">&nbsp;</td>
+   <td align="middle" height="18" bgcolor="#6785B7"><a href="javascript:goAssignment();"><strong><font color="#FFFFFF" size="1" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/UI/Common/Assignments"/></font></strong></a></td>
+   <td align="middle" height="18" bgcolor="#6785B7"><a href="javascript:goSearch();"><strong><font color="#FFFFFF" size="1" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/Common/Search"/></font></strong></a></td>
+   <td bgcolor="#6785B7">&nbsp;</td>
+</tr>
+
+<tr>
+    <td height="21" colspan="6" bgcolor="#ffffff"><hr color="#6785B7" size="1"/></td>
+</tr>
+
+<tr>
+   <td>&nbsp;</td>
+   <td height="18" colspan="4"><font size="2" face="Verdana, Arial, Helvetica, sans-serif"><strong><XLAT.STREAM KEY="dvin/UI/AssetMgt/CurrentSelection"/>:</strong></font></td>
+   <td>&nbsp;</td>
+</tr>
+<tr>
+   <td>&nbsp;</td>
+   <td height="18"><strong><font size="1" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/UI/AssetMgt/AssetName"/>: </font></strong></td>
+   <td colspan="2"><font size="1" face="Verdana, Arial, Helvetica, sans-serif"><SPAN ID="assetName"></SPAN></font></td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
+</tr>
+<tr>
+   <td>&nbsp;</td>
+   <td height="18"><strong><font size="1" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/UI/AssetMgt/FieldName"/>: </font></strong></td>
+   <td colspan="2"><font size="1" face="Verdana, Arial, Helvetica, sans-serif"><SPAN ID="assetField"></SPAN></font></td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
+</tr>
+<tr>
+   <td height="21" colspan="6"><hr color="#6785B7" size="1"/></td>
+</tr>
+
+<tr align="left">
+    <td>&nbsp;</td>
+    <td height="18" colspan="3"><strong><font size="2" face="Verdana, Arial, Helvetica, sans-serif"><XLAT.STREAM KEY="dvin/UI/AssetMgt/EditedAssets"/>:</font></strong></td>
+    <td height="18">&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr>
+   <td>&nbsp;</td>
+   <td height="30" colspan="3"><font size="1" face="Verdana, Arial, Helvetica, sans-serif"><SPAN ID="editStatus"><XLAT.STREAM KEY="dvin/UI/AssetMgt/Therearenoasset"/></SPAN></font></td>
+   <td>&nbsp;</td>
+   <td>&nbsp;</td>
+</tr>
+
+<tr><td height="21" colspan="6"><hr color="#6785B7" size="1"/></td></tr>
+
+<tr align="left">
+    <td>&nbsp;</td>
+    <td height="18" colspan="2">&nbsp;</td>
+    <td height="30" align="right" valign="bottom"><strong><A HREF="javascript:void(0)" style="{cursor: hand;}" onclick="goCancel();"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A></strong></td>
+    <td height="18" valign="bottom"><A HREF="javascript:void(0)" style="{cursor: hand;}" onclick="gatherData(); form1.submit();"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A></td>
+    <td>&nbsp;</td>
+</tr>
+<tr>
+    <td colspan="6">&nbsp;</td>
+</tr>
+</table>
+
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST" name="form1">
+    <input type="HIDDEN" name="_charset_" value="Variables.charset" REPLACEALL="Variables.charset"/>
+    <input type="hidden" name="action" value="EditFront" />
+    <input type="hidden" name="pagename" value="OpenMarket/Xcelerate/ControlPanel/ControlPanel"/>
+</SATELLITE.FORM>
+</ftcs>

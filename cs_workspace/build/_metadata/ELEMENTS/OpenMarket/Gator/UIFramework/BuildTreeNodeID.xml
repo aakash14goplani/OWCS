@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/BuildTreeNodeID -->
+<!-- INPUT -->
+<!--
+	Variables.ID AND Variables.AssetType (if asset identifier)
+	Variables.SiteID (if site)
+	Variables.AdHoc (if adhoc string identifier)
+
+	Meant to be called SCOPED="STACKED", but will function in a legacy manner if
+	called globally.
+-->
+<!-- OUTPUT -->
+<!--  TreeNodeID -->
+
+<!-- create a string of format: id=...,assettype=...,assetsubtype=..., then url-encode it -->
+
+<IF COND="IsVariable.SiteID=true">
+<THEN>
+	<SETVAR NAME="TreeNodeID" VALUE="site=Variables.SiteID"/>
+</THEN>
+</IF>
+<IF COND="IsVariable.AdHoc=true">
+<THEN>
+	<SETVAR NAME="TreeNodeID" VALUE="adhoc=Variables.AdHoc"/>
+</THEN>
+</IF>
+<!-- Note: This MUST be last (for legacy behavior, when the element isn't called scope="stacked") -->
+<IF COND="IsVariable.AssetType=true">
+<THEN>
+	<ASSET.LOAD NAME="currentasset" TYPE="Variables.AssetType" OBJECTID="Variables.ID"/>
+	<ASSET.GET NAME="currentasset" FIELD="name" OUTPUT="currentName" />
+	<ASSET.GETSUBTYPE NAME="currentasset" OUTPUT="stype" />
+	<SUBSTITUTE STR="Variables.currentName" OUTSTR="currentNameNew" WHAT="%26" WITH="#38;"/>
+	<SETVAR NAME="TreeNodeID" VALUE="id=Variables.ID,assettype=Variables.AssetType,assetname=Variables.currentNameNew,assetsubtype=Variables.stype"/>
+</THEN>
+</IF>
+
+<REMOVEVAR NAME="Description"/>
+
+</FTCS> 

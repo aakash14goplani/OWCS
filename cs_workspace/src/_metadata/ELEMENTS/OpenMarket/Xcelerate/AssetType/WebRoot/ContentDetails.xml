@@ -1,0 +1,134 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Revision: 20 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of divine Inc.
+-					All Rights Reserved.
+-
+- ContentDetails.xml
+-
+- DESCRIPTION
+-	Show Inspect screen of asset
+-
+- INPUT: Asset is loaded and fields have been scattered using ContentDetails as prefix
+-	
+-->
+<div dojoType="dijit.layout.BorderContainer" class="bordercontainer">
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="command" VALUE="parseproperties"/>
+<CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker" TYPE="1">
+    <ARGUMENT NAME="command" VALUE="Variables.command"/>
+    <ARGUMENT NAME="propertytags" VALUE="storage, inputform"/>
+    <ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+</CALLJAVA>
+
+<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+<!-- Action bar -->
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">
+	<argument NAME="Screen" VALUE="Inspect"/>
+	<argument NAME="NoBookMark" VALUE="true"/>
+	<argument NAME="NoPreview" VALUE="true"/>
+	<argument NAME="NoShare" VALUE="true"/>
+	<argument NAME="NoAccessPermissions" VALUE="true"/>	
+	<argument NAME="NoStatus" VALUE="true"/>
+	<argument NAME="NoEditFunctions" VALUE="true"/>	
+</callelement>
+<xlat.lookup KEY="UI/Forms/Content" VARNAME="tabContent"/>
+
+<div dojoType="dijit.layout.ContentPane" region="center">
+<div dojoType="dijit.layout.TabContainer" class="formstabs formsTabContainer" style="width:100%;height:100%">
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/RetainSelectedTab">
+	<ARGUMENT NAME="tabContent" VALUE="Variables.tabContent"/>
+	<ARGUMENT NAME="elementType" VALUE="XML"/>
+</CALLELEMENT>
+<div dojoType="dijit.layout.ContentPane" title='Variables.tabContent' style="height: 100%;" selected="true" replaceall="Variables.tabContent">
+<table border="0" cellpadding="0" cellspacing="0" class="width70BottomExMargin">
+
+    <tr>
+        <td><span class="title-text"><STRING.STREAM VALUE="Variables.at:description"/>: </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.ContentDetails:name"/></span></td>
+    </tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+
+
+
+	<SETVAR NAME="contentdetailspropertylist" VALUE="name,rooturl"/>
+	
+	<!-- Asset Editing form Body -->
+	<tr>
+		<td>
+			<table border="0" cellpadding="0" cellspacing="0">
+			<tr>
+					<td  CLASS="form-label-text">
+					<xlat.lookup KEY="UI/Forms/Host" VARNAME="host"/>
+					<xlat.lookup KEY="dvin/AT/Common/Name" VARNAME="name"/>
+						<STRING.STREAM VALUE="Variables.host Variables.name"/>:
+					</td>
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 
+					<td>						
+					 	<ics.getvar name="ContentDetails:name" encoding="default" output="hostname"/>					 	
+					 	<STRING.STREAM VALUE="Variables.hostname"/><br/>
+						
+					</td>
+				</tr>    
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>				
+				<tr>
+					<xlat.lookup KEY="UI/Forms/RootURL" VARNAME="rooturl"/>
+					<td  CLASS="form-label-text">
+						<STRING.STREAM VALUE="Variables.rooturl"/>:
+					</td>
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 
+					<td>
+						<ics.getvar name="ContentDetails:rooturl" encoding="default" output="rooturl"/>					 	
+					 	<STRING.STREAM VALUE="Variables.rooturl"/><br/>	
+					</td>
+				</tr>  												
+				<ics.getvar name="ContentDetails:virtualrooturls" encoding="default" output="virtualRootsValue"/>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<callelement NAME="OpenMarket/Xcelerate/AssetType/WebRoot/BuildVirtualWebRoot">
+							<argument NAME="fielddescription" VALUE="Variables.assetmaker/property/virtualrooturls/description"/>
+							<argument NAME="fieldname" VALUE="virtualrooturls"/>
+							<argument NAME="fieldvalue" VALUE="Variables.virtualRootsValue"/>
+				</callelement>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td  CLASS="form-label-text">
+						<xlat.lookup KEY="dvin/Common/Sites" VARNAME="Sites"/>
+						<STRING.STREAM VALUE="Variables.Sites"/>:
+					</td>
+					<td><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td> 
+					<td>						
+					 	<ics.getvar name="ContentDetails:publication" encoding="default" output="publicationvalue"/>					 	
+					 	<STRINGLIST NAME="publicationlist" STR="Variables.publicationvalue" DELIM=","/>
+						<HASH.CREATE NAME="publicationHash" LIST="publicationlist" COLUMN="ITEM"/>
+						<HASH.CONTAINS NAME="publicationHash" VALUE="0" VARNAME="flag"/>					
+						<IF COND="Variables.flag=true">
+								<THEN>
+									<XLAT.STREAM KEY="dvin/Common/Any"/>
+								</THEN>
+								<ElSE>									
+									<LOOP LIST="publicationlist">										
+											<STRING.STREAM VALUE="publicationlist.ITEM"/><br/>
+									</LOOP>
+								</ElSE>
+						</IF>				
+					</td>
+				</tr>    	           
+			</table>
+		</td>
+		</tr>		           
+		</table>
+		</div>
+</div>
+</div>
+</div>
+</FTCS>

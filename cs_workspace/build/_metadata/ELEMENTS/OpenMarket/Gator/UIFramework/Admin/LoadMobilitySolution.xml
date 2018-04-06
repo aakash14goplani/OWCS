@@ -1,0 +1,161 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadMobilitySolution
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="Variables.command!=GetTypes">
+<THEN>
+	<IF COND="Variables.Depth=2">
+	<THEN>
+		
+           <!-- Adding Device Group Node -->
+
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+			<ARGUMENT NAME="AdHoc" VALUE="DeviceGroup"/>
+			<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+		</CALLELEMENT>
+
+
+
+		<REMOVEVAR NAME="LoadURL"/>
+		<REMOVEVAR NAME="OKActions"/>
+
+		<XLAT.LOOKUP KEY="fatwire/admin/ReorderDeviceGroupsMsg" ENCODE="false" VARNAME="_XLAT_"/>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm" outstring="ExecuteURL">
+                <satellite.argument name="tool" value="DeviceGroupMgt"/>
+	          <satellite.argument name="form" value="main"/>
+	          <satellite.argument name="inifile" value="Variables.inifile"/>
+		</SATELLITE.LINK>
+
+		
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+                  <satellite.argument name="AssetType" value="Variables.AssetType"/>
+		</SATELLITE.LINK>
+
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+			<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+			<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+			<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+			<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/plus.png"/>
+		</CALLELEMENT>
+
+           <!-- End of Device Group node  -->
+	</THEN>
+	<ELSE>
+		<IF COND="Variables.Depth=3">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+				<ARGUMENT NAME="AdHoc" VALUE="Enable"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+
+			<REMOVEVAR NAME="OKActions"/>
+			<REMOVEVAR NAME="LoadURL"/>
+			<XLAT.LOOKUP KEY="dvin/TreeApplet/Enable" ENCODE="false" VARNAME="_XLAT_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupFront" outstring="ExecuteURL">
+				<satellite.argument name="formtype" value="enable"/>
+				<satellite.argument name="pubid" value="Variables.currentPubid"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+				<satellite.argument name="AssetType" value="Variables.AssetType"/>
+			</SATELLITE.LINK>
+
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/plus.png"/>
+			</CALLELEMENT>
+
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID">
+				<ARGUMENT NAME="AdHoc" VALUE="Disable"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+
+			<REMOVEVAR NAME="OKActions"/>
+			<REMOVEVAR NAME="LoadURL"/>
+			<XLAT.LOOKUP KEY="dvin/TreeApplet/Disable" ENCODE="false" VARNAME="_XLAT_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupFront" outstring="ExecuteURL">
+				<satellite.argument name="formtype" value="disable"/>
+				<satellite.argument name="pubid" value="Variables.currentPubid"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+				<satellite.argument name="AssetType" value="Variables.AssetType"/>
+			</SATELLITE.LINK>
+
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/remove.png"/>
+			</CALLELEMENT>
+			
+			<ASSET.LIST TYPE="DeviceGroup" LIST="DCList" PUBID="Variables.currentPubid" EXCLUDEVOIDED="true" FIELD1="active" VALUE1="y" FIELD2="category" VALUE2="m"/>
+			<IF COND="IsList.DCList=true">
+			<THEN>
+				<LOOP LIST="DCList">
+					<REMOVEVAR NAME="LoadURL"/>
+					<!-- display users if managed by SQL -->
+					
+					<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+						<ARGUMENT NAME="AdHoc" VALUE="DCList.id"/>
+						<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+					</CALLELEMENT>
+
+					<REMOVEVAR NAME="OKActions"/>
+
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ContentDetailsFront" outstring="ExecuteURL">
+						<satellite.argument name="AssetType" value="DeviceGroup"/>
+						<satellite.argument name="id" value="DCList.id"/>
+						<satellite.argument name="cs_environment" value="standard"/>
+						<satellite.argument name="cs_formmode" value="WCM"/>
+						<satellite.argument name="function" value="inspect"/>
+					</SATELLITE.LINK>
+
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+						<satellite.argument name="AssetType" value="Variables.AssetType"/>
+					</SATELLITE.LINK>
+
+					<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+						<ARGUMENT NAME="Label" VALUE="DCList.name"/>
+						<ARGUMENT NAME="Description" VALUE="DCList.description"/>
+						<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+						<!-- LoadURL implicitly set -->
+						<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+						<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+						<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/AssetTypes/DeviceGroup.png"/>
+					</CALLELEMENT>
+				</LOOP>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+	</ELSE>
+	</IF>
+</THEN>
+</IF>
+
+<!-- This element handles all children of the Sources root node -->
+
+
+
+
+</FTCS> 

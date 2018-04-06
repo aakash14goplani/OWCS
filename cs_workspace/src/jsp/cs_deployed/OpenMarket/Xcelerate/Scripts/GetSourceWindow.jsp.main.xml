@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Scripts/GetSourceWindow</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Scripts/GetSourceWindow</string>
+        <string>Include JavaScript that gets the source window of any javascript funtion</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Scripts/GetSourceWindow.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Xcelerate/Scripts/GetSourceWindow.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FXcelerate%2FScripts%2FGetSourceWindow.jsp
+@hashval=280495668
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Scripts/GetSourceWindow
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

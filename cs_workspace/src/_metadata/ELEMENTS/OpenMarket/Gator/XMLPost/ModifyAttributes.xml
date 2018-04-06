@@ -1,0 +1,440 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/XMLPost/ModifyAttributes.xml $ 
+$Revision: 23 $ 
+$Modtime: 8/02/04 3:36p $ 
+-->
+
+<!-- OpenMarket/Gator/XMLPost/ModifyAttributes
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<!-- for each attr, make sure there is post data for it -->
+<!-- parse attribute values in the form: Groupname1=val1;val2:Groupname2=valx;valy -->
+<LOOP LIST="Variables.attrlist">
+	<ASSET.LOAD NAME="ainst" TYPE="Variables.AttributeType" FIELD="id" VALUE="Variables.attrlist.assetid" EDITABLE="true"/>
+	<COMPLEXASSET.GETNAME NAME="ainst" VARNAME="cs_currentAttrName"/>
+	<ATTRIBUTE.GETTYPE NAME="ainst" VARNAME="attrtype"/>
+	<ATTRIBUTE.GETVALUESTYLE NAME="ainst" VARNAME="style"/>
+	<ATTRIBUTE.GETASSETTYPE NAME="ainst" VARNAME="attrassettype"/>
+	<setvar NAME="noval" VALUE="false"/>
+	<setvar NAME="ignore" VALUE="true"/>
+	<setvar NAME="required" VALUE="Variables.attrlist.required"/>
+	<setvar NAME="goodvalue" VALUE="no"/>
+    <IF COND="Variables.attrtype=blob">
+    <THEN>
+        <SETVAR NAME="attrtype" VALUE="url"/>
+    </THEN>
+    </IF>
+	<IF COND="Variables.attrtype!=url">
+	<THEN>
+	
+        <setvar NAME="errno" VALUE="0"/>
+        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName))" OUTPUT="currentValue" DELIMITED="true"/>
+        <IF COND="Variables.errno=0">
+		<THEN>
+         
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<XLAT.STREAM KEY="dvin/Error/AT/Flex/attrSet" attr="Variables.cs_currentAttrName" currVal="Variables.currentValue" EVALALL="false"/>
+			</then>
+			</if>
+			<IF COND="IsVariable._xmlpostnamevaldelim_=true">
+            <THEN>
+                <SETVAR NAME="DELIM" VALUE="Variables._xmlpostnamevaldelim_"/>
+            </THEN>
+            <ELSE>
+                <SETVAR NAME="DELIM" VALUE=":"/>
+            </ELSE>
+            </IF>
+			
+			<STRINGLIST NAME="nameval" STR="Variables.currentValue" DELIM="Variables.DELIM"/>
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<XLAT.STREAM KEY="dvin/Error/AT/Flex/colonlistsize" num="nameval.#numRows" EVALALL="false"/>
+			</then>
+			</if>
+			
+			<IF COND="IsVariable._xmlpostequaldelim_=true">
+            <THEN>
+                <SETVAR NAME="DELIM" VALUE="Variables._xmlpostequaldelim_"/>
+            </THEN>
+            <ELSE>
+                <SETVAR NAME="DELIM" VALUE="="/>
+            </ELSE>
+            </IF>
+			<LOOP LIST="nameval">
+				<STRINGLIST NAME="split" STR="nameval.ITEM" DELIM="Variables.DELIM"/>
+				<if COND="IsVariable.xmlpostdebug=true">
+				<then>
+				<XLAT.STREAM KEY="dvin/Error/AT/Flex/splitlistsize" splitnum="split.#numRows" EVALALL="false"/>
+				</then>
+				</if>
+				
+				<IF COND="split.#numRows!=1">
+				<THEN>
+					<LOOP LIST="split">
+						<IF COND="split.ITEM=Variables.assetname">
+						<THEN>
+							<SETROW LIST="split" ACTION="NEXT"/>
+							<setvar NAME="currentValue" VALUE="split.ITEM"/>
+							<setvar NAME="goodvalue" VALUE="yes"/>
+							<setvar NAME="ignore" VALUE="false"/>
+						</THEN>
+						<ELSE>
+							<SETROW LIST="split" ACTION="NEXT"/>
+						</ELSE>
+						</IF>
+					</LOOP>
+				</THEN>
+				<ELSE>
+					<IF COND="nameval.ITEM!=split.ITEM">
+					<THEN>
+						<IF COND="split.ITEM=Variables.assetname">
+						<THEN>
+							<setvar NAME="noval" VALUE="true"/>
+							<setvar NAME="goodvalue" VALUE="no"/>
+							<setvar NAME="ignore" VALUE="false"/>
+						</THEN>
+						</IF>
+					</THEN>
+					<ELSE>
+						<setvar NAME="goodvalue" VALUE="yes"/>
+						<setvar NAME="ignore" VALUE="false"/>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+			</LOOP>
+			
+			<if COND="IsVariable.xmlpostdebug=true">
+			<then>
+			<XLAT.STREAM KEY="dvin/Error/AT/Flex/setsing" currentValue="Variables.currentValue" EVALALL="false"/>
+			</then>
+			</if>
+			
+      	<IF COND="Variables.ignore=false">
+			<THEN>
+				<IF COND="Variables.goodvalue=no">
+				<THEN>
+					<IF COND="Variables.required=T">
+					<THEN>
+						<if COND="IsVariable.xmlpostdebug=true">
+						<then>
+						<XLAT.STREAM KEY="dvin/Error/AT/Flex/requiredAttrNotFound" attr="Variables.cs_currentAttrName" EVALALL="false"/>
+						</then>
+						</if>
+						 
+						<setvar NAME="PostDataIsOk" VALUE="no"/>
+						<THROWEXCEPTION/>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+		
+				<IF COND="Variables.style=single">
+				<THEN>
+					<IF COND="Variables.noval=false">
+					<THEN>
+						<URL.UNPACK VALUE="Variables.currentValue" VARNAME="unpacked"/>
+						<IF COND="Variables.errno!=0">
+						<THEN>
+							<setvar NAME="PostDataIsOk" VALUE="no"/>
+							<THROWEXCEPTION/>	
+						</THEN>
+						</IF>
+						<IF COND="Variables.attrassettype!=Variables.empty">
+						<THEN>
+							<setvar NAME="errno" VALUE="0"/>
+							
+							<!--  support case: 5479-8660175 : AssetID won't exist for a blank value -->
+							<IF COND="Variables.currentValue!=_EMPTY_">
+							<THEN>
+						
+								<ASSET.LIST TYPE="Variables.attrassettype" LIST="pointerList" FIELD1="name" VALUE1="Variables.unpacked"/>
+								
+								<IF COND="Variables.errno=0">
+								<THEN>
+									<setvar NAME="unpacked" VALUE="pointerList.id"/>
+								</THEN>
+								<ELSE>
+										<if COND="IsVariable.xmlpostdebug=true">
+										<then>
+										<XLAT.STREAM KEY="dvin/Error/AT/Flex/AttrLoadFailure" attr="Variables.cs_currentAttrName" what="Variables.attrassettype" unpacked="Variables.unpacked"/>
+										</then>
+										</if>
+										<setvar NAME="PostDataIsOk" VALUE="no"/>
+										<THROWEXCEPTION/>
+								
+								</ELSE>
+								</IF>
+							</THEN>
+							</IF>
+						</THEN>
+						</IF>
+						<IF COND="Variables.assettype=Variables._ASSET_">
+						<THEN>
+							<IF COND="Variables.currentValue=_EMPTY_">
+								<THEN>
+									<FLEXASSET.SETSINGLEATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid"/>
+								</THEN>
+								<ELSE>
+									<FLEXASSET.SETSINGLEATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid" VALUE="Variables.unpacked"/>
+								</ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.currentValue=_EMPTY_">
+								<THEN>
+									<FLEXGROUP.SETSINGLEATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid"/>
+								</THEN>
+								<ELSE>
+									<FLEXGROUP.SETSINGLEATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid" VALUE="Variables.unpacked"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+						<IF COND="Variables.assettype=Variables._ASSET_">
+						<THEN>
+							<FLEXASSET.SETSINGLEATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid"/>
+						</THEN>
+						<ELSE>
+							<FLEXGROUP.SETSINGLEATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid"/>
+						</ELSE>
+						</IF>
+					</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+					<if COND="IsVariable.xmlpostdebug=true">
+					<then>
+					<XLAT.STREAM KEY="dvin/Error/AT/Flex/MultipleParseString"/>
+					</then>
+					</if>
+					
+					<IF COND="Variables.noval=false">
+					<THEN>
+                        <IF COND="IsVariable._xmlpostmulvaldelim_=true">
+                        <THEN>
+                            <SETVAR NAME="DELIM" VALUE="Variables._xmlpostmulvaldelim_"/>
+                        </THEN>
+                        <ELSE>
+                            <SETVAR NAME="DELIM" VALUE=";"/>
+                        </ELSE>
+                        </IF>
+                        <STRINGLIST NAME="linst" STR="Variables.currentValue" DELIM="Variables.DELIM"/>
+						<IF COND="Variables.style=multipleordered">
+                        <THEN>
+                            <LISTOBJECT.CREATE NAME="valinst" COLUMNS="value,ordinal"/>
+                        </THEN>
+                        <ELSE>
+                            <LISTOBJECT.CREATE NAME="valinst" COLUMNS="value"/>
+                        </ELSE>
+                        </IF>
+						<LOOP LIST="linst">
+							<URL.UNPACK VALUE="linst.ITEM" VARNAME="unpacked"/>
+							<IF COND="Variables.errno!=0">
+							<THEN>
+								<setvar NAME="PostDataIsOk" VALUE="no"/>
+								<THROWEXCEPTION/>
+							</THEN>
+							</IF>
+							<IF COND="Variables.attrassettype!=Variables.empty">
+							<THEN>
+								<setvar NAME="errno" VALUE="0"/>
+								<ASSET.LIST TYPE="Variables.attrassettype" LIST="pointerList" FIELD1="name" VALUE1="Variables.unpacked"/>
+								<IF COND="Variables.errno=0">
+								<THEN>
+									<setvar NAME="unpacked" VALUE="pointerList.id"/>
+								</THEN>
+								<ELSE>
+									<if COND="IsVariable.xmlpostdebug=true">
+									<then>
+									<XLAT.STREAM KEY="dvin/Error/AT/Flex/AttrLoadFailure" attr="Variables.cs_currentAttrName" what="Variables.attrassettype" unpacked="Variables.unpacked"/>
+									</then>
+									</if>
+									
+									<setvar NAME="PostDataIsOk" VALUE="no"/>
+									<THROWEXCEPTION/>
+								</ELSE>
+								</IF>
+							</THEN>
+							</IF>
+							
+                            <IF COND="Variables.style=multipleordered">
+                            <THEN>
+                                <LISTOBJECT.ADDROW NAME="valinst" value="Variables.unpacked" ordinal="linst.#curRow"/>
+                            </THEN>
+                            <ELSE>
+                                <LISTOBJECT.ADDROW NAME="valinst" value="Variables.unpacked"/>
+                            </ELSE>
+                            </IF>
+						</LOOP>
+						<LISTOBJECT.TOLIST NAME="valinst" LISTVARNAME="vallist"/>
+						<IF COND="Variables.assettype=Variables._ASSET_">
+						<THEN>
+							<FLEXASSET.SETATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+						</THEN>
+						<ELSE>
+							<FLEXGROUP.SETATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+						<IF COND="Variables.assettype=Variables._ASSET_">
+						<THEN>
+							<FLEXASSET.SETATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid"/>
+						</THEN>
+						<ELSE>
+							<FLEXGROUP.SETATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid"/>
+						</ELSE>
+						</IF>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+	</THEN>
+	<ELSE>
+		<IF COND="Variables.style=single">
+		<THEN>
+		<setvar NAME="goodvalue" VALUE="yes"/>
+		<setvar NAME="errno" VALUE="0" />
+         <ICS.RESOLVEVARIABLES NAME="$(Variables._REMOVEFILE_$(Variables.cs_currentAttrName))" OUTPUT="theFilename" DELIMITED="true"/>
+         <IF COND="Variables.errno=0">
+         <THEN>
+             <IF COND="Variables.required=T">
+            <THEN>
+                 <if COND="IsVariable.xmlpostdebug=true">
+                 <then>
+                        <XLAT.STREAM KEY="dvin/Error/AT/Flex/requiredAttrNotFound" attr="Variables.currentAttrName" EVALALL="false"/>
+                 </then>
+                 </if>
+                 <setvar NAME="PostDataIsOk" VALUE="no"/>
+                 <THROWEXCEPTION/>
+            </THEN>
+            <ELSE>
+                <IF COND="Variables.assettype=Variables._ASSET_">
+                <THEN>
+                    <FLEXASSET.SETATTRIBUTE  NAME="pinst" ID="Variables.attrlist.assetid"/>
+                </THEN>
+                <ELSE>
+                    <FLEXGROUP.SETATTRIBUTE  NAME="pinst" ID="Variables.attrlist.assetid"/>
+                </ELSE>
+                </IF>
+            </ELSE>
+             </IF>
+         </THEN>
+         <ELSE>
+             <REMOVEVAR NAME="theFilename"/>
+         </ELSE>
+         </IF>
+
+        <setvar NAME="errno" VALUE="0"/>
+		<ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_file)" OUTPUT="theFilename" DELIMITED="true"/>
+        <IF COND="Variables.errno!=0">
+		<THEN>
+			<setvar NAME="goodvalue" VALUE="no"/>
+			<!-- This will make sure that we intend to delete the blob attribute value and are passing correct parameters for that -->
+			<ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName))" OUTPUT="theBlobValue" DELIMITED="true"/>
+			<IF COND="Variables.theBlobValue=_EMPTY_">
+			<THEN>
+				<FlexAsset.setsingleattribute  NAME="pinst" ID="Variables.attrlist.assetid" />
+			</THEN>
+			</IF>
+			
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.goodvalue=yes">
+		<THEN>
+			<IF COND="Variables.assettype=Variables._ASSET_">
+			<THEN>
+                <FlexAsset.setsingleattribute  NAME="pinst" ID="Variables.attrlist.assetid" VALUE="Variables.theFilename" CGI="Variables.cs_currentAttrName"/>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+                    <ARGUMENT NAME="cs_InstanceName" VALUE="pinst"/>
+                    <ARGUMENT NAME="cs_FieldName" VALUE="Attribute_Variables.cs_currentAttrName"/>
+                    <ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+                </CALLELEMENT>
+			</THEN>
+			<ELSE>
+                <FlexGroup.setsingleattribute  NAME="pginst" ID="Variables.attrlist.assetid" VALUE="Variables.theFilename" CGI="Variables.cs_currentAttrName"/>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+                    <ARGUMENT NAME="cs_InstanceName" VALUE="pginst"/>
+                    <ARGUMENT NAME="cs_FieldName" VALUE="Attribute_Variables.cs_currentAttrName"/>
+                    <ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+                </CALLELEMENT>
+			</ELSE>
+			</IF>
+		</THEN>
+		</IF>
+		</THEN>
+		<ELSE>
+		<!-- Multiple or multipleordered: -->
+		        <SETCOUNTER NAME="currentFile" VALUE="1"/>
+                <LISTOBJECT.CREATE NAME="lTempObjectIDs" COLUMNS="id"/>
+                <LISTOBJECT.CREATE NAME="lEmptyList" COLUMNS="urlvalue"/>
+                <LISTOBJECT.TOLIST NAME="lEmptyList" LISTVARNAME="vallist"/>
+                <SETVAR NAME="doneVar" VALUE="no"/>
+                <LOOP UNTIL="Variables.doneVar=yes">
+                        <SETVAR NAME="errno" VALUE="0"/>
+                        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(Variables.cs_currentAttrName)_$(Counters.currentFile)__file)" OUTPUT="theFilename" DELIMITED="true"/>
+                        <IF COND="Variables.errno!=0">
+                        <THEN>
+                                <SETVAR NAME="errno" VALUE="0"/>
+                                <SETVAR NAME="doneVar" VALUE="yes"/>
+                        </THEN>
+                        <ELSE>
+                                <TEMPOBJECTS.SET BINVARNAME="Variables.cs_currentAttrName_Counters.currentFile_" FILE="Variables.theFilename" VARNAME="tempid"/>
+                                <LISTOBJECT.ADDROW NAME="lTempObjectIDs" id="Variables.tempid"/>
+                                <INCCOUNTER NAME="currentFile" VALUE="1"/>
+                        </ELSE>
+                        </IF>
+                </LOOP>
+                <LISTOBJECT.TOLIST NAME="lTempObjectIDs" LISTVARNAME="tempObjectIDs"/>
+                <IF COND="tempObjectIDs.#numRows!=0">
+                <THEN>
+                    <TEMPOBJECTS.GETLIST LISTVARNAME="vallist" COLUMN="urlvalue" LIST="tempObjectIDs"/>
+                    <IF COND="Variables.style=multipleordered">
+                    <THEN>
+                        <setvar name="EditingStyle" value="O"/>
+                    </THEN>
+                    </IF>
+                    <CALLELEMENT NAME="OpenMarket/Gator/Util/FixBLOBList">
+                      <ARGUMENT NAME="cs_ListToReplace" VALUE="vallist"/>
+                    </CALLELEMENT>
+                </THEN>
+                </IF>
+				<IF COND="Variables.assettype=Variables._ASSET_">
+			    <THEN>
+				     <FLEXASSET.SETATTRIBUTE NAME="pinst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+                </THEN>
+			    <ELSE>
+				     <FLEXGROUP.SETATTRIBUTE NAME="pginst" ID="Variables.attrlist.assetid" LIST="vallist"/>
+			    </ELSE>
+				</IF>
+            
+               <IF COND="IsList.tempObjectIDs=true">
+               <THEN>
+                   <LOOP LIST="tempObjectIDs">
+                       <TEMPOBJECTS.DELETE ID="tempObjectIDs.id"/>
+                   </LOOP>
+               </THEN>
+               </IF>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</LOOP>
+</FTCS>

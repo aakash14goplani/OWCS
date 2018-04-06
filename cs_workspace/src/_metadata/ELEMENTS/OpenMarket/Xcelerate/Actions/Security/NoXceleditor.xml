@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Security/NoXceleditor
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetLocale"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Errors/NoXceleditor"/>
+</FTCS> 

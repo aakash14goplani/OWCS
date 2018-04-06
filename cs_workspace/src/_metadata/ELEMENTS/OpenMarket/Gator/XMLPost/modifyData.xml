@@ -1,0 +1,522 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/XMLPost/modifyData.xml $
+$Revision: 29 $
+$Modtime: 4/28/04 3:36p $
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- modifyData.xml
+-
+- DESCRIPTION
+-    This element handles the posting of content by
+-    a remote client (XMLPost, or other)
+-
+-    Required: None
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetLocale"/>
+
+<USERMANAGER.GETLOGINUSER VARNAME="usrname"/>
+<IF COND="IsVariable.usrname=true">
+<THEN>
+	<SETVAR NAME="loggedIn" VALUE="true"/>
+</THEN>
+<ELSE>
+	<USERMANAGER.LOGINUSER USERNAMEVARIABLE="authusername" PASSWORDVARIABLE="authpassword" VARNAME="loggedIn"/>
+	<if COND="Variables.loggedIn=false">
+	<then>
+		<XLAT.STREAM KEY="dvin/UI/Error/LoginfailedremotepostCheckauthusernamepassword"/>
+		<throwexception/>
+	</then>
+	</if>
+</ELSE>
+</IF>
+
+<if COND="IsVariable.xmlpostdebug=true">
+	<then>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/xmlpostdebugstatus" status="ON" EVALALL="false"/>
+	</then>
+	<else>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/xmlpostdebugstatus" status="OFF" EVALALL="false"/>
+	</else>
+</if>
+<!-- Check for a valid publication -->
+<if COND="IsVariable.primarypubid=false">
+<then>
+	<if COND="IsVariable.publication=true">
+	<then>
+		<PUBLICATION.LOAD NAME="publication" FIELD="name" VALUE="Variables.publication"/>
+		<PUBLICATION.GET NAME="publication" FIELD="id" OUTPUT="primarypubid"/>
+	</then>
+	<else>
+		<!-- neither primarypubid nor publication provided -->
+		<PUBLICATION.LIST LIST="publist"/>
+		<if COND="publist.#numRows=1">
+		<then>
+			<SETVAR NAME="primarypubid" VALUE="publist.id"/>
+		</then>
+		</if>
+	</else>
+	</if>
+</then>
+<else>
+	<PUBLICATION.LOAD NAME="publication" OBJECTID="Variables.primarypubid"/>
+	<if COND="IsError.Variables.errno=true">
+	<then>
+		<if COND="IsVariable.xmlpostdebug=true">
+		<then>
+		<XLAT.STREAM KEY="dvin/UI/Error/ErrorInvalidprimarypubid"/>
+		</then>
+		</if>
+
+		<throwexception/>
+	</then>
+	</if>
+</else>
+</if>
+
+<if COND="IsVariable.primarypubid=false">
+<then>
+	<if COND="IsVariable.xmlpostdebug=true">
+	<then>
+	<XLAT.STREAM KEY="dvin/UI/Error/Missingorinvalidpublicationvariable"/>
+	</then>
+	</if>
+
+	<throwexception/>
+</then>
+</if>
+
+<IF COND="IsVariable._ASSET_!=true">
+<THEN>
+	<if COND="IsVariable.xmlpostdebug=true">
+	<then>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/Fatalerror_ASSET_notset"/>
+	</then>
+	</if>
+
+	<THROWEXCEPTION/>
+</THEN>
+</IF>
+
+<IF COND="IsVariable._ITEMNAME_!=true">
+<THEN>
+	<if COND="IsVariable.xmlpostdebug=true">
+	<then>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/Fatalerror_ITEMNAME_notset"/>
+	</then>
+	</if>
+
+	<THROWEXCEPTION/>
+</THEN>
+</IF>
+
+<IF COND="IsVariable._TYPE_!=true">
+<THEN>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/Fatalerror_TYPE_notset"/>
+	<THROWEXCEPTION/>
+</THEN>
+</IF>
+
+ <IF COND="IsVariable._ID_=true">
+	<THEN>
+		<SETVAR NAME="myID" VALUE="Variables._ID_"/>
+	</THEN>
+	<ELSE>
+		<!-- Find correct assetid based on name and publication -->
+		<callelement NAME="OpenMarket/Gator/XMLPost/GetAssetID">
+			<argument NAME="theType" VALUE="Variables._ASSET_"/>
+			<argument NAME="thePub" VALUE="Variables.primarypubid"/>
+			<argument NAME="theName" VALUE="Variables._ITEMNAME_"/>
+		</callelement>
+	</ELSE>
+</IF>
+
+		
+<IF COND="Variables.myID!=Variables.empty">
+<THEN>
+	<setvar NAME="prodid" VALUE="Variables.myID"/>
+	<ASSET.LOAD NAME="pinst" TYPE="Variables._ASSET_" FIELD="id" VALUE="Variables.prodid" EDITABLE="true"/>
+</THEN>
+<ELSE>
+	<setvar NAME="errno" VALUE="-101"/>
+</ELSE>
+</IF>
+
+
+<IF COND="Variables.errno!=0">
+<THEN>
+	<!-- this wont work for modification of just group data -->
+	<!-- used to call addData but right now it doesn't completely support
+		the modifyData syntax.
+		<CALLELEMENT NAME="OpenMarket/Gator/XMLPost/addData"/>
+	-->
+	<if COND="IsVariable.xmlpostdebug=true">
+	<then>
+	<XLAT.STREAM KEY="dvin/Error/AT/Flex/AssetDoesNotExist" name="Variables._ITEMNAME_" errno="Variables.errno" errdetail="Variables.errdetail1" EVALALL="false"/>
+	</then>
+	</if>
+
+</THEN>
+<ELSE>
+	<!-- Find template type and load the asset template -->
+	<FATM.GETTEMPLATETYPE ASSETTYPE="Variables._ASSET_" VARNAME="TemplateType"/>
+	<IF COND="IsVariable.TemplateType=false">
+	<THEN>
+		<FGTM.GETTEMPLATETYPE ASSETTYPE="Variables._ASSET_" VARNAME="TemplateType"/>
+		<SETVAR NAME="GroupType" VALUE="Variables._ASSET_"/>
+		<FGTM.GETATTRIBUTETYPE ASSETTYPE="Variables._ASSET_" VARNAME="AttributeType"/>
+		<FGTM.GETTEMPLATETYPE ASSETTYPE="Variables._ASSET_" VARNAME="GroupTemplateType"/>
+	</THEN>
+	<ELSE>
+		<FATM.GETGROUPTYPE ASSETTYPE="Variables._ASSET_" VARNAME="GroupType"/>
+		<FATM.GETATTRIBUTETYPE ASSETTYPE="Variables._ASSET_" VARNAME="AttributeType"/>
+		<FGTM.GETTEMPLATETYPE ASSETTYPE="Variables.GroupType" VARNAME="GroupTemplateType"/>
+	</ELSE>
+	</IF>
+
+	<!-- Find correct assetid based on name and publication -->
+	<callelement NAME="OpenMarket/Gator/XMLPost/GetAssetID">
+		<argument NAME="theType" VALUE="Variables.TemplateType"/>
+		<argument NAME="thePub" VALUE="Variables.primarypubid"/>
+		<argument NAME="theName" VALUE="Variables._TYPE_"/>
+	</callelement>
+
+	<IF COND="Variables.myID!=Variables.empty">
+	<THEN>
+		<setvar NAME="tmplid" VALUE="Variables.myID"/>
+		<ASSET.LOAD NAME="tmplinst" TYPE="Variables.TemplateType" FIELD="id" VALUE="Variables.tmplid"  EDITABLE="true"/>
+	</THEN>
+	<ELSE>
+		<setvar NAME="errno" VALUE="-101"/>
+	</ELSE>
+	</IF>
+
+   <IF COND="Variables.errno!=0">
+	<THEN>
+		<if COND="IsVariable.xmlpostdebug=true">
+		<then>
+		<XLAT.STREAM KEY="dvin/Error/AT/Flex/AssetLoadTemplate" TemplateType="Variables.TemplateType" _TYPE_="Variables._TYPE_" errno="Variables.errno" errdetail="Variables.errdetail1" EVALALL="false"/>
+		</then>
+		</if>
+
+		<THROWEXCEPTION/>
+	</THEN>
+	</IF>
+
+	<SETCOUNTER NAME="level" VALUE="1"/>
+	<SETCOUNTER NAME="child" VALUE="0"/>
+	<SETCOUNTER NAME="grandchild" VALUE="-1"/>
+	<setvar NAME="PostDataIsOk" VALUE="yes"/>
+
+	<!-- maybe create some groups and/or modify group attrs -->
+	<!-- finally update prod attrs -->
+
+	<ATM.LOCATE TYPE="Variables.TemplateType" VARNAME="ftmgr"/>
+	<ATM.LOCATE TYPE="Variables.GroupTemplateType" VARNAME="fgtmgr"/>
+
+	<FLEXTEMPLATE.GETALLPARENTS NAME="tmplinst" LISTVARNAME="Counters.childparents"/>
+
+	<LISTOBJECT.CREATE NAME="immediateParents" COLUMNS="groupid"/>
+
+	<IF COND="IsList.Counters.childparents=true">
+	<THEN>
+		<setvar NAME="addParent" VALUE="Variables.empty"/>
+		<setvar NAME="removeParent" VALUE="Variables.empty"/>
+		<HASH.CREATE NAME="hImmediateParentsToRemove"/>
+		<!-- Recursively find the templates parents -->
+		<CALLELEMENT NAME="OpenMarket/Gator/XMLPost/GetTemplateParents">
+			<ARGUMENT NAME="modify" VALUE="yes"/>
+		</CALLELEMENT>
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.PostDataIsOk=no">
+	<THEN>
+		<if COND="IsVariable.xmlpostdebug=true">
+		<then>
+		<XLAT.STREAM KEY="dvin/Error/AT/Flex/Badpostdatainparenthierarchy"/>
+		</then>
+		</if>
+
+		<THROWEXCEPTION/>
+	</THEN>
+	</IF>
+	
+	<!-- FLEXTEMPLATES.GETATTRIBUTES does not return standard attribute names like, description, startdate, enddate, etc -->
+	<IF COND="IsVariable._ITEMDESCRIPTION_=true">
+	<THEN>
+		<IF COND="Variables._ITEMDESCRIPTION_=_EMPTY_">
+		<THEN>
+			<ASSET.SET NAME="pinst" FIELD="description" VALUE="Variables.empty"/>
+		</THEN>
+		<ELSE>
+			<ASSET.SET NAME="pinst" FIELD="description" VALUE="Variables._ITEMDESCRIPTION_"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	<IF COND="IsVariable.startdate=true">
+	<THEN>
+		<IF COND="Variables.startdate=_EMPTY_">
+		<THEN>
+			<ASSET.SET NAME="pinst" FIELD="startdate" VALUE="Variables.empty"/>
+		</THEN>
+		<ELSE>
+			<ASSET.SET NAME="pinst" FIELD="startdate" VALUE="Variables.startdate"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	<IF COND="IsVariable.enddate=true">
+	<THEN>
+		<IF COND="Variables.enddate=_EMPTY_">
+		<THEN>
+			<ASSET.SET NAME="pinst" FIELD="enddate" VALUE="Variables.empty"/>
+		</THEN>
+		<ELSE>	
+			<ASSET.SET NAME="pinst" FIELD="enddate" VALUE="Variables.enddate"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	
+	<IF COND="IsVariable.locale=true">
+	<THEN>
+		<ASSET.LOAD NAME="localeAsset" TYPE="Dimension" FIELD="name" VALUE="Variables.locale"/>
+		<IF COND="Variables.errno!=0">
+		<THEN>
+			<IF COND="IsVariable.xmlpostdebug=true">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/UI/Admin/Error/InvalidLocale"/>
+			</THEN>
+			</IF>
+			
+			<THROWEXCEPTION/>
+			
+		</THEN>
+		<ELSE>
+			<!-- check whether to update the dimension set -->
+			<IF COND="IsVariable.masterasset=true">
+			<THEN>
+				<setvar name="errno" value="0" />
+				<ASSET.LOAD NAME="dimparent" TYPE="Variables._ASSET_" FIELD="name" VALUE="Variables.masterasset" EDITABLE="false"/>
+				<IF COND="Variables.errno=0">
+				<THEN>			
+					<!--  check whether the dimension-parent has a dimension assigned-->
+					<asset.getlocales name="dimparent" list="dimparentlocale"/>
+					<IF COND="dimparentlocale.#numRows!=0">
+					<THEN>
+						<!-- check current dimension parent -->
+						<asset.getdimparents list="dimparentlist" name="pinst"/>
+						<IF COND="dimparentlist.#numRows!=0" >
+						<THEN>
+							<!-- assuming single dimension group, Locale-->
+							<asset.removedimparents name="pinst">
+								<asset.dimensionparentrelationship group="Locale" type="Variables._ASSET_" assetid="dimparentlist.OBJECTID"/>
+							</asset.removedimparents>
+						</THEN>
+						</IF>
+						<!-- assuming dimension group as Locale -->
+						<asset.get name="dimparent" field="id" output="dimparentid"/>	
+						<asset.setdimparents name="pinst">
+							<asset.dimensionparentrelationship type="Variables._ASSET_" assetid="Variables.dimparentid" group="Locale"/>
+						 </asset.setdimparents>
+					</THEN>
+					<ELSE>
+						<XLAT.STREAM KEY="dvin/UI/Error/dimensionParentLocaleNotAssigned"/>
+						<THROWEXCEPTION/>
+					</ELSE>
+					</IF>					 
+				</THEN>
+				<ELSE>
+					<XLAT.STREAM KEY="dvin/UI/Error/dimensionParentUnableToLoad"/>
+					<THROWEXCEPTION/>
+				</ELSE>
+				</IF>									
+			</THEN>
+			</IF>						
+			
+			<ASSET.GET NAME="localeAsset" FIELD="id" OUTPUT="localeId"/>
+			<ASSET.SETDIMENSIONS NAME="pinst">
+				<ASSET.ASSET TYPE="Dimension" ASSETID="Variables.localeId"/>
+			</ASSET.SETDIMENSIONS>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<!--  check whether the asset has locale -->
+		<asset.getlocales name="pinst" list="pinstlocalelist"/>
+		<IF COND="pinstlocalelist.#numRows!=0">
+		<THEN>
+			<asset.removedimension name="pinst" dimensionid="pinstlocalelist.OBJECTID" />
+		</THEN>		
+		</IF>		
+	</ELSE>
+	</IF>
+
+	<FLEXTEMPLATES.GETATTRIBUTES NAME="ftmgr" ID="Variables.tmplid" LISTVARNAME="attrlist"/>
+	<IF COND="attrlist.#numRows!=0">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Gator/XMLPost/ModifyAttributes">
+			<ARGUMENT NAME="attrlist" VALUE="attrlist"/>
+			<ARGUMENT NAME="assettype" VALUE="Variables._ASSET_"/>
+			<ARGUMENT NAME="assetname" VALUE="Variables._ITEMNAME_"/>
+		</CALLELEMENT>
+	</THEN>
+	</IF>
+	<!-- Add parents, tough to validate -->
+	<LISTOBJECT.TOLIST  NAME="immediateParents" LISTVARNAME="parentlist"/>
+	<LOOP LIST="parentlist">
+		<FLEXASSET.ADDPARENT NAME="pinst" ID="parentlist.groupid"/>
+	</LOOP>
+	<HASH.HASDATA NAME="hImmediateParentsToRemove" VARNAME="hasit"/>
+	<IF COND="Variables.hasit=true">
+	<THEN>
+		<HASH.TOSTRING NAME="hImmediateParentsToRemove" VARNAME="removeParent" DELIM=";"/>
+		<STRINGLIST STR="Variables.removeParent" NAME="lParentsToRemove" DELIM=";"/>
+		<LOOP LIST="lParentsToRemove">
+         <FLEXASSET.REMOVEPARENT NAME="pinst" ID="lParentsToRemove.ITEM"/>
+		</LOOP>
+		<setvar NAME="NeedToSave" VALUE="yes"/>
+	</THEN>
+	</IF>
+    <STRINGLIST NAME="lFieldList" STR="externalid,template,filename,path,ruleset,renderid" DELIM=","/>
+    <HASH.CREATE NAME="hFieldList"/>
+    <LOOP LIST="lFieldList">
+        <SETVAR NAME="errno" VALUE="0"/>
+        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(lFieldList.ITEM))" OUTPUT="gatherVal" DELIMITED="true"/>
+        <IF COND="Variables.errno=0">
+        <THEN>
+            <HASH.ADD NAME="hFieldList" VALUE="lFieldList.ITEM"/>
+            <SETVAR NAME="NeedToSave" VALUE="yes"/>
+        </THEN>
+        </IF>
+    </LOOP>
+	<IF COND="Variables.PostDataIsOk=yes">
+	<THEN>
+		<setvar NAME="NeedToSave" VALUE="yes"/>
+	</THEN>
+	<ELSE>
+		<if COND="IsVariable.xmlpostdebug=true">
+		<then>
+		<XLAT.STREAM KEY="dvin/Error/AT/Flex/Postdatanogood" _ASSET_="Variables._ASSET_" EVALALL="false"/>
+		</then>
+		</if>
+
+		<setvar NAME="NeedToSave" VALUE="no"/>
+	</ELSE>
+	</IF>
+
+	<!-- set the status -->
+	<ASSET.SET NAME="pinst" FIELD="status" VALUE="ED"/>
+
+     <!-- check to see if the table is tracked
+     if so, then the current record must
+     be locked by the current user -->
+    <SETVAR NAME="trackingenabled"  VALUE="false"/>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+        <argument NAME="AssetType" VALUE="Variables._ASSET_"/>     <!-- AGB Track 13556 XMLPost fails for Rev Tracked flex asset-->
+    </callelement>
+    <if COND="Variables.trackingenabled=true">
+    <then>
+        <history TABLE="Variables.AssetType" ASSET="Variables.prodid" LIST="ItsHistory"/>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/LockIfNeeded">
+            <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+            <argument NAME="id" VALUE="Variables.prodid"/>
+        </callelement>
+
+        <!-- Add entry in CheckOutInfo for an implicit check out -->
+        <if COND="Variables.checkoutmethod=implicit">
+        <then>
+	  <usermanager.getloginuser VARNAME="thisUser"/>
+	  <implicitcheckout.logimplicitcheckout ASSETTYPE="Variables.AssetType"
+		ASSETID="Variables.prodid"
+		FUNCTION="Edit"
+		USER="Variables.thisUser"/>
+
+          <!-- CATALOGMANAGER>
+             <ARGUMENT NAME="checkout" VALUE="CS.UniqueID"/>
+             <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+             <ARGUMENT NAME="assetid" VALUE="Variables.prodid"/>
+             <ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+             <ARGUMENT NAME="functionid" VALUE="Edit"/>
+             <ARGUMENT NAME="checkoutdate" VALUE="CS.SQLDate"/>
+             <ARGUMENT NAME="username" VALUE="Variables.authusername"/>
+             <ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+             </CATALOGMANAGER -->
+        </then>
+        </if>
+    </then>
+    </if>
+
+
+<!--    -->
+
+
+	<IF COND="Variables.NeedToSave=yes">
+	<THEN>
+        <HASH.HASDATA NAME="hFieldList" VARNAME="hasit"/>
+        <IF COND="Variables.hasit=true">
+        <THEN>
+            <HASH.TOSTRING NAME="hFieldList" VARNAME="fieldList" DELIM=","/>
+            <ASSET.GATHER NAME="pinst" FIELDLIST="Variables.fieldList"/>
+        </THEN>
+        </IF>
+		<ASSET.SAVE NAME="pinst"/>
+
+		<IF COND="Variables.errno=0">
+		<THEN>
+			<COMPLEXASSET.GETID NAME="pinst" VARNAME="assetid"/>
+			<XLAT.STREAM KEY="dvin/AT/Common/AssetSaveSuccess" _ITEMNAME_="Variables._ITEMNAME_" assetid="Variables.assetid" EVALALL="false"/>
+		</THEN>
+		<ELSE>
+			<XLAT.STREAM KEY="dvin/Error/AT/Flex/AssetSaveError" _ITEMNAME_="Variables._ITEMNAME_" errno="Variables.errno" errdetail="Variables.errdetail1" EVALALL="false"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+
+    <!-- decide whether to commit and create a new version.
+		 If the item was already locked, then no commit is
+		 needed. New behavior: saving on implicit check-out will not create new verion. So, on Save, we only do an undo checkout while preserving the changes done i.e. undocheckout without reverting back changes done after last implicit check-out. -->
+    <if COND="IsVariable.alreadylocked=true">
+    	<then>
+    		<if COND="Variables.alreadylocked!=true">
+    			<then>
+    				<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.prodid" NAME="Release-Asset"  EDITABLE="true"/>									
+					<ASSET.UNDOCHECKOUT NAME="Release-Asset" REVERT="false" FLUSH="true"/>				
+    			</then>
+    		</if>
+    	</then>
+    </if>
+    <!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+
+	<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.prodid"/>
+
+	<!-- SETVAR NAME="errno" VALUE="0"/>
+	<SETVAR NAME="assetid" VALUE="Variables.prodid"/>
+	<SETVAR NAME="username" VALUE="Variables.authusername"/>
+	<SELECTTO LIST="COI" FROM="CheckOutInfo" WHAT="checkout" WHERE="assetid,username"/>
+	<IF COND="Variables.errno=0">
+		<THEN>
+			<CATALOGMANAGER SCOPED="STACKED">
+		        <ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+		        <ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+		        <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+    		</CATALOGMANAGER>
+		</THEN>
+	</IF -->
+
+
+</ELSE>
+</IF>
+
+</FTCS>

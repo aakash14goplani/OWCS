@@ -1,0 +1,91 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/FlexibleAssets/FlexGroups/PreUpdate.xml $ 
+$Revision: 18 $ 
+$Modtime: 8/11/04 11:18a $ 
+-->
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- PreUpdate.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->
+
+<if COND="Variables.updatetype=edit">
+	<then>
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/AssetGather">
+			<argument NAME="GetOrSet" VALUE="set"/>
+            <argument NAME="flextype" VALUE="group"/>
+		</callelement>
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexAssets/ManageRules"/>
+    	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/UpdateRelations">
+			<ARGUMENT NAME="assetname" VALUE="theCurrentAsset"/>
+			<ARGUMENT NAME="prefix" VALUE="Variables.prefix"/>
+    	</CALLELEMENT>
+ 	</then>
+</if>
+
+<if COND="Variables.updatetype=create">
+<then>
+ 	    <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/AssetGather">
+			<argument NAME="GetOrSet" VALUE="set"/>
+            <argument NAME="flextype" VALUE="group"/>
+		</callelement>
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/FlexAssets/ManageRules"/>
+    	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/UpdateRelations">
+			<ARGUMENT NAME="assetname" VALUE="theCurrentAsset"/>
+			<ARGUMENT NAME="prefix" VALUE="Variables.prefix"/>
+    	</CALLELEMENT>
+	</then>
+</if>
+
+<if COND="Variables.updatetype=delete">
+    <then>
+        <setvar NAME="updateddate" VALUE="CS.SQLDate"/>
+        <setvar NAME="updatedby" VALUE="SessionVariables.username"/>
+		<!-- Change the name of the deleted record, so user can create another page with same name -->
+        <!--  commenting out to fix 1845 -->
+		<!--setvar NAME="name" VALUE="Variables.id"/-->			
+    </then>
+</if>
+
+<if COND="Variables.updatetype=remotepost">
+<then>
+  <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/RemotePost">
+      <argument NAME="flextype" VALUE="group"/>
+  </callelement>
+</then>
+</if>
+<if COND="Variables.updatetype=updatefrom">
+    <then>
+    </then>
+</if>
+<!-- If the asset is updated from dah -->
+<if COND="Variables.dashUpdate=dashUpdate">
+<then>
+	<if COND="Variables.dashUpdateType=create">
+    <then>
+		<!--if the operation is create-->
+    </then>
+    </if>
+    <if COND="Variables.dashUpdateType=edit">
+    <then>
+		<!--if the operation is edit-->
+    </then>
+    </if>
+    <if COND="Variables.dashUpdateType=delete">
+    <then>
+		<!--if the operation is delete-->
+    </then>
+    </if>
+</then>
+</if>
+</FTCS>

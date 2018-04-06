@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">UI/Insite/Widgets/dropzone/beginlist</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>UI/Insite/Widgets/dropzone/beginlist</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>UI/Insite/Widgets/dropzone/beginlist.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/UI/Insite/Widgets/dropzone/beginlist.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FUI%2FInsite%2FWidgets%2Fdropzone%2Fbeginlist.jsp
+@hashval=528693195
+key=@ELEMENTCATALOG-UI/Insite/Widgets/dropzone/beginlist
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

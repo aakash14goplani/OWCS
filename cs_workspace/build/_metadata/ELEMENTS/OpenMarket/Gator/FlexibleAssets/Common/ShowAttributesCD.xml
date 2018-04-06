@@ -1,0 +1,270 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="IsVariable.rev=true">
+<THEN>
+	<SETVAR NAME="Revision" VALUE="Variables.rev"/>
+</THEN>
+</IF>
+<IF COND="IsVariable.Revision=false">
+<THEN>
+	<SETVAR NAME="Revision" VALUE="Variables.empty"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.AttrTypeID!=Variables.empty">
+<THEN>
+	<atm.locate TYPE="AttrTypes"  VARNAME="atmgr"/>
+	<attributetypes.getpresentation  NAME="atmgr"  OBJNAME="PresObj"  ID="Variables.AttrTypeID"/>
+	<if COND="IsError.Variables.errno=false">
+	<then>
+		<presentation.gettype NAME="PresObj"  VARNAME="MyAttributeType"/>
+
+		<!-- For each Presentation Object you may define an element of the same name prepended by 'Display',
+		- i.e. (DisplayTEXTFIELD) in
+		- OpenMarket/Gator/AttributeTypes.  That element needs to display the attribute data.
+		- Attribute values are contained in the 'value' column of the global AttrValueList.
+		-
+		- INPUT:
+		-	PresInst - instance of current Presentation Object
+		-	AttrInst - instance of current Attribute
+		-	AttrName - name of current Attribute
+		-	AttrType - type of current Attribute
+		- OUTPUT:
+		-	doDefaultDisplay - ("yes, "no") whether to display the default display mechanism
+		-->
+		<IF COND="IsElement.OpenMarket/Gator/AttributeTypes/DisplayVariables.MyAttributeType=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/DisplayVariables.MyAttributeType">
+				<ARGUMENT NAME="PresInst" VALUE="PresObj"/>
+				<ARGUMENT NAME="AttrID" VALUE="Variables.AttrID"/>
+				<ARGUMENT NAME="AttrName" VALUE="Variables.AttrName"/>
+				<ARGUMENT NAME="AttrType" VALUE="Variables.type"/>
+				<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+				<ARGUMENT NAME="id" VALUE="Variables.id"/>
+				<ARGUMENT NAME="Revision" VALUE="Variables.Revision"/>
+			</CALLELEMENT>
+		</THEN>
+		</IF>
+	</then>
+	<else>
+		<STRING.STREAM VALUE="Warning: Presentation object parse error (Variables.errno) for attribute type asset: Variables.AttrTypeID"/><br/>
+	</else>
+	</if>
+</THEN>
+</IF>
+<IF COND="Variables.doDefaultDisplay=yes">
+<THEN>
+	<setvar NAME="MyAttrVal" VALUE="Variables.empty"/>
+	<setvar NAME="firsttime" VALUE="true"/>
+	<if COND="IsList.AttrValueList=true">
+	<then>
+		<IF COND="Variables.type=url">
+		<THEN>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr><CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+			<td></td><td>
+				<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayURLValue"/>
+			</td></tr>
+		</THEN>
+		<ELSE>
+            <!-- Attribute is of type: asset -->
+            <IF COND="Variables.attrassettype!=Variables.empty">
+			<THEN>
+                <LISTOBJECT.CREATE NAME="MyAttrValList" COLUMNS="assetname,assetinspecturl"/>
+                <loop LIST="AttrValueList">
+                    <ASSET.LIST TYPE="Variables.attrassettype" LIST="AttrAssetList" FIELD1="id" VALUE1="AttrValueList.value"/>
+                    <IF COND="IsList.AttrAssetList=true">
+                    <THEN>
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+                            <ARGUMENT NAME="assettype" VALUE="Variables.attrassettype"/>
+                            <ARGUMENT NAME="assetid" VALUE="AttrAssetList.id"/>
+                            <ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+                            <ARGUMENT NAME="function" VALUE="inspect"/>
+                        </CALLELEMENT>
+                        <LISTOBJECT.ADDROW NAME="MyAttrValList" assetname="AttrAssetList.name" assetinspecturl="Variables.urlInspectItem"/>
+                    </THEN>
+                    </IF>
+                </loop>
+                <LISTOBJECT.TOLIST NAME="MyAttrValList" LISTVARNAME="listout"/>
+            </THEN>
+			<ELSE>
+				<IF COND="Variables.type=money">
+				<THEN>
+					<loop LIST="AttrValueList">
+						<setvar NAME="mycurrency" VALUE="Variables.empty"/>
+						<IF COND="AttrValueList.value!=Variables.empty">
+						<THEN>
+							<CURRENCY.CREATE NAME="currency"/>
+							<CURRENCY.GETCURRENCY NAME="currency" VALUE="AttrValueList.value" VARNAME="mycurrency"/>
+						</THEN>
+						</IF>
+						<if COND="Variables.firsttime=true">
+						<then>
+							<setvar NAME="firsttime"  VALUE="false"/>
+							<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+								<ARGUMENT NAME="action" VALUE="create"/>
+							</CALLELEMENT>									
+							<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+								<ARGUMENT NAME="action" VALUE="add"/>
+								<ARGUMENT NAME="attrval" VALUE="Variables.mycurrency"/>
+							</CALLELEMENT>
+						</then>
+						<else>
+							<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+								<ARGUMENT NAME="action" VALUE="add"/>
+								<ARGUMENT NAME="attrval" VALUE="Variables.mycurrency"/>
+							</CALLELEMENT>
+						</else>
+						</if>
+					</loop>
+				</THEN>
+				<ELSE>
+                    <IF COND="Variables.type=date">
+                    <THEN>
+                        <loop LIST="AttrValueList">
+                            <setvar NAME="formatteddate" VALUE="Variables.empty"/>
+                            <IF COND="AttrValueList.value!=Variables.empty">
+                            <THEN>
+                                <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="AttrValueList.value" VALUETYPE="jdbcdate" VARNAME="formatteddate"/>
+                            </THEN>
+                            </IF>
+                            <if COND="Variables.firsttime=true">
+                            <then>
+                                    <setvar NAME="firsttime"  VALUE="false"/>
+                                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="create"/>
+									</CALLELEMENT>									
+									<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="add"/>
+										<ARGUMENT NAME="attrval" VALUE="Variables.formatteddate"/>
+									</CALLELEMENT>
+							</then>
+                            <else>
+                                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="add"/>
+										<ARGUMENT NAME="attrval" VALUE="Variables.formatteddate"/>
+									</CALLELEMENT>
+                            </else>
+                            </if>
+                        </loop>
+                    </THEN>
+                    <ELSE>
+                        <loop LIST="AttrValueList">
+                            <if COND="Variables.firsttime=true">
+                            <then>
+                                    <setvar NAME="firsttime"  VALUE="false"/>
+                                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="create"/>
+									</CALLELEMENT>									
+									<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="add"/>
+										<ARGUMENT NAME="attrval" VALUE="AttrValueList.value"/>
+									</CALLELEMENT>
+							</then>
+                            <else>
+                                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+										<ARGUMENT NAME="action" VALUE="add"/>
+										<ARGUMENT NAME="attrval" VALUE="AttrValueList.value"/>
+									</CALLELEMENT>
+                            </else>
+                            </if>
+                        </loop>
+                    </ELSE>
+                    </IF>
+                </ELSE>
+				</IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</then>
+	</if>
+								 
+	<if COND="Variables.type!=url">
+	<then>
+		<if COND="Variables.SpacerBar=1">
+		<then>
+			<setvar NAME="SpacerBar" VALUE="0"/>
+		</then>
+		</if>
+
+        <!-- Attribute is of type: asset -->
+        <IF COND="Variables.attrassettype!=Variables.empty">
+        <THEN>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+                <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+                <td></td>
+                <td>
+                    <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="InspectThisItem" ESCAPE="true"/>
+                    <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="InspectThisItemALT"/>
+                    <IF COND="listout.#numRows!=0">
+					<THEN>
+						<LOOP LIST = "listout">
+							<if COND="Variables.firsttime=true">
+							<then>
+								<setvar NAME="firsttime"  VALUE="false"/>
+								<A HREF="listout.assetinspecturl" OnMouseOver="window.status='Variables.InspectThisItem'; return true" OnMouseOut="return window.status='';" title="Variables.InspectThisItemALT"  REPLACEALL="Variables.InspectThisItemALT,listout.assetinspecturl,Variables.InspectThisItem">
+									<STRING.STREAM LIST="listout" COLUMN="assetname"/>
+								</A>
+							</then>
+							<!-- If this asset is not the first asset of list, we prepend the asset name with a comma-->
+							<else>
+								<div><IMG WIDTH="1" HEIGHT="10" src='Variables.cs_imagedir/graphics/common/screen/dotclear.gif' REPLACEALL="Variables.cs_imagedir"/></div>
+								<A HREF="listout.assetinspecturl" OnMouseOver="window.status='Variables.InspectThisItem'; return true" OnMouseOut="return window.status='';" title="Variables.InspectThisItemALT"  REPLACEALL="Variables.InspectThisItemALT,listout.assetinspecturl,Variables.InspectThisItem">
+									<STRING.STREAM LIST="listout" COLUMN="assetname"/>
+								</A>
+							</else>
+							</if>
+						</LOOP>
+					</THEN>
+					<ELSE>
+						<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+					</ELSE>
+					</IF>
+                </td>
+            </tr>
+        </THEN>
+        <!-- other types except url and asset -->
+        <ELSE>
+            <IF COND="Variables.disableEdit=true">
+            <THEN>
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+                    <td></td>
+                    <XLAT.LOOKUP KEY="dvin/FlexibleAssets/Attributes/EditExternallyOnly" VARNAME="TitleTooltip"/>
+                    <td><span class="disabled-text" TITLE="Variables.TitleTooltip" REPLACEALL="Variables.TitleTooltip"><STRING.STREAM VARIABLE="MyAttrVal"/></span>
+                    </td>
+                </tr>
+            </THEN>
+            <ELSE>
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+                    <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+                    <td></td>
+                    <td class="form-inset">
+						<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCDHelper">
+							<ARGUMENT NAME="action" VALUE="display"/>
+						</CALLELEMENT>
+                    </td>
+                </tr>
+            </ELSE>
+            </IF>
+        </ELSE>
+        </IF>
+    </then>
+	</if>
+</THEN>
+</IF>
+
+</FTCS> 

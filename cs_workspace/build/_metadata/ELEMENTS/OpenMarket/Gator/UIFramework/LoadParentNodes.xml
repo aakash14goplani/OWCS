@@ -1,0 +1,211 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/LoadParentNodes
+- INPUT
+-
+- OUTPUT
+-
+-->
+            
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/GetDefaultNodeBehavior" />
+	<SETVAR NAME="GroupName" VALUE="Variables.AssetType"/>
+	
+	<!-- set variables and atm.locate -->
+	<atm.locate TYPE="Variables.AssetType" VARNAME="GroupManager"/>
+	
+	
+	<!-- op=init: this is the initial tab load  Content.. ROOT -->
+	<if COND="Variables.op=init">
+	<then>
+		
+		<!-- get root flex parents This will all be displayed -->
+		<flexgroups.getroots TYPE="Variables.AssetType" SITE="SessionVariables.pubid" NAME="GroupManager" LISTVARNAME="PGList"/>
+		<COMPLEXASSETS.GETSORTEDLIST NAME="GroupManager" LISTVARNAME="PGList" LIST="PGList"/>
+		<if COND="Variables.errno=0">
+		<then>
+			<if COND="IsList.PGList=true">
+			<then>
+			  				  
+			  <if COND="PGList.#numRows!=0">
+			  <then>
+					<setvar NAME="COUNT" VALUE="PGList.#numRows"/>					
+						
+					<!-- Build  each root flex parent node asset -->
+					<callelement NAME="OpenMarket/Xcelerate/Util/LoadProperty">
+						<argument NAME="property" VALUE="xcelerate.treeMaxNodes"/>
+						<argument NAME="ini" VALUE="futuretense_xcel.ini"/>
+						<argument NAME="varname" VALUE="TOOMANY"/>
+					</callelement>
+								
+					<!--  Set the Total Count in the immediate children ALL Result Set List -->				
+					<setvar NAME="totalNodes" VALUE="Variables.COUNT"/>					
+					<setvar NAME="FETCH" VALUE="Variables.COUNT"/>				   	  		  
+	  				<setvar NAME="maxNodes" VALUE="no"/>	
+	  		
+					<!-- compare COUNT and TooMany, SET THE COUNT TO MAXNODES -->
+					<CALCULATOR.GO VALUE="Variables.COUNT Variables.TOOMANY GT" VARNAME="ANS"/>							
+					<if COND="Variables.ANS=1">
+					<then>
+						<!--   <CALCULATOR.GO VALUE="Variables.FROM Variables.TOOMANY +" VARNAME="FETCH"/>  --> 							
+						<setvar NAME="FETCH" VALUE="Variables.TOOMANY"/>	
+						<!-- Set the reached max nodes indicator parameter  --> 
+		    			<setvar NAME="maxNodes" VALUE="yes"/>	
+	  				</then>
+					</if>
+				  			 
+					<loop LIST="PGList" FROM="Variables.FROM"  COUNT="Variables.FETCH" >
+						<callelement NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID">
+								<argument NAME="ID" VALUE="PGList.assetid"/>
+						</callelement>
+						
+						<ASSET.GETSUBTYPE TYPE="Variables.AssetType" OBJECTID="PGList.assetid" OUTPUT="stype" />
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/FindAssetImage">
+								<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+								<ARGUMENT NAME="AssetDef" VALUE="Variables.stype"/>
+						</CALLELEMENT>
+							
+						<REMOVEVAR NAME="LoadURL"/>
+	
+						<!--  now list all immediate children (note that we're still rendering FLEX parents only) -->	
+		                <flexgroups.getimmediatechildren TYPE="Variables.AssetType" ID="PGList.assetid"  SITE="SessionVariables.pubid" NAME="GroupManager" 
+		                								     LISTVARNAME="PGParentList"/>
+		              	<IF COND="IsList.PGParentList=true">
+					    <THEN>
+						 	<IF COND="PGParentList.#numRows!=0">
+						  	<THEN> 
+						  			<!--  build its LoadURL -->
+									<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadTab" outstring="LoadURL">
+										<satellite.argument name="AssetType" value="Variables.AssetType"/>
+										<satellite.argument name="populate" value="OpenMarket/Xcelerate/AssetType/Variables.AssetType/LoadTree"/>
+										<satellite.argument name="id" value="PGList.assetid"/>
+										<satellite.argument name="op" value="load"/>
+									</SATELLITE.LINK>
+						  	</THEN>						 
+						 	</IF>
+					    </THEN>
+						</IF>
+					    
+					    <!--  Build the node's BrowseURL used to 
+					          query all immediate children   -->
+					      
+					    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadTab" outstring="browseURL">
+								<satellite.argument name="AssetType" value="Variables.AssetType"/>
+								<satellite.argument name="assetid" value="PGList.assetid"/>						
+								<satellite.argument name="populate" value="OpenMarket/Gator/UIFramework/BrowseParentNode"/>
+								<satellite.argument name="op" value="load"/>
+						</SATELLITE.LINK>
+					
+						<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+								<ARGUMENT NAME="Label" VALUE="PGList.name"/>						
+								<ARGUMENT NAME="ID"    VALUE="Variables.TreeNodeID"/>
+								<ARGUMENT NAME="Image" VALUE="Variables.imageUsed"/>
+								<ARGUMENT NAME="RefreshKeys" VALUE="PGList.assetid"/>																				   
+								<ARGUMENT NAME="okFunctions" VALUE="inspect;edit;delete;treerefresh" />
+								<ARGUMENT NAME="executeFunction" VALUE="Variables.cs_defaultFunctionParent" />
+						</CALLELEMENT>									
+							
+						<REMOVEVAR NAME="LoadURL"/>
+						
+					  </loop>
+					</then>
+					</if>
+				</then>
+				</if>
+		</then>
+		</if>	
+	</then>
+	<!-- else (here op=load), uc1 load all non-roots ( Parents and Asset(s) ALL  -->
+	<else>
+		<!--  now list all immediate children (note that we're still rendering FLEX parents only) -->	
+		<flexgroups.getimmediatechildren TYPE="Variables.AssetType" 
+										 ID="Variables.id"  SITE="SessionVariables.pubid" NAME="GroupManager" LISTVARNAME="PGList0"/>
+									
+		<COMPLEXASSETS.GETSORTEDLIST NAME="GroupManager" LISTVARNAME="PGList" LIST="PGList0"/>
+			
+		<if COND="IsList.PGList=true">
+		<then>		
+				<setvar NAME="COUNT" VALUE="PGList.#numRows"/>					
+						
+				<!-- Build  each root flex parent node asset -->
+				<callelement NAME="OpenMarket/Xcelerate/Util/LoadProperty">
+						<argument NAME="property" VALUE="xcelerate.treeMaxNodes"/>
+						<argument NAME="ini" VALUE="futuretense_xcel.ini"/>
+						<argument NAME="varname" VALUE="TOOMANY"/>
+				</callelement>
+						
+				<!--  Set the Total Count in the immediate children ALL Result Set List -->				
+				<setvar NAME="totalNodes" VALUE="Variables.COUNT"/>					
+				<setvar NAME="FETCH" VALUE="Variables.COUNT"/>				   	  		  
+	  			<setvar NAME="maxNodes" VALUE="no"/>	
+	  		
+				<!-- compare COUNT and TooMany, SET THE COUNT TO MAXNODES -->
+				<CALCULATOR.GO VALUE="Variables.COUNT Variables.TOOMANY GT" VARNAME="ANS"/>							
+				<if COND="Variables.ANS=1">
+				<then>
+						<!--   <CALCULATOR.GO VALUE="Variables.FROM Variables.TOOMANY +" VARNAME="FETCH"/>  --> 							
+						<setvar NAME="FETCH" VALUE="Variables.TOOMANY"/>	
+						<!-- Set the reached max nodes indicator parameter  --> 
+		    			<setvar NAME="maxNodes" VALUE="yes"/>	
+	  			</then>
+				</if>
+				  		
+				<loop LIST="PGList" FROM="Variables.FROM"  COUNT="Variables.FETCH">
+				
+					<callelement NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID">
+						<argument NAME="ID" VALUE="PGList.assetid"/>
+					</callelement>
+					      						
+				    <ASSET.GETSUBTYPE TYPE="Variables.AssetType" OBJECTID="PGList.assetid" OUTPUT="stype" />					
+					<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/FindAssetImage">
+								<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+								<ARGUMENT NAME="AssetDef" VALUE="Variables.stype"/>
+					</CALLELEMENT>
+					
+					<REMOVEVAR NAME="LoadURL"/>
+							
+					<!--  now list all immediate children (note that we're still rendering FLEX parents only) -->	
+		            <flexgroups.getimmediatechildren TYPE="Variables.AssetType" ID="PGList.assetid"  SITE="SessionVariables.pubid" NAME="GroupManager" 
+		                							 LISTVARNAME="PGParentList"/>
+		          	<IF COND="IsList.PGParentList=true">
+					<THEN>
+						 <IF COND="PGParentList.#numRows!=0">
+						 <THEN> 
+						 	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadTab" outstring="LoadURL">
+									<satellite.argument name="AssetType" value="Variables.AssetType"/>
+									<satellite.argument name="populate" value="OpenMarket/Xcelerate/AssetType/Variables.AssetType/LoadTree"/>
+									<satellite.argument name="id" value="PGList.assetid"/>
+									<satellite.argument name="op" value="load"/>
+							</SATELLITE.LINK>
+						 </THEN>
+						 </IF>
+					</THEN>
+					</IF>						
+				    <!--  Build the node's BrowseURL used to 
+					      query all immediate children   
+					 -->					      
+					 <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadTab" outstring="browseURL">
+							<satellite.argument name="AssetType" value="Variables.AssetType"/>
+							<satellite.argument name="assetid" value="PGList.assetid"/>						
+							<satellite.argument name="populate" value="OpenMarket/Gator/UIFramework/BrowseParentNode"/>
+							<satellite.argument name="op" value="load"/>
+				     </SATELLITE.LINK>
+						
+					<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+								<ARGUMENT NAME="Label" VALUE="PGList.name"/>
+								<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+								<ARGUMENT NAME="Image" VALUE="Variables.imageUsed"/>
+								<ARGUMENT NAME="RefreshKeys" VALUE="PGList.assetid"/>
+								<ARGUMENT NAME="executeFunction" VALUE="Variables.cs_defaultFunctionParent" />
+								<ARGUMENT NAME="okFunctions"     VALUE="inspect;edit;delete;treerefresh" />
+					</CALLELEMENT>
+			   </loop>			   														   
+		   </then>
+		   </if>			
+	</else>
+	</if>
+</FTCS> 

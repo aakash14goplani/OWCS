@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- fatwire/wem/ui/Ping
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<ICS.STREAMHEADER NAME="Content-Type" VALUE="application/json"/>
+<![CDATA[
+{"p":1}
+]]>
+
+</ftcs>

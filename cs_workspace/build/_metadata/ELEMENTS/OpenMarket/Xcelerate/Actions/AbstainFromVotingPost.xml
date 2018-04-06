@@ -1,0 +1,80 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AbstainFromVotingPost
+-
+- INPUT
+-
+- OUTPUT
+-COMMENTS:
+		This element is called from OpenMarket/Xcelerate/Actions/AbstainFromVotingPost.xml
+		Given an AssetType and id (asset id), and if the asset is present in a workflow process, 
+		this element is used bye a user to Abstain from voting for a PARTICULAR ROLE
+		
+		The input to this element consist of the following items:
+		AssetType
+		id -> Asset id
+		assignmentid -> set in OpenMarket/Xcelerate/Actions/AbstainFromVotingPost.xml
+		abstaincomment -> optional, obtained from OpenMarket/Xcelerate/Actions/AbstainFromVotingPost.xml
+						If there is no comment %20 or a blank space is used as comment
+		
+		The element uses the WORKFLOWENGINE.ABSTAINFROMVOTING  tag to perform the abstain from voting process.
+
+		-Sathish Paul Leo.
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+
+<if COND="IsVariable.abstaincomment=false">
+<then>
+     <setvar NAME="abstaincomment" VALUE=""/>
+</then>
+<else>
+     <!-- Make unsafe characters safe again (late fix) -->
+     <substitute STR="Variables.abstaincomment" WHAT="%26" WITH=" AND " OUTSTR="abstaincomment"/>
+     <substitute STR="Variables.abstaincomment" WHAT="'" WITH=" " OUTSTR="abstaincomment"/>
+     <substitute STR="Variables.abstaincomment" WHAT="%22" WITH=" " OUTSTR="abstaincomment"/>
+</else>
+</if>
+
+<WorkflowEngine.AbstainFromVoting OBJECT="workflowasset" ID="Variables.assignmentid" COMMENT="Variables.abstaincomment" SITE="SessionVariables.pubid" />
+<if COND="Variables.errno!=0">
+<then>
+     <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	<argument NAME="error" VALUE="AbstainFromVotingFailed"/>
+     </callelement>
+</then>
+<else>
+    <XLAT.LOOKUP KEY="dvin/UI/SuccessfullyAbstainedFromVoting" VARNAME="_XLAT_"/>
+	<div class="width-outer-70">
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+        <argument NAME="severity" VALUE="info"/>	
+    </callelement>
+	</div>
+	<if COND="Variables.cs_environment=ucform">
+	<then>
+		<SCRIPT TYPE="text/javascript">
+			dojo.addOnLoad(function() {
+				SitesApp.notifyModelUpdate('workflowStatus');
+			});
+		</SCRIPT>
+	</then>
+	</if>
+</else>
+</if>
+	
+<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+   <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+   <argument NAME="id"        VALUE="Variables.id"/>
+</callelement>
+
+</FTCS> 
+
+
+

@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/AssetMaker/ContentDetailsChkBox</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/AssetMaker/ContentDetailsChkBox</string>
+        <string>Display a checkbox field</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/AssetMaker/ContentDetailsChkBox.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/AssetMaker/ContentDetailsChkBox.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FAssetMaker%2FContentDetailsChkBox.xml
+@hashval=844856377
+key=@ELEMENTCATALOG-OpenMarket/AssetMaker/ContentDetailsChkBox
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,104 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Search/EnablePost.xml $ 
+$Revision: 15 $ 
+$Modtime: 10/28/02 4:36p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- Admin/Search/EnablePost.xml
+-
+- DESCRIPTION
+-	Enable command confirmed, turn on SE flag, and create a populated
+-       search engine index.
+-
+- HISTORY 
+-->
+
+
+
+<!-- Load the search engine specific strings -->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+
+<!-- Load the asset type -->
+
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/EnablingSearchEngineATObjdesc"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<P/>
+
+<!-- Set the changed fields -->
+
+<ASSETTYPE.SET NAME="type" FIELD="usesearchindex" VALUE="1"/>
+<ASSETTYPE.SET NAME="type" FIELD="indexfile" VALUE="Variables.seIndexPath/Variables.seIndexName"/>
+
+<!-- Save the changes -->
+
+<ASSETTYPE.SAVE NAME="type"/>
+
+<IF COND="Variables.errno!=0">
+  <THEN>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+       <ARGUMENT NAME="error" VALUE="SqlCantEnableSe"/>
+       <ARGUMENT NAME="oldErrno" VALUE="Variables.errno"/>
+    </CALLELEMENT>
+  </THEN>
+	<ELSE>
+		<SETVAR NAME="errno" VALUE="0"/>
+		<IF COND="CS.Property.cs.searchengine=AV">
+		  <THEN>
+		    <INDEXCREATE INDEX="Variables.seIndexPath/Variables.seIndexName"/>
+		  </THEN>
+		  <ELSE>
+		    <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/IndexCreateCS.Property.cs.searchengine">
+		      <ARGUMENT NAME="seindex" VALUE="Variables.seIndexPath/Variables.seIndexName"/>
+		    </CALLELEMENT>
+		  </ELSE>
+		</IF>
+		<IF COND="Variables.errno!=0">
+		  <THEN>
+		    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		       <ARGUMENT NAME="error" VALUE="CantCreateSeIndex"/>
+		       <ARGUMENT NAME="oldErrno" VALUE="Variables.errno"/>
+		    </CALLELEMENT>
+		    <!--Try to back out the change. Not REAL critical if we can't do it.-->
+		    <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+			<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+		   	<ASSETTYPE.SET NAME="type" FIELD="usesearchindex" VALUE="0"/>
+		    <ASSETTYPE.SAVE NAME="type"/>
+		  </THEN>
+		  <ELSE>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Search/Populate">
+			  <ARGUMENT NAME="seindex" VALUE="Variables.seIndexPath/Variables.seIndexName"/>
+			</CALLELEMENT>
+
+			<p><XLAT.STREAM KEY="dvin/UI/Admin/Searchingwithsearchengineenabled"/></p>
+		  </ELSE>
+		</IF>
+	</ELSE>
+</IF>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Search/List">
+	<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+</CALLELEMENT>
+	<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+	<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+			<argument NAME="__TreeRefreshKeys__" VALUE="Self:Searching"/>
+		</callelement>		
+	</then>
+	</if>
+
+</FTCS>

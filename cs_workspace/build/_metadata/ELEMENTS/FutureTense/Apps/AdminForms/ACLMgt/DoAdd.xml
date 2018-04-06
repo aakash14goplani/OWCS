@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- FutureTense/Apps/AdminForms/ACLMgt/DoAdd
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/CSAdminForms/AddACL"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<div class="width-outer-70">
+<XLAT.STREAM KEY="dvin/UI/CSAdminForms/AddACLMsg"/>
+<SETVAR NAME="errno" VALUE="0"/>
+
+<!-- Create ACL in LDAP as well as in Database-->
+	
+<acl.create name="newacl"/>
+<acl.gather name="newacl"/>
+<acl.save name="newacl"/>
+	
+<br/><br/>
+<IF COND="IsError.Variables.errno=true">
+	<THEN>
+        <XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/FailedAddAcl" errno="Variables.errno" EVALALL="false" VARNAME="statusmsg"/>
+		<SETVAR NAME="severity" VALUE="error"/>
+	</THEN>
+	<ELSE>
+		<XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/SuccessAddAcl" VARNAME="statusmsg"/>
+		<SETVAR NAME="severity" VALUE="info"/>
+	</ELSE>
+</IF>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	<ARGUMENT NAME="msgtext" VALUE="Variables.statusmsg"/>
+	<ARGUMENT NAME="severity" VALUE="Variables.severity"/>
+</CALLELEMENT>
+</div>
+</FTCS> 

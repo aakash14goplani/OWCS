@@ -1,0 +1,151 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ShowSearches
+
+ INPUT
+
+ OUTPUT
+
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/SearchAdmin" SCOPED="LOCAL">
+				<ARGUMENT  NAME="allAssetTypes"  VALUE="all"/>
+			</callelement>
+			<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+				<!-- Loop over all search results. -->
+     			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+				<SETVAR NAME="separatorLine" VALUE="0"/>
+
+				
+				<STARTMENU.GETMATCHINGSTARTITEMS ITEMTYPE="Search" PUBID="SessionVariables.pubid" LISTVARNAME="items"/>
+				<IF COND="IsList.items=true">
+				<THEN>			
+					<IF COND="items.#numRows!=0">		
+					<THEN>					
+					<tr><td colspan="8" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<!-- Table header -->
+
+						<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+								<tr><td>
+									<span class="title-text"><XLAT.STREAM KEY="dvin/Common/Search"/></span>
+								</td></tr>
+								<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+						</table>						 
+						 
+						 <table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+						<tr>
+							<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+						</tr>
+						<tr>
+						<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+						<td >
+							<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="8" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+							<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+								<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+							</tr>
+						<LOOP LIST="items">
+						<!--Check if asset forms are enabled in the ui -->
+						<if cond="Variables._enableForms!=true">
+						<then>
+							<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+								<argument NAME="assettype" VALUE="items.assettype"/>
+							</callelement>
+						</then>
+						</if>
+						<if cond="Variables.navigateLink=true">
+						<then>
+							<setvar name="IsAuthorized" value="false"/>
+						</then>
+						<else>
+						<!-- Record found. See if the assettype is enabled -->
+							<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+								<argument NAME="upcommand" VALUE="IsAssetTypeEnabled"/>
+								<argument NAME="assettype" VALUE="items.assettype"/>
+								<argument NAME="pubid" VALUE="SessionVariables.pubid"/>
+							</callelement>
+						</else>
+						</if>
+							<if COND="Variables.IsAuthorized=true">
+								<then>
+							
+										<IF COND="Variables.separatorLine=1">
+											<THEN>
+											<tr>
+												<!--<td colspan="8" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+											</tr>
+											</THEN>
+										</IF>
+						
+										<SETVAR NAME="separatorLine" VALUE="1"/>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SimpleSearchFront" outstring="SimpleSearchURL">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+																		  <satellite.argument name="AssetType" value="items.assettype"/>
+																		  <satellite.argument name="cs_StartID" value="items.id"/>
+																		   </SATELLITE.LINK>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SearchFront" outstring="AdvSearchURL">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+																		  <satellite.argument name="AssetType" value="items.assettype"/>
+																		  <satellite.argument name="cs_StartID" value="items.id"/>
+																		   </SATELLITE.LINK>
+										<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+											 <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+												  <DIV class="small-text-inset">
+													<ASSETTYPE.LOAD NAME="currAT" TYPE="items.assettype"/>
+													<ASSETTYPE.GET NAME="currAT" FIELD="description"/>
+													<STRING.STREAM VALUE="Variables.description"/>
+												</DIV>
+										</td>
+										<td><BR /></td>
+											 <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+												  <DIV class="small-text-inset">
+											<a href="Variables.SimpleSearchURL" REPLACEALL="Variables.SimpleSearchURL"><IF COND="items.description!=Variables.empty"><THEN><STRING.STREAM VALUE="items.description"/></THEN><ELSE><STRING.STREAM VALUE="items.name"/></ELSE></IF></a><BR />
+											</DIV>
+										</td>
+									
+											 <td width="30"><BR /></td><td><DIV class="small-text-inset">
+										(<a href="Variables.AdvSearchURL" REPLACEALL="Variables.AdvSearchURL"><XLAT.STREAM KEY="dvin/UI/advancedsearch"/></a>)
+										</DIV>
+										</td><td><BR /></td></tr>
+										<IF COND="Variables.rowStyle=tile-row-normal">
+										<THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+										</THEN>
+										<ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+										</ELSE>
+										</IF>
+										</then>
+										</if>
+						</LOOP>
+						</table>
+					</td>
+					<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+					</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table> 
+					<P/>
+		</THEN>
+		<ELSE>
+		<div class="width-outer-70">
+		<XLAT.LOOKUP KEY="UI/UC1/Layout/YouDoNotHaveAnySearchStartMenus" VARNAME="_xlat_"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="msgtext" VALUE="Variables._xlat_"/>
+			<argument NAME="severity" VALUE="warning"/>
+		</callelement>
+		</div>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+			
+
+</FTCS> 

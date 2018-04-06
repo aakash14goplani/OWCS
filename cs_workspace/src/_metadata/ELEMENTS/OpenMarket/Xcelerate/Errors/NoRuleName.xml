@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Errors/NoRuleName.xml $ 
+$Revision: 5 $ 
+$Modtime: 11/04/02 1:29p $ 
+-->
+<!--
+- Confidential and Proprietary Information of divine, Inc.
+-					All Rights Reserved.
+-->
+
+<XLAT.STREAM KEY="dvin/UI/Admin/Error/NoRuleName" ESCAPE="false" ENCODE="false"/>
+
+</FTCS>

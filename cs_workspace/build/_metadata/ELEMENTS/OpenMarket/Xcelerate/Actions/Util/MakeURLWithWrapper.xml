@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/Util/MakeURLWithWrapper
+-
+- INPUT
+-	Variables.AssetType
+-	Variables.id		- id of asset to preview
+-	Variables.templatename - name of the template to be using in the url 
+-   Variables.thisrendermode - rendermode
+- OUTPUT
+-	Variables.previewURL - pagename for preview
+-->
+
+   <!-- remove any existing variable previewURL -->
+    <REMOVEVAR NAME="previewURL"/>
+
+	<TEMPLATE.GETPAGENAME OUTNAME="thistname" SUBTYPE="Variables.AssetType" NAME="Variables.templatename"/>
+
+    <!-- check for wrapperpage -->
+    <IF COND="IsVariable.wrapperpage!=true">
+        <THEN>
+                             <RENDER.GETPAGEURL OUTSTR="previewURL" PAGENAME="Variables.thistname"
+																						c="Variables.AssetType"
+																						cid="Variables.id"
+                                                                                        ARGS_rendermode="Variables.thisrendermode"/>
+        </THEN>
+        <ELSE>
+
+            <!-- make the url -->
+             
+                       
+                        <RENDER.GETPAGEURL OUTSTR="previewURL" PAGENAME="Variables.thistname"
+																						c="Variables.AssetType"
+																						cid="Variables.id"
+																						WRAPPERPAGE="Variables.wrapperpage"
+                                                                                        ARGS_rendermode="Variables.thisrendermode"/>
+        </ELSE>
+    </IF>
+
+</ftcs>
+

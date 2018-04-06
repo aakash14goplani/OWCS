@@ -1,0 +1,54 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+<div class="width-outer-70">
+<IF COND="IsVariable.numversions=false">
+     <THEN>
+          <SETVAR NAME="numversions" VALUE="Variables.empty"/>
+     </THEN>
+</IF>
+<IF COND="IsVariable.storage=false">
+     <THEN>
+          <SETVAR NAME="storage" VALUE="Variables.empty"/>
+     </THEN>
+</IF>
+
+<SETCOUNTER NAME="TrackCounter" VALUE="1"/>
+<SETCOUNTER NAME="EndCount" VALUE="Variables.numtables"/>
+<INCCOUNTER NAME="EndCount" VALUE="1"/>
+<LOOP UNTIL="Counters.TrackCounter=Counters.EndCount">
+    <SETVAR NAME="shouldTrack" VALUE="Variables.dotrackCounters.TrackCounter"/>
+    <IF COND="Variables.shouldTrack=true"><THEN>
+        <!-- clear out errno -->
+        <SETVAR NAME="errno" VALUE="0"/>
+
+        <!-- do the track -->
+        <SETVAR NAME="trackTable" VALUE="Variables.trackmeCounters.TrackCounter"/>
+        <TRACKTABLE TABLE="Variables.trackTable"
+                    NUMVERSIONS="Variables.numversions"
+                    STORAGE="Variables.storage"/>
+        <!-- See if track succeeded -->
+        <IF COND="Variables.errno=0">
+             <THEN>
+                  <!-- if succeeded, brag about it -->
+                  <XLAT.LOOKUP KEY="dvin/AdminForms/Tracktable" VARNAME="tracktabale" />
+				  <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables.tracktabale"/>
+						<ARGUMENT NAME="severity" VALUE="info"/>
+				  </CALLELEMENT>
+             </THEN>
+             <ELSE>
+                  <!-- otherwise, call an error reporting element -->
+                  <XLAT.LOOKUP KEY="dvin/AdminForms/TracktableFailed" VARNAME="trackfailed"/>
+				  <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables.trackfailed"/>
+						<ARGUMENT NAME="severity" VALUE="error"/>
+				  </CALLELEMENT>
+                  <CALLELEMENT NAME="FutureTense/Apps/AdminForms/RevisionMgt/errors"/>
+             </ELSE>
+        </IF>
+    </THEN></IF>
+    <INCCOUNTER NAME="TrackCounter" VALUE="1"/>
+</LOOP>
+</div>
+</FTCS>

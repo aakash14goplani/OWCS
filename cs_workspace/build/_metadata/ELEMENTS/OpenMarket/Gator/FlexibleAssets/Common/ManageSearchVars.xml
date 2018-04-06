@@ -1,0 +1,341 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/ManageSearchVars
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<table>
+  <tr>
+			<td colspan="3"><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+  </tr>
+	<tr>
+			<td valign="top" class="light-text-color" colspan="3">
+            
+ 
+  
+   
+ <IF COND="IsVariable.SCHCritSTR=true">
+ <THEN>
+        <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.SCritSTR"/>
+        <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+ </THEN>
+ </IF>
+
+			
+  	<if COND="IsVariable.Name=true">
+		<then>
+			<STRING.ENCODE VARIABLE="Name" VARNAME="Name"/>
+			 <![CDATA[<INPUT TYPE="HIDDEN"  NAME="Name"  VALUE="]]><STRING.STREAM VALUE="Variables.Name"/><![CDATA["/>]]>
+			 <setvar NAME="searchcrit"  VALUE="true"/>
+				 <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :		 
+				 <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/NameValue"/>&nbsp;
+				</then>
+		</if>
+        
+        <IF COND="IsVariable.Status=true">
+        <THEN>
+			<STRING.ENCODE VARIABLE="Status" VARNAME="Status"/>
+            <INPUT TYPE="hidden" NAME="Status" VALUE="Variables.Status"  REPLACEALL="Variables.Status"/>
+            <if COND="IsVariable.searchcrit!=true">
+			 <then>
+					<setvar NAME="searchcrit"  VALUE="true"/>
+                    <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> : 
+ 			 </then>
+ 			 </if>
+  				  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/StatusValue" ENCODE="false"/>  &nbsp;
+        </THEN>
+        </IF>
+
+		<if COND="IsVariable.flextemplateid=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="flextemplateid" VARNAME="flextemplateid"/>
+			 <INPUT TYPE="HIDDEN"  NAME="flextemplateid"  VALUE="Variables.flextemplateid"  REPLACEALL="Variables.flextemplateid"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+					<setvar NAME="searchcrit"  VALUE="true"/>
+				  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> : 
+			 </then>
+			 </if>
+                 
+			  <fatm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+			  <ASSET.LOAD TYPE="Variables.templatetype" NAME="tmpls" OBJECTID="Variables.flextemplateid"/>
+              <ASSET.GET NAME="tmpls" FIELD="name" OUTPUT="tmplname"/>
+   
+ 				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/TypeValue"/> 	 &nbsp;
+		</then>
+		</if>
+
+        <if COND="IsVariable.flexgrouptemplateid=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="flexgrouptemplateid" VARNAME="flexgrouptemplateid"/>
+			 <INPUT TYPE="HIDDEN"  NAME="flexgrouptemplateid"  VALUE="Variables.flexgrouptemplateid"  REPLACEALL="Variables.flexgrouptemplateid"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+					<setvar NAME="searchcrit"  VALUE="true"/>
+				  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :
+			 </then>
+			 </if>
+                 
+			  <fgtm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+			  <ASSET.LOAD TYPE="Variables.templatetype" NAME="tmpls" OBJECTID="Variables.flexgrouptemplateid"/>
+              <ASSET.GET NAME="tmpls" FIELD="name" OUTPUT="tmplname"/>
+   
+ 				<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/ParentDef"/>: <STRING.STREAM VARIABLE="tmplname"/> &nbsp;
+		</then>
+		</if>
+
+        <if COND="IsVariable.OrderBy=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="OrderBy" VARNAME="OrderBy"/>
+			 <INPUT TYPE="HIDDEN"  NAME="OrderBy"  VALUE="Variables.OrderBy"  REPLACEALL="Variables.OrderBy"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					 <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/>  :  
+			 </then>
+			</if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/OrderbyValue"/>  &nbsp; 
+		
+		</then>
+		</if>
+		<if COND="IsVariable.Id=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="Id" VARNAME="Id"/>
+			 <INPUT TYPE="HIDDEN"  NAME="Id"  VALUE="Variables.Id"  REPLACEALL="Variables.Id"/>
+				<if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					 <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :   
+			 </then>
+				 </if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/IdValue" ENCODE="false"/>  &nbsp;    
+		
+		</then>
+		</if>
+
+        <if COND="IsVariable.uId=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="uId" VARNAME="uId"/>
+			 <INPUT TYPE="HIDDEN"  NAME="uId"  VALUE="Variables.uId"  REPLACEALL="Variables.uId"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+					<setvar NAME="searchcrit"  VALUE="true"/>
+					<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :
+			 </then>
+			 </if>
+             <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FWuIdValue" ENCODE="false"/>  &nbsp;
+
+		</then>
+		</if>
+
+	<if COND="IsVariable.ResultLimit=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="ResultLimit" VARNAME="ResultLimit"/>
+			 <INPUT TYPE="HIDDEN"  NAME="ResultLimit"  VALUE="Variables.ResultLimit"  REPLACEALL="Variables.ResultLimit"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+					<setvar NAME="searchcrit"  VALUE="true"/>
+				 <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/>  :    	 
+					</then>
+			 </if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/ResultimitValue"/> &nbsp;   
+		
+		</then>
+		</if>
+		
+        <if COND="IsVariable.UpdatedAfterText=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="UpdatedAfterText" VARNAME="UpdatedAfterText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="UpdatedAfterText"  VALUE="Variables.UpdatedAfterText"  REPLACEALL="Variables.UpdatedAfterText"/>
+             
+			 <STRING.ENCODE VARIABLE="UpdatedAfter" VARNAME="UpdatedAfter"/>
+			 <INPUT TYPE="HIDDEN"  NAME="UpdatedAfter"  VALUE="Variables.UpdatedAfter"  REPLACEALL="Variables.UpdatedAfter"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/UpdatedAfterTextValue"/>  &nbsp;	 
+		</then>
+		</if>
+		
+		<if COND="IsVariable.UpdatedBeforeText=true">
+		<then>
+		     <STRING.ENCODE VARIABLE="UpdatedBeforeText" VARNAME="UpdatedBeforeText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="UpdatedBeforeText"  VALUE="Variables.UpdatedBeforeText"  REPLACEALL="Variables.UpdatedBeforeText"/>
+             
+			 <STRING.ENCODE VARIABLE="UpdatedBefore" VARNAME="UpdatedBefore"/>
+			 <INPUT TYPE="HIDDEN"  NAME="UpdatedBefore"  VALUE="Variables.UpdatedBefore"  REPLACEALL="Variables.UpdatedBefore"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/>  :  
+			 </then>
+			 </if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/UpdatedBeforeTextValue"/> &nbsp;   
+		</then>
+		</if>
+		
+		<if COND="IsVariable.UpdatedBy=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="UpdatedBy" VARNAME="UpdatedBy"/>
+			 <INPUT TYPE="HIDDEN"  NAME="UpdatedBy"  VALUE="Variables.UpdatedBy"  REPLACEALL="Variables.UpdatedBy"/>
+			 
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+				   <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/UpdatedByValue"/>    &nbsp;    
+		</then>
+		</if>
+
+		<if COND="IsVariable.StartDateAfterText=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="StartDateAfterText" VARNAME="StartDateAfterText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="StartDateAfterText"  VALUE="Variables.StartDateAfterText"  REPLACEALL="Variables.StartDateAfterText"/>
+             
+			 <STRING.ENCODE VARIABLE="StartDateAfter" VARNAME="StartDateAfter"/>
+			 <INPUT TYPE="HIDDEN"  NAME="StartDateAfter"  VALUE="Variables.StartDateAfter"  REPLACEALL="Variables.StartDateAfter"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+			<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateAfter" />  &nbsp; <CSVAR NAME="Variables.StartDateAfterText"/> &nbsp;
+		</then>
+		</if>
+
+		<if COND="IsVariable.StartDateBeforeText=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="StartDateBeforeText" VARNAME="StartDateBeforeText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="StartDateBeforeText"  VALUE="Variables.StartDateBeforeText"  REPLACEALL="Variables.StartDateBeforeText"/>
+             
+			 <STRING.ENCODE VARIABLE="StartDateBefore" VARNAME="StartDateBefore"/>
+			 <INPUT TYPE="HIDDEN"  NAME="StartDateBefore"  VALUE="Variables.StartDateBefore"  REPLACEALL="Variables.StartDateBefore"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+			 <XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateBefore" />&nbsp;	 <CSVAR NAME="Variables.StartDateBeforeText"/> &nbsp;
+		</then>
+		</if>		
+		
+		<if COND="IsVariable.EndDateBeforeText=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="EndDateBeforeText" VARNAME="EndDateBeforeText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="EndDateBeforeText"  VALUE="Variables.EndDateBeforeText"  REPLACEALL="Variables.EndDateBeforeText"/>
+             
+			 <STRING.ENCODE VARIABLE="EndDateBefore" VARNAME="EndDateBefore"/>
+			 <INPUT TYPE="HIDDEN"  NAME="EndDateBefore"  VALUE="Variables.EndDateBefore"  REPLACEALL="Variables.EndDateBefore"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+			 <XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateBefore" />&nbsp;	<CSVAR NAME="Variables.EndDateBeforeText"/> 
+		</then>
+		</if>
+
+		<if COND="IsVariable.EndDateAfterText=true">
+		<then>
+			 <STRING.ENCODE VARIABLE="EndDateAfterText" VARNAME="EndDateAfterText"/>
+			 <INPUT TYPE="HIDDEN"  NAME="EndDateAfterText"  VALUE="Variables.EndDateAfterText"  REPLACEALL="Variables.EndDateAfterText"/>
+             
+			 <STRING.ENCODE VARIABLE="EndDateAfter" VARNAME="EndDateAfter"/>
+			 <INPUT TYPE="HIDDEN"  NAME="EndDateAfter"  VALUE="Variables.EndDateAfter"  REPLACEALL="Variables.EndDateAfter"/>
+			 <if COND="IsVariable.searchcrit!=true">
+			 <then>
+						<setvar NAME="searchcrit"  VALUE="true"/>
+					  <XLAT.STREAM KEY="dvin/FlexibleAssets/Common/Filter"/> :  
+			 </then>
+			 </if>
+			 <XLAT.STREAM KEY="fatwire/Alloy/UI/EndDateAfter" />&nbsp;	<CSVAR NAME="Variables.EndDateAfterText"/> 
+		</then>
+		</if>
+
+		<if COND="IsVariable.dimensionssearch=true">
+            <then>
+				<STRING.ENCODE VARIABLE="dimensionssearch" VARNAME="dimensionssearch"/>
+                <INPUT TYPE="hidden" NAME="dimensionssearch" VALUE="Variables.dimensionssearch" REPLACEALL="Variables.dimensionssearch"/>
+				<STRING.ENCODE VARIABLE="selectedDim" VARNAME="selectedDim"/>
+                <INPUT TYPE="hidden" NAME="selectedDim" VALUE="Variables.selectedDim" REPLACEALL="Variables.selectedDim"/>
+            </then>
+        </if>
+            </td>
+</tr>
+    <tr height="5">
+						<td colspan="2" height="5"><img src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" width="1" height="5" REPLACEALL="Variables.cs_imagedir"/></td>
+		</tr>
+
+</table>
+<!-- 
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+-->
+<IF COND="IsVariable.criterianame=true">
+ <THEN>
+	<STRING.ENCODE VARIABLE="criterianame" VARNAME="criterianame"/>
+    <input type="hidden"  name="criterianame"  VALUE="Variables.criterianame"  REPLACEALL="Variables.criterianame"/>
+ </THEN>
+ </IF>
+<IF COND="IsVariable.searchid=true">
+<THEN>
+	  <STRING.ENCODE VARIABLE="searchid" VARNAME="searchid"/>
+      <input type="hidden"  name="searchid"   VALUE="Variables.searchid"  REPLACEALL="Variables.searchid"/>
+</THEN>
+</IF>   
+
+<IF COND="IsVariable.Shared=true">
+<THEN>
+     <STRING.ENCODE VARIABLE="Shared" VARNAME="Shared"/>
+     <input type="hidden"  name="Shared"   VALUE="Variables.Shared"  REPLACEALL="Variables.Shared"/>
+    <!-- this is from the SaveSearch page -->
+    <IF COND="IsVariable.sharedRoles=true">
+    <THEN>
+	  <STRING.ENCODE VARIABLE="sharedRoles" VARNAME="sharedRoles"/>
+      <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+      <input type="hidden"  name="sharedOrPrivate"   VALUE="shared"/>
+    </THEN>
+    </IF> 
+
+</THEN>
+<ELSE>
+    <IF COND="IsVariable.sharedOrPrivate=true">
+    <THEN>
+          <if COND="Variable.sharedOrPrivate=shared">
+          <then>
+			<STRING.ENCODE VARIABLE="sharedOrPrivate" VARNAME="sharedOrPrivate"/>
+            <input type="hidden"  name="sharedOrPrivate"   VALUE="Variables.sharedOrPrivate"  REPLACEALL="Variables.sharedOrPrivate"/>
+            <IF COND="IsVariable.sharedRoles=true">
+            <THEN>
+				  <STRING.ENCODE VARIABLE="sharedRoles" VARNAME="sharedRoles"/>
+                  <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+                  <input type="hidden"  name="Shared"   VALUE="true"/>
+            </THEN>
+            </IF> 
+          </then>
+          </if>
+    </THEN>
+    </IF> 
+</ELSE>
+</IF>
+
+
+
+
+
+
+</FTCS> 

@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/PublishPost
+-
+- INPUT
+-
+-    Variables.target -- target id
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<!-- Continue only if conditions from prologactions are satisfied -->
+<if COND="Variables.doproceed=true">
+<then>
+<img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/PublishApprovedAssets">
+    <argument NAME="target" VALUE="Variables.target" />
+    <argument NAME="publishedby" VALUE="SessionVariables.username" />
+</callelement>
+
+<br/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishConsoleFront" outstring="urlpubconsfront">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+</SATELLITE.LINK>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowPublishOutputFront" outstring="urlpubsession">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    <satellite.argument name="id" value="Variables.pubsess:id"/>
+</SATELLITE.LINK>
+
+<if cond="Variables.cs_environment=portal">
+<then>
+    <a href="javascript:void(0);" onclick="window.close();"><i><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></i></a>
+</then>
+<else>
+    <A HREF="Variables.urlpubconsfront" REPLACEALL="Variables.urlpubconsfront">
+    <i><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></i></A><br/>
+    <A HREF="Variables.urlpubsession" REPLACEALL="Variables.urlpubsession">
+    <i>View PubSession</i></A>
+
+</else>
+</if>
+
+<img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+
+<!--
+- Link back
+-->
+	
+<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/PublishConsoleFront"/>
+</then></if>
+</FTCS> 

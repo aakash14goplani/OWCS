@@ -1,0 +1,204 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/AssetType/DeviceGroup/AdminTreeNodes/DeviceGroupMgt/main
+-
+- INPUT
+-
+- OUTPUT
+- 
+-->
+<script type="text/javascript">
+	dojo.addOnLoad(function() {
+		dojo.body().style.overflowX = 'hidden';
+	});
+</script>
+<IF COND="IsVariable.reprioritized=true">
+<THEN>
+      <IF COND="Variables.reprioritized=success">
+	      <THEN>
+	           <XLAT.LOOKUP KEY="dvin/AdminForms/DeviceGroupRepriortizationSuccess" VARNAME="successMsg" />
+			   <div class="width-outer-70">
+	            <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	            <ARGUMENT NAME="msgtext" VALUE="Variables.successMsg" />
+	            <ARGUMENT NAME="severity" VALUE="info" />
+	            </CALLELEMENT>
+				</div>
+	      </THEN>
+      </IF>
+</THEN>
+</IF>
+
+<SETVAR NAME="AssetType" VALUE="DeviceGroup" />
+<IF COND="IsVariable.orderby!=true">
+	<THEN>
+		<SETVAR NAME="orderby" VALUE="name"/>
+	</THEN>
+	</IF>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="fatwire/admin/ReorderDeviceGroupsMsg"/></span>
+		<div class="width-outer-30" style="font-size: 12px; white-space: nowrap; margin: 0"> <XLAT.STREAM KEY="dvin/AdminForms/DeviceGroupReorderInstructionMsg" /></div>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	<script>
+		function getAvatarNodes(item, hint) {
+		<![CDATA[
+			if (hint == "avatar") {
+				var avatarDiv = document.createElement("div");
+				avatarDiv.innerHTML = item;
+				avatarDiv.innerHTML = dojo.query('a', avatarDiv)[0].innerHTML;
+				return {node: avatarDiv, data: item, type: null};
+			}
+		]]>
+		}
+	</script>
+<ASSET.LIST TYPE="DeviceGroup" LIST="AssetDetails" FIELD1="category" VALUE1="m" ORDER="priority asc" EXCLUDEVOIDED="true" PUBID="SessionVariables.pubid"/>
+	<style>
+		table.reorder-device-group .dojoDndItemAfter td {
+			border-bottom: 1px solid gray;
+		}
+
+		table.reorder-device-group .dojoDndItemBefore td {
+			border-top: 1px solid gray;
+		}
+	</style>
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="reorder-device-group width-outer-50" >
+		<tr>
+			<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+			<td >
+			<XLAT.LOOKUP KEY="dvin/AdminForms/DeviceGroupSelectDragDrop" VARNAME="dragDropToolTip" />
+				<table width="100%" alt="Variables.dragDropToolTip" title="Variables.dragDropToolTip" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" data-dojo-type="dojo.dnd.Source" data-dojo-props="copyState: function() { return false;}, creator: getAvatarNodes" REPLACEALL="Variables.dragDropToolTip" >
+				<script LANGUAGE="JavaScript" type="dojo/connect" event="onDrop" args=""><![CDATA[
+			       this.onDropEvent();
+			    ]]></script>
+				<script LANGUAGE="JavaScript" type="dojo/connect" event="onDndStart" args=""><![CDATA[
+					this.tableNodeAlt = dojo.attr(this.node, 'alt');
+					dojo.attr(this.node, 'alt', '');
+					dojo.attr(this.node, 'title', '');
+			    ]]></script>
+				<script LANGUAGE="JavaScript" type="dojo/connect" event="onDndDrop" args=""><![CDATA[
+					dojo.attr(this.node, 'alt', this.tableNodeAlt);
+					dojo.attr(this.node, 'title', this.tableNodeAlt);
+				]]></script>
+			    <script type='dojo/method' event='onDropEvent'><![CDATA[
+			    	if ( dojo.byId("reorderdiv") )
+    				dojo.byId("reorderdiv").style.display="";
+                ]]></script>
+				<tr><td colspan="7" class="tile-highlight"  onmouseout="window.status='';return true">
+				
+				<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                     
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm" outstring="urlastmkfront">
+			                <satellite.argument name="tool" value="DeviceGroupMgt"/>
+				            <satellite.argument name="form" value="main"/>
+				            <satellite.argument name="orderby" value="Variables.orderby"/>
+					</SATELLITE.LINK>                                                                            
+			         <A HREF="Variables.urlastmkfront" REPLACEALL="Variables.urlastmkfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></A></td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">			                                 
+			        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm" outstring="urlastmkfront">
+			                <satellite.argument name="tool" value="DeviceGroupMgt"/>
+				            <satellite.argument name="form" value="main"/>
+				            <satellite.argument name="orderby" value="Variables.orderby"/>
+					</SATELLITE.LINK>
+                     <A HREF="Variables.urlastmkfront" REPLACEALL="Variables.urlastmkfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></A></td>
+
+
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                       <DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Active"/></DIV></td>
+					<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+
+
+					<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<!-- Loop over all search results. -->
+			   			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETVAR NAME="separatorLine" VALUE="0"/>
+						<IF COND="IsList.AssetDetails=true">
+						<THEN>																
+									<LOOP LIST="AssetDetails">
+			
+										<IF COND="Variables.separatorLine=1">
+										<THEN>
+											<!--<tr>
+												<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+											</tr>-->
+										</THEN>
+										</IF>
+										<SETVAR NAME="separatorLine" VALUE="1"/>
+						
+										<tr class="Variables.rowStyle dojoDndItem" id='AssetDetails.id' name="deviceGroupRow" REPLACEALL='Variables.rowStyle,AssetDetails.id'>
+										<!-- Removed links for inspect,edit and delete -->
+								                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+								                    <DIV class="small-text-inset">
+								                    	<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+			                                            <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+															<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+															<ARGUMENT NAME="assetid" VALUE="AssetDetails.id"/>
+															<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+															<ARGUMENT NAME="function" VALUE="inspect"/>
+											           </CALLELEMENT>
+														<A HREF="Variables.urlInspectItem" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables._XLAT_,Variables.urlInspectItem"><STRING.STREAM VALUE="AssetDetails.name"/></A>
+													</DIV>
+												</td>
+												<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+								                    <DIV class="small-text-inset">
+								                    <STRING.STREAM VALUE="AssetDetails.description"/>
+								                    </DIV>
+								                 </td><td></td>
+                                                                 <td align="left"><STRING.STREAM VALUE="AssetDetails.active"/></td>
+								                 	<td><BR /></td></tr>
+								            <IF COND="Variables.rowStyle=tile-row-normal">
+								            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+								            </THEN>
+								            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+								            </ELSE>
+								            </IF>								            
+										</LOOP>
+							</THEN>
+							</IF>
+							</table>
+						</td>
+						<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+						</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table> 
+
+
+
+<div class="width-outer-30">
+     
+		<DIV style="float: left;display:none"  id="reorderdiv">
+			<XLAT.LOOKUP KEY="dvin/AdminForms/ReorderDeviceGroups" VARNAME="_XLAT_" />
+			<A  HREF="javascript:savepriority(document.forms[0])" ALIGN="right" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/ReorderDeviceGroups"/></CALLELEMENT></A>
+			
+			<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm" OUTSTRING="goToMainPage">
+				<SATELLITE.ARGUMENT NAME="tool" VALUE="DeviceGroupMgt"/>
+				<SATELLITE.ARGUMENT NAME="form" VALUE="main"/>
+			</SATELLITE.LINK>
+			<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" />
+			<A  HREF="Variables.goToMainPage" ALIGN="right" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables._XLAT_, Variables.goToMainPage"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Cancel"/></CALLELEMENT></A>
+		</DIV>
+</div>
+
+
+<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/DeviceGroupSkinForm"/>
+			<INPUT TYPE="hidden" NAME="tool" VALUE="DeviceGroupMgt"/>
+			<INPUT TYPE="hidden" NAME="form" VALUE="ReorderDeviceGroups"/>
+			
+
+
+</ftcs>

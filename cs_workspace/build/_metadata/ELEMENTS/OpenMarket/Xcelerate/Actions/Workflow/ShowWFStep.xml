@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Workflow/ShowWFStep.xml $ 
+$Revision: 16 $ 
+$Modtime: 5/22/02 1:05p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowWFStep.xml
+-
+- DESCRIPTION
+-	Show a status step choice, and show choices for e-mail messages
+-
+- INPUT
+-    workflow_route -  the step object to be displayed
+-    Variables.checked - "checked" or "" 
+-
+- HISTORY 
+-->
+
+<WorkflowStep.GetID NAME="Variables.workflow_route" VARNAME="workflow_stepid" />
+<if COND="Variables.checked!=Variables.empty">
+<then>
+     <INPUT NAME="ChangeStatus" VALUE="Variables.assignment_id,Variables.workflow_stepid" TYPE="radio" CHECKED="yes" REPLACEALL="Variables.workflow_stepid,Variables.assignment_id"/>
+</then>
+<else>
+     <INPUT NAME="ChangeStatus" VALUE="Variables.assignment_id,Variables.workflow_stepid" TYPE="radio" REPLACEALL="Variables.workflow_stepid,Variables.assignment_id"/>
+</else>
+</if>
+
+<WorkflowStep.GetName NAME="Variables.workflow_route" VARNAME="workflow_stepname" />
+<STRING.STREAM VALUE="Variables.workflow_stepname"/> -> 
+<WorkflowStep.GetEndState NAME="Variables.workflow_route" VARNAME="workflow_steptargetstate" />
+<if COND="IsVariable.workflow_steptargetstate=true">
+<then>
+     <setvar NAME="tablename" VALUE="WorkflowStatusCode" />
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.workflow_steptargetstate"/>
+		<ARGUMENT NAME="type" VALUE="Long"/>
+	</CALLELEMENT>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<execsql LIST="MyStatusCode" SQL="select description from Variables.tablename where id=Variables.workflow_steptargetstate"/>
+	</THEN>
+	</IF>
+	<STRING.STREAM VALUE="MyStatusCode.description"/>
+</then>
+<else>
+     (<XLAT.STREAM KEY="dvin/UI/nullstate"/>)
+</else>
+</if>
+
+<BR/>
+
+</FTCS>

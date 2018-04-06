@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/End.xml $ 
+$Revision: 21 $ 
+$Modtime: 3/12/04 1:35p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-    Mirror by mirror queue to remote system.
+-
+-    This is called one time only, after the execution phase. 
+-    It is only called if the session was successfully begun. 
+-    The purpose of this element is to give the publishing strategy 
+-    a chance to finalize itself. 
+-
+- INPUT
+-    pubMirrorQ			Mirror queue.
+-    Variables.pub:errno	Error code from Execute or Check.
+-    pubsess			Object pool name of the the PubSession.
+-    Variables.pubfact:*	Publishing factors.
+-
+- OUTPUT
+-    HTML			None
+-    Variables.pub:endErrno	0 if finalization succeeded.
+-->
+
+
+<PUBSESSION.GETID NAME="pubsess" VARNAME="pubsess:id"/>
+<if COND="Variables.pubfact:VERBOSE=true">
+<then>
+	<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="END (standard mirror code)"/>
+</then>
+</if>
+
+<if COND="IsError.Variables.pub:errno=false">
+<then>
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Starting to close the mirrorqueue at CS.Date."/>
+	</then>
+	</if>
+
+	<!-- do the mirror -->
+	<TIME.SET NAME="mirrorcloseTime"/>
+	<MIRRORQUEUE.CLOSE NAME="pubMirrorQ"/>
+	<setvar NAME="pub:endErrno" VALUE="Variables.errno"/>
+	<if COND="Variables.pubfact:VERBOSE=true">
+	<then>
+		<TIME.GET NAME="mirrorcloseTime" OUTPUT="elapsed"/>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="[TIME]Done with mirroring in Variables.elapsed ms."/>
+	</then>
+	</if>
+	
+	<if COND="IsError.Variables.pub:endErrno=true">
+	<then>
+		<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1End-errorMirroring" VARNAME="msg"/>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.msg"/>
+		<if COND="IsVariable.errdetail1=true">
+		<then>
+			<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.errdetail1"/>
+		</then>
+		<else>
+		</else>
+		</if>
+		<XLAT.LOOKUP KEY="dvin/UI/Publish/Mirror1End-errorDataWontBeSent" VARNAME="msg"/>
+		<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Variables.msg"/>
+		<MIRRORQUEUE.CANCEL NAME="pubMirrorQ"/>
+		<ASSETPUBLISHLIST.NOTIFYTARGETOFABORT PUBSESSION="Variables.pubsess:id" MIRRORQUEUE="pubMirrorQ"/>
+	</then>
+	<else>
+		 <!-- flush the cache on the target -->
+		<if COND="Variables.pubfact:VERBOSE=true">
+		<then>
+			<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Flush the cache on the target at CS.Date"/>
+		</then>
+		</if>
+      <TIME.SET NAME="cleanTargetTime"/>
+		 <ASSETPUBLISHLIST.CLEANUPTARGET PUBSESSION="Variables.pubsess:id" MIRRORQUEUE="pubMirrorQ"/>
+		<if COND="Variables.pubfact:VERBOSE=true">
+		<then>
+		   <TIME.GET NAME="cleanTargetTime" OUTPUT="elapsed"/>
+			<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="[TIME]Done flushing the cache on the target in Variables.elapsed ms."/>
+		</then>
+		</if>
+
+	</else>
+	</if>
+</then>
+<else>
+	<!-- error from sending the assets, cancel the mirror -->
+	<MIRRORQUEUE.CANCEL NAME="pubMirrorQ"/>
+</else>
+</if>
+
+<!-- delete entries in AssetPublishList for this session -->
+<if COND="Variables.pubfact:VERBOSE=true">
+<then>
+	<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="Deleting entries in AssetPublishList at CS.Date"/>
+</then>
+</if>
+<TIME.SET NAME="deleteSessionAssetsTime"/>
+<ASSETPUBLISHLIST.DeleteSessionAssets PUBSESSION="Variables.pubsess:id"/>
+<if COND="Variables.pubfact:VERBOSE=true">
+<then>
+   <TIME.GET NAME="deleteSessionAssetsTime" OUTPUT="elapsed"/>
+	<PUBSESSIONMANAGER.LOGMESSAGE ID="Variables.pubsess:id" VALUE="[TIME]Done deleting entries in AssetPublishList in Variables.elapsed ms."/>
+</then>
+</if>
+
+
+</FTCS>

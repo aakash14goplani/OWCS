@@ -1,0 +1,154 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Util/ShowTemplatesIfAny.xml $ 
+$Revision: 2 $ 
+$Modtime: 7/21/04 12:11p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/Util/ShowTemplatesIfAny
+- DESCRIPTION
+-		Display list of templates in a select box for an asset type. 
+-		If no templates exist, display nothing.
+-
+- INPUT
+-		Variables.AssetType - current asset type
+-		Variables.Prefix - (optional) prefix of fiels on form - will be used by subsequent asset:gather
+-		Variables.updatetype - (optional) - indicates whether this is called from ContentForm
+-		Variables.ContentDetails:* - scattered variables of current asset (if this is called by ContentForm)
+-		SessionVariables.pubid - current publication (a.k.a., site )
+-		Variables.showDummy - true if first item shoul be instruction to 'Choose a template'
+-		Variables.label - label to display
+- OUTPUT
+-		If there are templates displays a select box of available templates. 
+-->
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function updateTemplateName(tPicker) {
+	if (SitesApp) {
+		var doc = SitesApp.getActiveDocument();
+		if (doc) {
+			doc.set('tname', tPicker.value);
+		}		
+	}
+	var webreferenceTemplateSelect = dijit.byId("webreferenceTemplateSelect");	
+	if(webreferenceTemplateSelect) {
+		webreferenceTemplateSelect.set('displayedValue', tPicker.value);
+	}
+}
+]]>
+</SCRIPT>
+
+<IF COND="IsVariable.Prefix=true">
+<THEN>
+	<SETVAR NAME="Fieldname" VALUE="Variables.Prefix:template"/>
+</THEN>
+<ELSE>
+	<SETVAR NAME="Fieldname" VALUE="template"/>
+</ELSE>
+</IF>
+
+<!-- if we are build ContentForm updatetype will be set, if building advanced search it won't -->
+<!-- when building ContentForm, we want to use subtype as part of the criteria for retrieving subtypes -->
+<IF COND="IsVariable.updatetype=true">
+<THEN>
+	<IF COND="IsVariable.subtype!=true">
+	<THEN>
+		<ASSET.ISNEW NAME="theCurrentAsset" VARNAME="isNew"/>
+		<IF COND="Variables.isNew=true">
+		<THEN>
+			<!-- use the first subtype we get (we can't know if this is set to empty or not) -->
+			<ASSET.GetLegalSubtypes TYPE="Variables.AssetType" LIST="subtypes" PUBID="SessionVariables.pubid"/>
+			<SETVAR NAME="subtype" VALUE="subtypes.subtype"/>
+		</THEN>
+		<ELSE>
+			<ASSET.GETSUBTYPE NAME="theCurrentAsset" OUTPUT="subtype"/>
+		</ELSE>
+		</IF>
+	
+	</THEN>
+	</IF>
+	<TEMPLATEMANAGER.GetTemplateNames LISTVARNAME="templates" ASSETTYPES="Variables.AssetType" SUBTYPE="Variables.subtype" PUBID="SessionVariables.pubid" EXCLUDEVARIANTS="true" TTYPE="l" ASSETID="Variables.id"/>
+</THEN>
+<ELSE>
+	<TEMPLATEMANAGER.GetTemplateNames LISTVARNAME="templates" ASSETTYPES="Variables.AssetType" PUBID="SessionVariables.pubid" EXCLUDEVARIANTS="true" TTYPE="l" />
+</ELSE>
+</IF>
+
+<IF COND="templates.#numRows!=0">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+	<td class="form-label-text"><STRING.STREAM VALUE="Variables.label"/></td>
+	<td></td>
+	<td class="form-inset">
+		<div class="fw">
+		<select dojoType="fw.dijit.UISimpleSelect" showErrors="false" clearButton="true" name="Variables.Fieldname" size="1" REPLACEALL="Variables.Fieldname" onChange="updateTemplateName(this)">
+		<if COND="Variables.defaultFormStyle=true">
+		<then>
+			<script event='startup' type='dojo/connect'>
+			<![CDATA[
+				dojo.addClass(this.domNode, 'defaultFormStyle');
+			]]>
+			</script>
+		</then>
+		</if>	
+			<IF COND="Variables.showDummy=true">
+			<THEN>
+				<option value=""/>-- <XLAT.STREAM KEY="dvin/UI/Util/choosedisplaystyle"/> --
+			</THEN>
+			</IF>
+			<LOOP LIST="templates">
+			<!--Incase of FSII the template name is with a prefixed '/' which is taken care of while comparing -->
+			  <SETVAR NAME="errno" VALUE="0"/>
+			  <SETVAR NAME="Newtname" VALUE="templates.tname"/>
+			  <INDEXOF STR="templates.tname" WHAT="/"  OUTSTR="myindex1"  INDEX="0"/>
+
+				<IF COND="Variables.errno=1">
+				<THEN>
+					<IF COND="Variables.myindex1=0">
+					<THEN>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<SUBSTRING STR="templates.tname" OUTSTR="Newtname" INDEX="1"/>
+					</THEN>
+					</IF>
+				</THEN>
+				</IF>
+			  <IF COND="Variables.ContentDetails:template=Variables.Newtname">
+			  <THEN>
+			      <option value="templates.tname" selected="yes" REPLACEALL="templates.tname"/><STRING.STREAM LIST="templates" COLUMN="tname"/>
+			  </THEN>
+			  <ELSE>
+				 <!--This hack is added here to take care of condition where some times the template name comes with '/' and sometime s without '/'-->	
+				  <IF COND="Variables.ContentDetails:template=templates.tname">
+				  <THEN>
+					  <option value="templates.tname" selected="yes" REPLACEALL="templates.tname"/><STRING.STREAM LIST="templates" COLUMN="tname"/>
+				  </THEN>
+				  <ELSE>
+				  <!-- This piece of code added to retain the template dropdown value if "Edit this Search" is selected (Advanced Search) -->
+					<IF COND="Variables.template=templates.tname">
+					<THEN>
+						<option value="templates.tname" selected="yes" REPLACEALL="templates.tname"/><STRING.STREAM LIST="templates" COLUMN="tname"/>
+					</THEN>
+					<ELSE>
+						<option value="templates.tname" REPLACEALL="templates.tname"/><STRING.STREAM LIST="templates" COLUMN="tname"/>
+					</ELSE>
+					</IF>
+				  </ELSE>
+				  </IF>
+			  </ELSE>
+			  </IF>
+			</LOOP>
+		</select>
+		</div>
+	</td>
+	</tr>
+</THEN>
+<ELSE>
+	<!-- there needs to be a Template field because javascript like selecting subtype depends on one -->
+  	<INPUT TYPE="hidden" NAME="Variables.Fieldname" VALUE="" REPLACEALL="Variables.Fieldname"/>
+</ELSE>	
+</IF>
+
+
+</ftcs>

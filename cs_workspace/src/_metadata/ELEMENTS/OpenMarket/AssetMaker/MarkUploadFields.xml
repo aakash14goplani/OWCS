@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 5 $ 
+$Modtime: 7/11/01 10:37a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- MarkUploadFields.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<!-- This file is no longer needed. It exists only for
+backward compatibility, in case someone did not rebuild their
+assetmaker asset elements -->
+
+<!-- if the asset is edited, and it
+has any upload fields, then whip through
+the property list to see if any of those
+assets are marked to have their upload
+fields deletable. If so, add each one
+to the updaterownullcolumns list and
+mark the field as empty -->
+
+
+</FTCS> 

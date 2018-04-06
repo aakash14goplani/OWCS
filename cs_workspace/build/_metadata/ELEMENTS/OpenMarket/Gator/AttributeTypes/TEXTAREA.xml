@@ -1,0 +1,319 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+	OpenMarket/Gator/AttributeTypes/TEXTAREA - - INPUT - - OUTPUT -
+-->
+
+<setvar NAME="doDefaultDisplay" VALUE="no" />
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getfontsize NAME="Variables.PresInst" VARNAME="FONTSIZE" />
+<if COND="Variables.errno!=0">
+<then>
+	<setvar NAME="FONTSIZE" VALUE="2" />
+</then>
+</if>
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getwrapstyle NAME="Variables.PresInst" VARNAME="WRAPSTYLE" />
+<if COND="IsVariable.WRAPSTYLE!=true">
+<then>
+	<setvar NAME="WRAPSTYLE" VALUE="OFF" />
+</then>
+</if>
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getdeptype NAME="Variables.PresInst" VARNAME="DEPTYPE" />
+<if COND="IsVariable.DEPTYPE=true">
+<then>
+	<if COND="Variables.DEPTYPE=exists">
+	<then>
+		<setvar NAME="DEPTYPE" VALUE="true" />
+	</then>
+	<else>
+		<setvar NAME="DEPTYPE" VALUE="false" />
+	</else>
+	</if>
+</then>
+<else>
+	<setvar NAME="DEPTYPE" VALUE="false" />
+</else>
+</if>
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getxsize NAME="Variables.PresInst" VARNAME="XSIZE" />
+<if COND="IsVariable.XSIZE!=true">
+<then>
+	<setvar NAME="XSIZE" VALUE="60" />
+</then>
+<else>
+	<IF COND="Variables.XSIZE=0">
+	<THEN>
+		<setvar NAME="XSIZE" VALUE="60" />
+	</THEN>
+	</IF>
+</else>
+</if>
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getysize NAME="Variables.PresInst" VARNAME="YSIZE" />
+<if COND="IsVariable.YSIZE!=true">
+<then>
+	<setvar NAME="YSIZE" VALUE="10" />
+</then>
+<else>
+	<IF COND="Variables.YSIZE=0">
+	<THEN>
+		<SETVAR NAME="YSIZE" VALUE="10" />
+	</THEN>
+	</IF>
+</else>
+</if>
+
+<!-- Assign WIDTH parameter -->
+<setvar NAME="errno" VALUE="0" />
+<presentation.getwidth NAME="Variables.PresInst" VARNAME="WIDTH" />
+
+<if COND="IsVariable.WIDTH!=true">
+<then>
+	<setvar NAME="WIDTH" VALUE="" />
+</then>
+<else>
+	<IF COND="Variables.WIDTH=0">
+	<THEN>
+		<setvar NAME="WIDTH" VALUE="" />
+	</THEN>
+	</IF>
+</else>
+</if>
+
+<!-- Assign HEIGHT parameter -->
+<setvar NAME="errno" VALUE="0" />
+<presentation.getheight NAME="Variables.PresInst" VARNAME="HEIGHT" />
+
+<if COND="IsVariable.HEIGHT!=true">
+<then>
+	<setvar NAME="HEIGHT" VALUE="200px" />
+</then>
+<else>
+	<IF COND="Variables.HEIGHT=0">
+	<THEN>
+		<setvar NAME="HEIGHT" VALUE="200px" />
+	</THEN>
+	</IF>
+</else>
+</if>
+
+<!-- Assign MAXVALUES parameter -->
+<setvar NAME="errno" VALUE="0" />
+<presentation.getmaxvalues NAME="Variables.PresInst" VARNAME="MAXVALUES" />
+
+<if COND="IsVariable.MAXVALUES!=true">
+<then>
+	<setvar NAME="MAXVALUES" VALUE="-1" />
+</then>
+<else>
+	<IF COND="Variables.MAXVALUES=0">
+	<THEN>
+		<setvar NAME="MAXVALUES" VALUE="-1" />
+	</THEN>
+	</IF>
+</else>
+</if>
+
+<!-- Fetch RESIZE parameter -->
+
+<setvar NAME="errno" VALUE="0" />
+<presentation.getresize NAME="Variables.PresInst" VARNAME="RESIZE" />
+
+<if COND="IsVariable.RESIZE!=true">
+<then>
+	<setvar NAME="RESIZE" VALUE="FALSE" />
+</then>
+</if>
+
+<tr>
+	<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName" />
+	<callelement NAME="OpenMarket/Xcelerate/Scripts/MoveMulFields" />
+	<td>
+		<BR />
+	</td>
+	<td class="form-inset">
+	
+<IF COND="Variables.MultiValueEntry=no">
+<THEN>
+	<IF COND="Variables.AttrType=url">
+	<THEN>
+		<setvar NAME="errno" VALUE="0" />
+		<BEGINS STR="AttrValueList.urlvalue" WHAT="AttrValueList." />
+		<IF COND="Variables.errno=1">
+		<THEN>
+			<setvar NAME="filename" VALUE="CS.UniqueID.txt" />
+		</THEN>
+		<ELSE>
+			<setvar NAME="filename" VALUE="AttrValueList.urlvalue" />
+		</ELSE>
+		</IF>
+	
+		<INPUT TYPE="hidden" NAME="Variables.cs_SingleInputName_file" VALUE="Variables.filename" REPLACEALL="Variables.cs_SingleInputName,Variables.filename" />
+	
+		<setvar NAME="errno" VALUE="0" />
+		<BEGINS STR="AttrValueList.@urlvalue" WHAT="AttrValueList." />
+		<IF COND="Variables.errno=1">
+		<THEN>
+			<setvar NAME="MyAttrVal" VALUE="Variables.empty" />
+		</THEN>
+		<ELSE>
+			<setvar NAME="MyAttrVal" VALUE="AttrValueList.@urlvalue" />
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+	
+	<if COND="Variables.WIDTH=Variables.empty">
+	<then>
+		<setvar NAME="formStyle" VALUE="Variables.defaultFormStyle" />
+	</then>
+	</if>
+	
+	<callelement name="OpenMarket/Gator/AttributeTypes/CommonTextArea">
+		<argument name="areaName" 	value='Variables.cs_SingleInputName' />
+		<argument name="areaValue" 	value='Variables.MyAttrVal' />
+		<argument name="areaRows" 	value='Variables.YSIZE' />
+		<argument name="areaCols" 	value='Variables.XSIZE' />
+		<argument name="areaWrap" 	value='Variables.WRAPSTYLE' />
+		<argument name="areaDepType" value='Variables.DEPTYPE' />
+		<argument name="areaWidth" 	value='Variables.WIDTH' />
+		<argument name="areaHeight" value='Variables.HEIGHT' />
+		<argument name="areaResize" value='Variables.RESIZE' />
+		<argument name="applyDefaultFormStyle" value='Variables.formStyle' />
+	</callelement>
+	
+	<setvar NAME="textareaname" VALUE="Variables.cs_SingleInputName" />
+	<!--
+		// The AllowEmbeddedLink functionality is moved to CSElement
+		RenderMultiValuedTextEditor. // TODO: Commented this code for
+		the time being and it should be eventually removed.
+	-->
+	<if COND="Variables.AllowEmbeddedLinks=true">
+	<then>
+		<setvar NAME="enableAddLink" VALUE="0" />
+		<INDEXOF STR="CS.Header.User-Agent" WHAT="MSIE" OUTSTR="dummy" />
+		<if COND="Variables.errno!=1">
+		<then>
+			<setvar NAME="enableAddLink" VALUE="1" />
+		</then>
+		<else>
+			<INDEXOF STR="CS.Header.User-Agent" WHAT="safari" OUTSTR="dummy" />
+			<if COND="Variables.errno!=1">
+			<then>
+				<setvar NAME="enableAddLink" VALUE="1" />
+			</then>
+			<else>
+				<INDEXOF STR="CS.Header.User-Agent" WHAT="mozilla" OUTSTR="dummy" />
+				<if COND="Variables.errno!=1">
+				<then>
+					<setvar NAME="enableAddLink" VALUE="3" />
+				</then>
+				</if>
+			</else>
+			</if>
+		</else>
+		</if>
+		<if COND="Variables.enableAddLink!=0">
+		<then>
+			<if COND="IsVariable.embeddedlink_inited!=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/Scripts/AddEmbeddedLink" />
+				<setvar NAME="embeddedlink_inited" VALUE="true" />
+			</then>
+			</if>
+			<div style="margin-top: 10px;">
+				<!--come from DisplayAttributeName element -->
+				<setvar NAME="textareadesc" VALUE="Variables.currentAttrName" />
+				<XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="alt" />
+				<XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="mouseover" ESCAPE="true" />
+				<A HREF="javascript:void(0)" 
+					onmouseover="window.status='Variables.mouseover';return true;"
+					onmouseout="window.status='';return true;"
+					onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.textareaname', 'Variables.textareadesc', 'link', false);"
+					REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.textareaname,Variables.textareadesc,Variables.mouseover">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton">
+						<argument NAME="buttonkey" VALUE="UI/Forms/AddLink" />
+					</callelement>
+				</A>
+				<XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="alt" />
+				<XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="mouseover"	ESCAPE="true" />
+				<A HREF="javascript:void(0)" 
+					onmouseover="window.status='Variables.mouseover';return true;"
+					onmouseout="window.status='';return true;"
+					onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.textareaname', 'Variables.textareadesc', 'include', false);"
+					REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.textareaname,Variables.textareadesc,Variables.mouseover">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton">
+						<argument NAME="buttonkey" VALUE="UI/Forms/Include" />
+					</callelement>
+				</A>
+			</div>
+			
+			<setvar NAME="errno" VALUE="0" />
+		</then>
+		</if>
+	</then>
+	</if>
+
+</THEN>
+<ELSE>
+
+	<setvar NAME="textareaname" VALUE="Variables.cs_MultipleInputName" />
+	
+	<IF COND="Variables.AttrType=url">
+	<THEN>
+		<setvar NAME="isUrlField" VALUE="true" />
+		
+		<setvar NAME="errno" VALUE="0" />
+		<BEGINS STR="AttrValueList.urlvalue" WHAT="AttrValueList." />
+		<IF COND="Variables.errno=1">
+		<THEN>
+			<setvar NAME="filename" VALUE="CS.UniqueID.txt" />
+			<INPUT TYPE="hidden" NAME="Variables.cs_MultipleInputName_file" VALUE="Variables.filename" REPLACEALL="Variables.cs_MultipleInputName,Variables.filename" />
+		</THEN>
+		</IF>
+	</THEN>
+	<ELSE>
+		<setvar NAME="isUrlField" VALUE="false" />
+	</ELSE>
+	</IF>
+	
+	<SETVAR NAME='ResizeValue' VALUE='' />
+	<IF COND="Variables.RESIZE=FALSE">
+	<THEN>
+		<setvar NAME="ResizeValue" VALUE="none" />
+	</THEN>
+	</IF>
+	
+	<setvar NAME="editorParams"
+			VALUE="{ rows: Variables.YSIZE, cols: Variables.XSIZE, wrap: 'Variables.WRAPSTYLE', deptype: 'Variables.DEPTYPE', width: 'Variables.WIDTH', height: 'Variables.HEIGHT', style: {resize: 'Variables.ResizeValue'} }" />
+	<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/RenderMultiValuedTextEditor">
+		<ARGUMENT NAME="editorName" VALUE="dijit.form.SimpleTextarea" />
+		<ARGUMENT NAME="EditingStyle" VALUE="Variables.EditingStyle" />
+		<ARGUMENT NAME="textareadesc" VALUE="Variables.currentAttrName" />
+		<ARGUMENT NAME="maximumValues" VALUE="Variables.MAXVALUES" />
+		<ARGUMENT NAME="isResize" VALUE="Variables.RESIZE" />
+		<ARGUMENT NAME="isUrlField" VALUE="Variables.isUrlField" />
+		<ARGUMENT NAME="multiple" VALUE="true" />
+		<ARGUMENT NAME="isShowEmbeddedLinkButtons" VALUE="true" />
+	</CALLELEMENT>
+	
+	<REMOVEVAR NAME="MAXVALUES" />
+	<REMOVEVAR NAME="isUrlField" />
+	<REMOVEVAR NAME="isShowEmbeddedLinkButtons" />
+	<REMOVEVAR NAME="ResizeValue" />
+	
+</ELSE>
+</IF> <!-- MultiValueEntry -->
+
+	</td>
+</tr>
+
+</FTCS> 

@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Util/ShowAssetTypeKind.xml $ 
+$Revision: 3 $ 
+$Modtime: 12/26/02 4:29p $ 
+-->
+<!-- OpenMarket/Xcelerate/Admin/Util/ShowAssetTypeKind
+-
+- INPUT
+- Variables.assettype -
+- Variables.logic 
+- OUTPUT
+-
+-->
+
+<ASSET.GetAssetTypeProperties TYPE="Variables.assettype"/>
+<IF COND="Variables.logic=com.openmarket.assetframework.complexasset.ComplexAsset">
+<THEN>
+	<SETVAR NAME="assettypename" VALUE="Variables.assettype"/>
+	<SELECTTO LIST="cpxAsset" FROM="ComplexAssets" WHERE="assettypename"/>
+	<IF COND="Variables.errno!=-101">
+	<THEN>
+		<IF COND="cpxAsset.class=com.openmarket.gator.attributes.AttributeManager">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexAttribute"/>
+		</THEN>
+		<ELSE>
+			<IF COND="cpxAsset.class=com.openmarket.gator.flexgrouptemplates.FlexGroupTemplateManager">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexParentDefinition"/>
+			</THEN>
+        	<ELSE>
+				<IF COND="cpxAsset.class=com.openmarket.gator.flextemplates.FlexTemplateManager">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexDefinition"/>
+				</THEN>
+				<ELSE>
+					<IF COND="cpxAsset.class=com.openmarket.gator.flexgroups.FlexGroupManager">
+                    <THEN>
+						<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexParent"/>
+                    </THEN>
+					<ELSE>
+						<IF COND="cpxAsset.class=com.openmarket.gator.flexassets.FlexAssetManager">
+	                    <THEN>
+							<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexAsset"/>
+	                    </THEN>
+	                    <ELSE>
+	                		<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/ComplexAsset"/>
+	                	</ELSE>
+		                </IF>
+	                </ELSE>
+	                </IF>
+                </ELSE>
+                </IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<IF COND="Variables.IsProxyAssetType=true">
+	<THEN>
+		<XLAT.STREAM KEY="dvin/ProxyAssets/ProxyAssetType"/>
+	</THEN>
+	<ELSE>
+		<IF COND="Variables.IsAssetMakerAsset=true">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/Assetmaker/AssetMaker"/>
+		</THEN>
+		<ELSE>
+			<XLAT.STREAM KEY="dvin/AT/Common/BasicAsset"/>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</ELSE>
+</IF><BR />
+</FTCS> 

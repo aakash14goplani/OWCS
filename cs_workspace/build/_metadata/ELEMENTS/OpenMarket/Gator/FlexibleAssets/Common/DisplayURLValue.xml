@@ -1,0 +1,667 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/DisplayURLValue
+--
+-- INPUT
+--
+-- This element displays URL and blob values on the flexasset/flexgroup edit form.
+--
+-- OUTPUT
+--
+-->
+
+ 	<IF COND="AttrValueList.#numRows!=0">
+	<THEN>
+	<div class='FormUploader'>
+	<SETVAR NAME='displayURLValueJSON' value='{'/>	
+	<LOOP LIST="AttrValueList">
+		<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON  '/>
+		<IF COND="Variables.AttrSource!=derived">
+		<THEN>
+			<SETVAR NAME="curAssetId" VALUE="tmplattrlist.assetid"/>
+			<SETVAR NAME="curName" VALUE="tmplattrlist.name"/>
+			<SETVAR NAME="curType" VALUE="tmplattrlist.type"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="curAssetId" VALUE="lFilteredAttrs.assetid"/>
+			<SETVAR NAME="curName" VALUE="lFilteredAttrs.name"/>
+			<SETVAR NAME="curType" VALUE="lFilteredAttrs.type"/>
+			<ICS.LISTGET LISTNAME="lFilterList" FIELDNAME="assetid" OUTPUT="filterId" />
+		</ELSE>
+		</IF>
+
+		<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON "AttrValueList.#curRow": {'/>
+		<div class='UploaderMainDiv'>
+			<!-- displayable file? -->
+			<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DetermineFileType">
+				<argument NAME="filename" VALUE="AttrValueList.urlvalue"/>
+			</callelement>
+			<IF COND="Variables.picture=true">
+            <THEN>
+				<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DetermineImageDimensions">
+					<argument NAME="listname" VALUE="AttrValueList"/>
+					<argument NAME="columnname" VALUE="urlvalue"/>
+					<argument NAME="currrow" VALUE="AttrValueList.#curRow"/>
+				</callelement>
+				
+				<CALCULATOR.GO VALUE="Variables.ImageDimensions_width Variables.ImageDimensions_height GT" VARNAME="_isHigherWidth"/>
+				
+				<IF COND="Variables._isHigherWidth=1">
+				<THEN>
+					<SETVAR NAME="_imgAttr" VALUE="width"/>
+			   	</THEN>
+			   	<ELSE>
+			   		<SETVAR NAME="_imgAttr" VALUE="height"/>
+			   	</ELSE>
+				</IF>
+            </THEN>
+			</IF>
+			<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DetermineFileSize">
+				<argument NAME="listname" VALUE="AttrValueList"/>
+				<argument NAME="columnname" VALUE="urlvalue"/>
+				<argument NAME="currrow" VALUE="AttrValueList.#curRow"/>
+			</callelement>
+			<IF COND="IsSessionVariable.csblobid!=true">
+			<THEN>
+				<SETSSVAR NAME="csblobid" VALUE="CS.UniqueID"/>
+			</THEN>
+			</IF>
+
+			<SETVAR NAME="errno" VALUE="0"/>
+			<ENDS STR="Variables.pagename" WHAT="Post"/>
+			<IF COND="Variables.errno=1">
+			<THEN>
+				<REMOVEVAR NAME="__POSTED__"/>
+			</THEN>
+			</IF>
+
+            <!-- Clean the ( UNIX / LINUX ) or Folder ( WINDOWS )
+                 names from the BLOB / URL  filenames -->
+            <SETVAR NAME="errno" VALUE="0"/>
+            <STRINGLIST NAME="folders" STR="AttrValueList.urlvalue" DELIM="\"/>
+            <IF COND="folders.#numRows!=1">
+            <THEN>
+                <LOOP LIST="folders">
+                   <SETVAR NAME="filename" VALUE="folders.ITEM"/>
+                </LOOP>
+            </THEN>
+            <ELSE>
+                <STRINGLIST NAME="folders" STR="AttrValueList.urlvalue" DELIM="/"/>
+                <LOOP LIST="folders">
+                   <SETVAR NAME="filename" VALUE="folders.ITEM"/>
+                </LOOP>
+            </ELSE>
+            </IF>
+            <SETVAR NAME='thisFileName' value='Variables.filename'/>
+<!-- 
+            <td><STRING.STREAM VARIABLE="filename"/></td>
+
+            <td width="5"><img src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" width="5" height="1" REPLACEALL="Variables.cs_imagedir"/></td>
+			<td><STRING.STREAM VARIABLE="filetype"/></td>
+			<td width="5"><img src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" width="5" height="1" REPLACEALL="Variables.cs_imagedir"/></td>
+ -->
+ 			<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON  "filetype": "Variables.filetype", '/>
+			<IF COND="Variables.picture=true">
+			<THEN>
+				<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON  "dimension": "Variables.ImageDimensions pixels", '/>
+			</THEN>
+			</IF>
+			<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON  "filename": "Variables.filename", '/>
+			<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON  "size": "Variables.filesize"'/>
+			<IF COND="Variables.displayable=true">
+			<THEN>
+				<IF COND="Variables.picture=true">
+				<THEN>
+					<IF COND="Variables.pagename!=OpenMarket/Xcelerate/Actions/CopyFront">
+					<THEN>
+						<!-- if its a blob, we need to know if its currently in the TempObjects or MungoBlobs table -->
+						<!-- Incase of multiple values,  there might be more than one blobid matching for a given url value -->
+                   		<!-- __POSTED__: <CSVAR NAME='Variables.__POSTED__'/><BR/> -->
+						<IF COND="IsVariable.__POSTED__=true">
+						<THEN>
+							<SETVAR NAME="blobkey" VALUE="id"/>
+							<SETVAR NAME="blobcol" VALUE="urldata"/>
+
+							<VECTOR.TOSTRING NAME="vVariables.curAssetId" VARNAME="currentTempIDs" DELIM=","/>
+							<STRINGLIST NAME="tempids" STR="Variables.currentTempIDs" DELIM=","/>
+							<LISTOBJECT.CREATE NAME="temp" COLUMNS="id"/>							
+							<LOOP LIST="tempids">
+								<LISTOBJECT.ADDROW NAME="temp" id="tempids.ITEM"/>
+								<LISTOBJECT.CREATE NAME="temp2" COLUMNS="id"/>
+								<LISTOBJECT.ADDROW NAME="temp2" id="tempids.ITEM"/>
+								<LISTOBJECT.TOLIST NAME="temp2" LISTVARNAME="temptempids"/>
+								<TEMPOBJECTS.GETLIST LISTVARNAME="lTempTempObjects" COLUMN="urlvalue" LIST="temptempids"/>
+								<SETVAR NAME="BLOBID_lTempTempObjects.urlvalue" VALUE="tempids.ITEM"/>
+							</LOOP>
+							<LISTOBJECT.TOLIST NAME="temp" LISTVARNAME="tempids"/>
+							<TEMPOBJECTS.GETLIST LISTVARNAME="lTempObjects" COLUMN="urlvalue" LIST="tempids"/>
+							<LOOP LIST="lTempObjects">
+								<IF COND="AttrValueList.urlvalue=lTempObjects.urlvalue">
+								<THEN>
+									<setvar NAME="blobwhere"  VALUE="Variables.BLOBID_lTempObjects.urlvalue"/>
+									<setvar NAME="blobtable"  VALUE="TempObjects"/>
+								</THEN>                    
+								</IF>
+							</LOOP>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.curType=url">
+							<THEN>
+								<!-- blobserver from either Variables.AssetType_Mungo table or TempObjects -->
+								<!-- need to worry about filters here maybe -->
+								<SETVAR NAME="tablename" VALUE="Variables.AssetType_Mungo"/>
+								<SETVAR NAME="errno" VALUE="0"/>
+								
+								<IF COND="Variables.EditingStyle=single">
+								<THEN>
+									<EXECSQL SQL="SELECT id FROM Variables.tablename WHERE cs_ownerid=Variables.id AND cs_attrid=Variables.curAssetId" LIST="BlobidList"/>
+								</THEN>
+								<ELSE>
+									<EXECSQL SQL="SELECT id FROM Variables.tablename WHERE cs_ownerid=Variables.id AND cs_attrid=Variables.curAssetId AND cs_ordinal=AttrValueList.#curRow" LIST="BlobidList"/>
+								</ELSE>
+								</IF>
+								
+								<SETVAR NAME="BLOBID_AttrValueList.urlvalue" VALUE="BlobidList.id"/>
+								
+
+		 						
+								<SETVAR NAME="blobtable" VALUE="Variables.tablename"/>
+								<SETVAR NAME="blobkey" VALUE="id"/>
+								<SETVAR NAME="blobwhere" VALUE="BlobidList.id"/>
+								<SETVAR NAME="blobcol" VALUE="urlvalue"/>
+							</THEN>
+							<ELSE>
+								<BLOBSERVICE.GETIDCOLUMN VARNAME="blobkey"/>
+								<BLOBSERVICE.GETURLCOLUMN VARNAME="blobcol"/>
+								<BLOBSERVICE.GETTABLENAME VARNAME="blobtable"/>
+								<ASSETSET.SETASSET NAME="as" TYPE="Variables.AssetType" ID="Variables.id"/>
+								<ASSETSET.GETATTRIBUTEVALUES NAME="as" TYPENAME="Variables.attributetype" ATTRIBUTE="Variables.curName" LISTVARNAME="BlobidList"/>
+				  
+								<LOOP LIST="BlobidList">
+									<blobservice.readdata  ID="BlobidList.value" LISTVARNAME="blobUrldata"/>
+									<IF COND="blobUrldata.urldata=AttrValueList.urlvalue">
+									<THEN>
+										<setvar NAME="blobwhere"  VALUE="BlobidList.value"/>
+									</THEN>
+									</IF>
+								</LOOP>
+							</ELSE>
+							</IF>
+						</ELSE>
+						</IF>
+
+						<URL.UNPACK VALUE="%0D%0A" VARNAME="CRLF"/>
+						<URL.PACK VALUE="Variables.filename" VARNAME="fileNameVal"/>	
+						<SETVAR NAME='filename' VALUE='AttrValueList.urlvalue'/>
+						<URL.PACK VALUE="Variables.filetype" VARNAME="packedCT"/>
+						<SETVAR NAME="bheadcontent-type" VALUE="Variables.packedCT"/>					
+						<SETVAR NAME="bheadContent-Disposition" VALUE='attachment; filename="Variables.fileNameVal"'/>
+						<SETVAR NAME="bheadContent-Disposition" VALUE="Variables.bheadContent-Disposition;filename*=UTF-8''Variables.fileNameVal"/>
+						<SETVAR NAME="bheadMDT-Type" VALUE="abinary; charset=UTF-8"/>
+						<div class='UploadFileDivInspect' name='displayURLValue_Variables.AttrName_AttrValueList.#curRow' REPLACEALL='AttrValueList.#curRow,Variables.AttrName'>
+
+						<!-- IF COND="Variables.pagename!=OpenMarket/Xcelerate/Actions/RevisionDetailsFront" -->
+						<IF COND="Variables.Revision=Variables.empty">
+						<THEN>
+							<IF COND="Variables.blobtable=Variables.AssetType_Mungo">
+							<THEN>
+								<SATELLITE.BLOB ASSEMBLER="query" service="img src"
+									blobtable="Variables.blobtable"
+									blobkey="Variables.blobkey"
+									blobwhere="Variables.blobwhere"
+									blobcol="Variables.blobcol"
+									csblobid="SessionVariables.csblobid"
+									blobnocache="true"
+									outstring="imgbloburl">
+									<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+									<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>
+								</SATELLITE.BLOB>
+								<img src='Variables.imgbloburl' data-dojo-type='fw.dijit.UILightbox' data-dojo-props="title:'Variables.thisFileName', href:'Variables.imgbloburl'" style='Variables._imgAttr: 96px' REPLACEALL='Variables.imgbloburl, Variables.thisFileName, Variables._imgAttr'/>
+							</THEN>
+							<ELSE>
+								<SATELLITE.BLOB ASSEMBLER="query" service="img src"
+									blobtable="Variables.blobtable"
+									blobkey="Variables.blobkey"
+									blobwhere="Variables.blobwhere"
+									blobcol="Variables.blobcol"
+									csblobid="SessionVariables.csblobid"
+									blobnocache="true"
+									outstring="imgbloburl">
+									<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+									<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+									<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>
+								</SATELLITE.BLOB>
+								<img src='Variables.imgbloburl' data-dojo-type='fw.dijit.UILightbox' data-dojo-props="title:'Variables.thisFileName', href:'Variables.imgbloburl'" style='Variables._imgAttr: 96px' REPLACEALL='Variables.imgbloburl, Variables.thisFileName, Variables._imgAttr'/>								
+							</ELSE>
+							</IF>
+							
+						</THEN>
+						<ELSE>
+							<IF COND="IsVariable.filterId=false">
+							<THEN>
+								<SETVAR NAME="filterId" VALUE="Variables.empty" />
+							</THEN>
+							</IF>
+
+							<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="referURL" PAGENAME="OpenMarket/Xcelerate/Util/StreamBinary">
+								<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+								<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+								<SATELLITE.ARGUMENT NAME="csblobid" VALUE="SessionVariables.csblobid"/>
+								<SATELLITE.ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+								<SATELLITE.ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+								<SATELLITE.ARGUMENT NAME="attrid" VALUE="Variables.curAssetId"/>
+								<SATELLITE.ARGUMENT NAME="mimetype" VALUE="Variables.packedCT"/>
+								<SATELLITE.ARGUMENT NAME="filename" VALUE="Variables.filename"/>
+								<SATELLITE.ARGUMENT NAME="Revision" VALUE="Variables.Revision"/>
+								<SATELLITE.ARGUMENT NAME="filterId" VALUE="Variables.filterId"/>
+							</SATELLITE.LINK>
+							<img src="Variables.referURL" data-dojo-type='fw.dijit.UILightbox' data-dojo-props="title:'Variables.thisFileName', href:'Variables.referURL'" style='Variables._imgAttr: 96px' REPLACEALL="Variables.referURL, Variables.thisFileName, Variables._imgAttr"/>
+						</ELSE>
+						</IF>
+
+						</div>
+					</THEN>
+					</IF>
+				</THEN>
+				<ELSE>
+					<!-- Attribues can have editor as FCKEditor and type as url/blob in such cases render it in the inspect screen-->
+					<!-- FCKEditor has been deprecated in Oracle Sites 11gR1 release and will be removed from here in future-->
+					<SETVAR NAME="CK_FCK_EDITOR" VALUE="false"/>
+					<IF COND="Variables.MyAttributeType=CKEDITOR">
+					<THEN>
+						<SETVAR NAME="CK_FCK_EDITOR" VALUE="true"/>
+					</THEN>
+					</IF>
+					<IF COND="Variables.MyAttributeType=FCKEDITOR">
+					<THEN>
+						<SETVAR NAME="CK_FCK_EDITOR" VALUE="true"/>
+					</THEN>
+					</IF>
+					<IF COND="Variables.CK_FCK_EDITOR=true">
+					<THEN>
+						
+						<div class='UploadFileDivInspect' name='displayURLValue_Variables.AttrName_AttrValueList.#curRow' REPLACEALL='AttrValueList.#curRow,Variables.AttrName'>
+							<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayCKEditorURLValue">
+								<argument NAME="attributetype" VALUE="Variables.attributetype"/>
+								<argument NAME="curName" VALUE="Variables.curName"/>
+								<argument NAME="attrListUrlValue" VALUE="AttrValueList.urlvalue"/>
+								<argument NAME="FCKEditorURLValue" VALUE="AttrValueList.@urlvalue"/>
+							</callelement> 
+						</div>
+					</THEN>
+					<ELSE>
+					<TEXTFORMAT.LENGTH VALUE="AttrValueList.@urlvalue" VARNAME="length"/>
+					<CALCULATOR.GO VALUE="Variables.length 200 GT" VARNAME="toolong"/>
+					<IF COND="Variables.toolong=1">
+					<THEN>
+						<SUBSTRING STR="AttrValueList.@urlvalue" OUTSTR="trimmed" ENDINDEX="200"/>
+						<setvar NAME="trimmed" VALUE="Variables.trimmed..."/>
+					</THEN>
+					<ELSE>
+						<setvar NAME="trimmed" VALUE="AttrValueList.@urlvalue"/>
+					</ELSE>
+					</IF>
+					
+					<IF COND="Variables.curType=url">
+					<THEN>
+						<!-- blobserver from either Variables.AssetType_Mungo table or TempObjects -->
+						<!-- need to worry about filters here maybe -->
+						<SETVAR NAME="tablename" VALUE="Variables.AssetType_Mungo"/>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<EXECSQL SQL="SELECT id FROM Variables.tablename WHERE cs_ownerid=Variables.id AND cs_attrid=Variables.curAssetId AND cs_ordinal=AttrValueList.#curRow" LIST="BlobidList"/>
+						<SETVAR NAME="BLOBID_AttrValueList.urlvalue" VALUE="BlobidList.id"/>
+ 						
+						<SETVAR NAME="blobtable" VALUE="Variables.tablename"/>
+						<SETVAR NAME="blobkey" VALUE="id"/>
+						<SETVAR NAME="blobwhere" VALUE="BlobidList.id"/>
+						<SETVAR NAME="blobcol" VALUE="urlvalue"/>
+					</THEN>
+					<ELSE>
+						<BLOBSERVICE.GETIDCOLUMN VARNAME="blobkey"/>
+						<BLOBSERVICE.GETURLCOLUMN VARNAME="blobcol"/>
+						<BLOBSERVICE.GETTABLENAME VARNAME="blobtable"/>
+						<ASSETSET.SETASSET NAME="as" TYPE="Variables.AssetType" ID="Variables.id"/>
+						<ASSETSET.GETATTRIBUTEVALUES NAME="as" TYPENAME="Variables.attributetype" ATTRIBUTE="Variables.curName" LISTVARNAME="BlobidList"/>
+		  
+						<LOOP LIST="BlobidList">
+							<blobservice.readdata  ID="BlobidList.value" LISTVARNAME="blobUrldata"/>
+							<IF COND="blobUrldata.urldata=AttrValueList.urlvalue">
+							<THEN>
+								<setvar NAME="blobwhere"  VALUE="BlobidList.value"/>
+							</THEN>
+							</IF>
+						</LOOP>
+					</ELSE>
+					</IF>
+					
+					<URL.UNPACK VALUE="%0D%0A" VARNAME="CRLF"/>
+					<URL.PACK VALUE="Variables.filename" VARNAME="fileNameVal"/>
+					<SETVAR NAME='filename' VALUE='AttrValueList.urlvalue'/>					
+					<URL.PACK VALUE="Variables.filetype" VARNAME="packedCT"/>
+					<SETVAR NAME="bheadcontent-type" VALUE="Variables.packedCT"/>	
+					<SETVAR NAME="bheadContent-Disposition" VALUE='attachment; filename="Variables.fileNameVal"'/>
+					<SETVAR NAME="bheadContent-Disposition" VALUE="Variables.bheadContent-Disposition;filename*=UTF-8''Variables.fileNameVal"/>
+					
+					<SETVAR NAME="bheadMDT-Type" VALUE="abinary; charset=UTF-8"/>
+					<SATELLITE.BLOB ASSEMBLER="query"
+									blobtable="Variables.blobtable"
+									blobkey="Variables.blobkey"
+									blobwhere="Variables.blobwhere"
+									blobcol="Variables.blobcol"
+									csblobid="SessionVariables.csblobid"
+									blobnocache="true"
+									outstring="textbloburl">											
+							<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+							<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+							<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+							<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+							<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+							<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>				
+					</SATELLITE.BLOB>
+					
+ 					<!-- we might be able to do without the following SUBSTITUTE by using STRING.STREAM tag -->
+                    <!--<SUBSTITUTE STR="Variables.trimmed" WHAT="&#60;" WITH="&#38;lt;" OUTSTR="trimmed"/>-->
+					<div class='UploadFileDivInspect' name='displayURLValue_Variables.AttrName_AttrValueList.#curRow' REPLACEALL='AttrValueList.#curRow,Variables.AttrName'>
+						<!-- This might be required. Not to be removed till very sure. 
+							<STRING.STREAM VARIABLE="trimmed"/> 
+						-->
+						<a href="Variables.textbloburl" REPLACEALL='Variables.textbloburl'>
+							<img src='' name='iconImg'/>
+						</a>
+					</div>
+					</ELSE>
+					</IF>
+					<REMOVEVAR NAME="CK_FCK_EDITOR"/>
+				</ELSE>
+				</IF>
+			</THEN>
+			<ELSE>
+        			<IF COND="Variables.pagename!=OpenMarket/Xcelerate/Actions/CopyFront">
+        			<THEN>     
+				<IF COND="Variables.curType=blob">
+        				<THEN>
+        					<BLOBSERVICE.GETIDCOLUMN VARNAME="blobkey"/>
+        					<BLOBSERVICE.GETURLCOLUMN VARNAME="blobcol"/>
+        					<BLOBSERVICE.GETTABLENAME VARNAME="blobtable"/>
+        				</THEN>
+        				<ELSE>
+        					<SETVAR NAME="blobkey" VALUE="id"/>
+        					<SETVAR NAME="blobcol" VALUE="urlvalue"/>
+        					<SETVAR NAME="blobtable" VALUE="Variables.AssetType_Mungo"/>
+        				</ELSE>
+        				</IF>
+   					
+				<SETVAR NAME="tablename" VALUE="Variables.attributetype_Extension"/>
+   				<EXECSQL LIST="currentAsset" SQL="SELECT contenttype,enginename FROM Variables.tablename WHERE ownerid=Variables.curAssetId"/>	
+   					
+                			<!-- Incase of multiple values,  there might be more than one blobid matching for a given url value -->
+
+				<IF COND="IsVariable.__POSTED__=true">
+				<THEN>
+					<VECTOR.TOSTRING NAME="vVariables.curAssetId" VARNAME="currentTempIDs" DELIM=","/>
+					<STRINGLIST NAME="tempids" STR="Variables.currentTempIDs" DELIM=","/>
+					<LISTOBJECT.CREATE NAME="temp" COLUMNS="id"/>
+                				<LOOP LIST="tempids">
+                					<LISTOBJECT.ADDROW NAME="temp" id="tempids.ITEM"/>
+                					<LISTOBJECT.CREATE NAME="temp2" COLUMNS="id"/>
+                					<LISTOBJECT.ADDROW NAME="temp2" id="tempids.ITEM"/>
+                					<LISTOBJECT.TOLIST NAME="temp2" LISTVARNAME="temptempids"/>
+                					<TEMPOBJECTS.GETLIST LISTVARNAME="lTempTempObjects" COLUMN="urlvalue" LIST="temptempids"/>
+                					<SETVAR NAME="BLOBID_lTempTempObjects.urlvalue" VALUE="tempids.ITEM"/>
+                				</LOOP>
+                				<LISTOBJECT.TOLIST NAME="temp" LISTVARNAME="tempids"/>
+               	 			<TEMPOBJECTS.GETLIST LISTVARNAME="lTempObjects" COLUMN="urlvalue" LIST="tempids"/>
+                				<LOOP LIST="lTempObjects">
+                      				<IF COND="AttrValueList.urlvalue=lTempObjects.urlvalue">
+                      				<THEN>
+                        					<setvar NAME="blobwhere"  VALUE="Variables.BLOBID_lTempObjects.urlvalue"/>
+                        					<setvar NAME="blobtable"  VALUE="TempObjects"/>
+                        					<setvar NAME="blobcol"  VALUE="urldata"/>
+						</THEN>                    
+        						</IF>
+        					</LOOP>
+        				</THEN>
+				<ELSE>
+        					<IF COND="Variables.curType=blob">
+        					<THEN>
+                					<setvar NAME="blobtable"  VALUE="MungoBlobs"/>
+                					<ASSETSET.SETASSET NAME="as" TYPE="Variables.AssetType" ID="Variables.id"/>
+                					<ASSETSET.GETATTRIBUTEVALUES NAME="as" TYPENAME="Variables.attributetype" ATTRIBUTE="Variables.curName" LISTVARNAME="BlobidList"/>
+                       
+                					<setvar NAME="blobwhere"  VALUE="BlobidList.value"/>
+
+						<LOOP LIST="BlobidList">
+                        					<blobservice.readdata  ID="BlobidList.value" LISTVARNAME="blobUrldata"/>
+                        					<IF COND="blobUrldata.urldata=AttrValueList.urlvalue">
+                        					<THEN>
+                        						<setvar NAME="blobwhere"  VALUE="BlobidList.value"/>
+											</THEN>
+                        					</IF>
+						</LOOP>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="tablename" VALUE="Variables.AssetType_Mungo"/>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<EXECSQL SQL="SELECT id FROM Variables.tablename WHERE cs_ownerid=Variables.id AND cs_attrid=Variables.curAssetId AND cs_ordinal=AttrValueList.#curRow" LIST="BlobidList"/>
+                        				<SETVAR NAME="BLOBID_AttrValueList.urlvalue" VALUE="BlobidList.id"/>
+      
+						<SETVAR NAME="blobtable" VALUE="Variables.tablename"/>
+						<SETVAR NAME="blobkey" VALUE="id"/>
+						<SETVAR NAME="blobwhere" VALUE="BlobidList.id"/>
+						<SETVAR NAME="blobcol" VALUE="urlvalue"/>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+
+				<!--  Open this in a new window by invoking the javascript   -->
+              
+              
+				<!--  Construct a BLOb server URL  ? -->
+        				<IF COND="IsVariable.packedargs=true">
+        				<THEN>
+                				<SETVAR NAME="BlobURL:packedargs" VALUE="Variables.packedargs"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="BlobURL:packedargs" VALUE="Variables.empty"/>
+					</ELSE>
+					</IF>
+      
+					<setvar NAME="bheadcontent-type"  VALUE="currentAsset.contenttype"/>
+  
+					<URL.UNPACK VALUE="%0D%0A" VARNAME="CRLF"/>
+					<SETVAR NAME='nameVal' VALUE='AttrValueList.urlvalue'/>
+					<URL.PACK VALUE="Variables.filename" VARNAME="fileNameVal"/>
+					<IF COND="currentAsset.contenttype=Variables.empty">
+					<THEN>
+						<!-- try getting from mimetype table -->
+						<STRINGLIST NAME="lFileExtension" STR="AttrValueList.urlvalue" DELIM="."/>
+ 
+						<SETROW LIST="lFileExtension" ACTION="LAST"/>
+						<SETVAR NAME="errno" VALUE="0"/>
+						<SETVAR NAME="tablename" VALUE="MimeType"/>
+						<EXECSQL SQL="SELECT * FROM Variables.tablename WHERE extension='lFileExtension.ITEM'" LIST="lMimeTypes"/>
+						<IF COND="Variables.errno=0">
+						<THEN>
+							<SETVAR NAME="bheadcontent-type" VALUE="lMimeTypes.mimetype;charset=UTF-8"/>
+							<SETVAR NAME="packedCT" VALUE="lMimeTypes.mimetype"/>
+						</THEN>
+						<ELSE>
+							<SETVAR NAME="bheadcontent-type" VALUE="application/unknown;charset=UTF-8"/>
+							<SETVAR NAME="packedCT" VALUE="application/unknown"/>
+						</ELSE>
+						</IF>
+						<SETVAR NAME="bheadContent-Disposition" VALUE='attachment; filename="Variables.fileNameVal"'/>
+						<SETVAR NAME="bheadContent-Disposition" VALUE="Variables.bheadContent-Disposition;filename*=UTF-8''Variables.fileNameVal"/>
+						<SETVAR NAME="bheadMDT-Type" VALUE="abinary; charset=UTF-8"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="bheadcontent-type" VALUE="currentAsset.contenttype;charset=UTF-8"/>
+						<SETVAR NAME="packedCT" VALUE="currentAsset.contenttype"/>
+						<SETVAR NAME="bheadContent-Disposition" VALUE='attachment; filename="Variables.fileNameVal"'/>
+						<SETVAR NAME="bheadContent-Disposition" VALUE="Variables.bheadContent-Disposition;filename*=UTF-8''Variables.fileNameVal"/>
+						<SETVAR NAME="bheadMDT-Type" VALUE="abinary; charset=UTF-8"/>
+					</ELSE>
+					</IF>
+
+					<XLAT.LOOKUP  KEY="dvin/Common/viewthisitem"  VARNAME="viewThisItem" ESCAPE="true"/>  
+
+					<IF COND="Variables.Revision=Variables.empty">
+					<THEN>
+						<IF COND="Variables.blobtable=Variables.AssetType_Mungo">
+						<THEN>
+							<SATELLITE.BLOB ASSEMBLER="query" service="Variables.empty"
+								blobtable="Variables.blobtable"
+								blobkey="Variables.blobkey"
+								blobwhere="Variables.blobwhere"
+								blobcol="Variables.blobcol"
+								csblobid="SessionVariables.csblobid"
+								outstring="referURL"
+								blobnocache="true">
+								<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>
+							</SATELLITE.BLOB>
+						</THEN>
+						<ELSE>
+							<SATELLITE.BLOB ASSEMBLER="query" service="Variables.empty"
+								blobtable="Variables.blobtable"
+								blobkey="Variables.blobkey"
+								blobwhere="Variables.blobwhere"
+								blobcol="Variables.blobcol"
+								csblobid="SessionVariables.csblobid"
+								blobnocache="true"
+								outstring="referURL">
+								<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>
+							</SATELLITE.BLOB>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+
+                        <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/saveTempBlobs">
+                            <argument NAME="listname" VALUE="AttrValueList"/>
+                            <argument NAME="columnname" VALUE="urlvalue"/>
+                            <argument NAME="currrow" VALUE="AttrValueList.#curRow"/>
+                            <argument NAME="filename" VALUE="Variables.nameVal"/>
+                        </CALLELEMENT>
+
+                        <SETVAR NAME="blobtable" VALUE="MungoBlobs"/>
+                        <SETVAR NAME="blobkey" VALUE="id"/>
+                        <SETVAR NAME="blobwhere" VALUE="Variables.blobId"/>
+                        <SETVAR NAME="blobcol" VALUE="urldata"/>
+
+						<SATELLITE.BLOB ASSEMBLER="query" service="Variables.empty"
+								blobtable="Variables.blobtable"
+								blobkey="Variables.blobkey"
+								blobwhere="Variables.blobwhere"
+								blobcol="Variables.blobcol"
+								csblobid="SessionVariables.csblobid"
+								blobnocache="true"
+								outstring="referURL">
+								<SATELLITE.ARGUMENT NAME="blobheadername1" VALUE="content-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue1" VALUE="Variables.bheadcontent-type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername2" VALUE="Content-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue2" VALUE="Variables.bheadContent-Disposition"/>
+								<SATELLITE.ARGUMENT NAME="blobheadername3" VALUE="MDT-Type"/>
+								<SATELLITE.ARGUMENT NAME="blobheadervalue3" VALUE="Variables.bheadMDT-Type"/>
+							</SATELLITE.BLOB>
+					</ELSE>
+					</IF>
+					<div class='UploadFileDivInspect' name='displayURLValue_Variables.AttrName_AttrValueList.#curRow' REPLACEALL='AttrValueList.#curRow,Variables.AttrName'>
+						<a href="Variables.referURL" onmouseover="window.status='Variables.viewThisItem';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.referURL,Variables.viewThisItem">
+							<img src='#' name='iconImg'/>
+						</a>						
+					</div>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>
+
+			<IF COND="Variables.EditingStyle=single">
+			<THEN>
+				<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/GetInputName">
+					<ARGUMENT NAME="cs_AttrName" VALUE="Variables.AttrName"/>
+					<ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+					<ARGUMENT NAME="cs_Varname" VALUE="cs_CurrentInputName"/>
+				</CALLELEMENT>
+			</THEN>
+			<ELSE>
+				<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/GetInputName">
+					<ARGUMENT NAME="cs_AttrName" VALUE="Variables.AttrName"/>
+					<ARGUMENT NAME="cs_IsMultiple" VALUE="true"/>
+					<ARGUMENT NAME="cs_ValueNum" VALUE="AttrValueList.#curRow"/>
+					<ARGUMENT NAME="cs_IsMultiSelect" VALUE="false"/>
+					<ARGUMENT NAME="cs_Varname" VALUE="cs_CurrentInputName"/>
+				</CALLELEMENT>
+			</ELSE>
+			</IF>
+
+			<SETVAR NAME="tempvar" VALUE="_DATA_Variables.cs_CurrentInputName"/>
+			<INPUT TYPE="HIDDEN" NAME="Variables.tempvar" VALUE="yes" REPLACEALL="Variables.tempvar"/>
+			<IF COND="IsVariable.deleteOption=true">
+			<THEN>
+				
+				<div width="5"><img src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" width="5" height="1" REPLACEALL="Variables.cs_imagedir"/></div>
+				<SETVAR NAME="tempvar" VALUE="_DEL_Variables.cs_CurrentInputName"/>
+				<div>
+				<IF COND="Variables.curType=blob">
+				<THEN>
+					<IF COND="Variables.EditingStyle=multiple-ordered">
+					<THEN>
+						<INPUT TYPE="checkbox" onclick='disallowDeleteAndReorder(this);' NAME="Variables.tempvar" REPLACEALL="Variables.tempvar"/>
+					</THEN>
+					<ELSE>
+						<INPUT TYPE="checkbox" NAME="Variables.tempvar" REPLACEALL="Variables.tempvar"/>
+					</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+					<INPUT TYPE="checkbox" NAME="Variables.tempvar" REPLACEALL="Variables.tempvar"/>
+				</ELSE>
+				</IF>
+				</div>
+			</THEN>
+			</IF>
+
+		</div>
+		<IF COND="AttrValueList.#curRow=AttrValueList.#numRows">
+		<THEN>
+			<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON } '/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON }, '/>
+		</ELSE>
+		</IF>
+	</LOOP>
+	<SETVAR NAME='displayURLValueJSON' value='Variables.displayURLValueJSON }'/>
+	</div>
+	</THEN>
+	</IF>
+
+
+<REPLACEALL LIST='Variables.AttrName,Variables.displayURLValueJSON'>
+<callelement NAME="OpenMarket/Gator/Scripts/ApplyIconsAndTooltip">
+	<argument NAME="AttrName" VALUE="Variables.AttrName"/>
+	<argument NAME="fileInfoJSON" VALUE='Variables.displayURLValueJSON'/>
+	<argument NAME="divNamePrefix" VALUE="displayURLValue_"/>
+</callelement>
+</REPLACEALL>
+<REMOVEVAR NAME='displayURLValueJSON'/>
+</FTCS> 

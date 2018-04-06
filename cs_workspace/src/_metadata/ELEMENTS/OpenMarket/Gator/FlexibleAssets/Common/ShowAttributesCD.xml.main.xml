@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD</string>
+        <string>Display Details</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FFlexibleAssets%2FCommon%2FShowAttributesCD.xml
+@hashval=1219817797
+key=@ELEMENTCATALOG-OpenMarket/Gator/FlexibleAssets/Common/ShowAttributesCD
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

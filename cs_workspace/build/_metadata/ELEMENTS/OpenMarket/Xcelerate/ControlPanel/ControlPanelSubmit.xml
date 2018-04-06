@@ -1,0 +1,303 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/ControlPanel/ControlPanelSubmit
+-
+- March 1, 2001 v1.0
+-
+- AUTHOR
+-  Geoffry Meek (geoff@meek.com)
+-  ContentServer Consultant
+-
+- INPUT
+-  assetlist - comma-separated list of asset ids to save
+-
+- OUTPUT
+-
+- DESCRIPTION
+-  This element will loop over a list of asset ids, load each, gather any 
+-  data posted (see ContentCentre asset tag reference), then save. That's it.
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/Login/CheckLogin"/>
+<IF COND="Variables.errno=-3">
+<THEN>-3<throwexception/>
+</THEN>
+</IF>
+<setvar NAME="saved" VALUE="false" />
+<IF COND="IsVariable.assetlist=true">
+<THEN>
+    <SETCOUNTER NAME="i" VALUE="0"/>
+    
+    <!-- assetlist is in the form: AssetType_AssetId -->
+    <STRINGLIST STR="Variables.assetlist" DELIM="," NAME="assets"/>
+    <LOOP LIST="assets">
+        <!-- separate each item in the list to type = AssetType and id = AssetId -->
+        <SETVAR NAME="errno" VALUE="0"/>
+        <STRINGLIST STR="assets.ITEM" DELIM=":" NAME="asst"/>
+        <SETVAR NAME="type" VALUE="asst.ITEM"/>
+        <SETROW LIST="asst" ACTION="NEXT"/>
+        <SETVAR NAME="id" VALUE="asst.ITEM"/> 
+        
+        <setvar NAME="changed" VALUE="Variables.Changed_Variables.id" />
+        <if COND="Variables.changed=true">
+        <then>                   
+            <setvar NAME="saved" VALUE="true" />
+
+            <ASSET.LOAD TYPE="Variables.type" OBJECTID="Variables.id" NAME="theCurrentAsset" EDITABLE="true"/>
+            
+            <!-- get the field list for the asset -->
+            <SETVAR NAME="listname" VALUE="Variables.FieldList_assets.ITEM"/>
+                  
+            <STRINGLIST STR="Variables.listname" DELIM="," NAME="fieldlist"/>
+            <loop LIST="fieldlist">
+                <BEGINS STR="fieldlist.ITEM" WHAT="Attribute_" />
+                <if COND="Variables.errno=1">
+                <then>
+                    <SUBSTRING STR="fieldlist.ITEM" INDEX="10" OUTSTR="attributename" />
+                    <fatm.getattributetype ASSETTYPE="Variables.type" VARNAME="attributetype"/>
+                    <ASSET.LOAD NAME="urlasset" TYPE="Variables.attributetype" FIELD="name" VALUE="Variables.attributename" />
+                    <ASSET.GET NAME="urlasset" FIELD="id" OUTPUT="urlattributeid" />
+                    <FlexAsset.getattribute NAME="theCurrentAsset" ID="Variables.urlattributeid" LISTVARNAME="URLAttrList"/>                   
+                    <Attribute.gettype NAME="urlasset" VARNAME="attr_type" />
+                    <Attribute.getvaluestyle NAME="urlasset" VARNAME="attr_valuestyle" />
+                    <if COND="Variables.attr_type=blob">
+                    <then>
+                        <setvar NAME="attr_type" VALUE="url" />
+                    </then>
+                    </if>
+            		<!--  for blob fields, we need to specify the corresponding "_file" var -->
+                    <if COND="Variables.attr_type=url">
+                    <then>                   
+			            <if COND="Variables.attr_valuestyle=single">
+			            <then>
+			            	<setvar NAME="temp" VALUE="Variables.type:Variables.id:fieldlist.ITEM_file" />		                        
+			            	<setvar NAME="Variables.temp" VALUE="URLAttrList.urlvalue" />				                
+			            </then>
+			            <else>			
+			            	<if COND="Variables.attr_valuestyle=multipleordered">
+			            	<then>            	
+			            		<SETCOUNTER NAME="count" VALUE="0" />
+				                <LOOP LIST="URLAttrList">
+				                	<setvar NAME="temp" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Counters.count:data_file" />
+				                	<setvar NAME="Variables.temp" VALUE="URLAttrList.value" />
+				                	<INCCOUNTER NAME="count" VALUE="1" />
+				                </LOOP>			 
+				                <!--  we now need to take care of new data -->
+				                <SETVAR NAME="totalVar" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Total" />
+				                <CALCULATOR.GO VALUE="Variables.Variables.totalVar Counters.count GT" VARNAME="hasNewItems" />				                
+								<IF COND="Variables.hasNewItems=1">
+								<THEN>
+									<CALCULATOR.GO VALUE="Variables.Variables.totalVar Counters.count -" VARNAME="maxCount" />									
+									<LOOP COUNT="Variables.maxCount">
+				                		<setvar NAME="temp" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Counters.count:data_file" />
+				                		<setvar NAME="Variables.temp" VALUE="CS.UniqueID.txt" />
+				                		<INCCOUNTER NAME="count" VALUE="1" />									
+									</LOOP>			
+								</THEN>
+								</IF>	
+							</then>
+							<else>
+								<!-- valuestyle=multiple -->													
+			            		<SETCOUNTER NAME="count" VALUE="0" />
+				                <LOOP LIST="URLAttrList">
+				                	<setvar NAME="temp" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Counters.count_file" />
+				                	<setvar NAME="Variables.temp" VALUE="URLAttrList.value" />
+				                	<INCCOUNTER NAME="count" VALUE="1" />
+				                </LOOP>			 
+				                <!--  we now need to take care of new data -->
+				                <SETVAR NAME="totalVar" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Total" />
+				                <CALCULATOR.GO VALUE="Variables.Variables.totalVar Counters.count GT" VARNAME="hasNewItems" />				                
+								<IF COND="Variables.hasNewItems=1">
+								<THEN>
+									<CALCULATOR.GO VALUE="Variables.Variables.totalVar Counters.count -" VARNAME="maxCount" />									
+									<LOOP COUNT="Variables.maxCount">
+				                		<setvar NAME="temp" VALUE="Variables.type:Variables.id:fieldlist.ITEM:Counters.count_file" />
+				                		<setvar NAME="Variables.temp" VALUE="CS.UniqueID.txt" />
+				                		<INCCOUNTER NAME="count" VALUE="1" />									
+									</LOOP>			
+								</THEN>
+								</IF>				                				                				                
+			                </else>
+			                </if>										                           				            
+			            </else>
+			            </if>                        
+                    </then>
+                    </if>                           
+                </then>
+                </if>
+                <setvar NAME="errno" VALUE="0"/>                
+            </loop>
+            
+            <if COND="IsVariable.Variables.type:Variables.id:fieldlist.ITEM:Total!=true">
+            <then>
+                <setvar NAME="Variables.type:Variables.id:fieldlist.ITEM:Total" VALUE="0" />
+            </then>
+            </if>
+
+            <ASSET.GATHER NAME="theCurrentAsset" PREFIX="Variables.type:Variables.id" FIELDLIST="Variables.listname"/>            
+            
+            <!-- run standard PreUpdate, with the InSite updatetype -->
+            <IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.type/PreUpdate=true"><THEN>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.type/PreUpdate">
+                    <ARGUMENT NAME="updatetype" VALUE="InSite"/>
+                    <ARGUMENT NAME="AssetType" VALUE="Variables.type"/>
+                    <ARGUMENT NAME="prefix" VALUE="Variables.type:Variables.id"/>
+                    <ARGUMENT NAME="FieldsOnForm" VALUE="Variables.listname"/>
+                </CALLELEMENT>
+            </THEN></IF> 
+            
+            <ASSET.SET NAME="theCurrentAsset" FIELD="status" VALUE="ED"/>
+            <ASSET.SAVE NAME="theCurrentAsset"/>
+
+            <if COND="Variables.errno=0">
+            <then>
+                  <INCCOUNTER NAME="i" VALUE="1"/>
+            </then>
+            <else>
+                <XLAT.LOOKUP KEY="dvin/UI/Assetsaveerror" VARNAME="_XLAT_"/>
+                <setvar NAME="errMsg" VALUE="Variables._XLAT_"/>
+            </else>
+            </if>
+                
+            <!-- run standard PostUpdate -->
+            <IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.type/PostUpdate=true"><THEN>
+                <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.type/PostUpdate">
+                    <ARGUMENT NAME="updatetype" VALUE="InSite"/>
+                    <ARGUMENT NAME="prefix" VALUE="Variables.type_Variables.id"/>
+                </CALLELEMENT>
+            </THEN></IF> 
+    
+            <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+                <argument NAME="AssetType" VALUE="Variables.type"/>
+            </callelement>
+            <if COND="Variables.trackingenabled=true">
+            <then>
+                <IMPLICITCHECKOUT.IsCheckedOut ASSETID="Variables.id" ASSETTYPE="Variables.type" VARNAME="checkoutuser" />
+                <IF COND="IsVariable.checkoutuser=true">
+                <THEN>
+                    <UserManager.GetLoginUser VARNAME="loginuser" />
+                    <if COND="Variables.checkoutuser=Variables.loginuser">
+                    <then>
+                        <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/VersionbyInsiteEdit" VARNAME="_xlat_version"/>
+                        <ASSET.CHECKIN NAME="theCurrentAsset" ANNOTATION="Variables._xlat_version" CHECKOUT="false"/>
+
+                        <IMPLICITCHECKOUT.ClearCheckout ASSETID="Variables.id" ASSETTYPE="Variables.type" />
+                    </then>
+                    </if>
+                </THEN>
+                </IF>     
+            </then>
+            </if>
+            
+        </then>
+        </if>    
+    </LOOP>
+    
+</THEN>
+</IF>
+
+<if COND="IsVariable.col_parent=true">
+<then>
+    <STRINGLIST STR="Variables.col_parent" DELIM="," NAME="parentlist"/>
+    <loop LIST="parentlist">
+        <setvar NAME="changed" VALUE="false" />
+        <STRINGLIST STR="parentlist.ITEM" DELIM=";" NAME="plist" />
+        <GOTOROW LIST="plist" ROWNUM="1"/>
+        <setvar NAME="parentid" VALUE="plist.ITEM" />
+        <GOTOROW LIST="plist" ROWNUM="2"/>
+        <setvar NAME="parenttype" VALUE="plist.ITEM" />
+        <GOTOROW LIST="plist" ROWNUM="3"/>
+        <setvar NAME="parentfield" VALUE="plist.ITEM" />
+
+        <asset.load TYPE="Variables.parenttype" EDITABLE="true" OBJECTID="Variables.parentid" NAME="theAsset"/>
+
+        <LISTOBJECT.CREATE NAME="lo" COLUMNS="memberid,oldmember"/>            
+        
+        <if COND="IsVariable.col_reorder_Variables.parentid_Variables.parentfield=true">
+        <then>
+            <setvar NAME="reorderStr" VALUE="Variables.col_reorder_Variables.parentid_Variables.parentfield" />            
+            <STRINGLIST STR="Variables.reorderStr" DELIM="," NAME="reorderlist" />
+            <loop LIST="reorderlist">
+                <STRINGLIST STR="reorderlist.ITEM" DELIM=":" NAME="rlist" />
+                <GOTOROW LIST="rlist" ROWNUM="1"/>
+                <setvar NAME="assetid" VALUE="rlist.ITEM" />
+                <GOTOROW LIST="rlist" ROWNUM="2"/>
+                <setvar NAME="old_assetid" VALUE="rlist.ITEM" />
+                <LISTOBJECT.ADDROW NAME="lo" memberid="Variables.assetid" oldmember="Variables.old_assetid"/>                
+                <setvar NAME="changed" VALUE="true" />
+            </loop>
+        </then>
+        </if>        
+
+
+        <LISTOBJECT.TOLIST NAME="lo" LISTVARNAME="mylist" />
+        <ASSET.REORDER NAME="theAsset" FIELD="Variables.parentfield" LIST="mylist"/>        
+        
+        <LISTOBJECT.CREATE NAME="lo2" COLUMNS="memberid"/>
+        
+        <if COND="IsVariable.col_delete_Variables.parentid_Variables.parentfield=true">
+        <then>
+            <setvar NAME="deleteStr" VALUE="Variables.col_delete_Variables.parentid_Variables.parentfield" />
+            <STRINGLIST STR="Variables.deleteStr" DELIM="," NAME="deletelist" />
+            <loop LIST="deletelist">                    
+                <LISTOBJECT.ADDROW NAME="lo2" memberid="deletelist.ITEM"/>
+                <setvar NAME="changed" VALUE="true" />
+            </loop>
+        </then>
+        </if>
+
+        <LISTOBJECT.TOLIST NAME="lo2" LISTVARNAME="dellist" />
+        <ASSET.REMOVEMEMBERS NAME="theAsset" LIST="dellist" FIELD="Variables.parentfield" />
+
+        <if COND="Variables.changed=true">
+        <then>
+            <setvar NAME="saved" VALUE="true" />
+            <ASSET.SAVE NAME="theAsset" />
+            
+            <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+                <argument NAME="AssetType" VALUE="Variables.parenttype"/>
+            </callelement>
+            <if COND="Variables.trackingenabled=true">
+            <then>
+                <IMPLICITCHECKOUT.IsCheckedOut ASSETID="Variables.parentid" ASSETTYPE="Variables.parenttype" VARNAME="checkoutuser" />
+                <IF COND="IsVariable.checkoutuser=true">
+                <THEN>
+                    <UserManager.GetLoginUser VARNAME="loginuser" />
+                    <if COND="Variables.checkoutuser=Variables.loginuser">
+                    <then>
+                        <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/VersionbyInsiteEdit" VARNAME="_xlat_version"/>
+                        <ASSET.CHECKIN NAME="theAsset" ANNOTATION="Variables._xlat_version" CHECKOUT="false"/>
+
+                        <IMPLICITCHECKOUT.ClearCheckout ASSETID="Variables.parentid" ASSETTYPE="Variables.parenttype" />
+                    </then>
+                    </if>
+                </THEN>
+                </IF>     
+            </then>
+            </if>
+        </then>
+        </if>
+    </loop>
+</then>
+</if>
+<html>
+<body>
+<if COND="Variables.saved=true">
+<then>
+SUCCESS
+</then>
+<else>
+	<if COND="Variables.errno=0">
+	<then>
+		No changes found
+	</then>
+	<else>
+		Save failed (errno <csvar NAME="Variables.errno" />)
+	</else>
+	</if>
+</else>
+</if>
+</body>
+</html>
+</FTCS> 

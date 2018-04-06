@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<script language="JavaScript1.2" src="Variables.java_eWebEditProPath" REPLACEALL="Variables.java_eWebEditProPath"></script>
+<![CDATA[
+    <!-- java_eWebEditProPath is set in the java that calls this -->
+
+    <SCRIPT LANGUAGE="JavaScript1.2">
+    <!--
+    with (eWebEditPro.parameters) {
+            // Remove some unneeded buttons to simplify the toolbar.
+            window.eWebEditProUnloadHandled = true; // don't prompt to save on unload
+            eWebEditProMessages.elementNotFoundMessage = ""; // loading manually, prevent missing element warning
+    }
+    
+    eWebEditPro.parameters.options = "<options><filter on-get='clean-html'></filter></options>";
+    
+    ]]>
+
+    <![CDATA[
+    function isEdited(name) {
+        return document.getElementById(name).className != 'editBox';
+    }
+                                 
+    function disableEditProButtons(assetid)
+    {
+        for (i=0; i<document.all.tags("button").length; i++) {
+            if (document.all.tags("button").item(i).className != "textedit") {
+                continue; // skip it
+            }
+                        
+            var name = document.all.tags("button")[i].name;
+            var id = name.split(":")[1];
+            
+            if (assetid == id) {
+                var buttonObj = document.all.tags("button")[i];
+                // buttonObj.style.backgroundImage = 'url("/Xcelerate/graphics/common/icon/warndeadlock.gif")'; 
+                buttonObj.onclick = "";
+                // buttonObj.title = "";
+                document.all.tags("button")[i].style.visibility = 'hidden';
+            }
+        }
+    }
+
+    //-->
+    </SCRIPT>
+]]>
+</FTCS> 

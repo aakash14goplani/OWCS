@@ -1,0 +1,403 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/SetAssigneesForAskStep
+-
+- INPUT
+-   id, AssetType, AskStep
+-   groupid, workflowid (optioinal)
+-
+- OUTPUT
+-   assigneeroles, user id list for each role
+-
+
+COMMENTS:
+
+
+		The purpose of this element is to retrieve and display asset information along with the set of eligible roles and users for a given 
+		workflow process. This is used when users must select assignees for an asset in workflow (whose step type is "ask" - explained below)
+		
+
+		Before we proceed: some general information.
+		There are 5 methods to set assignees for an asset in workflow. Which of these methods to use, is defined in the workflow step definition.
+		
+			Method								Step Type
+			
+		Assign from a list of participants 			full (list of participants are shown only at the beginning of the workflow)
+		Choose assignees when step is taken			ask  (list of participants are shown at the beginning of each step)
+		Assign to everyone							all	(no list is shown, all user who have the roles specified in the step definition are assigned)
+		Retain from state assignees					inplace 
+		No assignments..control with function privs		unassigned (no user is assigned, control using function privileges)
+		
+		Whatever be the assignment method, the set of users who are assigned an asset depend on what role they have and "those" set of
+		roles are defined in the workflow process individual step definition.
+				
+		Getting down to the specifics of what this element does: given an asset id and asset type, it loads the workflow asset and displays - 
+		
+		The asset name
+		Asset desc
+		Workflow process name
+		List of roles - set of users for each of these roles.
+				
+		This element is invoked for workflow processes which have the steps with the definition set to "Choose Assignees when step is taken" (in other  
+		words "ask" step-type). When we want to put an asset into workflow, we first select a workflow process. 
+		If the selected workflow process has a start step of type "ask", we get a "Set Assignees" Button next to the workflow process text box. 
+		This element is invoked when we hit that "Set Assignees" Button. This element is also invoked when we Finish an assignment in a workflow process
+		and the next step in the process has the assignment method defined as "ask" type.
+
+		There are two mutually exclusive inputs to this element: 
+		1) assignmentid - which represents the asset assigned to a particular user in a workflow process
+		2) workflowid - the workflow process id.
+		
+		If we receive 1) then it means that the asset is already into the workflow process, and since ask step requires that the users select workflow assignees
+		at each step, this page will be called when the "assignment id" is available and when the asset is in the middle of a workflow process (typically NOT start state).
+		To display the list of roles and users in such a case, we get the participants object from the tag 'WORKFLOWENGINE.GETCOMPLETEASSIGNMENTCANDIDATEASSIGNEES' 
+		and use PARTICIPANTS.GETALLROLES (search for 'partsobj' and 'PARTICIPANTS.GETALLROLES')
+		
+		If we receive 2) it usually means that the asset is not in workflow (i.e. is being put into workflow ONLY now) and hence we do not have an assignment id (as yet)
+		To retrieve the list of roles associated with the workflow process we use WORKFLOWENGINE.GETSTARTWORKFLOWCANDIDATEASSIGNEES and pass the workflow id 
+		(along with other paramters) to it. This tag also provides a participants object, using which we retrieve the roles and users.
+		
+		Whatever be the input, we loop through the retrieved list of roles and for each item in that roles-list, we do this:
+		1) Get the list of users for that role using PARTICIPANTS.GETPARTICIPANTSFORROLE
+		2) Get the list of user-ids for all the users in that list using USERMANAGER.GETUSERIDS and CCUSER.GETID
+		3) Get the displayable user names for all those user ids (we use names for display and user ids for tag inputs).
+		4) Put the above list of users in a muti-select input box and name it using ask:ROLE_NAME so that the elements (OpenMarket/Xcelerate/Actions/SetStatusPost.xml)
+			that need to process the selected users (for each role) can retrieve them using the same convention "ask:Role_name". 
+		 Note that the input box has the user-id associated with it while what is displayed is the USERNAME. 
+		 	(Seach for <OPTION VALUE="Variables.uid ... and <STRING.STREAM VALUE="Variables.uname" />)
+		
+		-Sathish Paul Leo
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+var obj = document.forms[0];
+<![CDATA[
+function CancelSetAssignees(cancelpage) 
+{ 
+    obj.elements['pagename'].value = cancelpage;
+    obj.elements['didCancel'].value = true;
+}
+function SetAssignees() 
+{ 
+    ]]>
+    <IF COND="IsVariable.TranslationFlag=true">
+        <THEN>
+            obj.elements['pagename'].value = 'OpenMarket/Xcelerate/Actions/TranslateFront';
+        </THEN>
+        <ELSE>
+            <IF COND="IsVariable.Copyid=true">
+                <THEN>
+                    obj.elements['pagename'].value = 'OpenMarket/Xcelerate/Actions/CopyFront';
+                </THEN>
+                <ELSE>
+                    <IF COND="IsVariable.id=false">
+                        <THEN>
+                            obj.elements['pagename'].value = 'OpenMarket/Xcelerate/Actions/NewContentFront';
+                        </THEN>
+                    </IF>
+                </ELSE>
+            </IF>
+        </ELSE>
+    </IF>
+    <![CDATA[
+    if (typeof(obj.elements['assigneeroles']) != 'undefined' &&
+         obj.elements['assigneeroles'].value!="")
+    {
+        var allRoles = obj.elements['assigneeroles'].value;
+        roleArray = allRoles.split(",");
+        var currentSel,j,numSelected;
+        for (var i=0;i<roleArray.length;i++)
+        {
+            numSelected=0;
+            currentSel = obj.elements['ask:' + roleArray[i]];
+            
+            for (j=0;j<currentSel.options.length;j++)
+            {
+                if (currentSel.options[j].selected)
+                    numSelected++;
+            }
+            
+            if (numSelected==0)
+            {
+					]]>
+          		  var replacestr=/\bVariables.role\b/ ;
+          		  var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/UsersOfTheRoleNotSelected" ENCODE="false" ESCAPE="true"/>';
+          	     alert(xlatstr.replace(replacestr, roleArray[i]));
+      			<![CDATA[
+                return false;
+            }
+        }
+    }
+}
+
+]]>
+</SCRIPT>
+<IF COND="Variables.cs_environment=ucform">					
+<THEN>
+	<SCRIPT LANGUAGE="JavaScript">
+		function submitForm()
+		{
+			alert("<XLAT.STREAM KEY="UI/Forms/PleaseSelectSetAssigneesOrCloseTab" ESCAPE="true" ENCODE="false"/>" );
+			return false;
+		}
+	</SCRIPT>
+</THEN>
+</IF>
+<IF COND="IsVariable.cancelpage!=true">
+	<THEN>
+		<SETVAR NAME="cancelpage" VALUE="OpenMarket/Xcelerate/Actions/StatusDetailsFront"/>
+	</THEN>
+</IF>
+<INPUT TYPE="HIDDEN" NAME="didCancel" VALUE=""/>
+
+<if COND="IsVariable.groupid=true">
+<then>
+    <!-- from AddToGroupPost -->
+    <WORKFLOWENGINE.GETGROUPID ID="Variables.groupid" OBJVARNAME="grpobj"/>
+    <WORKFLOWGROUP.GETNAME NAME="grpobj" VARNAME="groupname" />
+</then>
+<else>
+    <if COND="IsVariable.workflowid!=true">
+    <then>
+        <!-- from SetStatusPost -->
+
+        <WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+        <WORKFLOWENGINE.GETOBJECTWORKFLOWPROCESS OBJECT="workflowasset" VARNAME="workflowid" />
+
+    </then>
+    </if>
+
+    <WORKFLOWENGINE.GETPROCESSID ID="Variables.workflowid" OBJVARNAME="workflowobj"/>
+    <WORKFLOWPROCESS.GETPROCESSNAME NAME="workflowobj" VARNAME="workflowname" />
+
+		<!--If we don't have an assignmentid, this code assumes it is a start step-->
+		<IF COND="IsVariable.assignmentid=true">
+			<THEN>
+				<WORKFLOWENGINE.GETCOMPLETEASSIGNMENTCANDIDATEASSIGNEES SITE="SessionVariables.pubid" ID="Variables.assignmentid" NEXTSTEP="Variables.AskStep" OBJVARNAME="partsobj" />
+
+			</THEN>
+			<ELSE>
+				<WORKFLOWENGINE.GETSTARTWORKFLOWCANDIDATEASSIGNEES SITE="SessionVariables.pubid" ID="Variables.workflowid" OBJECT="workflowasset" OBJVARNAME="partsobj"/>
+      </ELSE>
+		</IF>
+</else>
+</if>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text">
+			<XLAT.STREAM KEY="dvin/UI/SetAssigneesforAskStep"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+		<table class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+			<tr><td>
+			<IF COND="IsVariable.id=true">
+			<THEN>
+				<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+				<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+				<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+				<ASSET.GETASSETTYPE NAME="theAsset" OUTNAME="type"/>
+				<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="atDescription"/>
+					<XLAT.STREAM KEY="dvin/UI/Pleaseselectatleastoneuserfromeachrole"/><br/> 
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/Wf/WorkflowRequiresYouToSelectAssignees"/><br/> 
+			</ELSE>
+			</IF>
+			<PARTICIPANTS.GETALLROLES NAME="partsobj" VARNAME="roles" />
+			<STRINGLIST NAME="roleslist" STR="Variables.roles" DELIM="," />
+			<INPUT TYPE="hidden" NAME="assigneeroles" VALUE="Variables.roles" REPLACEALL="Variables.roles"/>
+			<REMOVEVAR NAME="roles"/></td></tr>
+			</table>
+<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		
+		
+        <IF COND="IsVariable.id=true">
+        <THEN>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>	
+			<tr>
+                <td class="form-label-text" NOWRAP="NOWRAP">
+                    <STRING.STREAM VALUE="Variables.atDescription "/> <XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+                </td>
+                <td class="form-inset">
+                    <STRING.STREAM VALUE="Variables.assetname"/>
+                </td>
+            </tr>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>	
+            <tr>
+                <td class="form-label-text" NOWRAP="NOWRAP">
+                    <XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+                </td>
+                <td class="form-inset">
+                    <STRING.STREAM VALUE="Variables.assetdesc"/>
+                </td>
+            </tr>
+            
+        </THEN>
+        </IF>
+		<tr>
+            <td class="form-label-text" NOWRAP="NOWRAP">
+                <if COND="IsVariable.groupid=true">
+                <then>
+                    <XLAT.STREAM KEY="dvin/UI/WorkflowGroup"/>:
+                </then>
+                <else>
+                    <XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+                </else>
+                </if>
+            </td>
+            <td class="form-inset">
+	             <if COND="IsVariable.groupid=true">
+	             <then>
+	                 <STRING.STREAM VALUE="Variables.groupname"/>
+	             </then>
+	             <else>
+	                 <STRING.STREAM VALUE="Variables.workflowname"/>
+	             </else>
+	             </if>
+	             <BR />
+            </td>
+        </tr>
+        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>	
+		<tr>
+            <td class="form-label-text">
+                <XLAT.STREAM KEY="dvin/Common/Assignees"/>:
+            </td>
+            <td class="form-inset" ALIGN="LEFT">
+            <table BORDER="0" CELLSPACING="0" CELLPADDING="0" >
+			<tr>
+				<td></td><td style="background:url('Variables.cs_imagedir/graphics/common/screen/top_header_shadow.png');font-size:0" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="3" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+			</tr>	
+            <tr>
+                <td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                <td >
+                    <table width="100%"  cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+				    <tr>
+						<td class="tile-a" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                        <td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Role"/></DIV></td>
+                        <td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Users"/></DIV></td>
+                        <td class="tile-b" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-c" style="background:url('Variables.cs_imagedir/graphics/common/screen/grad_inner.gif')" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                    </tr>
+					<tr>
+						<td colspan="9" style="background:url('Variables.cs_imagedir/graphics/common/screen/top_shadow.png');font-size:0" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+                        <!-- for each role, list the available participants -->
+                        <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+                        <SETVAR NAME="separatorLine" VALUE="0"/>
+					<LISTOBJECT.CREATE NAME="myUserNameList" COLUMNS="username,role_name,userID" />
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                        <loop LIST="roleslist">
+                            <SETVAR NAME="separatorLine" VALUE="1"/>
+                            <tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+                                <td VALIGN="TOP"><BR /></td>                    
+                                <td valign="TOP" align="LEFT" style="font-weight:bold" nowrap="NOWRAP">
+                                   <span class="alert-color">*</span><STRING.STREAM VALUE="roleslist.ITEM"/>:
+                                </td>
+            					<td><BR /></td>
+            					<td><BR /></td>
+            					<td><BR /></td>
+            					<td valign="TOP" align="LEFT" style="font-weight:bold" nowrap="NOWRAP">
+            
+                                <PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="partsobj" ROLE="roleslist.ITEM" LISTVARNAME="userslist" />
+								<USERMANAGER.GETUSERIDS LIST="userslist" PREFIX="ruser:"/>
+							
+                                <SELECT NAME="ask:roleslist.ITEM" class="rolesUserMapping" style="width:150px;height:150px;" dojoType="dijit.form.MultiSelect" multiple="true" REPLACEALL="roleslist.ITEM">
+                                <if COND="IsVariable.ruser:Total=true">
+                                <then>
+                                    <if COND="Variables.ruser:Total!=0">
+                                    <then>
+                                    	<SETCOUNTER NAME="USERCOUNT" VALUE="0"/>
+                                    	
+
+								<!-- 
+											List object created for ALLOY UI Template "getAssetWorkflowAssignees" that is used to retrieve 
+											the list of possible assignees for an asset. 
+											This list is used by a JSP element to create/populate a map of roles and the user list with 
+											that role and send it back to the UI Component (calling element) 
+											Code added by Sathish Paul Leo 
+								--> 
+
+ 																			
+
+								<LOOP FROM="0" COUNT="Variables.ruser:Total">
+									<CCUSER.GETID NAME="ruser:Counters.USERCOUNT" VARNAME="uid"/>
+									<CCUser.GETDISPLAYABLENAME NAME="ruser:Counters.USERCOUNT" VARNAME="uname"/>																						 
+									<STRING.ENCODE VALUE="Variables.uname" VARNAME="unameEnc"/>
+									<OPTION VALUE="Variables.uid" REPLACEALL="Variables.uid,Variables.unameEnc" TITLE="Variables.unameEnc" /><STRING.STREAM VALUE="Variables.unameEnc"/>
+									<LISTOBJECT.ADDROW NAME="myUserNameList" username="Variables.uname" role_name="roleslist.ITEM" userID="Variables.uid"/>
+									<INCCOUNTER NAME="USERCOUNT" VALUE="1"/>
+								</LOOP>
+								
+								<LISTOBJECT.TOLIST NAME="myUserNameList" LISTVARNAME="userNameList"/>
+								<!-- end of code added by Sathish Paul Leo for Alloy UI -->
+							</then>
+                                    </if>
+                                </then>
+                                </if>
+                                </SELECT>
+                                </td><td><BR /></td><td><BR /></td>
+                            </tr>
+                            <IF COND="Variables.rowStyle=tile-row-normal">
+                            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+                            </THEN>
+                            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+                            </ELSE>
+                            </IF>
+            
+                        </loop>
+                        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+                    </table>
+                    </td>
+                    <td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>				
+                <tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                </tr>	
+                </table>	
+            </td>
+        </tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>		
+			<td>
+			</td>
+			<td>
+				<XLAT.LOOKUP KEY="dvin/UI/CancelSetAssigneesforAskStep" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/UI/CancelSetAssigneesforAskStep" VARNAME="mouseover" ESCAPE="true"/>
+				<IF COND="Variables.cs_environment=portal">
+				<THEN>
+					<A class="assetCreateCancelLink" HREF="javascript:void(0);" onClick="window.close();" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover,Variables.cancelpage"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+				</THEN>
+				<ELSE>
+					<IF COND="Variables.cs_environment=ucform">					
+					<THEN>
+						<IF COND="Variables.cancelpage!=OpenMarket/Xcelerate/Actions/ShowStartMenuItems">
+						<THEN>
+							<A class="assetCreateCancelLink" HREF="javascript:void(0);" onClick="if(CancelSetAssignees('Variables.cancelpage')!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover,Variables.cancelpage">
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+							</A>
+						</THEN>
+						</IF>
+					</THEN>
+					<ELSE>
+						<A class="assetCreateCancelLink" HREF="javascript:void(0);" onClick="if(CancelSetAssignees('Variables.cancelpage')!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover,Variables.cancelpage"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					</ELSE>
+					</IF>					
+				</ELSE>
+				</IF>		
+				<XLAT.LOOKUP KEY="dvin/UI/SetAssigneesforAskStep" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/UI/SetAssigneesforAskStep" VARNAME="mouseover" ESCAPE="true"/>
+				<A class="assetCreateSetAssigneesLink" HREF="javascript:void(0);" onClick="if(SetAssignees()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SetAssignees"/></CALLELEMENT></A>	 
+			</td>
+		</tr>
+
+</table>
+<p>&nbsp;</p>
+</FTCS>

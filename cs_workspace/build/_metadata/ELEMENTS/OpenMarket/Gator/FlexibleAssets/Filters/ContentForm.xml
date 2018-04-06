@@ -1,0 +1,446 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Filters/ContentForm
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- [2007-09-17 KG]
+ * XSS fixes (adapted from 6.3 fixes):
+   * isCleanString function usage
+   * CSVAR NAME -> STRING.STREAM VALUE
+ * fixed up CDATA tags in javascript
+-->
+
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/ValidateInputForXSS" />
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+	function checkfields()
+	{
+		var obj = document.forms[0];
+		if (obj.elements['Filters:name'].value=="")
+		{
+			alert("]]><XLAT.STREAM KEY="dvin/Error/AT/Common/UniqueName" ESCAPE="true" ENCODE="false"/><![CDATA[");
+			obj.elements['Filters:name'].focus();
+			return false;
+		}
+		if (obj.elements['Filters:class'].value=="")
+		{
+			alert("]]><XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/NeedFilter" ESCAPE="true" ENCODE="false"/><![CDATA[");
+			obj.elements['Filters:class'].focus();
+			return false;
+		}
+		var isclean = isCleanString(obj.elements['Filters:name'].value);		
+		if (!isclean) {
+     		alert("]]><XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/ApostropheNotAllowed" ESCAPE="true" ENCODE="false"/><![CDATA[");
+            obj.elements['Filters:name'].focus();
+    		return false;
+		}
+
+		selAllAll();
+		obj.submit();
+		return false;
+	}
+
+	function SetCancelFlag () {
+		var obj = document.forms[0];
+		if(confirm("]]><XLAT.STREAM KEY="dvin/Common/CancelClicked" ESCAPE="true" ENCODE="false"/><![CDATA[")){
+			obj.elements['upcommand'].value="cancel";
+			obj.submit();
+			return false;
+		}
+	}
+
+	function GotoNextStep(form,ourPage)
+	{
+		var obj = document.forms[0];
+		if (obj.elements['Filters:class'].value=="")
+		{
+			alert("]]><XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/NeedFilter" ESCAPE="true" ENCODE="false"/><![CDATA[");
+			obj.elements['Filters:class'].focus();
+			return false;
+		}
+
+		selAllAll();
+
+		var basePage = "OpenMarket/Xcelerate/Actions/";
+		if(ourPage=="CopyFront")
+			ourPage="NewContentFront";
+
+		var	newpage = basePage + ourPage;
+		obj.pagename.value = newpage;
+		obj.submit();
+		return true;
+	}
+
+    function ShowValue(srcname)
+    {
+        var srcindex,currentName,dom;
+        for (i=0;i<srcname.options.length;i++)
+		{
+            currentName = 'FilterID'+(i+1);
+			if (isID)
+			{
+				dom = eval('document.getElementById(\"'+currentName +'\").style');
+			}
+			else
+			{
+				dom = eval(docObj + '.' + currentName + styleObj);
+			}
+
+            dom.display='none';
+			if (srcname.options[i].selected)
+				dom.display='inline';
+		}
+    }
+	function movedefargright(srcname,target)
+	{
+		var items, newindex, newval, i, j,srcindex,srcval;
+
+        // find selected argument
+		for (i=0;i<srcname.options.length;i++)
+		{
+			if (srcname.options[i].selected)
+				srcindex=i;
+		}
+        // find selected value
+        var valueWidget = 'FilterValue'+(srcindex+1);
+        srcval = document.forms[0].elements[valueWidget];
+        if (typeof(srcval.options)=='undefined')
+        {
+            // text field
+            newval = srcval.value.replace(/=/g,'__EQ__');
+		    newval = newval.replace(/;/g,'__SEMI__');
+            srcval.value="[Value]";
+        }
+        else
+        {
+            // select box
+            for (j=0;j<srcval.options.length;j++)
+    		{
+                if (srcval.options[j].selected)
+                {
+    				newval = srcval.options[j].text.replace(/=/g,'__EQ__');
+		            newval = newval.replace(/;/g,'__SEMI__');
+                }
+    		}
+        }
+
+		items=new Option(srcname.options[srcindex].text+"="+newval,srcname.options[srcindex].text+"="+newval);
+
+		newindex=target.options.length;
+
+		// find and replace argument if already selected
+		for (i=0;i<target.options.length;i++)
+		{
+			if (target.options[i].text.indexOf(srcname.options[srcindex].text)==0)
+			{
+				newindex=i;
+			}
+
+		}
+        target.options[newindex]=items;
+		target.options[newindex].selected=false;
+
+		delNul(target);
+
+
+
+	}
+
+	function removearg(target)
+	{
+		var i=0;
+
+		while(i<target.options.length)
+		{
+			if(target.options[i].selected)
+			{
+				target.options[i]=null;
+			}
+			else
+				i++;
+		}
+		delNul(target);
+	}
+
+	function delNul(lst){
+		i = 0;
+		while (i<lst.options.length)
+		{
+			if (lst.options[i].value==-1)
+				lst.options[i]=null
+			else
+				i = i + 1;
+		}
+	}
+
+	function selAll(lst){
+	 if (!lst) return;
+		for (i=0; i<lst.options.length; i++)
+			lst.options[i].selected=true
+		delNul(lst)
+	}
+
+	function selAllAll(){
+		var obj = document.forms[0];
+		selAll(obj.elements['Filters:arguments']);
+	}
+	]]>
+
+</SCRIPT>
+
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+
+<IF COND="IsVariable.Filters:class=true">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Filters/GetOrSetVars">
+		<ARGUMENT NAME="GetOrSet" VALUE="set"/>
+	</CALLELEMENT>
+	<ASSET.SCATTER NAME="theCurrentAsset" PREFIX="ContentDetails"/>
+</THEN>
+</IF>
+
+<!-- form buttons -->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ToolBar">
+	<ARGUMENT NAME="doNotShowSaveButton" VALUE="false"/>
+</CALLELEMENT>
+	
+<table BORDER="0" CELLPADDING="0" CELLSPACING="0" class="width-outer-70">
+<tr>
+	<td>
+		<ASSETTYPE.LIST LIST="ThisAsset" FIELD1="assettype" VALUE1="Variables.AssetType"/>
+		<IF COND="Variables.updatetype!=setformdefaults">
+		<THEN>
+			<SPAN CLASS="title-text">
+				<STRING.STREAM LIST="ThisAsset" COLUMN="description"/>:
+			</SPAN>&nbsp;
+			<SPAN CLASS="title-value-text">
+				<STRING.STREAM VARIABLE="ContentDetails:name"/>
+			</SPAN>
+		</THEN>
+		<ELSE>
+			<SPAN CLASS="title-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/NoNewAssetDes"/> </SPAN>
+		</ELSE>
+		</IF>
+	</td>
+</tr>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+	<argument NAME="SpaceBelow" VALUE="No"/>
+</callelement>
+
+<tr>
+	<td>
+		<table border="0" cellpadding="0" cellspacing="0" class="width-inner-100">
+
+			<if COND="Variables.updatetype!=setformdefaults">
+			<then>
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar">
+					<argument NAME="SpaceAbove" VALUE="No"/>
+				</callelement>-->
+			</then>
+			</if>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</td>
+				<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					 <PROPERTY.GET PARAM="xcelerate.asset.sizeofnamefield" INIFILE="futuretense_xcel.ini" VARNAME="sizeofnamefield"/>
+				<td class="form-inset">
+					<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+						<argument NAME="inputName" VALUE="Filters:name"/>
+						<argument NAME="inputValue" VALUE="Variables.ContentDetails:name"/>
+						<argument NAME="inputSize" VALUE="32"/>
+						<argument NAME="inputMaxlength" VALUE="Variables.sizeofnamefield"/>
+						<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+					</callelement>
+
+				</td>
+			</tr>
+
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td valign="top" class="form-label-text"><span class="alert-color"></span><XLAT.STREAM KEY="dvin/AT/Common/Description"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+						<argument NAME="inputName" VALUE="Filters:description"/>
+						<argument NAME="inputValue" VALUE="Variables.ContentDetails:description"/>
+						<argument NAME="inputSize" VALUE="32"/>
+						<argument NAME="inputMaxlength" VALUE="128"/>
+						<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+					</callelement>
+				 </td>
+			 </tr>
+
+			
+			<if COND="Variables.updatetype!=setformdefaults">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+					<td></td>
+					<td class="form-inset"><span class="disabledEditText"><STRING.STREAM VARIABLE="id"/></span></td>
+				</tr>
+			</then>
+			</if>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+				<td class="form-label-text"><span class="alert-color">*</span>
+				<XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/Filter"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<div class="inline-left">
+                    <SELECT NAME="Filters:class" SIZE="1">
+                        <OPTION VALUE=""/>--<XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/SelectFilter"/>--
+                        <FILTERMANAGER.GETFILTERS LISTVARNAME="keylist" />
+                        <if COND="keylist.#numRows!=0">
+                        <then>
+                              <loop LIST="keylist">
+                                <if COND="Variables.ContentDetails:class=keylist.name">
+                                <then>
+                                    <OPTION VALUE="keylist.name" SELECTED="yes" REPLACEALL="keylist.name"/><STRING.STREAM VALUE="keylist.name" />
+                                </then>
+                                <else>
+                                    <OPTION VALUE="keylist.name" REPLACEALL="keylist.name"/><STRING.STREAM VALUE="keylist.name" />
+                                </else>
+                                </if>
+                              </loop>
+                        </then>
+                        </if>
+                    </SELECT>
+                    </div>
+                    <div class="inline-left">
+                    	<XLAT.LOOKUP KEY="UI/Forms/GetArguments" VARNAME="_XLAT_" ESCAPE="true"/>
+                    	<A onClick="return GotoNextStep(this.form,'Variables.ThisPage');" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.ThisPage"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/GetArguments"/></CALLELEMENT></A>
+                    </div>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/Arguments"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<IF COND="Variables.ContentDetails:class!=Variables.empty">
+					<THEN>
+						<!-- Get the list of arguments from the filter class -->
+						<FLEXFILTER.GETLEGALARGS NAME="theCurrentAsset" LISTVARNAME="lLegalArgs"/>
+						<IF COND="IsList.lLegalArgs=true">
+						<THEN>
+                            <IF COND="lLegalArgs.#numRows!=0">
+							<THEN>
+								<TABLE CELLSPACING="0" CELLPADDING="5" BORDER="0">
+								<TR>
+									<TD>
+										<XLAT.STREAM KEY="dvin/Common/Name"/>: <SELECT NAME="legalname" ONCHANGE="ShowValue(document.forms[0].elements['legalname']);" SIZE="1">
+										<LOOP LIST="lLegalArgs">
+											<OPTION><STRING.STREAM LIST="lLegalArgs" COLUMN="name"/></OPTION>
+										</LOOP>
+										</SELECT><BR/><BR/>
+                                        <XLAT.STREAM KEY="dvin/Common/Value"/>:
+                                        <LOOP LIST="lLegalArgs">
+                                            <FLEXFILTER.GETARGLEGALVALUES NAME="theCurrentAsset" ARGUMENT="lLegalArgs.name" LISTVARNAME="lCurrentArg"/>
+                                            <IF COND="lLegalArgs.#curRow=1">
+                                            <THEN>
+                                                <SETVAR NAME="currentStyle" VALUE="display:inline;"/>
+                                            </THEN>
+                                            <ELSE>
+                                                <SETVAR NAME="currentStyle" VALUE="display:none;"/>
+                                            </ELSE>
+                                            </IF>
+                                            <IF COND="IsList.lCurrentArg=true">
+                                            <THEN>
+                                                <SELECT NAME="FilterValuelLegalArgs.#curRow" ID="FilterIDlLegalArgs.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lLegalArgs.#curRow,Variables.currentStyle">
+                                                <LOOP LIST="lCurrentArg">
+                                                    <OPTION><STRING.STREAM LIST="lCurrentArg" COLUMN="value"/></OPTION>
+                                                </LOOP>
+                                                </SELECT>
+                                            </THEN>
+                                            <ELSE>
+                                                <INPUT TYPE="TEXT" NAME="FilterValuelLegalArgs.#curRow" VALUE="[Value]" SIZE="32" ID="FilterIDlLegalArgs.#curRow" STYLE="Variables.currentStyle;" REPLACEALL="lLegalArgs.#curRow,Variables.currentStyle"/>
+                                            </ELSE>
+                                            </IF>
+                                        </LOOP>
+
+									</TD>
+									<TD>
+										<A HREF="javascript:void(0);" ONCLICK="movedefargright(document.forms[0].elements['legalname'], document.forms[0].elements['Filters:arguments']);"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Add"/></CALLELEMENT></A><BR/><BR/>									
+										<A HREF="javascript:void(0);" ONCLICK="removearg(document.forms[0].elements['Filters:arguments'])"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Remove"/></CALLELEMENT></A>
+									</TD>
+									<TD>
+										<div class="scrollable">
+										<SELECT NAME="Filters:arguments" SIZE="6" MULTIPLE="yes" ONMOUSEOUT="window.status=' ';return true;">
+											<IF COND="Variables.ContentDetails:arguments:Total!=0">
+											<THEN>
+												<SETCOUNTER NAME="currentArg" VALUE="0"/>
+												<LOOP COUNT="Variables.ContentDetails:arguments:Total">
+													<SETVAR NAME="argname" VALUE="Variables.ContentDetails:arguments:Counters.currentArg:name"/>
+													<SETVAR NAME="argval" VALUE="Variables.ContentDetails:arguments:Counters.currentArg:value"/>
+													<SUBSTITUTE STR="Variables.argval" WHAT="=" WITH="__EQ__" OUTSTR="argval"/>
+													<SUBSTITUTE STR="Variables.argval" WHAT=";" WITH="__SEMI__" OUTSTR="argval"/>
+													<SETVAR NAME="textName" VALUE="Variables.argname"/>
+													<OPTION VALUE="Variables.argname=Variables.argval" REPLACEALL="Variables.argname,Variables.argval"><STRING.STREAM VALUE="Variables.textName=Variables.argval"/></OPTION>
+													<INCCOUNTER NAME="currentArg" VALUE="1"/>
+												</LOOP>
+											</THEN>
+											</IF>
+											<option VALUE="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+										</SELECT>
+										</div>
+									</TD>
+								</TR>
+								</TABLE>
+							</THEN>
+                            <ELSE>
+                                <XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/Noargumentsavailable"/>
+                            </ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+                              <XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/Couldnotgetarguments" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false"/>
+						</ELSE>
+						</IF>
+					</THEN>
+					<ELSE>
+                        <XLAT.STREAM KEY="dvin/FlexibleAssets/Filters/ClickButtonToDisplayArguments"/>
+ 					</ELSE>
+					</IF>
+				</td>
+			</tr>
+
+			<if COND="Variables.updatetype!=setformdefaults">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Created"/>:</td>
+					<td></td>
+                    <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.ContentDetails:createddate" VALUETYPE="jdbcdate"  VARNAME="ContentDetails:createddate"/>
+					<td class="form-inset"><span class="disabledEditText">
+							<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/Bycreatedby"/> </span></td>
+				</tr>
+
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Modified"/>:</td>
+					<td></td>
+					<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.ContentDetails:updateddate" VALUETYPE="jdbcdate"  VARNAME="ContentDetails:updateddate"/>
+                    <td class="form-inset"><span class="disabledEditText">
+							<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/byUpdatedby"/> </span> </td>
+				</tr>
+			</then>
+			</if>
+		</table>
+	</td>
+</tr>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+
+</table>
+
+</FTCS>

@@ -1,0 +1,199 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/AttributeTypes/TEXTFIELD
+--
+-- INPUT
+--
+-- OUTPUT
+-->
+	<setvar NAME="doDefaultDisplay" VALUE="no"/>
+	<setvar NAME="errno"  VALUE="0"/>  
+	<presentation.getwidth NAME="Variables.PresInst" VARNAME="WIDTH"/>
+	<if COND="IsVariable.WIDTH=true">
+	<then>
+		<setvar  NAME="varwidth"   VALUE="Variables.WIDTH"/>
+	</then>
+	<else>
+		<setvar NAME="varwidth"   VALUE=""/>
+	</else>
+	</if>
+	<setvar NAME="errno"  VALUE="0"/>  
+	<presentation.getmaxchars NAME="Variables.PresInst" VARNAME="MAXSIZE"/>
+	<if COND="IsVariable.MAXSIZE=true">
+	<then>
+		<setvar  NAME="varmaxsize"   VALUE="Variables.MAXSIZE"/>
+	</then>
+	<else>
+		<setvar NAME="varmaxsize"   VALUE="255"/>
+	</else>
+	</if>
+	
+	<presentation.getmaxvalues NAME="Variables.PresInst" VARNAME="MAXVALUES"/>
+	<if COND="IsVariable.MAXVALUES=true">
+	<then>
+		<setvar  NAME="varmaxvalues"   VALUE="Variables.MAXVALUES"/>
+	</then>
+	<else>
+		<setvar NAME="varmaxvalues"   VALUE="-1"/>
+	</else>
+	</if>
+	
+	<presentation.getblanked NAME="Variables.PresInst" VARNAME="blank"/>
+	<IF COND="Variables.EditingStyle=single">
+	<THEN>
+		<IF COND="Variables.blank=true">
+		<THEN>
+			<setvar NAME="inputType" VALUE="PASSWORD"/>
+			<IF COND="Variables.EditingStyle=single">
+			<THEN>
+				<SETVAR NAME="cs_CurrentPasswordAttr" VALUE="Variables.cs_SingleInputName;Variables.AttrName"/>
+			</THEN>
+			<ELSE>
+				<SETVAR NAME="cs_CurrentPasswordAttr" VALUE="Variables.cs_MultipleInputName;Variables.AttrName"/>
+			</ELSE>
+			</IF>
+			<IF COND="Variables.myPasswordAttrs=none">
+			<THEN>
+				<setvar NAME="myPasswordAttrs" VALUE="Variables.cs_CurrentPasswordAttr"/>
+			</THEN>
+			<ELSE>
+				<setvar NAME="myPasswordAttrs" VALUE="Variables.myPasswordAttrs;Variables.cs_CurrentPasswordAttr"/>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<setvar NAME="inputType" VALUE="TEXT"/>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<setvar NAME="inputType" VALUE="TEXT"/>
+	</ELSE>
+	</IF>
+	<tr> 
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+		<callelement NAME="OpenMarket/Xcelerate/Scripts/MoveMulFields"/>
+
+		<td></td>
+		<td>
+		<if COND="Variables.EditingStyle=single">
+		<then>
+			<IF COND="Variables.AttrType=money">
+			<THEN>
+				<setvar NAME="mycurrency" VALUE="Variables.empty"/>
+				<IF COND="Variables.MyAttrVal!=Variables.empty">
+				<THEN>
+					<CURRENCY.CREATE NAME="currency"/>
+					<CURRENCY.GETCURRENCY NAME="currency" VALUE="Variables.MyAttrVal" VARNAME="mycurrency"/>
+				</THEN>
+				</IF>
+				<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+					<argument NAME="inputType" VALUE="Variables.inputType"/>
+					<argument NAME="inputName" VALUE="Variables.cs_SingleInputName"/>
+					<argument NAME="inputValue" VALUE="Variables.mycurrency"/>
+					<argument NAME="width" VALUE="Variables.varwidth"/>
+					<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+					<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+				</callelement>
+			</THEN>
+			<ELSE>
+				<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+					<argument NAME="inputType" VALUE="Variables.inputType"/>
+					<argument NAME="inputName" VALUE="Variables.cs_SingleInputName"/>
+					<argument NAME="inputValue" VALUE="Variables.MyAttrVal"/>
+					<argument NAME="width" VALUE="Variables.varwidth"/>
+					<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+					<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+				</callelement>
+			</ELSE>
+			</IF>
+		</then>
+		<else>
+			<setvar NAME="editorParams"  VALUE="{'width': 'Variables.varwidth', 'height': '22px', 'isRetainEditorHeight': true, 'isSideButtonsInCenter': true}"/>
+			<CALLELEMENT NAME="OpenMarket/Gator/AttributeTypes/RenderMultiValuedTextEditor">
+				<ARGUMENT NAME="editorName" VALUE="fw.dijit.UIInput" />
+				<ARGUMENT NAME="maximumValues" VALUE="Variables.varmaxvalues" />
+				<ARGUMENT NAME="multiple" VALUE="true" />
+				<ARGUMENT NAME="isShowEmbeddedLinkButtons" VALUE="false" />
+			</CALLELEMENT>
+		</else>
+		</if>
+	
+		</td>
+	</tr> 
+	<IF COND="Variables.blank=true">
+	<THEN>		
+		<if COND="Variables.EditingStyle=single">
+		<then>
+			<tr> 
+				<td class="form-label-text">
+				<if COND="Variables.RequiredAttr=true">
+				<then>
+					<span class="alert-color">*</span>
+				</then>
+				</if>
+				<XLAT.STREAM KEY="dvin/AT/Forms/Confirm"/></td>
+				<td></td>
+				<td class="form-inset">
+				<IF COND="Variables.updatetype=setformdefaults">
+				<THEN>
+               <setvar NAME="errno" VALUE="0"/>
+               <ICS.RESOLVEVARIABLES NAME="$(Variables.Confirm$(Variables.cs_SingleInputName))" OUTPUT="confirmval" DELIMITED="true"/>
+					<IF COND="Variables.errno!=0">
+					<THEN>
+						<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+							<argument NAME="inputType" VALUE="PASSWORD"/>
+							<argument NAME="inputName" VALUE="ConfirmVariables.cs_SingleInputName"/>
+							<argument NAME="inputValue" VALUE=""/>
+							<argument NAME="width" VALUE="Variables.varwidth"/>
+							<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+							<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+						</callelement>
+					</THEN>
+					<ELSE>
+						<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+							<argument NAME="inputType" VALUE="PASSWORD"/>
+							<argument NAME="inputName" VALUE="ConfirmVariables.cs_SingleInputName"/>
+							<argument NAME="inputValue" VALUE="Variables.confirmval"/>
+							<argument NAME="width" VALUE="Variables.varwidth"/>
+							<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+							<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+						</callelement>
+					</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+                    <setvar NAME="errno" VALUE="0"/>
+                    <ICS.RESOLVEVARIABLES NAME="$(Variables.Confirm$(Variables.cs_SingleInputName))" OUTPUT="confirmval" DELIMITED="true"/>
+					<IF COND="Variables.errno!=0">
+					<THEN>
+						<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+							<argument NAME="inputType" VALUE="PASSWORD"/>
+							<argument NAME="inputName" VALUE="ConfirmVariables.cs_SingleInputName"/>
+							<argument NAME="inputValue" VALUE="Variables.MyAttrVal"/>
+							<argument NAME="width" VALUE="Variables.varwidth"/>
+							<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+							<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+						</callelement>
+					</THEN>
+					<ELSE>
+						<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+							<argument NAME="inputType" VALUE="PASSWORD"/>
+							<argument NAME="inputName" VALUE="ConfirmVariables.cs_SingleInputName"/>
+							<argument NAME="inputValue" VALUE="Variables.confirmval"/>
+							<argument NAME="width" VALUE="Variables.varwidth"/>
+							<argument NAME="inputMaxlength" VALUE="Variables.varmaxsize"/>
+							<argument name="applyDefaultFormStyle" value='Variables.defaultFormStyle' />
+						</callelement>
+					</ELSE>
+					</IF>
+				</ELSE>
+				</IF>
+				</td>
+			</tr>
+		</then>	
+		</if>
+	</THEN>
+	</IF>
+</FTCS> 

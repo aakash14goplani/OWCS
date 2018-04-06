@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <!-- OpenMarket/Xcelerate/PrologActions/Publish/AdvPub/PreviewApprovedAssets
+    -
+    - INPUT
+    -	Variables.target - target id
+    -	Variables.targetname - target name
+    - OUTPUT
+    -
+    -->
+
+    <!-- report on assets that will be published -->
+    <ApprovedAssets.GetAssetsToPublish TARGET="Variables.target" PREFIX="publishableAssets" />
+    <SETVAR NAME="numAssets" VALUE="Variables.publishableAssetsTotal" />
+    <if COND="Variables.numAssets!=0">
+        <then>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/OnDemandPublishing">
+                <argument NAME="targetname" VALUE="Variables.targetname" />
+                <argument NAME="target" VALUE="Variables.target" />
+				<argument NAME="publishableAssetsTotal" VALUE="Variables.numAssets" />
+            </callelement>
+        </then>
+    </if>
+	<SETVAR NAME="oDemandEnabled" VALUE="true" />
+</FTCS>

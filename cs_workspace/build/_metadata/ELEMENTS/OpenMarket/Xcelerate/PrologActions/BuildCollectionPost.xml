@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/BuildCollectionPost.xml $ 
+$Revision: 16 $ 
+$Modtime: 2/19/04 2:39p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildCollectionPost.xml
+-
+- DESCRIPTION
+-		updates ranked children list
+- INPUT
+-		Variables.upcommand - submit or cancel
+-		Variables.id
+-
+-->
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+   <!-- Load the collection object -->
+	<ASSET.LOAD TYPE="Collection" NAME="collection" OBJECTID="Variables.id" EDITABLE="true"/>
+	<!-- check whether we can perform this function on this asset (access right may have changed since the front page was displayed) -->
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+        <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+        <ARGUMENT NAME="assetObjectName" VALUE="collection"/>
+        <ARGUMENT NAME="Function" VALUE="build"/>
+    </CALLELEMENT>
+	<IF COND="Variables.PrivsFailed=true">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<ARGUMENT NAME="error" VALUE="Variables.PrivsFailedReason"/>
+		</CALLELEMENT>
+		<SETVAR NAME="errorAlreadyDisplayed" VALUE="true"/>
+		<SETVAR NAME="upcommand" VALUE="cancel"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+</FTCS>
+
+ 

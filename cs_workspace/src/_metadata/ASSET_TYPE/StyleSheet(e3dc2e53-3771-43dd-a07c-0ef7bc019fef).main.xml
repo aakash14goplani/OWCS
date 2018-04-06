@@ -1,0 +1,734 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">StyleSheet</id>
+    <resourceType>ASSET_TYPE</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.fatwire.realtime.AssetTypeWrapper">
+      <assettypeDescriptor class="com.openmarket.xcelerate.asset.AssetTypeDescriptor">
+        <assettype>StyleSheet</assettype>
+        <plural>StyleSheets</plural>
+        <logic>com.openmarket.assetmaker.asset.AMAsset</logic>
+        <description>StyleSheet</description>
+        <usesearchindex>0</usesearchindex>
+        <indexfile></indexfile>
+        <urldescriptorspec>C:\Users\aakash.goplani\Desktop\JSK\Sites\11.1.1.8.0\Shared\Storage\AssetType\StyleSheet,0.xml</urldescriptorspec>
+        <urldescriptordata>PCEtLSB0aGlzIGlzIHRoZSBkZXNjcmlwdGlvbiBvZiBhbiBhc3NldCAtLT4NCjxBU1NFVCBOQU1F
+PSJTdHlsZVNoZWV0IiBERVNDUklQVElPTj0iU3R5bGVTaGVldCIgTUFSS0VSVEVYVD0iKiIgUFJP
+Q0VTU09SPSI1LjAiIA0KREVGRElSPSJjOlxGdXR1cmVUZW5zZVxTdG9yYWdlXFN0eWxlU2hlZXQi
+IFJFTkRFUlVTSU5HVEVNUExBVEU9Im5vIj4NCiAgICA8UFJPUEVSVElFUz4NCiAgICAgICAgPFBS
+T1BFUlRZIE5BTUU9InNvdXJjZSIgREVTQ1JJUFRJT049IlNvdXJjZSI+DQogICAgICAgICAgICA8
+U1RPUkFHRSBUWVBFPSJWQVJDSEFSIiBMRU5HVEg9IjI0Ii8+DQogICAgICAgICAgICA8SU5QVVRG
+T1JNIERFU0NSSVBUSU9OPSJTb3VyY2UiIFRZUEU9IlNFTEVDVCIgVEFCTEVOQU1FPSJTb3VyY2Ui
+IE9QVElPTkRFU0NLRVk9ImRlc2NyaXB0aW9uIiBPUFRJT05WQUxVRUtFWT0ic291cmNlIiBTT1VS
+Q0VUWVBFPSJUQUJMRSIvPg0KICAgICAgICAgICAgPFNFQVJDSEZPUk0gREVTQ1JJUFRJT049IlNv
+dXJjZSIgVFlQRT0iU0VMRUNUIiBUQUJMRU5BTUU9IlNvdXJjZSIgT1BUSU9OREVTQ0tFWT0iZGVz
+Y3JpcHRpb24iIE9QVElPTlZBTFVFS0VZPSJzb3VyY2UiIFNPVVJDRVRZUEU9IlRBQkxFIi8+DQog
+ICAgICAgPC9QUk9QRVJUWT4NCg0KICAgICAgICA8UFJPUEVSVFkgTkFNRT0idXJsYm9keSIgREVT
+Q1JJUFRJT049IlN0eWxlU2hlZXQiPg0KICAgICAgICAgICAgPFNUT1JBR0UgVFlQRT0iVkFSQ0hB
+UiIgTEVOR1RIPSIyNTUiLz4NCiAgICAgICAgICAgIDxJTlBVVEZPUk0gVFlQRT0iVVBMT0FEIiBX
+SURUSD0iMzYiIFJFUVVJUkVEPSJZRVMiIExJTktURVhUPSJTdHlsZVNoZWV0Ii8+DQogICAgICAg
+IDwvUFJPUEVSVFk+DQoNCiAgICAgICA8UFJPUEVSVFkgTkFNRT0ibWltZXR5cGUiIERFU0NSSVBU
+SU9OPSJNaW1ldHlwZSI+DQogICAgICAgICAgICA8U1RPUkFHRSBUWVBFPSJWQVJDSEFSIiBMRU5H
+VEg9IjM2Ii8+DQogICAgICAgICAgICA8SU5QVVRGT1JNIFRZUEU9IlNFTEVDVCIgU09VUkNFVFlQ
+RT0iVEFCTEUiIFRBQkxFTkFNRT0iTWltZVR5cGUiIE9QVElPTkRFU0NLRVk9ImRlc2NyaXB0aW9u
+IiBPUFRJT05WQUxVRUtFWT0ibWltZXR5cGUiIA0KCQlTUUw9IlNFTEVDVCBtaW1ldHlwZSwgZGVz
+Y3JpcHRpb24gRlJPTSBNaW1lVHlwZSBXSEVSRSBrZXl3b3JkID0gJ3N0eWxlc2hlZXQnIEFORCBp
+c2RlZmF1bHQgPSAneSciIElOU1RSVUNUSU9OPSJBZGQgbW9yZSBvcHRpb25zIHRvIE1pbWVUeXBl
+IHRhYmxlIHdpdGggaXNkZWZhdWx0PXkgYW5kIGtleXdvcmQ9c3R5bGVzaGVldCIvPg0KICAgICAg
+ICAgICAgPFNFQVJDSEZPUk0gREVTQ1JJUFRJT049Ik1pbWV0eXBlIiBUWVBFPSJTRUxFQ1QiIFNP
+VVJDRVRZUEU9IlRBQkxFIiBUQUJMRU5BTUU9Ik1pbWVUeXBlIiBPUFRJT05ERVNDS0VZPSJkZXNj
+cmlwdGlvbiIgT1BUSU9OVkFMVUVLRVk9Im1pbWV0eXBlIiANCgkJU1FMPSJTRUxFQ1QgbWltZXR5
+cGUsIGRlc2NyaXB0aW9uIEZST00gTWltZVR5cGUgV0hFUkUga2V5d29yZCA9ICdzdHlsZXNoZWV0
+JyBBTkQgaXNkZWZhdWx0ID0gJ3knIi8+DQogICAgICAgIDwvUFJPUEVSVFk+DQoNCiAgICAgICAg
+PFBST1BFUlRZIE5BTUU9ImFsdHRleHQiIERFU0NSSVBUSU9OPSJBbHQgVGV4dCI+DQogICAgICAg
+ICAgICA8U1RPUkFHRSBUWVBFPSJWQVJDSEFSIiBMRU5HVEg9IjI1NSIvPg0KICAgICAgICAgICAg
+PElOUFVURk9STSBUWVBFPSJURVhUQVJFQSIgUk9XUz0iMiIgQ09MUz0iNjAiIFJFUVVJUkVEPSJO
+TyIgREVGQVVMVD0iIi8+DQogICAgICAgICAgICA8U0VBUkNIRk9STSBERVNDUklQVElPTj0iQWx0
+IFRleHQgY29udGFpbnMiIFRZUEU9IlRFWFRBUkVBIiBST1dTPSIxIiBDT0xTPSI2MCIvPg0KICAg
+ICAgICA8L1BST1BFUlRZPg0KDQogICAgICAgIDxQUk9QRVJUWSBOQU1FPSJrZXl3b3JkcyIgREVT
+Q1JJUFRJT049IktleXdvcmRzIj4NCiAgICAgICAgICAgIDxTVE9SQUdFIFRZUEU9IlZBUkNIQVIi
+IExFTkdUSD0iMTI4Ii8+DQogICAgICAgICAgICA8SU5QVVRGT1JNIFRZUEU9IlRFWFQiIFdJRFRI
+PSI0OCIgTUFYTEVOR1RIPSI0OCIgUkVRVUlSRUQ9Ik5PIiBERUZBVUxUPSIiLz4NCiAgICAgICAg
+ICAgIDxTRUFSQ0hGT1JNIERFU0NSSVBUSU9OPSJLZXl3b3JkcyBjb250YWluIiBUWVBFPSJURVhU
+IiBXSURUSD0iNDgiIE1BWExFTkdUSD0iNDgiLz4NCiAgICAgICAgPC9QUk9QRVJUWT4NCg0KICAg
+IDwvUFJPUEVSVElFUz4NCjwvQVNTRVQ+DQo=</urldescriptordata>
+        <canbechild>T</canbechild>
+        <uid>e3dc2e53-3771-43dd-a07c-0ef7bc019fef</uid>
+        <useDimension></useDimension>
+      </assettypeDescriptor>
+      <systemInfoIList class="com.openmarket.xcelerate.util.GeneralListCopy">
+        <count>1</count>
+        <currentRow>0</currentRow>
+        <atEndFlag>false</atEndFlag>
+        <columnNames>
+          <string>metadata</string>
+          <string>systable</string>
+          <string>tblname</string>
+          <string>defdir</string>
+          <string>acl</string>
+        </columnNames>
+        <columnCount>5</columnCount>
+        <indColumnNames/>
+        <indColumnCount>0</indColumnCount>
+        <isURLColumn>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+        </isURLColumn>
+        <hashTable>
+          <strings>
+            <string></string>
+            <string>Browser,SiteGod,xceleditor,xceladmin</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>obj</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>StyleSheet</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>C:/Users/aakash.goplani/Desktop/JSK/Sites/11.1.1.8.0/Shared/Storage/StyleSheet/</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </strings>
+          <bytes>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </bytes>
+          <columns>
+            <int>0</int>
+            <int>4</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>1</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>2</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>3</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+          </columns>
+          <rows>
+            <int>0</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+          </rows>
+          <hashsize>32</hashsize>
+          <hashfull>24</hashfull>
+          <hashcount>5</hashcount>
+        </hashTable>
+        <columnHash>
+          <entry>
+            <string>tblname</string>
+            <int>2</int>
+          </entry>
+          <entry>
+            <string>systable</string>
+            <int>1</int>
+          </entry>
+          <entry>
+            <string>metadata</string>
+            <int>0</int>
+          </entry>
+          <entry>
+            <string>defdir</string>
+            <int>3</int>
+          </entry>
+          <entry>
+            <string>acl</string>
+            <int>4</int>
+          </entry>
+        </columnHash>
+      </systemInfoIList>
+      <systemSQLIList class="com.openmarket.xcelerate.util.GeneralListCopy">
+        <count>2</count>
+        <currentRow>0</currentRow>
+        <atEndFlag>false</atEndFlag>
+        <columnNames>
+          <string>description</string>
+          <string>deftable</string>
+          <string>qryname</string>
+          <string>url</string>
+        </columnNames>
+        <columnCount>4</columnCount>
+        <indColumnNames>
+          <string>@url</string>
+        </indColumnNames>
+        <indColumnCount>1</indColumnCount>
+        <isURLColumn>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>true</boolean>
+        </isURLColumn>
+        <hashTable>
+          <strings>
+            <string>SelectSummary</string>
+            <null/>
+            <null/>
+            <string>OpenMarket/Xcelerate/AssetType/StyleSheet/SelectSummarySE</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>StyleSheet,Category,AssetPublication,StatusCode</string>
+            <null/>
+            <null/>
+            <string>StyleSheet,AssetPublication,Category</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>OpenMarket/Xcelerate/AssetType/StyleSheet/SelectSummary</string>
+            <null/>
+            <null/>
+            <string>SelectSummarySE</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>OpenMarket/Xcelerate/AssetType/StyleSheet/SelectSummary.sql</string>
+            <null/>
+            <null/>
+            <string>OpenMarket/Xcelerate/AssetType/StyleSheet/SelectSummarySE.sql</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </strings>
+          <bytes>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <byte-array>U0VMRUNUIENhdGVnb3J5LmRlc2NyaXB0aW9uLCBWYXJpYWJsZXMuQXNzZXRUeXBlLmlkLCBWYXJp
+YWJsZXMuQXNzZXRUeXBlLm5hbWUsIFZhcmlhYmxlcy5Bc3NldFR5cGUuZGVzY3JpcHRpb24sIFZh
+cmlhYmxlcy5Bc3NldFR5cGUudXBkYXRlZGRhdGUsIFZhcmlhYmxlcy5Bc3NldFR5cGUudXBkYXRl
+ZGJ5LCBWYXJpYWJsZXMuQXNzZXRUeXBlLmNyZWF0ZWRkYXRlLCBWYXJpYWJsZXMuQXNzZXRUeXBl
+LmNyZWF0ZWRieSwgVmFyaWFibGVzLkFzc2V0VHlwZS5zdGFydGRhdGUsVmFyaWFibGVzLkFzc2V0
+VHlwZS5lbmRkYXRlLCBWYXJpYWJsZXMuQXNzZXRUeXBlLnN0YXR1cyBWYXJpYWJsZXMucXVlcnlm
+aWVsZHMgRlJPTSBWYXJpYWJsZXMuQXNzZXRUeXBlLEFzc2V0UHVibGljYXRpb24sQ2F0ZWdvcnkg
+V0hFUkUgQ2F0ZWdvcnkuYXNzZXR0eXBlPSdWYXJpYWJsZXMuQXNzZXRUeXBlJyBBTkQgVmFyaWFi
+bGVzLkFzc2V0VHlwZS5jYXRlZ29yeT1DYXRlZ29yeS5jYXRlZ29yeSBBTkQgVmFyaWFibGVzLkFz
+c2V0VHlwZS5pZCA9IEFzc2V0UHVibGljYXRpb24uYXNzZXRpZCBBTkQgKEFzc2V0UHVibGljYXRp
+b24ucHViaWQgPSBTZXNzaW9uVmFyaWFibGVzLnB1YmlkIE9SIEFzc2V0UHVibGljYXRpb24ucHVi
+aWQ9MCApIEFORCBWYXJpYWJsZXMuQXNzZXRUeXBlLnN0YXR1cyE9J1ZPJyBWYXJpYWJsZXMucXVl
+cnllbmQNCg==</byte-array>
+            <null/>
+            <null/>
+            <byte-array>U0VMRUNUIENhdGVnb3J5LmRlc2NyaXB0aW9uLCBWYXJpYWJsZXMuQXNzZXRUeXBlLmlkLCBWYXJp
+YWJsZXMuQXNzZXRUeXBlLm5hbWUsIFZhcmlhYmxlcy5Bc3NldFR5cGUuZGVzY3JpcHRpb24sIFZh
+cmlhYmxlcy5Bc3NldFR5cGUudXBkYXRlZGRhdGUsIFZhcmlhYmxlcy5Bc3NldFR5cGUudXBkYXRl
+ZGJ5LCBWYXJpYWJsZXMuQXNzZXRUeXBlLmNyZWF0ZWRkYXRlLCBWYXJpYWJsZXMuQXNzZXRUeXBl
+LmNyZWF0ZWRieSwgU3RhdHVzQ29kZS5kZXNjcmlwdGlvbiBhcyBzdGF0dXNkZXNjIEZST00gVmFy
+aWFibGVzLkFzc2V0VHlwZSxDYXRlZ29yeSxBc3NldFB1YmxpY2F0aW9uLFN0YXR1c0NvZGUgV0hF
+UkUgVmFyaWFibGVzLnNlUXVlcnlzdGFydCBDYXRlZ29yeS5hc3NldHR5cGU9J1ZhcmlhYmxlcy5B
+c3NldFR5cGUnIEFORCBWYXJpYWJsZXMuQXNzZXRUeXBlLmNhdGVnb3J5PUNhdGVnb3J5LmNhdGVn
+b3J5IEFORCBWYXJpYWJsZXMuQXNzZXRUeXBlLmlkID0gQXNzZXRQdWJsaWNhdGlvbi5hc3NldGlk
+IEFORCBBc3NldFB1YmxpY2F0aW9uLnB1YmlkID0gU2Vzc2lvblZhcmlhYmxlcy5wdWJpZCBBTkQg
+VmFyaWFibGVzLkFzc2V0VHlwZS5zdGF0dXM9U3RhdHVzQ29kZS5zdGF0dXNjb2RlIFZhcmlhYmxl
+cy5zcWxRdWVyeWVuZA0K</byte-array>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </bytes>
+          <columns>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>2</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>1</int>
+            <int>0</int>
+            <int>0</int>
+            <int>1</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>2</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>3</int>
+            <int>0</int>
+            <int>0</int>
+            <int>3</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+          </columns>
+          <rows>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+          </rows>
+          <hashsize>32</hashsize>
+          <hashfull>24</hashfull>
+          <hashcount>8</hashcount>
+        </hashTable>
+        <columnHash>
+          <entry>
+            <string>deftable</string>
+            <int>1</int>
+          </entry>
+          <entry>
+            <string>qryname</string>
+            <int>2</int>
+          </entry>
+          <entry>
+            <string>url</string>
+            <int>3</int>
+          </entry>
+          <entry>
+            <string>description</string>
+            <int>0</int>
+          </entry>
+        </columnHash>
+      </systemSQLIList>
+      <subtypes/>
+      <categoryIList class="com.openmarket.basic.common.GeneralListCopy">
+        <count>1</count>
+        <currentRow>0</currentRow>
+        <atEndFlag>false</atEndFlag>
+        <columnNames>
+          <string>description</string>
+          <string>assettype</string>
+          <string>category</string>
+          <string>id</string>
+        </columnNames>
+        <columnCount>4</columnCount>
+        <indColumnNames/>
+        <indColumnCount>0</indColumnCount>
+        <isURLColumn>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+          <boolean>false</boolean>
+        </isURLColumn>
+        <hashTable>
+          <strings>
+            <string>General</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>StyleSheet</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>g</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <string>968251170456</string>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </strings>
+          <bytes>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+            <null/>
+          </bytes>
+          <columns>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>1</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>2</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>3</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+            <int>0</int>
+          </columns>
+          <rows>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>0</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+            <int>-1</int>
+          </rows>
+          <hashsize>32</hashsize>
+          <hashfull>24</hashfull>
+          <hashcount>4</hashcount>
+        </hashTable>
+        <columnHash>
+          <entry>
+            <string>assettype</string>
+            <int>1</int>
+          </entry>
+          <entry>
+            <string>category</string>
+            <int>2</int>
+          </entry>
+          <entry>
+            <string>description</string>
+            <int>0</int>
+          </entry>
+          <entry>
+            <string>id</string>
+            <int>3</int>
+          </entry>
+        </columnHash>
+        <tempFilesToDelete/>
+      </categoryIList>
+      <associations/>
+      <siteNames class="list">
+        <string>Aakash_Goplani</string>
+        <string>Demo</string>
+        <string>FirstSiteII</string>
+        <string>Risk_Engineering</string>
+      </siteNames>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ASSET_TYPE</resType>
+      <resId>StyleSheet</resId>
+      <uid>e3dc2e53-3771-43dd-a07c-0ef7bc019fef</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/AppendSelectDetails</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/AppendSelectDetails</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/AppendSelectDetailsSE</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/AppendSelectDetailsSE</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/ContentDetails</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/ContentDetails</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/ContentForm</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/ContentForm</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexAdd</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexAdd</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexCreateVerity</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexCreateVerity</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexReplace</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/IndexReplace</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/LoadTree</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/LoadTree</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/PostUpdate</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/PostUpdate</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/PreUpdate</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/PreUpdate</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/SearchForm</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/SearchForm</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/SimpleSearch</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/SimpleSearch</uid>
+    </dependency>
+    <dependency>
+      <depType>E</depType>
+      <resType>@ELEMENTCATALOG</resType>
+      <resId>OpenMarket/Xcelerate/AssetType/StyleSheet/Tile</resId>
+      <uid>OpenMarket/Xcelerate/AssetType/StyleSheet/Tile</uid>
+    </dependency>
+  </linked-hash-set>
+</dependencies>
+==================______________________==================
+#
+key=@ASSET_TYPE-e3dc2e53-3771-43dd-a07c-0ef7bc019fef
+type=ASSET_TYPE
+sites=Aakash_Goplani,Demo,FirstSiteII,Risk_Engineering
+
+==================___ END METADATA ___==================-->

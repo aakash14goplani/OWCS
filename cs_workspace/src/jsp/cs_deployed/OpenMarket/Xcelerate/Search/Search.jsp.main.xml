@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Search/Search</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Search/Search</string>
+        <string>A test element for performing quick search lookups, intended for QA</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Search/search.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Xcelerate/Search/Search.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FXcelerate%2FSearch%2FSearch.jsp
+@hashval=278931341
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Search/Search
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

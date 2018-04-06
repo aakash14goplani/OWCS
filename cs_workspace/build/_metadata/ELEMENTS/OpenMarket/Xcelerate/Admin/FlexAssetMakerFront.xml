@@ -1,0 +1,183 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/FlexAssetMakerFront
+
+ INPUT
+
+ OUTPUT
+
+-->
+
+	<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<IF COND="Variables.action=new">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/AssetMaker/complexassetmaker"/>
+	</THEN>
+	</IF>
+	<IF COND="Variables.action=confirmmakeasset">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/AssetMaker/confirmmakeasset"/>
+	</THEN>
+	</IF>
+	<IF COND="Variables.action=list">
+	<THEN>
+		<IF COND="IsVariable.orderby!=true">
+	<THEN>
+		<SETVAR NAME="orderby" VALUE="assettype"/>
+	</THEN>
+	</IF>
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/FlexAssetTypes"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+
+	<ASSETTYPE.LIST LIST="AssetDetails" FIELD1="logic" VALUE1="com.openmarket.assetframework.complexasset.ComplexAsset" ORDER="Variables.orderby"/>
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-50">
+		<tr>
+			<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+			<td >
+				<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="9" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                          <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexAssetMakerFront" outstring="urlassetmakerfront">
+                                              <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                              <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                           </SATELLITE.LINK>
+                                           <A HREF="Variables.urlassetmakerfront" REPLACEALL="Variables.urlassetmakerfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AssetType"/></DIV></A></td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+                                          <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexAssetMakerFront" outstring="urlassetmakerfront">
+                                              <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                              <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="list"/>
+                                          <satellite.argument name="orderby" value="description"/>
+                                           </SATELLITE.LINK>
+                                           <A HREF="Variables.urlassetmakerfront" REPLACEALL="Variables.urlassetmakerfront"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></A></td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+					<tr><td colspan="9" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+						<!-- Loop over all search results. -->
+			   			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						<SETVAR NAME="separatorLine" VALUE="0"/>
+						<LOOP LIST="AssetDetails">
+							<ASSET.GETASSETTYPEPROPERTIES TYPE="AssetDetails.assettype" />
+							<IF COND="Variables.IsCoreAssetType!=true">
+								<THEN>
+							<IF COND="Variables.separatorLine=1">
+							<THEN>
+								<!--<tr>
+									<td colspan="9" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>-->
+							</THEN>
+							</IF>
+							<SETVAR NAME="separatorLine" VALUE="1"/>
+
+							<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+							<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisAssetType" VARNAME="_alt_"/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="details"/>
+                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+                                           </SATELLITE.LINK>
+                            <A HREF="Variables.urlassettypefront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlassettypefront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisAssetType" VARNAME="_alt_"/>
+                             <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                 <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                 <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="edit"/>
+                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+                                           </SATELLITE.LINK>
+                            <A HREF="Variables.urlassettypefront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlassettypefront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisAssetType" VARNAME="_alt_"/>
+							<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="confirmdelete"/>
+                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+                                           </SATELLITE.LINK>
+                            <A HREF="Variables.urlassettypefront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlassettypefront,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._alt_"  title="Variables._alt_" REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+
+							</td>
+					                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlassettypefront">
+                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="details"/>
+                                          <satellite.argument name="assettype" value="AssetDetails.assettype"/>
+                                           </SATELLITE.LINK>
+										<A HREF="Variables.urlassettypefront" REPLACEALL="Variables.urlassettypefront"><STRING.STREAM VALUE="AssetDetails.assettype"/></A>
+										</DIV>
+									</td>
+									<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+					                    <STRING.STREAM VALUE="AssetDetails.description"/>
+					                    </DIV>
+					                 </td>
+					                 	<td><BR /></td>
+					                 	<td VALIGN="TOP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+											<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Util/ShowAssetTypeKind" SCOPED="LOCAL">
+												<ARGUMENT NAME="assettype" VALUE="AssetDetails.assettype"/>
+												<ARGUMENT NAME="logic" VALUE="AssetDetails.logic"/>
+											</CALLELEMENT>
+										</DIV>
+					                 </td>
+					                 	<td><BR /></td></tr>
+					            <IF COND="Variables.rowStyle=tile-row-normal">
+					            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					            </THEN>
+					            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					            </ELSE>
+					            </IF>
+								</THEN>
+								</IF>
+							</LOOP>
+							</table>
+						</td>
+						<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+						</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table>
+<table class="width-outer-70"><tr><td>
+	<XLAT.LOOKUP KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexAssetType" VARNAME="_XLAT_" ESCAPE="true"/>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexAssetMakerFront" outstring="addFlexURL">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="action" value="new"/>
+                                           </SATELLITE.LINK>
+	<A HREF="Variables.addFlexURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addFlexURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewFlexAssetType"/></CALLELEMENT></A>
+	<XLAT.LOOKUP KEY="dvin/FlexibleAssets/AssetMakers/AddNewFlexFilter" VARNAME="_XLAT_" ESCAPE="true"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/FlexFamilyFront" outstring="addFlexURL">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="op" value="make"/>
+                                          <satellite.argument name="member" value="filter"/>
+                                           </SATELLITE.LINK>
+	<A HREF="Variables.addFlexURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_,Variables.addFlexURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewFlexFilter"/></CALLELEMENT></A>
+</td></tr></table>
+	</THEN>
+	</IF>
+
+
+
+
+</FTCS>

@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadSearching
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<!-- This element handles all children of the Searching root node -->
+
+<!-- Attempt to get a list of all asset types -->
+
+<ASSETTYPE.LIST LIST="AllAssetTypes" ORDER="description"/>
+<IF COND="IsError.Variables.errno=true">
+<THEN>
+	<IF COND="Variables.errno!=-101">
+	<THEN>
+		<LOGMSG STR="Xcelerate error Variables.errno on attempt to load asset types"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>					
+
+<if COND="IsList.AllAssetTypes=true">
+<then>
+	<loop LIST="AllAssetTypes">
+		<if COND="AllAssetTypes.usesearchindex=1">
+		<then>
+			<setvar NAME="image" VALUE="Enabled.gif"/>
+			<setvar NAME="message" VALUE="(status: enabled)"/>
+		</then>
+		<else>
+			<setvar NAME="image" VALUE="Disabled.gif"/>
+			<setvar NAME="message" VALUE="(status: not enabled)"/>
+		</else>
+		</if>
+		
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+			<ARGUMENT NAME="AdHoc" VALUE="Searching:AllAssetTypes.assettype"/>
+			<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="LoadURL"/>
+		<REMOVEVAR NAME="OKActions"/>
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Search/List" outstring="ExecuteURL">
+			<satellite.argument name="AssetType" value="AllAssetTypes.assettype"/>
+		</SATELLITE.LINK>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+			<satellite.argument name="AssetType" value="Variables.AssetType"/>
+		</SATELLITE.LINK>
+
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+			<ARGUMENT NAME="Label" VALUE="AllAssetTypes.description"/>
+			<ARGUMENT NAME="Description" VALUE="Variables.message"/>
+			<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+			<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+			<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+			<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/data/Variables.image"/>
+		</CALLELEMENT>
+		
+	</loop>
+</then>
+</if>
+
+</FTCS> 

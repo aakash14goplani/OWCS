@@ -1,0 +1,200 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- UserMgt/ModifyAtts                                                      -->
+<!-- Copyright, FutureTense, Inc.                                            -->
+<!-- ####################################################################### -->
+
+<ics.getproperty name="username" file="dir.ini" output="usernameattr"/>
+<ics.getproperty name="password" file="dir.ini" output="passwordattr"/>
+ 
+  
+
+<dir.getattrs list="attributes" name="Variables.idkey"/>
+<SATELLITE.FORM ASSEMBLER="query" METHOD="post" >
+	<STRING.ENCODE VARIABLE="key" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden" NAME="usename" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+	<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/UserAttributes"/>&nbsp; <STRING.STREAM VARIABLE="key"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+    
+<TABLE class="width-outer-50" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+	<TR>
+		<TD COLSPAN="3" HEIGHT="5"></TD>
+	</TR>
+	<tr><td>
+	<TABLE width="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		<tr>
+			<td></td>
+			<td class="tile-dark" HEIGHT="1">
+				<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" 
+				REPLACEALL="Variables.cs_imagedir"/> 
+			</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+			<td> 
+				<TABLE width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+					<tr>
+						<td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+						</td>
+					</tr>
+					<tr>
+						<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Attributename"/></DIV></td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/AttributeValues"/></DIV></td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+					</tr>	
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<PROPERTY.GET PARAM="xcelerate.userimageattr" INIFILE="futuretense_xcel.ini" VARNAME="userImageAttr"/>
+					<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+					<SETVAR NAME="separatorLine" VALUE="0"/>
+																
+					<LOOP LIST="attributes">
+					<SETVAR NAME="separatorLine" VALUE="1"/>
+					<IF COND="attributes.NAME!=Variables.usernameattr"><THEN>
+					<IF COND="attributes.NAME!=Variables.passwordattr"><THEN>
+					<IF COND="attributes.NAME!=Variables.userImageAttr"><THEN>
+					
+					<IF COND="attributes.NAME!=Variables.prevAtt"><THEN>
+					<IF COND="IsVariable.prevAtt=true"><THEN>
+						<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td><BR /></td>
+							<TD class="form-inset" valign="bottom">
+								<INPUT TYPE="text" SIZE="15" NAME="Variables.prevAtt" VALUE="" REPLACEALL="Variables.prevAtt"/>
+							</TD>
+							<TD class="form-inset" NOWRAP="true">
+								<FONT FACE="Arial, Helvetica" SIZE="-2" COLOR="#6666cc">
+								<XLAT.STREAM KEY="dvin/AdminForms/Addnewvalue"/> .
+								</FONT>
+							</TD>
+							<td><BR /></td>
+						</TR>
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					</THEN></IF>
+					<IF COND="Variables.rowStyle=tile-row-normal">
+					<THEN>
+						<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					</ELSE>
+					</IF>
+					</THEN></IF>
+						
+					<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+						<TD class="form-inset" VALIGN="BASELINE">
+							<IF COND="attributes.NAME!=Variables.prevAtt"><THEN>
+								<STRING.STREAM VALUE="attributes.NAME"/>
+								<SETVAR NAME="prevAtt" VALUE="attributes.NAME"/>
+								<STRING.ENCODE LIST="attributes" COLUMN="NAME" VARNAME="OutputQString1"/>
+								<INPUT TYPE="hidden" NAME="attNames" VALUE="Variables.OutputQString1" REPLACEALL="Variables.OutputQString1"/>
+							</THEN><ELSE>
+								<![CDATA[&nbsp;]]>
+							</ELSE></IF>
+						</TD>
+						<TD class="form-inset" VALIGN="BASELINE">
+							<STRING.ENCODE LIST="attributes" COLUMN="VALUE" VARNAME="OutputQString"/>
+							<STRING.ENCODE LIST="attributes" COLUMN="NAME" VARNAME="OutputQString1"/>
+							<INPUT TYPE="text" SIZE="15" NAME="Variables.OutputQString1" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString1,Variables.OutputQString"/>
+							<INPUT TYPE="hidden" NAME="Variables.OutputQString1orig" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString1,Variables.OutputQString"/>
+						</TD>
+						<TD NOWRAP="true">
+							<FONT FACE="Arial, Helvetica" SIZE="-2" COLOR="#6666cc">
+								<XLAT.STREAM KEY="dvin/AdminForms/EditAttr"/> .
+							</FONT>
+						</TD>
+						<td><BR /></td>
+					</TR>
+					
+					</THEN></IF>
+					</THEN></IF>
+					</THEN></IF>
+					</LOOP>
+					
+					<IF COND="IsVariable.prevAtt=true"><THEN>
+						<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<TD class="form-inset" VALIGN="BASELINE">
+								<FONT FACE="Arial, Helvetica" SIZE="-1">
+									<![CDATA[&nbsp;]]>
+								</FONT>
+							</TD>
+							<TD class="form-inset" VALIGN="BASELINE">
+							<STRING.ENCODE VARIABLE="prevAtt" VARNAME="prevAtt"/>
+								<INPUT TYPE="text" SIZE="15" NAME="Variables.prevAtt" VALUE="" REPLACEALL="Variables.prevAtt"/>
+							</TD>
+							<TD NOWRAP="true">
+								<FONT FACE="Arial, Helvetica" SIZE="-2" COLOR="#6666cc">
+									<XLAT.STREAM KEY="dvin/AdminForms/Addnewvalue"/> .
+								</FONT>
+							</TD>
+							<td><BR /></td>
+						</TR>
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					</THEN></IF>
+					<IF COND="Variables.rowStyle=tile-row-normal">
+					<THEN>
+						<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					</ELSE>
+					</IF>
+					<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+						<TD class="form-inset"  VALIGN="BASELINE">
+							<INPUT TYPE="text" SIZE="10" NAME="newAtt" VALUE=""/>
+						</TD>
+						<TD class="form-inset" VALIGN="BASELINE">
+							<INPUT TYPE="text" SIZE="15" NAME="newAttValue" VALUE=""/>
+						</TD>
+						<TD NOWRAP="true">
+							<FONT FACE="Arial, Helvetica" SIZE="-2" COLOR="#6666cc">
+								<XLAT.STREAM KEY="dvin/AdminForms/Addnewattribute"/> .
+							</FONT>
+						</TD>
+						<td><BR /></td>
+					</TR>
+					<TR>
+						<TD COLSPAN="3" HEIGHT="5"></TD>
+					</TR>
+				</TABLE>
+			</td><td class="tile-dark" VALIGN="top" WIDTH="1"><BR /></td>
+		</tr>
+		<tr>
+			<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		</tr>
+		<tr>
+			<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+	</TABLE> 
+	</td></tr>
+	
+	<TR>
+		<TD align="left" VALIGN="TOP" COLSPAN="3">
+			<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+			<INPUT TYPE="hidden" NAME="tool" VALUE="UserMgt"/>
+			<INPUT TYPE="hidden" NAME="form" VALUE="DoModifyAtts"/>
+			<STRING.ENCODE VARIABLE="idkey" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden" NAME="idkey" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<STRING.ENCODE VARIABLE="key" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden" NAME="key" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>            
+            <XLAT.LOOKUP KEY="dvin/AdminForms/Modify" VARNAME="_XLAT_"/>
+    	    <A onClick="document.forms[0].submit();" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/Modify"/></CALLELEMENT></A>
+		</TD>
+	</TR>
+</TABLE>
+</SATELLITE.FORM>
+</FTCS>

@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Search/seDescription.xml $ 
+$Revision: 10 $ 
+$Modtime: 4/05/01 3:02p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- seDescription.xml
+-
+- DESCRIPTION
+-	Return the seDescription (long name) and seNickname (short name) for
+-	the configured search engine.  
+-
+- OUTPUT
+-       seDescription - long name of the search engine
+-       seNickname - short name, useful in form field labels and variable names
+-
+- HISTORY 
+-->
+
+
+<IF COND="CS.Property.cs.searchengine=AV">
+  <THEN>
+    <SETVAR NAME="seDescription" VALUE="Alta Vista"/>
+    <SETVAR NAME="seNickname"    VALUE="AV"/>
+    <SETVAR NAME="seLeft"        VALUE=":("/>
+    <SETVAR NAME="seRight"       VALUE=")"/>
+    <SETVAR NAME="seOrder"	 VALUE="forward"/>
+  </THEN>
+<ELSE><IF COND="CS.Property.cs.searchengine=Verity">
+  <THEN>
+    <SETVAR NAME="seDescription" VALUE="Verity"/>
+    <SETVAR NAME="seNickname"    VALUE="Verity"/>
+    <SETVAR NAME="seLeft"        VALUE="&#60;IN&#62;"/>
+    <SETVAR NAME="seRight"       VALUE="Variables.empty"/>
+    <SETVAR NAME="seOrder"	 VALUE="reverse"/>
+  </THEN>
+<ELSE>
+    <SETVAR NAME="seDescription" VALUE="SQL"/>
+    <SETVAR NAME="seNickname"    VALUE="SQL"/>
+</ELSE></IF>
+</ELSE></IF>
+
+</FTCS>

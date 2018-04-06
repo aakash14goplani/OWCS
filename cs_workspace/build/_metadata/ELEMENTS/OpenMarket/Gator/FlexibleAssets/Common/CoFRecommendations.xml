@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/CoFRecommendations
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<IF COND="IsVariable.ContentDetails:Relationships:Total=true">
+<THEN>
+	<IF COND="Variables.ContentDetails:Relationships:Total!=0">
+	<THEN>
+		<SETCOUNTER NAME="curRel" VALUE="0"/>
+		<HASH.CREATE NAME="uniqueRecidHash"/>
+			
+		<LOOP COUNT="Variables.ContentDetails:Relationships:Total">
+			<setvar NAME="currentid" VALUE="Variables.ContentDetails:Relationships:Counters.curRel:relid"/>
+			<HASH.CONTAINS NAME="uniqueRecidHash" VALUE="Variables.currentid" VARNAME="hasit"/>
+			<IF COND="Variables.hasit=false">
+			<THEN>
+				<HASH.ADD NAME="uniqueRecidHash" VALUE="Variables.currentid"/>	
+				<SETCOUNTER NAME="Variables.currentidassetcounter" VALUE="0"/>
+			</THEN>
+			</IF>
+			
+			<ASSET.LIST LIST="AssetFields" TYPE="Variables.ContentDetails:Relationships:Counters.curRel:asset_type" FIELD1="id" VALUE1="Variables.ContentDetails:Relationships:Counters.curRel:asset"/>
+			
+			<setvar NAME="varassetname" VALUE="Variables.currentidassetnameCounters.Variables.currentidassetcounter"/>
+			<setvar NAME="varassetid" VALUE="Variables.currentidassetidCounters.Variables.currentidassetcounter"/>
+			<setvar NAME="varassettype" VALUE="Variables.currentidassettypeCounters.Variables.currentidassetcounter"/>
+			<setvar NAME="varconfidence" VALUE="Variables.currentidconfCounters.Variables.currentidassetcounter"/>
+			<setvar NAME="Variables.varassetname" VALUE="AssetFields.name"/>
+			<setvar NAME="Variables.varassetid" VALUE="Variables.ContentDetails:Relationships:Counters.curRelasset"/>
+			<setvar NAME="Variables.varassettype" VALUE="Variables.ContentDetails:Relationships:Counters.curRelasset_type"/>
+			<setvar NAME="Variables.varconfidence" VALUE="Variables.ContentDetails:Relationships:Counters.curRelconfidence"/>
+			
+			<SETVAR NAME="currentVal" VALUE="Variables.ContentDetails:Relationships:Counters.curRel:asset"/>
+			<INPUT TYPE="hidden" NAME="Variables.varassetid" VALUE="Variables.currentVal" REPLACEALL="Variables.varassetid,Variables.currentVal"/>
+			<SETVAR NAME="currentVal" VALUE="Variables.ContentDetails:Relationships:Counters.curRel:asset_type"/>
+			<INPUT TYPE="hidden" NAME="Variables.varassettype" VALUE="Variables.currentVal" REPLACEALL="Variables.varassettype,Variables.currentVal"/>
+			<SETVAR NAME="currentVal" VALUE="Variables.ContentDetails:Relationships:Counters.curRel:confidence"/>
+			<INPUT TYPE="hidden" NAME="Variables.varconfidence" VALUE="Variables.currentVal" REPLACEALL="Variables.varconfidence,Variables.currentVal"/>
+			
+			<INCCOUNTER NAME="Variables.currentidassetcounter" VALUE="1"/>
+			<INCCOUNTER NAME="curRel" VALUE="1"/>
+		</LOOP>
+		
+		<HASH.TOSTRING NAME="uniqueRecidHash" VARNAME="uniqueRecids" DELIM=","/>
+		<INPUT TYPE="hidden" NAME="uniqueRecids" VALUE="Variables.uniqueRecids" REPLACEALL="Variables.uniqueRecids"/>
+		<STRINGLIST NAME="reclist" STR="Variables.uniqueRecids" DELIM=","/>
+		<LOOP LIST="reclist">
+			<setvar NAME="reclist.ITEMnumassets" VALUE="Counters.reclist.ITEMassetcounter"/>
+			<setvar NAME="countval" VALUE="Counters.reclist.ITEMassetcounter"/>
+			<INPUT TYPE="hidden" NAME="reclist.ITEMnumassets" VALUE="Variables.countval" REPLACEALL="reclist.ITEM,Variables.countval"/>
+		</LOOP>
+			
+		<setvar NAME="numberRecommendations" VALUE="reclist.#numRows"/>
+		
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</FTCS> 

@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/AttributeTypes/UPLOADER</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/AttributeTypes/UPLOADER</string>
+        <string>Out of the box File Uploader Attribute Editor.</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/AttributeTypes/UPLOADER.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Gator/AttributeTypes/UPLOADER.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FGator%2FAttributeTypes%2FUPLOADER.jsp
+@hashval=-1316541262
+key=@ELEMENTCATALOG-OpenMarket/Gator/AttributeTypes/UPLOADER
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

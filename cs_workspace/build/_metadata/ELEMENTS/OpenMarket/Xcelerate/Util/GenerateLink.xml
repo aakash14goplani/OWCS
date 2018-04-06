@@ -1,0 +1,133 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Util/GenerateLink.xml $ 
+$Revision: 1 $ 
+$Modtime: 2/16/04 4:38p $ 
+-->
+<!-- OpenMarket/Xcelerate/Util/GenerateLink
+- DESCRIPTION
+-		makes a link based on a function and assettype and asset id 
+- INPUT
+-		Variables.function - maps to the necessary pagename 
+-									legal values are: edit, inspect, delete, status 
+-     Variables.assettype - asset type
+-		Variables.assetid - asset id
+- 		Variables.varname - name to put the output url in
+- 		Variables.cs_environment - for link generation
+-		
+- OUTPUT
+-		Variables.(Variables.varname) - contains the link
+-->
+
+<SETVAR NAME="pgname" VALUE="Variables.empty"/>
+<IF COND="Variables.function=edit">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/EditFront"/>
+</THEN>
+</IF>
+<IF COND="Variables.function=inspect">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/ContentDetailsFront"/>
+</THEN>
+</IF>
+<IF COND="Variables.function=delete">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/DeleteFront"/>
+</THEN>
+</IF>
+<IF COND="Variables.function=status">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/StatusDetailsFront"/>
+</THEN>
+</IF>
+<IF COND="Variables.function=unapprove">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/ShowPublishableAssetsFront"/>
+</THEN>
+</IF>
+<IF COND="Variables.function=approve">
+<THEN>
+	<SETVAR NAME="pgname" VALUE="OpenMarket/Xcelerate/Actions/ApproveFront"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.pgname!=Variables.empty">
+<THEN>
+	<IF COND="Variables.cs_environment=ucform">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+		</CALLELEMENT>
+		
+		<IF COND="Variables.navigateLink!=false">
+		<THEN>			
+			<ASSET.LIST TYPE="Variables.assettype" LIST="currAsset" FIELD1="id" VALUE1="Variables.assetid"/>
+			<SETVAR NAME="Variables.varname" VALUE="javascript:SitesApp.event(fwutil.buildDocId('Variables.assetid', 'Variables.assettype'), 'inspect');"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="Variables.varname" VALUE="#NOTSUPPORTED_ASSETTYPE#"/>
+			<IF COND="Variables.hasUnsupportedAssetType!=true">
+			<THEN>
+				<SETVAR NAME="hasUnsupportedAssetType" VALUE="true"/>
+				<SCRIPT type="text/javascript">
+					dojo.addOnLoad(function(){
+						dojo.query("a[href=#NOTSUPPORTED_ASSETTYPE#]").forEach(function(node){
+							dojo.addClass(node, 'disableLink');
+						});
+					});
+				</SCRIPT>
+			</THEN>
+			</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<!-- Slot will not be allowed in Admin UI -->
+		<IF COND="Variables.assettype=Slots">
+		<THEN>			
+			<IF COND="Variables.hasUnsupportedAssetType!=true">
+			<THEN>
+				<SETVAR NAME="hasUnsupportedAssetType" VALUE="true"/>
+				<SCRIPT type="text/javascript">
+					dojo.addOnLoad(function(){
+						dojo.query("a[href=#NOTSUPPORTED_ASSETTYPE#]").forEach(function(node){				
+							dojo.addClass(node, 'disableLink');
+							<!-- Disable the image if any inside the anchor tag. -->
+							if(node.firstElementChild && node.firstElementChild.nodeName.toLowerCase()==='img'){
+								node.firstElementChild.src=node.firstElementChild.src.substring(0,node.firstElementChild.src.indexOf('.')) + "X.gif";
+							}
+						});					
+					});
+				</SCRIPT>
+			</THEN>
+			</IF>	
+			<SATELLITE.LINK ASSEMBLER="query" PAGENAME="Variables.pgname" OUTSTRING="Variables.varname">
+				 <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+				 <SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+				 <SATELLITE.ARGUMENT NAME="AssetType" VALUE="Variables.assettype"/>
+				 <SATELLITE.ARGUMENT NAME="id" VALUE="Variables.assetid"/>
+				 <SATELLITE.ARGUMENT NAME="target" VALUE="Variables.target"/>
+				 <SATELLITE.ARGUMENT NAME="function" VALUE="Variables.function"/>
+			</SATELLITE.LINK><SETVAR NAME="Variables.varname" VALUE="#NOTSUPPORTED_ASSETTYPE#"/>
+		</THEN>
+		<ELSE>
+			 <SATELLITE.LINK ASSEMBLER="query" PAGENAME="Variables.pgname" OUTSTRING="Variables.varname">
+				 <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+				 <SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+				 <SATELLITE.ARGUMENT NAME="AssetType" VALUE="Variables.assettype"/>
+				 <SATELLITE.ARGUMENT NAME="id" VALUE="Variables.assetid"/>
+				 <SATELLITE.ARGUMENT NAME="target" VALUE="Variables.target"/>
+			 <SATELLITE.ARGUMENT NAME="function" VALUE="Variables.function"/>
+		</SATELLITE.LINK>
+		</ELSE>
+		</IF>
+</ELSE>
+</IF>
+</THEN>
+<ELSE>
+	Invalid call to OpenMarket/Xcelerate/Util/GenerateLink. Function is not recognized
+</ELSE>
+</IF>
+
+</ftcs>

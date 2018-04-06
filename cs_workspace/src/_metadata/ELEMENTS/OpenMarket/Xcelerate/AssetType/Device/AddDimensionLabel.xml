@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/AssetType/Device/AddDimensionLabel
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<SETVAR NAME="fieldname" VALUE="Variables.empty"/>
+<SETVAR NAME="fieldvalue" VALUE="Variables.empty"/>
+<setvar NAME="formfieldtype" VALUE="Variables.assetmaker/property/Variables.field/inputform/type"/>
+<setvar NAME="formfielddefault" VALUE="Variables.empty"/>
+	
+<if COND="IsVariable.Variables.currentformprefix:field=true">
+<then>
+	<setvar NAME="tmpITEM" VALUE="Variables.Variables.currentformprefix:Variables.field"/>
+</then>
+<else>
+	<setvar NAME="tmpITEM" VALUE="Variables.empty"/>
+</else>
+</if>
+		
+<if COND="Variables.tmpITEM=Variables.empty">
+<then>
+	<if COND="Variables.formfunction=setformdefaults">
+	<then>
+		<if COND="IsVariable.assetmaker/property/Variables.field/inputform/default=true">
+		<then>
+			<setvar NAME="formfielddefault" VALUE="Variables.assetmaker/property/Variables.field/inputform/default"/>
+		</then>
+		</if>
+	</then>
+	</if>
+</then>
+</if>
+
+<style>
+	.screenDimensionColumn {
+		padding-left: 10px; 
+		padding-right: 15px;
+		line-height: 1;
+	}
+
+	.screenDimensionColumn input {
+		vertical-align: middle;
+	}
+
+	.borderRight {
+		border-right: 1px solid #ccc;
+	}
+
+</style>
+<td class="screenDimensionColumn">		
+	<div style="color: #3e3e3e; font-weight: bold; padding: 10px 0; white-space: nowrap;">
+		<if COND="Variables.formfunction!=inspect">
+		<then>
+			<setvar NAME="isrequired" VALUE="Variables.assetmaker/property/Variables.field/inputform/required"/>
+			<if COND="Variables.isrequired=YES">
+			<then>
+				<if COND="IsVariable.assetmaker/assettags/markertext=true">
+				<then>
+					<span class="alert-color"><STRING.STREAM VARIABLE="markertext"/></span>
+				</then>
+				<else>
+					<if COND="IsVariable.assetmaker/assettags/markerimage=true">
+					<then>
+						<IMG SRC="Variables.markerimage" REPLACEALL="Variables.markerimage"/>
+					</then>
+					</if>
+				</else>
+				</if>
+			</then>
+			</if>
+			</then>
+		</if>
+							
+		<setvar NAME="fielddesc" VALUE="Variables.assetmaker/property/Variables.field/description"/>
+		<xlat.lookup KEY="Variables.fielddesc" VARNAME="fielddescription"/>
+		<IF COND="Variables._missingkey_=-1">
+		<THEN>
+			<setvar NAME="fielddescription" VALUE="Variables.fielddesc"/>
+			<removevar NAME="_missingkey_"/>
+		</THEN>
+		</IF>
+		<removevar NAME="fielddesc"/>					
+		<span>
+			<STRING.STREAM VARIABLE="fielddescription"/>:
+		</span>
+	</div>
+</td>
+<td style="padding-right: 15px;white-space: nowrap">
+<setvar name="fieldvalue" value="Variables.ContentDetails:Variables.field" />
+		<IF COND="Variables.field=pixelratio">
+		<THEN>
+		  <IF COND="Variables.fieldvalue=Variables.empty" >
+			  <THEN>
+			  <setvar name="fieldvalue" value="1" />
+			  </THEN>
+			  </IF>
+		</THEN>
+		</IF>
+		<if COND="Variables.formfunction!=inspect">
+		<then>
+	     <callelement NAME="OpenMarket/AssetMaker/BuildElement">
+			<argument NAME="fieldname" VALUE="Variables.field"/>
+			<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+		</callelement>
+		</then>
+		<else>
+			<STRING.STREAM VARIABLE="fieldvalue"/>
+		</else>
+		</if>
+		
+	<SETVAR NAME="formfieldlist" VALUE="Variables.formfieldlist,Variables.field"/>					
+    <removevar NAME="formfielddefault"/>
+	
+</td>
+			  
+</ftcs>

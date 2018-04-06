@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Util/ChoosePreview.xml $ 
+$Revision: 28 $ 
+$Modtime: 5/22/02 1:06p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Preview pulldown menu
+-->
+
+
+<!-- check to see if an override has been supplied -->
+<PROPERTY.GET PARAM="xcelelem.choosepreview" INIFILE="futuretense_xcel.ini" VARNAME="propchoosepreview"/>
+<if COND="Variables.propchoosepreview!=Variables.empty">
+<then>
+    <!-- use customized element -->
+    <callelement NAME="Variables.propchoosepreview"/>
+</then>
+<else>
+    <!-- use system default method -->
+    <callsql LIST="Preview" QRYNAME="OpenMarket/Xcelerate/GetPreviewPages"/>
+
+    <Select name="PreviewFunctions" onChange="gotoPreview(this.form, PreviewFunctions)">
+ 	<IF COND="Preview.#numRows!=0">
+	<THEN>
+		<loop LIST="Preview">
+	        <OPTION VALUE="OpenMarket/Xcelerate/Preview&#38;c=Collection&#38;cid=Preview.id" REPLACEALL="Preview.id"/><STRING.STREAM VALUE="Preview.name"/>
+        </loop>
+	</THEN>
+	<ELSE>
+		<OPTION VALUE="None"/><XLAT.STREAM KEY="dvin/Common/None"/>
+	</ELSE>
+	</IF>
+    </Select>
+</else>
+</if>
+
+</FTCS>
+

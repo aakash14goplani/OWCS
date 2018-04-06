@@ -1,0 +1,420 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/SelectAttributes
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!--  This second screen should display the atributes + all the
+   fields that were selected in the first screen.  so the first screen which is 
+	   built in the Searchform should see if there is a Field that has a value and 
+		  display them
+			
+   IF WE DO NOT SPECIFY THE SEARCH ENGINE,    DOES IT WORK ????
+	 
+ GET  SITESPECIFIC ATTRIBUTELIST  BELONGING TO TEMPLATE AND THOSE INHERITED FROM THEIR PARENTS
+	 -->
+	 
+<SCRIPT LANGUAGE="JavaScript">
+	
+ 		
+<![CDATA[
+		  function setCurrImage(obj) {
+				obj.form.elements.currImage.value = obj.name;
+			}
+		
+			function setCurrLinkset(obj) {
+				obj.form.elements.currLinkset.value = obj.name;
+			}
+		
+			function xfer(src,target) {
+				var sc, itemText, i, newIndex, listy;
+				for (i=0; i<src.options.length; i++) {
+					if (src.options[i].selected) {
+						var sc=i;
+						var o=src.options[sc]
+						items=new Option(o.text,o.value);
+						newIndex=target.options.length;
+						target.options[newIndex]=items;
+						target.options[newIndex].selected=true
+					}
+				}
+				i = 0;
+				while (i<src.options.length) {
+					if (src.options[i].selected)
+						src.options[i]=null
+					else
+						i = i + 1;
+				}
+				delNul(src)
+				delNul(target)
+			}
+		
+			function delNul(lst){
+				i = 0;
+				while (i<lst.options.length) {
+					if (lst.options[i].value==-1)
+						lst.options[i]=null
+					else
+						i = i + 1;
+				}
+			}
+		
+			function selAll(lst){
+		    if (!lst) return;
+				for (i=0; i<lst.options.length; i++)
+					lst.options[i].selected=true
+				delNul(lst)
+			}
+			
+			function selAllAll(){
+				var obj = document.forms[0].elements[0];
+				selAll(obj.form.elements['sMyTmplAttributes']);
+ 			}
+            
+             function Fixpagename1(ourPage, nextstep)
+            {
+            	var obj = document.forms[0].elements[0];
+            	
+            	var basePage = "OpenMarket/Xcelerate/Actions/";
+            	
+             
+            	var	newpage = basePage + ourPage;
+                obj.form.pagename.value = newpage;
+               	obj.form.SearchNextStep.value = nextstep;
+                 
+                if(obj.form.UpdatedBefore!=null)
+                {
+                    formatjSetDate(obj.form.UpdatedBeforeText.value, obj, obj.form.UpdatedBefore);
+                }
+                if(obj.form.UpdatedAfter!=null)
+                {
+                    formatjSetDate(obj.form.UpdatedAfterText.value, obj, obj.form.UpdatedAfter);
+                }
+		    if(obj.form.StartDateBefore)
+		    {
+		    	formatjSetDate(obj.form.StartDateBeforeText.value,obj,obj.form.StartDateBefore);
+		    }	
+		    if(obj.form.StartDateAfter)
+		    {
+		    	formatjSetDate(obj.form.StartDateAfterText.value,obj,obj.form.StartDateAfter);
+		    }
+		    if(obj.form.EndDateBefore)
+		    {
+		    	formatjSetDate(obj.form.EndDateBeforeText.value,obj,obj.form.EndDateBefore);    
+		    }
+		    if(obj.form.EndDateAfter)
+		    {
+		    	formatjSetDate(obj.form.EndDateAfterText.value,obj,obj.form.EndDateAfter);    
+		    }
+                
+                document.forms[0].submit();
+            
+            	return false;
+            }
+			function checkNumberOfSelectedAttributes(){
+				var obj = document.forms[0].elements[0];
+				if((obj.form.elements['MyTmplAttributes'].options.length > 100 && obj.form.elements['sMyTmplAttributes'].options.length==0) || (obj.form.elements['sMyTmplAttributes'].options.length > 100)){
+					return confirm(']]><XLAT.STREAM KEY="dvin/AT/Template/Selected100Confirmation"/><![CDATA[')
+				}
+				return true;
+			}
+  		]]>
+	</SCRIPT>
+
+<!--  Preserve all the Variables in the main search form to combine with the attribute search criteria
+-->
+
+<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/ManageSearchVars"/>  
+
+
+<INPUT TYPE="HIDDEN"  NAME="AttrBasedSch"  VALUE="true"/>
+<STRING.ENCODE VARIABLE="OrderByDesc" VARNAME="OrderByDesc"/>
+<INPUT TYPE="HIDDEN"  NAME="OrderByDesc"  VALUE="Variables.OrderByDesc" REPLACEALL="Variables.OrderByDesc"/>
+   	
+<IF COND="IsVariable.SelectedAttrs=true">
+<THEN>
+    <!-- display the attributes that are not selected in the left hand side
+      of the multi-selection box   may be use HASHCONTAINS-->
+    <STRINGLIST NAME="alist" STR="Variables.SelectedAttrs" DELIM=","/>
+    <HASH.CREATE NAME="AllSelectedAttrs"/>
+    <LOOP LIST="alist">
+         <HASH.CONTAINS NAME="AllSelectedAttrs" VALUE="alist.ITEM" VARNAME="inlist"/>
+          <IF COND="Variables.inlist=false">
+         <THEN>
+            <HASH.ADD NAME="AllSelectedAttrs" VALUE="alist.ITEM"/>
+          </THEN>
+         </IF>
+      </LOOP>
+     <HASH.HASDATA NAME="AllSelectedAttrs" VARNAME="hasdata"/>
+</THEN>
+</IF>
+   
+	 
+
+<!--  FOR NOW , DISPLAY ONLY THE ATTRIBUTES THAT ARE AVAILABLE AT THE TEMPLATE LEVEL:
+LATER, USE THE TAG THTA KARL IS WRITING TO DISPLAY THE INHERITED ATTRIBUTES TOO -->
+
+ 
+<setvar NAME="templattr"  VALUE="false"/>
+<if COND="IsVariable.flextemplateid=true">
+<then>
+
+	<fatm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+	<fatm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+ 	<atm.locate TYPE="Variables.templatetype" VARNAME="pgtmgr"/>
+	<!-- <FLEXTEMPLATES.GETATTRIBUTEINFO NAME="pgtmgr" ID="Variables.flextemplateid" LISTVARNAME="attrlist"/> -->
+	
+	<LISTOBJECT.CREATE NAME="mylist" COLUMNS="assetid"/>
+ 	<LISTOBJECT.ADDROW NAME="mylist" assetid="Variables.flextemplateid"/>
+ 	<LISTOBJECT.TOLIST NAME="mylist" LISTVARNAME="tmplidlist"/>
+	<setvar NAME="errno"  VALUE="0"/>
+	<FLEXTEMPLATES.GETCOMPLETEATTRIBUTES NAME="pgtmgr" LIST="tmplidlist" LISTVARNAME="attrlist"/> 
+   <setvar NAME="templattr"  VALUE="true"/>
+ </then>
+<else>
+		<if COND="IsVariable.flexgrouptemplateid=true">
+    <then>
+				<fgtm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+				<fgtm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+				<atm.locate TYPE="Variables.templatetype" VARNAME="pgtmgr"/>
+				 <LISTOBJECT.CREATE NAME="mylist" COLUMNS="assetid"/>
+ 	       <LISTOBJECT.ADDROW NAME="mylist" assetid="Variables.flexgrouptemplateid"/>
+ 	       <LISTOBJECT.TOLIST NAME="mylist" LISTVARNAME="tmplidlist"/>
+
+				
+			<!--	<FLEXGROUPTEMPLATES.GETATTRIBUTEINFO NAME="pgtmgr" ID="Variables.flexgrouptemplateid" LISTVARNAME="attrlist"/>
+			-->
+			
+	       <FLEXGROUPTEMPLATES.GETCOMPLETEATTRIBUTES NAME="pgtmgr" LIST="tmplidlist" LISTVARNAME="attrlist"/>   
+        <setvar NAME="templattr"  VALUE="true"/>
+  	</then>
+		</if>
+</else>
+</if>
+
+<!-- either the template is not chosen or there are no attributes for this template ..
+    then the all the attributes is presented as an option -->
+ 
+ <if COND="Variables.templattr=false">
+<then>
+   	<!-- are we working with a Flex Group Or Flex Asset? -->
+	<setvar NAME="TemplateType" VALUE="group"/>
+	<ATM.GETASSETS FILTER="com.openmarket.gator.flexgroups.FlexGroupManager" LISTVARNAME="out"/>
+	<LOOP LIST="out">
+		<IF COND="Variables.AssetType=out.assettype">
+		<THEN>
+			<setvar  NAME="tagtype"  VALUE="flexgrouptemplates"/>
+			<fgtm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+			<fgtm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+		</THEN>
+		</IF>
+	</LOOP>
+	<if COND="IsVariable.tagtype!=true">
+  <then>
+			<setvar NAME="tagtype"  VALUE="flextemplates"/>
+			<fatm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+			<fatm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+	</then>
+	</if>
+ 	 <atm.locate TYPE="Variables.attributetype" VARNAME="myFieldMgr"/>
+ 	 <complexassets.getallassetssorted  SITE="SessionVariables.pubid" NAME="myFieldMgr" LISTVARNAME="attrlist"/>
+	  	 
+</then>
+</if>
+
+    <!-- This checks for the display style; name or description -->
+    <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/CheckAttributeDisplayStyle"/>
+    <!--  This displays the multi-selection box for choosing attributes
+	    and proceeds to next form on hitting continue to display the attribute-value 
+			pairs -->
+<if COND="attrlist.#numRows!=0">
+<then>
+  <table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="center"><span class="table-header-small-text"><XLAT.STREAM KEY="dvin/Common/Available"/> </span><br/>
+			<SELECT name="MyTmplAttributes" size="8" MULTIPLE="yes" STYLE="width:200px;">
+                <IF COND="IsList.attrlist=true">
+                <THEN>
+ 				<loop LIST="attrlist">
+ 					<!-- screen out blob attributes unless search engine is enabled -->
+ 					<SETVAR NAME="canSearchAttribute" VALUE="true"/>
+					<ASSET.LOAD NAME="anAttribute" TYPE="Variables.attributetype" OBJECTID="attrlist.assetid"/>
+                    <ASSET.GET NAME="anAttribute" FIELD="description" OUTPUT="AttrDesc"/>
+                     <SETVAR NAME="attrnameordesc" VALUE="attrlist.name"/>
+                     <ATTRIBUTE.GETTYPE NAME="anAttribute" VARNAME="attrtype"/>
+					<IF COND="Variables.attrtype=blob">
+ 					<THEN>
+ 						<SETVAR NAME="canSearchAttribute" VALUE="false"/>
+ 						<ATTRIBUTE.GETENGINE NAME="anAttribute" VARNAME="attrsearchengine"/>
+ 						<IF COND="Variables.attrsearchengine!=Variables.empty">
+ 						<THEN>
+ 							<SETVAR NAME="canSearchAttribute" VALUE="true"/>
+ 						</THEN>
+ 						</IF>
+ 					</THEN>
+ 					</IF>
+					
+					<IF COND="Variables.canSearchAttribute=true">
+					<THEN>	
+	            	   <IF COND="IsVariable.SelectedAttrs=true">
+                       <THEN>
+                          <!-- display the attributes that are not selected in the left hand side
+                            of the multi-selection box   may be use HASHCONTAINS-->
+                          <STRINGLIST NAME="alist" STR="Variables.SelectedAttrs" DELIM=","/>
+                          <HASH.CONTAINS NAME="AllSelectedAttrs" VALUE="attrlist.assetid" VARNAME="inlist"/>
+                                <IF COND="Variables.inlist=false">
+                                <THEN>
+                                    <OPTION VALUE="attrlist.assetid" REPLACEALL="attrlist.assetid" />
+                                    <if COND="Variables.attrDisplayStyle=description">
+                                    <then>
+                                        <IF COND="Variables.AttrDesc!=Variables.empty">
+                                            <THEN>
+                                                <setvar NAME="attrnameordesc" VALUE="Variables.AttrDesc"/>
+                                            </THEN>
+                                        </IF>
+                                    </then>
+                                    </if>
+                                    <STRING.STREAM VARIABLE="attrnameordesc"/>
+                                </THEN>
+                                </IF>
+                       </THEN>
+                       <ELSE>
+                                <OPTION VALUE="attrlist.assetid" REPLACEALL="attrlist.assetid"/>
+                                <if COND="Variables.attrDisplayStyle=description">
+                                <then>
+                                    <IF COND="Variables.AttrDesc!=Variables.empty">
+                                        <THEN>
+                                            <setvar NAME="attrnameordesc" VALUE="Variables.AttrDesc"/>
+                                        </THEN>
+                                    </IF>
+                                </then>
+                                </if>
+                                <STRING.STREAM VARIABLE="attrnameordesc"/>
+                       </ELSE>
+                       </IF>
+					</THEN>
+					</IF>
+                </loop>
+                </THEN>
+                </IF>
+						 <option VALUE="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+			</SELECT>
+				<br/>		
+						<![CDATA[
+								<input type="button" value="-->" name="Add1" 
+								onClick="xfer(this.form.elements['MyTmplAttributes'], this.form.elements['sMyTmplAttributes'])">
+					]]>
+  		</td>
+			<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			<td align="center"><span class="table-header-small-text"><XLAT.STREAM KEY="dvin/Common/Selected"/> </span><br/>
+				<select NAME="sMyTmplAttributes" SIZE="8" MULTIPLE="yes" STYLE="width:200px;">
+                 <IF COND="IsVariable.SelectedAttrs=true">
+                 <THEN>
+                     <IF COND="IsList.attrlist=true">
+                     <THEN>
+                        <loop LIST="attrlist">
+                            <HASH.CONTAINS NAME="AllSelectedAttrs" VALUE="attrlist.assetid" VARNAME="inlist"/>
+                            <ASSET.LOAD NAME="anAttribute" TYPE="Variables.attributetype" OBJECTID="attrlist.assetid"/>
+                            <ASSET.GET NAME="anAttribute" FIELD="description" OUTPUT="AttrDesc"/>
+                            <SETVAR NAME="attrnameordesc" VALUE="attrlist.name"/>
+                            <if COND="Variables.inlist=true">
+                            <then>
+                                 <OPTION VALUE="attrlist.assetid" REPLACEALL="attrlist.assetid"/>
+                                 <if COND="Variables.attrDisplayStyle=description">
+                                 <then>
+                                     <IF COND="Variables.AttrDesc!=Variables.empty">
+                                         <THEN>
+                                             <setvar NAME="attrnameordesc" VALUE="Variables.AttrDesc"/>
+                                         </THEN>
+                                     </IF>
+                                 </then>
+                                 </if>
+                                 <STRING.STREAM VARIABLE="attrnameordesc"/>
+                            </then>
+                            </if>
+                       </loop>
+                     </THEN>
+                     </IF>
+                 </THEN>
+                 </IF>
+  				 <option VALUE="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+				</select>
+					<br/>	 
+					 <![CDATA[
+									<input type="button" value="<--" name="Remove1" 
+									onClick="xfer(this.form.elements['sMyTmplAttributes'], this.form.elements['MyTmplAttributes'])">
+								]]>
+ 									
+   			</td>
+		</tr>
+		
+ <!-- the following code could be footer code for all search forms -->
+
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		
+ 		<tr>
+ 				<td colspan="3" align="center">
+ 				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td>
+							<XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="XLAT_Search"/>
+							<XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="ESC_Search" ESCAPE="true"/>
+							<IF COND="ContentCat.usesearchindex!=1">
+							<THEN>
+								<A HREF="javascript:void(0)" onmouseover="window.status='Variables.ESC_Search'" onmouseout="window.status=''" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.XLAT_Search,Variables.ESC_Search" border="0"  onClick="return Fixpagename1('SearchPost','SearchForm1')"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>
+ 							</THEN>
+							<ELSE>
+								<A HREF="javascript:void(0)" onmouseover="window.status='Variables.ESC_Search'" onmouseout="window.status=''" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.XLAT_Search,Variables.ESC_Search" border="0"  onClick="return Fixpagename1('SearchPost','SearchForm1')"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>
+							</ELSE>
+							</IF>
+						
+						<setvar NAME="SNextPage"    VALUE="AttrSearchForm"/>
+						
+							<img height="1" width="7" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/ContinueAttrSearch" VARNAME="ContinueAttrSearch" ESCAPE="true"/>
+                            <a HREF="javascript:void(0)" onclick="selAllAll(); if(checkNumberOfSelectedAttributes()){return Fixpagename('Variables.ThisPage','Variables.SNextPage')}" onmouseover="window.status='Variables.ContinueAttrSearch';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.ThisPage,Variables.SNextPage,Variables.ContinueAttrSearch">
+                                <XLAT.LOOKUP KEY="dvin/FlexibleAssets/ATLContinueAttributeSearch" VARNAME="ATLContinueAttributeSearch"/>
+                                <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SelectAttributeValues"/></CALLELEMENT>
+ 							</a>
+						
+     					  <img height="1" width="7" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+    					  <XLAT.LOOKUP KEY="dvin/Util/FlexAssets/SimpleSerachAssetDes" VARNAME="SimpleSerachAssetDes" ESCAPE="true"/>
+                          <IF COND="Variables.cs_environment!=portal">
+                          <THEN>
+						    <IF COND="IsVariable.cs_StartID=false">
+							  <THEN>
+								 <SETVAR NAME="cs_StartID" VALUE="Variables.empty" />
+							  </THEN>
+							</IF>
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SimpleSearchFront" outstring="urlSimpleSearch"> 
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                <satellite.argument name="cs_StartID" value="Variables.cs_StartID"/>
+                            </SATELLITE.LINK>
+                            <a href="Variables.urlSimpleSearch" target="_self" onmouseover="window.status='Variables.SimpleSerachAssetDes';return true" onmouseout="window.status='';return true" REPLACEALL="Variables.urlSimpleSearch,Variables.SimpleSerachAssetDes"><span class="small-text"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/simplesearch"/> </span></a>
+                          </THEN>
+                          </IF>
+                        </td>
+   					</tr>
+				</table>
+ 			</td>
+  	</tr>
+	</table>
+ 	
+</then>
+<else>
+	<A HREF="javascript:void(0)" onmouseover="window.status='Variables.ESC_Search'" onmouseout="window.status=''" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.XLAT_Search,Variables.ESC_Search" border="0"  onClick="return Fixpagename1('SearchPost','SearchForm1')"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>  
+</else>
+</if>
+
+
+
+
+
+
+</FTCS>

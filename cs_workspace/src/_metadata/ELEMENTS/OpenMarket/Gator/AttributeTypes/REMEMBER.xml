@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/AttributeTypes/REMEMBER
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="Variables.MultiValueEntry=no">
+<THEN>
+    <SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+    <script type="text/javascript">
+        <SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+            <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+            <SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+            <SATELLITE.ARGUMENT NAME="cs_PickAssetType" VALUE="Variables.attrassettype"/>
+            <SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+            <SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+            <SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="Variables.AttrName"/>
+        </SATELLITE.LINK>
+        <IF COND="Variables.EditingStyle=single">
+        <THEN>
+          <SETVAR NAME="currentInputName" VALUE="Variables.cs_SingleInputName"/>
+        </THEN>
+        <ELSE>
+          <SETVAR NAME="currentInputName" VALUE="Variables.cs_MultipleInputName"/>
+        </ELSE>
+        </IF>
+          function PickAssetCallback_<STRING.STREAM VALUE="Variables.currentUniqueID"/>(SelectedAssets)
+          {
+            var AssetInfo = SelectedAssets.split(":");
+            document.forms[0].elements['<STRING.STREAM VARIABLE="currentInputName"/>'].value = AssetInfo[1];
+            document.forms[0].elements['_SHOW_<STRING.STREAM VARIABLE="currentInputName"/>'].value = AssetInfo[2];
+          }
+          
+          function PickAssetPopup_<STRING.STREAM VALUE="Variables.currentUniqueID"/>() {
+            OpenPickAssetPopup('<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true"/>', GetBannerHistory());
+          }
+    </script>
+	<setvar NAME="doDefaultDisplay" VALUE="no"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+
+		<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+		<td></td>
+		<td>
+			<TABLE   CELLPADDING="0" BORDER="0">
+				<TR>
+						<INPUT TYPE="hidden" size="12" maxlength="12" VALUE="" NAME="Variables.AssetType:Variables.attrassettypeAssoc:id" REPLACEALL="Variables.AssetType,Variables.attrassettype"/>
+						
+						<IF COND="Variables.EditingStyle=single">
+						<THEN>
+							 <IF COND="Variables.MyAttrVal!=Variables.empty">
+							 <THEN>
+								<SETVAR NAME="errno" VALUE="0"/>
+								<ASSET.LIST TYPE="Variables.attrassettype" LIST="currentAsset" FIELD1="id" VALUE1="Variables.MyAttrVal"/>
+								<IF COND="Variables.errno=0">
+								<THEN>
+									<SETVAR NAME="currentVal" VALUE="currentAsset.name"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="currentVal" VALUE="(asset not found)"/>
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="currentVal" VALUE="Variables.empty"/>
+							</ELSE>
+							</IF>
+							<!-- draw the recent asset popup -->
+							<TD align="left" NOWRAP="">
+								<INPUT TYPE="TEXT" DISABLED="TRUE" NAME="_SHOW_Variables.cs_SingleInputName" VALUE="Variables.currentVal" REPLACEALL="Variables.cs_SingleInputName,Variables.currentVal"/>							
+							</TD>
+							<TD>
+								<INPUT TYPE="HIDDEN" NAME="Variables.cs_SingleInputName" VALUE="Variables.MyAttrVal" REPLACEALL="Variables.cs_SingleInputName,Variables.MyAttrVal"/>
+								<A HREF="javascript:void(0);" onMouseOver="window.status='Recent Variables.attrassettype';return true;" onMouseOut="window.status='';return true;" onClick="PickAssetPopup_Variables.currentUniqueID();return false;" REPLACEALL="Variables.AssetType,Variables.attrassettype,Variables.cs_SingleInputName,Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+							</TD>
+							<TD>
+								<XLAT.LOOKUP KEY="dvin/Common/AT/Removethisselection" VARNAME="_XLAT_"/>
+								<XLAT.LOOKUP KEY="dvin/Common/AT/Removethisselection" VARNAME="mouseover" ESCAPE="true"/>
+								<a href="#" onclick="document.forms[0].elements['Variables.cs_SingleInputName'].value=''; document.forms[0].elements['_SHOW_Variables.cs_SingleInputName'].value='';" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.cs_SingleInputName,Variables.mouseover">
+									<img ALIGN="absmiddle" HSPACE="4" src="js/fw/images/ui/ui/forms/cross.png" border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+								</a>
+							</TD>
+						</THEN>
+						<ELSE>
+							<if COND="Variables.RequiredAttr=true">
+							<then>
+								<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_MultipleInputName*Variables.currentAttrName*ReqTrue*Variables.AttrType!"/>
+							</then>
+							<else>
+								<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_MultipleInputName*Variables.currentAttrName*ReqFalse*Variables.AttrType!"/>
+							</else>
+							</if>
+							<setvar NAME="MyAttrVal" VALUE="Variables.tempval"/>
+							<IF COND="Variables.MyAttrVal!=Variables.empty">
+							 <THEN>
+								<ASSET.LIST TYPE="Variables.attrassettype" LIST="currentAsset" FIELD1="id" VALUE1="Variables.MyAttrVal"/>
+								<SETVAR NAME="currentVal" VALUE="currentAsset.name"/>
+							</THEN>
+							<ELSE>
+								<SETVAR NAME="currentVal" VALUE="Variables.empty"/>
+							</ELSE>
+							</IF>
+							<!-- draw the recent asset popup -->
+							<TD align="left" NOWRAP="">
+								<INPUT TYPE="TEXT" ONFOCUS="this.blur()" NAME="_SHOW_Variables.cs_MultipleInputName" VALUE="Variables.currentVal" REPLACEALL="Variables.cs_MultipleInputName,Variables.currentVal"/>
+							</TD>
+							<TD>
+								<INPUT TYPE="HIDDEN" NAME="Variables.cs_MultipleInputName" VALUE="Variables.MyAttrVal" REPLACEALL="Variables.cs_MultipleInputName,Variables.MyAttrVal"/>
+								<A HREF="javascript:void(0);" onMouseOver="window.status='Recent Variables.attrassettype';return true;" onMouseOut="window.status='';return true;" onClick="PickAssetPopup_Variables.currentUniqueID();return false;" REPLACEALL="Variables.AssetType,Variables.attrassettype,Variables.cs_MultipleInputName,Variables.currentUniqueID"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+							</TD>
+							<TD>
+								<XLAT.LOOKUP KEY="dvin/Common/AT/Removethisselection" VARNAME="_XLAT_"/>
+								<XLAT.LOOKUP KEY="dvin/Common/AT/Removethisselection" VARNAME="mouseover" ESCAPE="true"/>
+								<a href="#" onclick="document.forms[0].elements['Variables.cs_MultipleInputName'].value=''; document.forms[0].elements['_SHOW_Variables.cs_MultipleInputName'].value='';" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.cs_MultipleInputName,Variables.mouseover">
+									<img ALIGN="absmiddle" HSPACE="4" src="js/fw/images/ui/ui/forms/cross.png" border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+								</a>
+							</TD>
+						</ELSE>
+						</IF>
+				</TR>
+			</TABLE>
+		</td>
+	</tr>
+</THEN>
+</IF>
+
+</FTCS> 

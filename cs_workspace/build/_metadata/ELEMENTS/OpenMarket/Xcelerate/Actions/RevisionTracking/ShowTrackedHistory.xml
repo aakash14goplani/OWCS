@@ -1,0 +1,174 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/RevisionTracking/ShowTrackedHistory.xml $ 
+$Revision: 26 $ 
+$Modtime: 7/09/04 4:28p $ 
+-->
+
+<!--
+ Confidential and Proprietary Information of FutureTense Inc.
+					All Rights Reserved.
+
+ ShowTrackedHistory.xml
+
+ DESCRIPTION
+	Display the revision history of an item
+ INPUTS
+       ItsHistory is a list that contains the
+       History to be displayed
+ HISTORY 
+-->
+
+<!-- if we are not allowed to inspect the asset, we will not display links to the versions either -->
+<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="inspect" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="false"/>
+
+<callelement NAME="OpenMarket/Xcelerate/Scripts/ShowRevisionPopup"/>
+
+    <if COND="ItsHistory.#numRows!=0">
+        <then>
+
+    <SETCOUNTER NAME="colspan_count" VALUE="12"/>
+
+	<IF COND="Variables.dorollback=true">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+    </IF>
+
+     <table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-inner-100">
+     <tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	<td >
+	<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	<IF COND="Variables.dorollback=true">
+	<THEN>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Rollback"/></DIV></td>
+	</THEN>
+	</IF>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Version"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Date"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/User"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Comments"/></DIV></td>
+			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		</tr>
+<tr><td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+	<!-- Loop over all search results. -->
+     			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+				<SETVAR NAME="separatorLine" VALUE="0"/>
+
+                <loop LIST="ItsHistory">
+    <IF COND="Variables.separatorLine=1">
+		<THEN>
+		<tr>
+			<!--<td colspan="Counters.colspan_count" REPLACEALL="Counters.colspan_count"  class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+		</tr>
+		</THEN>
+	</IF>
+	<SETVAR NAME="separatorLine" VALUE="1"/>
+	<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+		<td>
+			<IF COND="Variables.isLegal=true">
+			<THEN>					
+				<XLAT.LOOKUP KEY="dvin/Common/InspectThisRevision" VARNAME="_XLAT_"/>
+	 			<XLAT.LOOKUP KEY="dvin/Common/InspectThisRevision" VARNAME="mouseover" ESCAPE="true"/>
+	    		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RevisionDetailsFront" outstring="urlrevdetfront">
+	        		<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	        		<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	         	<satellite.argument name="AssetType" value="Variables.AssetType"/>
+	          	<satellite.argument name="id" value="ItsHistory.asset"/>
+	          	<satellite.argument name="rev" value="ItsHistory.versionnum"/>
+	 			</SATELLITE.LINK>
+				<if cond="Variables.cs_environment=ucform">
+				<then>
+					<A href="javascript:void(0)" onclick="showRevision(ItsHistory.versionnum, ItsHistory.asset, 'Variables.AssetType');" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlrevdetfront,Variables.mouseover,ItsHistory.versionnum,ItsHistory.asset,Variables.AssetType">
+					<img height="14" width="14" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif" HSPACE="2" border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+					</A>
+				</then>
+				<else>	
+					<A href="javascript:void(0)" onclick="showRevision('Variables.urlrevdetfront',ItsHistory.versionnum);" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlrevdetfront,Variables.mouseover,ItsHistory.versionnum">
+					<img height="14" width="14" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif" HSPACE="2" border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+					</A>
+				</else>
+				</if>	
+			</THEN>
+			</IF>
+		</td>
+		<td><BR /></td>
+
+
+	<IF COND="Variables.dorollback=true">
+		<THEN>
+			<td><BR /></td>
+			<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+						<if COND="ItsHistory.createdby!=SYSTEM">
+						<then>
+                                        <INPUT TYPE="Radio" NAME="rollbackversion" VALUE="ItsHistory.versionnum" REPLACEALL="ItsHistory.versionnum"/>
+                                    </then>
+						<else>
+						&nbsp; 
+						</else>
+						</if>
+						<BR />
+				</DIV>
+			</td>
+		</THEN>
+		</IF>         
+		<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+			<DIV class="small-text-inset">
+				<STRING.STREAM VALUE="ItsHistory.versionnum"/><BR />
+			</DIV>
+		</td>
+		<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+			<DIV class="small-text-inset">
+			 <callelement NAME="OpenMarket/Xcelerate/Util/SetClientRevisionTime">
+				<argument NAME="versionDate" value="ItsHistory.versiondate" />
+			 </callelement>
+			  <BR />
+			</DIV>
+		</td>
+		<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+			<DIV class="small-text-inset">
+				<STRING.STREAM VALUE="ItsHistory.createdby"/><BR />
+			</DIV>
+		</td>
+		<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+			<DIV class="small-text-inset">
+				<STRING.STREAM VALUE="ItsHistory.annotation"/><BR />
+			</DIV>
+		</td>
+                <td><BR /></td></tr>
+            <IF COND="Variables.rowStyle=tile-row-normal">
+            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+            </THEN>
+            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+            </ELSE>
+            </IF>
+                </loop>
+                </table>
+</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		</tr>
+<tr>
+<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+</table>  
+                
+        </then>
+        <else>
+                <XLAT.STREAM KEY="dvin/UI/Norevisionsfound"/><BR/>
+        </else>
+    </if>
+</FTCS>

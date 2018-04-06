@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/ContentServer/Installation/AddACL
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="result" VALUE="Variables.empty"/>
+
+<!-- Branch on the command -->
+<if COND="Variables.command=addacl">
+<then>
+	<!-- First create the ACL -->
+	
+	<IF COND="IsVariable.description=false">
+	<THEN>
+		<SETVAR NAME="description" VALUE="Variables.empty"/>
+	</THEN>
+	</IF>
+	<IF COND="IsVariable.permission=false">
+	<THEN>
+		<SETVAR NAME="permission" VALUE="1"/>
+	</THEN>
+	</IF>
+	<ACL.LOAD NAME="myACLObject" ACL="Variables.name"/>
+	<IF COND="Variables.errno!=0">
+	<THEN>
+		<ACL.CREATE NAME="myACLObject">
+			<ACL.ARGUMENT NAME="aclname" VALUE="Variables.name"/>
+			<ACL.ARGUMENT NAME="cataccess" VALUE="Variables.permission"/>
+			<ACL.ARGUMENT NAME="description" VALUE="Variables.description"/>
+		</ACL.CREATE>
+		<ACL.SAVE NAME="myACLObject"/>
+		<if COND="IsError.Variables.errno=true">
+		<then>
+			<setvar NAME="result" VALUE="Could not add ACL Variables.name, errno=Variables.errno"/>
+		</then>
+		</if>
+
+	</THEN>
+	</IF>
+	
+</then>
+<else>
+	    <setvar NAME="result" VALUE="Invalid installer command 'Variables.command'"/>
+</else>
+</if>
+ 
+<!-- Check for error -->
+<if COND="Variables.result!=Variables.empty">
+    <then>
+	    <logmsg STR="ContentServer Installation Error in AddACL: Variables.result"/>
+	    ##ERROR## <csvar NAME="Variables.result"/><BR/>
+    </then>
+    <else>
+	    ##SUCCESS## <csvar NAME="Variables.result"/><BR/>
+    </else>
+</if>
+
+ 
+
+</ftcs>

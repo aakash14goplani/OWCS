@@ -1,0 +1,504 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/PublishConsoleFront_History
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- Verifies if user has publishing permission. Normally this check will be called from prologactions however
+PublishConsoleFront_History is a pagelet of PublishConsoleFront and does not have related prologaction-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Security/PublishAccessCheck"/>
+<if COND="Variables.doproceed=true">
+<then>
+    <if COND="IsVariable.orderBy=false">
+<then>
+<setvar NAME="orderBy" VALUE="PubSession.cs_sessiondate" />
+</then>
+</if>
+<if COND="IsVariable.direction=false">
+<then>
+<setvar NAME="direction" VALUE="DESC" />
+</then>
+</if>
+<IF COND="IsSessionVariable.locale=true">
+    <THEN>
+        <LOCALE.CREATE VARNAME="LocaleName" LOCALENAME="SessionVariables.locale" />
+        <DATEFORMAT.CREATE NAME="_FormatDate_" DATESTYLE="FULL" TIMESTYLE="FULL" LOCALE="LocaleName"  TIMEZONEID="SessionVariables.time.zone"/>
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName"  TIMEZONEID="SessionVariables.time.zone" />
+    </THEN>
+    <ELSE>
+        <DATEFORMAT.CREATE NAME="_FormatDate_" DATESTYLE="FULL" TIMESTYLE="FULL"   TIMEZONEID="SessionVariables.time.zone" />
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT"  TIMEZONEID="SessionVariables.time.zone" />
+    </ELSE>
+</IF>
+<table border="0" cellpadding="0" cellspacing="0" class="width-inner-100" >
+<PUBTARGETMANAGER.FIND PREFIX="pbt" PUBID="SessionVariables.pubid" FILTERFORPUBLISH="true" />
+    <!-- Only retrieving the Ids first  -->
+    <PUBSESSIONMANAGER.GETALLFINISHEDIDS PREFIX="sessionIds:" ORDERBY="Variables.orderBy"
+                                         DIRECTION="Variables.direction" TARGETSARRAYPREFIX="pbt"
+                                         REPLACEALL="Variables.orderBy,Variables.direction" />
+
+<if COND="Variables.sessionIds:Total=0">
+<then>
+     <!-- Fix for IE as IE doesn't understand min width-->
+    <tr height="35px"><td NOWRAP="NOWRAP"><XLAT.STREAM KEY="dvin/UI/NoPublishHistory" /></td></tr>
+</then>
+<else>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RemovePubSessionFront"
+                outstring="urlrempubsessfront">
+			<satellite.argument name="cs_environment" value="Variables.cs_environment" />
+			<satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+			<satellite.argument name="rows" value="Variables.rows" />
+</SATELLITE.LINK>
+<tr>
+	<td><table class="width-inner-100" ><tr><td colspan="3" align="right"><SATELLITE.LINK ASSEMBLER="query"
+                                                     pagename="OpenMarket/Xcelerate/Actions/PubSessionsBulkDelete"
+                                                     outstring="urlBulkRemPubSess">
+			<satellite.argument name="cs_environment" value="Variables.cs_environment" />
+			<satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+		</SATELLITE.LINK>
+		<IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" REPLACEALL="Variables.cs_imagedir" />&nbsp;<A
+            HREF="Variables.urlBulkRemPubSess" REPLACEALL="Variables.urlBulkRemPubSess"
+            onClick="return confirmDelete();"><b><XLAT.STREAM KEY="dvin/UI/Publish/ClearHistory" /></b></A>
+	</td></tr></table>
+	</td>	
+</tr>
+<callelement name="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer" />
+<tr><td align="left"><XLAT.STREAM KEY="dvin/UI/Show" />&nbsp;
+	<if cond="Variables.rows=10"><then>10</then><else><A href="#"
+                                                         ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=10&#38;displayPage=Variables.displayPage');return false"
+                                                         REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.displayPage,Variables.pagename,Variables.cs_imagedir,Variables.orderBy,Variables.direction">10</A></else></if>&nbsp;
+	<if cond="Variables.rows=20"><then>20</then><else><A href="#"
+                                                         ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=20&#38;displayPage=Variables.displayPage');return false"
+                                                         REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.displayPage,Variables.pagename,Variables.cs_imagedir,Variables.orderBy,Variables.direction">20</A></else></if>&nbsp;
+	<if cond="Variables.rows=30"><then>30</then><else><A href="#"
+                                                         ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=30&#38;displayPage=Variables.displayPage');return false"
+                                                         REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.displayPage,Variables.pagename,Variables.cs_imagedir,Variables.orderBy,Variables.direction">30</A></else></if>&nbsp;
+	<if cond="Variables.rows=50"><then>50</then><else><A href="#"
+                                                         ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=50&#38;displayPage=Variables.displayPage');return false"
+                                                         REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.displayPage,Variables.pagename,Variables.cs_imagedir,Variables.orderBy,Variables.direction">50</A></else></if>&nbsp;
+	<XLAT.STREAM KEY="dvin/UI/itemsperpage" /></td></tr>
+<tr>
+<td>
+	 <INPUT NAME="pubSessIds" TYPE="Hidden" />
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-inner-100" >
+		<callelement name="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer" />
+		<tr>
+			<td />
+			<td class="tile-dark" VALIGN="TOP" HEIGHT="1">
+				<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                     REPLACEALL="Variables.cs_imagedir" />
+			</td>
+			<td />
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1"
+                                                              src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                                              REPLACEALL="Variables.cs_imagedir" /></td>
+			<td>
+	<SETVAR NAME="rowStyle" VALUE="pubTile-row-normal" />
+	<SETVAR NAME="separatorLine" VALUE="0" />
+	<table cellpadding="0" cellspacing="0" border="0" class="width-inner-100" >
+	<tr><td colspan="23" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+	<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><input type="checkbox" onclick="changeCheckBoxes('0','delPubSess',this.checked);"/></td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;</td>
+		<td id="header_0" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" class="tile-b" style="cursor:pointer" onclick="hisHeaderClicked(0,'Variables.rows','Variables.displayPage');" REPLACEALL="Variables.rows,Variables.displayPage,Variables.cs_imagedir"><DIV class="new-table-title"><img src="Variables.cs_imagedir/graphics/common/icon/down_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Down" id="his_arrow_down_0" /><img src="Variables.cs_imagedir/graphics/common/icon/up_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Up" id="his_arrow_up_0" />&nbsp;<XLAT.STREAM KEY="dvin/Common/Destination"/></DIV></td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td id="header_1" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" class="tile-b" style="cursor:pointer" onclick="hisHeaderClicked(1,'Variables.rows','Variables.displayPage');" REPLACEALL="Variables.rows,Variables.displayPage,Variables.cs_imagedir"><DIV class="new-table-title"><img src="Variables.cs_imagedir/graphics/common/icon/down_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Down" id="his_arrow_down_1" /><img src="Variables.cs_imagedir/graphics/common/icon/up_arrow.gif" replaceall="Variables.cs_imagedir" class="arrowDefault" alt="Up" id="his_arrow_up_1" />&nbsp;<XLAT.STREAM KEY="dvin/UI/PublishEndTime"/></DIV></td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td id="header_2" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" class="tile-b" style="cursor:pointer" onclick="hisHeaderClicked(2,'Variables.rows','Variables.displayPage');" REPLACEALL="Variables.rows,Variables.displayPage,Variables.cs_imagedir"><DIV class="new-table-title"><img src="Variables.cs_imagedir/graphics/common/icon/down_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Down" id="his_arrow_down_2" /><img src="Variables.cs_imagedir/graphics/common/icon/up_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Up" id="his_arrow_up_2" />&nbsp;<XLAT.STREAM KEY="dvin/AT/Common/Status"/></DIV></td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td id="header_3" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" class="tile-b" style="cursor:pointer" onclick="hisHeaderClicked(3,'Variables.rows','Variables.displayPage');" REPLACEALL="Variables.rows,Variables.displayPage,Variables.cs_imagedir"><DIV class="new-table-title"><img src="Variables.cs_imagedir/graphics/common/icon/down_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Down" id="his_arrow_down_3" /><img src="Variables.cs_imagedir/graphics/common/icon/up_arrow.gif" replaceall="Variables.cs_imagedir" class="arrow" alt="Up" id="his_arrow_up_3" />&nbsp;<XLAT.STREAM KEY="dvin/UI/PublishedBy"/></DIV></td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" >&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	</tr>
+	<tr><td colspan="23" class="tile-dark"><IMG WIDTH="1" HEIGHT="1"
+                                                src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                                REPLACEALL="Variables.cs_imagedir" /></td></tr>
+	 <SETCOUNTER NAME="nthSession" VALUE="0" />
+     <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+      <ARGUMENT NAME="publishHistoryAction" VALUE="createSessionList" />
+	</CALLELEMENT>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+	  <ARGUMENT NAME="publishHistoryAction" VALUE="getSessionIdsString" />
+      <ARGUMENT NAME="pubSessionHistory:rows" VALUE="Variables.rows" />
+	  <ARGUMENT NAME="pubSessionHistory:displayPage" VALUE="Variables.displayPage" />
+	  <ARGUMENT NAME="pubSessionHistory:total" VALUE="Variables.sessionIds:Total" />
+	</CALLELEMENT>
+	<PUBSESSIONMANAGER.GETSESSIONS IDSTRING="Variables.sessionIdsString" DELIM=";" ORDERBY="Variables.orderBy"
+                                   DIRECTION="Variables.direction" REPLACEALL="Variables.orderBy,Variables.direction"
+                                   PREFIX="pubsess:" />
+	<loop FROM="Counters.nthSession" COUNT="Variables.pubsess:Total">
+     		<IF COND="Variables.separatorLine=1">
+				<THEN>
+					<tr>
+						<!--<td colspan="23" class="light-line-color">
+							<img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                 REPLACEALL="Variables.cs_imagedir" />
+						</td>-->
+					</tr>
+				</THEN>																		
+			</IF>
+			<PUBSESSION.GETTARGET NAME="pubsess:Counters.nthSession" VARNAME="pubsess:target" />
+			<PUBSESSION.GETSTATUS NAME="pubsess:Counters.nthSession" VARNAME="pubsess:status" />
+			<PUBSESSION.GETSTARTDATE NAME="pubsess:Counters.nthSession" VARNAME="pubsess:startdate" />
+			<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.pubsess:startdate" VALUETYPE="jdbcdate"
+                                    VARNAME="publishstartdate" />
+			<PUBSESSION.GETENDDATE NAME="pubsess:Counters.nthSession" VARNAME="pubsess:enddate" />
+			<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.pubsess:enddate" VALUETYPE="jdbcdate"
+                                    VARNAME="publishenddate" />
+			<PUBSESSION.GETASSETCOUNT NAME="pubsess:Counters.nthSession" VARNAME="pubsess:assetcount" />
+			<PUBSESSION.GETSTATUSMSG NAME="pubsess:Counters.nthSession" VARNAME="pubsess:statusmsg" />
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+				<ARGUMENT NAME="publishHistoryAction" VALUE="populateToolTip" />
+			</CALLELEMENT>
+			<SETVAR NAME="separatorLine" VALUE="1" />
+				<tr id="row_Variables.pubsess:id" class="Variables.rowStyle" class_o = "Variables.rowStyle" REPLACEALL="Variables.rowStyle,Variables.pubsess:toolTip,Variables.pubsess:id" valign="middle" onmouseover="this.className='pubTile-row-onselect';showTooltip(event,'Variables.pubsess:toolTip','row_Variables.pubsess:id');" onmouseout="if(!(this.getElementsByTagName('input'))[0].checked)this.className=this.getAttribute('class_o');">
+				<td />
+				<td />
+				<PUBSESSION.GETID NAME="pubsess:Counters.nthSession" VARNAME="pubsess:id" />
+				<td>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+					<ARGUMENT NAME="publishHistoryAction" VALUE="createCheckbox" />
+				</CALLELEMENT>
+				</td>
+				<td />
+				<td NOWRAP="NOWRAP">
+					<if COND="Variables.pubsess:status=failed">
+					<then>
+						<img src="Variables.cs_imagedir/graphics/common/icon/alert.gif"
+                             REPLACEALL="Variables.cs_imagedir" />
+					</then>
+					<else>
+					<if COND="Variables.pubsess:status=cancelled">
+					<then>
+						<img src="Variables.cs_imagedir/graphics/common/icon/alert.gif"
+                             REPLACEALL="Variables.cs_imagedir" />
+					</then>
+					</if>
+					</else>
+					</if>
+				</td>
+				<td />
+				<PUBSESSION.GETDELIVERYTYPE NAME="pubsess:Counters.nthSession" VARNAME="pubsess:deliveryType" />
+				<PUBSESSION.GETDELIVERYTYPENAME NAME="pubsess:Counters.nthSession" VARNAME="pubsess:deliveryTypeName" />
+				<PUBSESSION.GETTARGETNAME NAME="pubsess:Counters.nthSession" VARNAME="pubsess:pubTargetName" />
+                 <IF COND="Variables.pubsess:deliveryType=sitepackager">
+                 <THEN>
+                    <SETVAR NAME="PACKAGER_OR_REALTIME" VALUE="true" />
+                    <SETVAR NAME="_PATH_" VALUE="SitePackager" />
+                 </THEN>
+                 <ELSE>
+                    <IF COND="Variables.pubsess:deliveryType=realtime">
+                    <THEN>
+                        <SETVAR NAME="PACKAGER_OR_REALTIME" VALUE="true" />
+                        <SETVAR NAME="_PATH_" VALUE="AdvPub" />
+                    </THEN>
+                    <ELSE>
+                        <SETVAR NAME="PACKAGER_OR_REALTIME" VALUE="false" />
+                    </ELSE>
+                    </IF>
+                 </ELSE>
+                 </IF>
+                <if COND="Variables.PACKAGER_OR_REALTIME=true">
+				<then>
+				<SATELLITE.LINK ASSEMBLER="query"
+                                pagename="OpenMarket/Xcelerate/PrologActions/Publish/Variables._PATH_/PublishingStatus"
+                                outstring="urlshpubInfo">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment" />
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+						<satellite.argument name="cs_imagedir" value="Variables.cs_imagedir" />
+						<satellite.argument name="pubsess:id" value="Variables.pubsess:id" />
+						<satellite.argument name="pubsess:status" value="Variables.pubsess:status" />
+						<satellite.argument name="pubtgt:name" value="Variables.pubsess:pubTargetName" />
+						<satellite.argument name="pubtgt:id" value="Variables.pubsess:target" />
+						<satellite.argument name="pubdt:name" value="Variables.pubsess:deliveryTypeName" />
+						<satellite.argument name="pubsess:auxdataname" value="Variables.pubsess:auxdataname" />
+						<satellite.argument name="_pubLive" value="false" />
+						<satellite.argument name="rows" value="Variables.rows" />
+				</SATELLITE.LINK>
+				</then>
+				<else>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowPublishOutputFront"
+                                outstring="urlshpubInfo">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment" />
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+					<satellite.argument name="id" value="Variables.pubsess:id" />
+					<satellite.argument name="target" value="Variables.pubsess:target" />
+                </SATELLITE.LINK>
+				</else>
+				</if>
+				<td />
+                <if COND="Variables.pubsess:deliveryType=sitepackager">
+                    <then>
+                        <SETVAR NAME="destLabel" VALUE="Variables.pubsess:pubTargetName (Variables.pubsess:auxdataname)"/>
+                    </then>
+                    <else>
+                        <SETVAR NAME="destLabel" VALUE="Variables.pubsess:pubTargetName"/>
+                    </else>
+                </if>
+                <td NOWRAP="NOWRAP"><A HREF="Variables.urlshpubInfo" REPLACEALL="Variables.urlshpubInfo"><STRING.STREAM VALUE="Variables.destLabel" /></A></td>
+			    <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+					<ARGUMENT NAME="publishHistoryAction" VALUE="addToSessionList" />
+				</CALLELEMENT>
+				<td />
+				<td NOWRAP="NOWRAP">
+		            <DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Variables.pubsess:enddate" VALUETYPE="jdbcdate" VARNAME="shortpublishdate"/>
+                    <STRING.STREAM VARIABLE="shortpublishdate"/>
+		        </td>
+		        <td />
+				<td NOWRAP="NOWRAP">
+		        	<if COND="Variables.pubsess:status=done">
+		            <then><XLAT.STREAM KEY="dvin/Common/Success" /></then>
+		                <else>
+							<if COND="Variables.pubsess:status=cancelled">
+							<then>
+								<XLAT.STREAM KEY="dvin/Common/Cancelled" />
+							</then>
+							<else>
+								<!--Restarting status is not implemented in 7.5 release-->
+                                <if COND="Variables.pubsess:status=restarting">
+									<then>
+										<XLAT.STREAM KEY="dvin/Common/Restarting" />
+									</then>
+									<else>
+										<XLAT.STREAM KEY="dvin/Common/Failed" />
+									</else>
+								</if>
+							</else>
+							</if>
+						</else>
+		            </if>
+		        </td>
+		        <td />
+				<td NOWRAP="NOWRAP">
+		       		<PUBSESSION.GETUSER NAME="pubsess:Counters.nthSession" VARNAME="pubsess:user" />
+		         <STRING.STREAM VALUE="Variables.pubsess:user" /></td>
+				<td />
+				<if COND="Variables.pubsess:deliveryType=realtime">
+				<then>
+				<SATELLITE.LINK ASSEMBLER="query"
+                                pagename="OpenMarket/Xcelerate/PrologActions/Publish/AdvPub/ShowPubSessionLog"
+                                outstring="pubSessionLogURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment" />
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+					<satellite.argument name="cs_imagedir" value="Variables.cs_imagedir" />
+					<satellite.argument name="pubsess:id" value="Variables.pubsess:id" />
+					<satellite.argument name="pubtgt:name" value="Variables.pubsess:pubTargetName" />
+					<satellite.argument name="pubtgt:id" value="Variables.pubsess:target" />
+					<satellite.argument name="pubdt:name" value="Variables.pubsess:deliveryTypeName" />
+					<satellite.argument name="pubConsole:rows" value="Variables.rows" />
+					<satellite.argument name="previousPage" value="pubConsole" />
+					<satellite.argument name="action" value="getLogData" />
+				</SATELLITE.LINK>
+				</then>
+				<else>
+					<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowPublishOutputFront"
+                                    outstring="pubSessionLogURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment" />
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode" />
+					<satellite.argument name="id" value="Variables.pubsess:id" />
+                </SATELLITE.LINK>
+				</else>
+				</if>
+				<td NOWRAP="NOWRAP"><a href="Variables.pubSessionLogURL" REPLACEALL="Variables.pubSessionLogURL"><img
+                        style="position:relative;top:1px;" src="Variables.cs_imagedir/graphics/common/icon/ViewLog.gif"
+                        border="0" REPLACEALL="Variables.cs_imagedir" /><span
+                        style="position:relative;bottom:3px;margin-left:5px;"><XLAT.STREAM KEY="dvin/UI/ViewLog" /></span></a></td>
+
+                <td />
+                <if COND="IsVariable.LSVariables.pubsess:target=false">
+				<then>
+					<!--Here the value gets stored into the varaible LS+TargetID so that this can be checked for multiple targets in the page-->
+                    <PUBSESSIONMANAGER.GETLASTSESSIONID VARNAME="LSVariables.pubsess:target"
+                                                        TARGET="Variables.pubsess:target" />
+				</then>
+				</if>
+				<if COND="Variables.pubsess:deliveryType=realtime">
+						<then>
+							<if COND="Variables.pubsess:status=failed">
+							<then>
+								<SETVAR NAME="checkForRestart" VALUE="true" />
+							</then>
+							<else>
+								<if COND="Variables.pubsess:status=cancelled">
+								<then>
+									<SETVAR NAME="checkForRestart" VALUE="true" />
+								</then>
+								<else>
+									<SETVAR NAME="checkForRestart" VALUE="false" />
+								</else>
+								</if>
+							</else>
+							</if>
+							<if COND="Variables.checkForRestart=true">
+							<then>
+								<!-- Calling here the jsp element to do the basic math as the if tag fails to dynamically replace ics variables in the cond attribute-->
+                                <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/PublishingConsole">
+									<ARGUMENT NAME="publishHistoryAction" VALUE="checkEquals" />
+									<ARGUMENT NAME="param1" VALUE="Variables.LSVariables.pubsess:target" />
+									<ARGUMENT NAME="param2" VALUE="Variables.pubsess:id" />
+									<ARGUMENT NAME="output" VALUE="isEqual" />
+								</CALLELEMENT>
+								<if COND="Variables.isEqual=true">
+								<then>
+								<PUBSESSIONMANAGER.ISPACKAGERCOMPLETED VARNAME="packagerCompleted"
+                                                                       SESSIONID="Variables.pubsess:id" />
+								<if COND="Variables.packagerCompleted=true">
+								<then>
+								<SATELLITE.LINK assembler="query"
+                                                pagename="OpenMarket/Xcelerate/PrologActions/Publish/AdvPub/PublishingStatController"
+                                                outstring="pubStatcontrollerURL">
+								<satellite.argument name="cs_environment" value='Variables.cs_environment' />
+								<satellite.argument name="cs_formmode" value='Variables.cs_formmode' />
+								<satellite.argument name="pubSessionID" value='Variables.pubsess:id' />
+								<satellite.argument name="action" value="restartSession" />
+								</SATELLITE.LINK>
+								<XLAT.LOOKUP KEY="dvin/UI/Redo" VARNAME="_XLAT_" />
+									<td align="center"><A href="#"
+                                                          onClick="executeAction('restartSession','Variables.pubStatcontrollerURL');return false;"
+                                                          onmouseover="$('redoImg').src='Variables.cs_imagedir/graphics/common/icon/redoHover_small.gif'"
+                                                          onmouseout="$('redoImg').src='Variables.cs_imagedir/graphics/common/icon/redo_small.gif'"
+                                                          onmouseup="$('redoImg').src='Variables.cs_imagedir/graphics/common/icon/redoHover_small.gif'"
+                                                          onmousedown="$('redoImg').src='Variables.cs_imagedir/graphics/common/icon/redoPressed_small.gif'"
+                                                          REPLACEALL="Variables.pubStatcontrollerURL,Variables.cs_imagedir"><img
+                                            id="redoImg" title="Variables._XLAT_" border="0"
+                                            src="Variables.cs_imagedir/graphics/common/icon/redo_small.gif"
+                                            REPLACEALL="Variables.cs_imagedir,Variables._XLAT_" /></A></td>
+								</then>
+								<else>
+									<XLAT.LOOKUP KEY="dvin/UI/RedoUnAvailable" VARNAME="_XLAT_" />
+									<td align="center"><img
+                                            src="Variables.cs_imagedir/graphics/common/icon/RedoUnavail_small.gif"
+                                            title="Variables._XLAT_"
+                                            REPLACEALL="Variables._XLAT_,Variables.cs_imagedir" /></td>
+								</else>
+								</if>
+								</then>
+								<else>
+									<XLAT.LOOKUP KEY="dvin/UI/RedoUnAvailable" VARNAME="_XLAT_" />
+									<td align="center"><img
+                                            src="Variables.cs_imagedir/graphics/common/icon/RedoUnavail_small.gif"
+                                            title="Variables._XLAT_"
+                                            REPLACEALL="Variables._XLAT_,Variables.cs_imagedir" /></td>
+								</else>
+								</if>
+							</then>
+							<else>
+								<XLAT.LOOKUP KEY="dvin/UI/RedoUnAvailable" VARNAME="_XLAT_" />
+					<td align="center"><img src="Variables.cs_imagedir/graphics/common/icon/RedoUnavail_small.gif"
+                                            title="Variables._XLAT_"
+                                            REPLACEALL="Variables._XLAT_,Variables.cs_imagedir" /></td>
+							</else>
+							</if>
+						</then>
+						<else>
+						<td />
+						</else>
+					</if>
+				<td />
+		     </tr>
+			 <INCCOUNTER NAME="nthSession" VALUE="1" />
+			<IF COND="Variables.rowStyle=pubTile-row-normal">
+				<THEN>
+					<SETVAR NAME="rowStyle" VALUE="pubTile-row-highlight" />
+				</THEN>
+				<ELSE>
+					<SETVAR NAME="rowStyle" VALUE="pubTile-row-normal" />
+				</ELSE>
+			</IF>
+	</loop>
+	</table>
+	</td>
+<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1"
+                                                  src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                                  REPLACEALL="Variables.cs_imagedir" /></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1"
+                                                                       src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                                                       REPLACEALL="Variables.cs_imagedir" /></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif"
+                     REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5"
+                                                             src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+                                                             REPLACEALL="Variables.cs_imagedir" /></td><td></td>
+	</tr>
+</table>
+	</td></tr>
+	<CALCULATOR.GO VALUE="Variables.displayPage 1 +" VARNAME="next" />
+    <CALCULATOR.GO VALUE="Variables.displayPage 1 -" VARNAME="prev" />
+	<CALCULATOR.GO VALUE="Variables.pubSessionHistory:totalPages 1 -" VARNAME="pageBeforeLast" />
+	<CALCULATOR.GO VALUE="Variables.displayPage:endIndex Variables.sessionIds:Total LT" VARNAME="shownext" />
+	<CALCULATOR.GO VALUE="Variables.displayPage:startIndex 1 GT" VARNAME="showprev" />
+	<tr><td>
+	<span style="float: left"
+          REPLACEALL="Variables.displayPage:startIndex,Variables.displayPage:endIndex,Variables.sessionIds:Total"><XLAT.STREAM
+            KEY="dvin/UI/PublishConsole/ShowingPublishSessions" /></span>
+     <span style="float: right;"><IF COND="Variables.displayPage!=1"><THEN><A
+             REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rows,Variables.pagename,Variables.prev,Variables.cs_imagedir,Variables.orderBy,Variables.direction"
+             href="#"
+             ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=Variables.rows&#38;displayPage=1');return false"><IMG
+             BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/doubleArrowLeft.gif"
+             REPLACEALL="Variables.cs_imagedir" /><XLAT.STREAM KEY="dvin/UI/First" /></A>
+     </THEN></IF>&nbsp;<IF COND="Variables.showprev=1"><THEN><IF COND="Variables.displayPage!=2"><THEN><A
+             REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rows,Variables.pagename,Variables.prev,Variables.cs_imagedir,Variables.orderBy,Variables.direction"
+             href="#"
+             ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=Variables.rows&#38;displayPage=Variables.prev');return false"><IMG
+             BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/leftArrow.gif"
+             REPLACEALL="Variables.cs_imagedir" /><XLAT.STREAM KEY="dvin/UI/Previous" /></A>
+     </THEN></IF></THEN></IF>&nbsp;<span REPLACEALL="Variables.displayPage,Variables.pubSessionHistory:totalPages"><XLAT.STREAM
+             KEY="dvin/UI/PublishConsole/PageOf" /></span>&nbsp;<IF COND="Variables.shownext=1"><THEN><IF
+             COND="Variables.displayPage!=Variables.pageBeforeLast"><THEN>
+     <a REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rows,Variables.pagename,Variables.next,Variables.displayPage,Variables.cs_imagedir,Variables.orderBy,Variables.direction"
+        href="#"
+        ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=Variables.rows&#38;displayPage=Variables.next');return false"><XLAT.STREAM
+             KEY="dvin/UI/Next" /><IMG BORDER="0" HEIGHT="12" WIDTH="15"
+                                       src="Variables.cs_imagedir/graphics/common/icon/rightArrow.gif"
+                                       REPLACEALL="Variables.cs_imagedir" /></a>
+     </THEN></IF></THEN></IF>&nbsp;<IF COND="Variables.displayPage!=Variables.pubSessionHistory:totalPages"><THEN>
+     <a REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rows,Variables.pagename,Variables.next,Variables.displayPage,Variables.pubSessionHistory:totalPages,Variables.cs_imagedir,Variables.orderBy,Variables.direction"
+        href="#"
+        ONCLICK="updatePanel('_t3','ContentServer?pagename=Variables.pagename&#38;orderBy=Variables.orderBy&#38;direction=Variables.direction&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;rows=Variables.rows&#38;displayPage=Variables.pubSessionHistory:totalPages');return false"><XLAT.STREAM
+             KEY="dvin/UI/Last" /><IMG BORDER="0" HEIGHT="12" WIDTH="15"
+                                       src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif"
+                                       REPLACEALL="Variables.cs_imagedir" /></a>
+     </THEN></IF></span></td></tr>
+	 <tr>
+   <td><img height="15" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+            REPLACEALL="Variables.cs_imagedir" /></td>
+	</tr>
+	<tr>
+	<td>
+        <XLAT.LOOKUP KEY="UI/Forms/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="Variables.urlrempubsessfront" REPLACEALL="Variables.urlrempubsessfront"
+           onclick="deleteRows(this);return _chbSel;"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Delete"/></CALLELEMENT></A>
+	</td>	
+	</tr>
+</else>
+</if>
+<tr>
+   <td><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif"
+            REPLACEALL="Variables.cs_imagedir" /></td>
+</tr>
+</table>
+<div id="pubsess:TotalHistory" style="display:none"><STRING.STREAM VALUE="Variables.sessionIds:Total" /></div>
+<div id="pubSessionConsoleHistory:displayPage" style="display:none"><STRING.STREAM VALUE="Variables.displayPage" /></div>
+<div id="pubSessionConsoleHistory:fetchSize" style="display:none"><STRING.STREAM VALUE="Variables.rows" /></div>
+</then></if>
+</ftcs>

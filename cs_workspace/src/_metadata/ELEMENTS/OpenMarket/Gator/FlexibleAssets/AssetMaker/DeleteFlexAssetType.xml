@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/AssetMaker/DeleteFlexAssetType
+-
+- INPUT
+-	typeToDelete
+-	flexType (asset,parent,parentdef,def,attr,filter)
+-
+- OUTPUT
+-
+-->
+
+<!-- make sure only 1 row in respective flexTypeTable -->
+<!-- for flexasset, simply delete -->
+<!-- for parents, make sure only 1 row in FlexAssetTypes table, assetgroup column -->
+<!-- for parent defintions, make sure only 1 row in FlexGroupTypes and FlexTmplTypes tables, assettemplate column -->
+<!-- for definitions, make sure only 1 row in FlexAssetTypes, assettemplate column -->
+<!-- for attributes, make sure only 1 row in all Types tables, assetattr column -->
+<!-- for filters, make sure only 1 row in all Types tables, assetfilter column -->
+	
+<!-- things to delete:
+	ASSET.DEINSTALL
+	row from AssetType table
+	row from ComplexAssets table
+	row(s) from FlexXTypes table(s)
+	rows from ElementCatalog
+	rows from SystemSQL
+-->	
+	
+<IF COND="Variables.flexType=asset">
+<THEN>
+	<ASSET.DEINSTALL TYPE="Variables.typeToDelete"/>
+	
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypePost">
+		<ARGUMENT NAME="action" VALUE="delete"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.typeToDelete"/>
+	</CALLELEMENT>
+	
+	<ATM.SET TYPE="Variables.typeToDelete"/>
+	
+	<FATM.REMOVE ASSETTYPE="Variables.typeToDelete"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.typeToDelete"/>
+		<ARGUMENT NAME="type" VALUE="String"/>
+	</CALLELEMENT>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<SETVAR NAME="tablename" VALUE="ElementCatalog"/>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<EXECSQL SQL="DELETE FROM Variables.tablename WHERE elementname LIKE 'OpenMarket/Xcelerate/AssetType/Variables.typeToDelete/%'" LIST="xxx"/>
+	</THEN>
+	</IF>
+	
+	<SETVAR NAME="errno" VALUE="0"/>
+	<SETVAR NAME="tablename" VALUE="SystemSQL"/>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<EXECSQL SQL="DELETE FROM Variables.tablename WHERE qryname LIKE 'OpenMarket/Xcelerate/AssetType/Variables.typeToDelete/%'" LIST="xxx"/>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<IF COND="Variables.flexType=parent">
+	<THEN>
+	</THEN>
+	<ELSE>
+		<IF COND="Variables.flexType=parentdef">
+		<THEN>
+		</THEN>
+		<ELSE>
+			<IF COND="Variables.flexType=def">
+			<THEN>
+			</THEN>
+			<ELSE>
+				<IF COND="Variables.flexType=attr">
+				<THEN>
+				</THEN>
+				<ELSE>
+					<IF COND="Variables.flexType=filter">
+					<THEN>
+					</THEN>
+					</IF>
+				</ELSE>
+				</IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</ELSE>
+</IF>
+
+</FTCS> 

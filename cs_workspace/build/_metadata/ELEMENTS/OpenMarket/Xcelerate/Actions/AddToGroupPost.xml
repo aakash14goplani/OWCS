@@ -1,0 +1,289 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AddToGroupPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+	
+<if COND="IsVariable.useDefaultDeadline!=true">
+<then>
+	<setvar NAME="useDefaultDeadline" VALUE="true"/>
+</then>
+</if>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<WorkflowEngine.GetGroupID ID="Variables.AddToGroup" OBJVARNAME="groupobj" />
+<WorkflowGroup.GetWorkflowProcessID NAME="groupobj" VARNAME="workflowid" />
+<WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+
+<setvar NAME="needsetassignees" VALUE="true" />
+
+<if COND="Variables.steptype!=ask">
+<then>
+     <setvar NAME="needsetassignees" VALUE="false" />
+</then>
+<else>
+    <if COND="IsVariable.assigneeroles=true">
+    <then>
+         <setvar NAME="needsetassignees" VALUE="false" />
+    </then>
+    </if>
+</else>
+</if>
+
+<if COND="Variables.needsetassignees!=true">
+<then>
+
+    <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+    <ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+    
+    <WorkflowEngine.GetGroupID ID="Variables.AddToGroup" OBJVARNAME="groupobj" />
+    <WorkflowGroup.GetName NAME="groupobj" VARNAME="groupname" />
+    
+    <WorkflowEngine.CanEditGroup ID="Variables.AddToGroup" SITE="SessionVariables.pubid" VARNAME="canAddToGroup" />
+    <if COND="Variables.canAddToGroup=false">
+    <then>
+        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+            <argument NAME="error" VALUE="NoAddToGroupPriv"/>
+            <argument NAME="groupname" VALUE="Variables.groupname"/>
+        </callelement>
+    </then>
+    <else>    
+        <setvar NAME="AbortFlag" VALUE="false"/>
+        <setvar NAME="needUnlock" VALUE="false" />
+        <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+            <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        </callelement>
+        
+        <if COND="Variables.trackingenabled=true">
+        <then>
+            <ASSET.CHECKOUT OBJECTTYPE="Variables.AssetType" OBJECTID="Variables.id"/>
+            <if COND="Variables.errno!=0">
+            <then>
+                <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+                <if COND="ItsHistory.#numRows!=0">
+                <then>
+                    <if COND="ItsHistory.lockedby!=Variables.empty">
+                    <then>
+                        <setvar NAME="AbortFlag" VALUE="true"/>
+						<div class="width-outer-70">
+                        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                            <argument NAME="elem" VALUE="CantAddToGroupLocked"/>
+                            <argument NAME="lockedby" VALUE="ItsHistory.lockedby"/>
+                            <argument NAME="severity" VALUE="warning"/>
+                        </callelement>
+						</div>
+                    </then>
+                    </if>
+                </then>
+                </if>
+                
+                <if COND="Variables.AbortFlag!=true">
+                <then>
+                     <!-- add to group failed for unknown reason -->
+                     <setvar NAME="AbortFlag" VALUE="true"/>
+                     <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="AddToGroupFailed"/>
+                        <argument NAME="groupname" VALUE="Variables.groupname"/>
+                     </callelement>
+                </then>
+                </if>		
+            </then>
+            <else>
+		<IMPLICITCHECKOUT.LOGIMPLICITCHECKOUT ASSETTYPE="Variables.AssetType"
+			ASSETID="Variables.id" USER="Variables.userID" FUNCTION="Add To Group"/>
+                <setvar NAME="needUnlock" VALUE="true" />
+            </else>
+            </if>
+        </then>
+        </if>     
+
+
+<!-- If the asset is already assigned to a user, we should not be able to add the asset to group -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+     <WorkflowEngine.IsObjectAssignedToUser OBJECT="workflowasset" VARNAME="isAssigned"/>
+     <if COND="Variables.isAssigned=true">
+     <then>
+ 	<SETVAR NAME="AbortFlag" VALUE="true"/>
+	<SETVAR NAME="ErrorName" VALUE="WorkflowActive"/>
+	<SETVAR NAME="severity" VALUE="info"/>
+     </then>
+     </if>
+</then>
+</if>
+
+<!-- If the asset is already assigned to a group, we should not be able to add the asset to group -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+     <WorkflowEngine.IsObjectAssignedToGroup OBJECT="workflowasset" VARNAME="isAssigned"/>
+     <if COND="Variables.isAssigned=true">
+     <then>
+ 	<SETVAR NAME="AbortFlag" VALUE="true"/>
+	<SETVAR NAME="ErrorName" VALUE="WorkflowActive"/>
+	<SETVAR NAME="severity" VALUE="info"/>
+     </then>
+     </if>
+</then>
+</if>
+            
+           
+            
+        <if COND="Variables.AbortFlag!=true">
+        <then>    
+            <if COND="IsVariable.groupcomment!=true">
+            <then>
+                <setvar NAME="groupcomment" VALUE=""/>
+            </then>
+            <else>
+                 <!-- Make unsafe characters safe again (late fix) -->
+                 <substitute STR="Variables.groupcomment" WHAT="%26" WITH=" AND " OUTSTR="groupcomment"/>
+                 <substitute STR="Variables.groupcomment" WHAT="'" WITH=" " OUTSTR="groupcomment"/>
+                 <substitute STR="Variables.groupcomment" WHAT="%22" WITH=" " OUTSTR="groupcomment"/>
+            </else>
+            </if>
+            
+            <if COND="IsVariable.assigneeroles=true">
+            <then>
+                <!-- from set assignees for ask step screen -->
+                <WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+								<!--
+                <WORKFLOWENGINE.GETOBJECTPARTICIPANTS OBJECT="workflowasset" OBJVARNAME="partobj"/> 
+                <PARTICIPANTS.CLEAR NAME="partobj"/>
+								-->
+								<WORKFLOWENGINE.NEWPARTICIPANTS  OBJVARNAME="partobj"/>
+                <stringlist NAME="AssigneeRoles" STR="Variables.assigneeroles" DELIM=","/>
+                <LOOP LIST="AssigneeRoles">
+                    <SETVAR NAME="users" VALUE="Variables.ask:AssigneeRoles.ITEM"/>
+                    <STRINGLIST STR="Variables.users" NAME="userList" DELIM=";"/>
+                    <LOOP LIST="userList">
+                         <PARTICIPANTS.ADDPARTICIPANT NAME="partobj" ROLE="AssigneeRoles.ITEM" USER="userList.ITEM"/>
+                    </LOOP>
+                </LOOP>
+            
+                <if COND="Variables.useDefaultDeadline=true">
+                <then>
+                    <WorkflowEngine.AddNewObjectToGroup OBJECT="workflowasset" ID="Variables.AddToGroup" COMMENT="Variables.groupcomment" SITE="SessionVariables.pubid" ASSIGNMENTLIST="partobj" />
+                </then>
+                <else>
+                    <WorkflowEngine.AddNewObjectToGroup OBJECT="workflowasset" ID="Variables.AddToGroup" COMMENT="Variables.groupcomment" SITE="SessionVariables.pubid" ASSIGNMENTLIST="partobj" DEADLINE="Variables.deadline" />
+                </else>
+                </if>
+            </then>
+            <else>
+                <if COND="Variables.useDefaultDeadline=true">
+                <then>
+                    <WorkflowEngine.AddNewObjectToGroup OBJECT="workflowasset" ID="Variables.AddToGroup" COMMENT="Variables.groupcomment" SITE="SessionVariables.pubid" />
+                </then>
+                <else>
+                    <WorkflowEngine.AddNewObjectToGroup OBJECT="workflowasset" ID="Variables.AddToGroup" COMMENT="Variables.groupcomment" SITE="SessionVariables.pubid" DEADLINE="Variables.deadline" />
+                </else>
+                </if>
+            </else>
+            </if>
+            
+            <if COND="Variables.errno!=0">
+            <then>
+                 <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <argument NAME="error" VALUE="AddToGroupFailed"/>
+                    <argument NAME="groupname" VALUE="Variables.groupname"/>
+                 </callelement>
+            </then>
+            <else>
+                 <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+                 <ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+                 <XLAT.LOOKUP KEY="dvin/UI/AddedToWorkflowGroup" VARNAME="_XLAT_"/>
+				 <div class="width-outer-70">
+                 <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+                    <argument NAME="severity" VALUE="info"/>	
+                 </callelement>     
+				 </div>
+								<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+								<IF  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+									<THEN>
+										<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+											<ARGUMENT NAME="__TreeRefreshKeys__" VALUE="Self:Variables.AddToGroup"/>
+										</CALLELEMENT>
+									</THEN>
+								</IF>
+					<if COND="Variables.cs_environment=ucform">
+					<then>
+						<SCRIPT TYPE="text/javascript">
+							dojo.addOnLoad(function(){
+								SitesApp.notifyModelUpdate('workflowStatus');
+							});
+						</SCRIPT>
+					</then>
+					</if>			
+            </else>
+            </if>
+        </then>
+        <else>
+	        <!-- message about failure to add to group here -->
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<argument NAME="error" VALUE="Variables.ErrorName"/>
+			</callelement>
+        </else>
+        </if>
+        
+        <if COND="Variables.needUnlock=true">
+        <then>
+            <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>
+            <ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+	    <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType"
+			ASSETID="Variables.id"/>
+        </then>
+        </if>
+    </else>
+    </if>
+    
+    <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+    	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    	<argument NAME="id"        VALUE="Variables.id"/>
+    </callelement>
+
+</then>
+<else>
+    <if COND="IsVariable.groupcomment=true">
+    <then>
+        <![CDATA[<INPUT TYPE="hidden" NAME="groupcomment" VALUE="]]><STRING.STREAM VALUE="Variables.groupcomment"/><![CDATA["/>]]>
+    </then>
+    </if>
+    <STRING.ENCODE VARIABLE="AddToGroup" VARNAME="AddToGroup"/>
+    <INPUT TYPE="hidden" NAME="AddToGroup" VALUE="Variables.AddToGroup" REPLACEALL="Variables.AddToGroup"/>
+	<STRING.ENCODE VARIABLE="useDefaultDeadline" VARNAME="useDefaultDeadline"/>
+    <INPUT TYPE="hidden" NAME="useDefaultDeadline" VALUE="Variables.useDefaultDeadline" REPLACEALL="Variables.useDefaultDeadline"/>
+    <if COND="Variables.useDefaultDeadline!=true" >
+    <then>
+	    <STRING.ENCODE VARIABLE="deadline" VARNAME="deadline"/>
+        <INPUT TYPE="hidden" NAME="deadline" VALUE="Variables.deadline" REPLACEALL="Variables.deadline"/>
+    </then>
+    </if>
+    
+    <INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/AddToGroupPost" />
+    <INPUT TYPE="hidden" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>	
+    <INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+    
+    <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/SetGroupAssigneesForAskStep">
+    	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    	<argument NAME="id"        VALUE="Variables.id"/>
+        <argument NAME="AskStep"   VALUE="Variables.inistepid"/>
+        <argument NAME="groupid"   VALUE="Variables.AddToGroup"/>
+    </callelement>
+
+</else>
+</if>
+
+</FTCS>
+

@@ -1,0 +1,385 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/FormatDate.xml $ 
+$Revision: 22 $ 
+$Modtime: 11/05/02 7:06p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- formatDate.xml
+-
+- DESCRIPTION
+-	Format the date string to prepare it for comparisons in a SQL statement
+-   This does some simple validation that the date is in the expected format
+-   (e.g. 1997-11-01 hh:mm:ss).
+-   If the database is an oracle database, 
+-
+- HISTORY 
+  [2008-03-xx]
+  * [KGF] Improved sanity-checking done by checkDate function.
+  * [SPL] Added checkStartEndDateValidity for start/end date checking.
+  * [KGF] Reimplemented padDate, to be used on sane fields.
+-->
+
+<SCRIPT LANGUAGE="JavaScript1.2">
+<replaceall LIST="CS.Property.cs.dbtype">
+		
+<![CDATA[
+// Call checkDate for the specified date. If the date 
+// is not well-formed, alert the users
+function alertDate(datestr)
+{
+	res = checkDate(datestr);
+	if ( res < 0 ) {
+         ]]>
+         var replacestr=/\bVariables.datestr\b/   ;
+         var xlatstr= '<XLAT.STREAM KEY="dvin/AT/Common/ThedateisnotvalidFormatthedate"  ESCAPE="true" ENCODE="false"/>' ;
+         var newstr=xlatstr.replace(replacestr, datestr) ;
+         alert(newstr);
+        <![CDATA[
+  		return false;
+	} else {
+		return true;
+	}	
+}
+
+// Call formatDate on the specified date string
+// Then set the form field with the formatted date
+function formatSetDate(datestr, formfield)
+{
+	if (datestr == "")
+	{
+		document.forms[0].elements[formfield].value = "";
+		return true;
+	}
+ 	if (alertDate(datestr) == false)
+	{
+    
+         ]]>
+         var replacestr=/\bVariables.datestr\b/   ;
+         var xlatstr= '<XLAT.STREAM KEY="dvin/AT/Common/ThedateisnotvalidFormatthedate" ESCAPE="true" ENCODE="false"/>' ;
+         var str=xlatstr.replace(replacestr, datestr) ;
+ 		 document.forms[0].elements[formfield].value = str;
+
+        <![CDATA[
+		return false;
+	}
+	else
+	{
+		str = formatDate(datestr);
+		document.forms[0].elements[formfield].value = str;
+		return true;
+	}
+}
+
+function searchByDates() {
+	
+	var result = true;
+	if(document.getElementById('updatedAfterFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('updatedAfterFieldIdDiv').innerHTML,  'UpdatedAfter'); 
+
+	if(result && document.getElementById('updatedBeforeFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('updatedBeforeFieldIdDiv').innerHTML, 'UpdatedBefore'); 
+
+	if(result && document.getElementById('startDateBeforeFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('startDateBeforeFieldIdDiv').innerHTML,'StartDateBefore');
+
+	if(result && document.getElementById('startDateAfterFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('startDateAfterFieldIdDiv').innerHTML, 'StartDateAfter');
+
+	if(result && document.getElementById('endDateAfterFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('endDateAfterFieldIdDiv').innerHTML, 'EndDateAfter');
+
+	if(result && document.getElementById('endDateBeforeFieldIdDiv') != undefined)
+		result = formatSetDate(document.getElementById('endDateBeforeFieldIdDiv').innerHTML, 'EndDateBefore');
+
+	return result;
+}
+function formatjSetDate(datestr, obj, formfield)
+{
+
+         
+	if (datestr == "")
+	{
+		formfield.value = "";
+		return true;
+	}
+ 	if (alertDate(datestr) == false)
+	{
+    
+         ]]>
+        var replacestr=/\bVariables.datestr\b/   ;
+        var xlatstr= '<XLAT.STREAM KEY="dvin/AT/Common/ThedateisnotvalidFormatthedate" ESCAPE="true" ENCODE="false"/>' ;
+        var str=xlatstr.replace(replacestr, datestr) ;
+ 		formfield.value = str;
+		return false;
+         <![CDATA[
+	}
+	else
+	{
+		str = formatDate(datestr);
+		formfield.value = str;
+ 		return true;
+	}
+}
+
+
+// Check that the date is in a good format
+// The variations of the allowed formats are
+// 	yyyy-mm-dd hh:mi:ss
+//	yyyy-mm-dd hh:mi
+//	yyyy-mm-dd
+//
+// The test checks:
+// 1. that the date has an allowed length
+// 2. that known characters '-', ' ', and ':'
+//    appear in the right places
+// 3. that the date values are in valid range
+// If these 3 conditions are met. we assume everything is good. 
+function checkDate(datestr, dateformat)
+{
+	//Check for validity of date string
+	if (!datestr.match(/^\d{4}-[0-1]\d-[0-3]\d( [0-2]\d:[0-5]\d(:[0-5]\d(\.\d{0,3})?)?)?$/))
+		return -1;
+		
+	//remove Quotes ro verify validity
+	if(datestr.indexOf("\'") != -1){
+		datestr = datestr.replace("\'","");
+	}
+			
+	
+	var yyyy = parseInt(datestr.substring(0,4), 10);
+	var mm = parseInt(datestr.substring(5,7), 10);
+	var dd = parseInt(datestr.substring(8,10), 10);
+	if (yyyy < 1 || mm < 1 || mm > 12 || dd < 1)
+		return -1;
+	//validate against maximum day of month
+	var leapyear = (yyyy%4 == 0) && (yyyy%100 != 0 || yyyy%400 == 0);
+	var dpm = new Array();
+	dpm[1] = dpm[3] = dpm[5] = dpm[7] = dpm[8] = dpm[10] = dpm[12] = 31;
+	dpm[2] = leapyear? 29 : 28;
+	dpm[4] = dpm[6] = dpm[9] = dpm[11] = 30;
+	if (dd > dpm[mm])
+		return -1;
+	
+	if (datestr.length > 10)
+	{
+		//hour is the only thing not already completely validated by the regex
+		if (parseInt(datestr.substring(11,13), 10) > 23)
+			return -1;
+	}
+			
+	// Passed all the tests, return non-negative number for success :-)
+	return 0;
+}
+
+// Format the date string so it can be used in SQL comparisons.
+// For Oracle, this means wrapping the date string in the
+// to_date() function 
+// Return the formatted string
+//
+// Note formatDate assumes the date is in one of the
+// accepted formats i.e. that checkdate has already run
+//
+function formatDate(datestr)
+{
+	dbtype = "CS.Property.cs.dbtype";
+	if (dbtype=="Oracle")
+	{
+		len = datestr.length;
+		
+		if(len > 19 )
+		{
+		   //Trimming the milliseconds 
+		   var index = datestr.lastIndexOf('.');
+		   datestr = datestr.substring(0,index);
+		   len = datestr.length;
+		}
+		 
+		if (len == 10)
+			dateformat = "YYYY-MM-DD";
+		
+		if (len == 16)
+			dateformat = "YYYY-MM-DD HH24:MI";
+
+		if (len == 19)
+			dateformat = "YYYY-MM-DD HH24:MI:SS";
+		
+		outstr = "to_date('" + datestr + "', '" + dateformat + "')";
+	}	
+	else
+	{
+		//if Quotes already present
+		if(datestr.indexOf("\'") != -1)
+			outstr = datestr;
+		else
+			outstr = "'" + datestr + "'" ;
+	}	
+	return outstr;	
+}
+
+/*
+	padDate - given a form field object with a valid date,
+	pads the date to full "YYYY-MM-DD HH:mm:ss" format.
+	NOTE: padDate assumes the date is in one of the accepted
+	formats, i.e. it already passed checkDate.
+	Returns true if a condition it expects is met; otherwise
+	returns false (signifying either invalid argument or
+	invalid/blank field value).
+	(This return value may be ignored, but it's there if needed.)
+*/
+function padDate(field)
+{
+	if (!field || typeof(field.value) == 'undefined')
+		return false;
+	var flen = field.value.length;
+	
+	if (flen == 19)
+		return true; //already "YYYY-MM-DD HH:mm:ss"
+	if (flen == 10) // "YYYY-MM-DD"
+	{
+		field.value += " 00:00:00";
+		return true;
+	}
+	if (flen == 11) // "YYYY-MM-DD "
+	{
+		field.value += "00:00:00";
+		return true;
+	}
+	if (flen == 16) // "YYYY-MM-DD HH:mm"
+	{
+		field.value += ":00";
+		return true;
+	}
+	return false;
+}
+
+/*
+	This function accepts an input date string and returns a Javascript Date object.
+	Acceptable input date string formats are
+	1) YYYY-MM-DD hh:mm:ss
+	2) YYYY-MM-DD hh:mm
+	3) YYYY-MM-DD
+	The function returns null if the input date format does not match to one of the above formats.
+*/
+function dateToObject(str) 
+{
+	var m = str.match(/^(\d{4})-(\d\d)-(\d\d)(?: (\d\d):(\d\d)(?::(\d\d))?(?:\.(\d{0,3}))?)?$/);
+	if (!m) 
+		return null;
+	for (var i = 4; i < m.length; i++)
+		if (!m[i])
+			m[i] = 0;
+	var dt = new Date(m[1],m[2]-1,m[3],m[4],m[5],m[6],m[7] ? m[7] : 0);
+	return dt;
+}
+
+/*
+	This function accepts a Javascript Date object and returns a string in the following format:
+	YYYY-MM-DD hh:mm:ss
+*/
+function dateToJDBCString(dateObj)
+{
+	var hrs = dateObj.getHours();
+    hrs = (hrs < 10? '0' + hrs : hrs);
+    var mins = dateObj.getMinutes();
+    mins = (mins < 10? '0' + mins : mins);
+    var secs = dateObj.getSeconds();
+    secs = (secs <10?'0' +secs :secs);
+    var date = dateObj.getDate();
+    date = (date <10?'0'+date:date);
+    var mon = dateObj.getMonth() + 1;
+    mon = (mon <10?'0'+mon:mon);
+    var yr = dateObj.getFullYear();
+
+    var dateString = yr+'-'+mon+'-'+date+' '+hrs+':'+mins+':'+secs;
+    return dateString;
+}
+
+/*
+	This function checks for the validity of the start and end date attributes.
+	It checks for the availability of start and end date attributes on the form.
+	If they are available, it checks if they are specified in the right format
+	and alerts an error message if they are not.
+	This method also checks if the given start date (if specified) is later than 
+	the given end date (if specified) and if it is so shows an alert message. 
+*/
+function checkStartEndDateValidity()
+{	
+	var obj = document.forms[0];	
+	var startDate = document.getElementById('startDateFieldIdDiv');
+	var endDate = document.getElementById('endDateFieldIdDiv');
+	
+	if(startDate != null && endDate != null)
+	{
+		var startDateInMillis = -1, endDateInMillis = -1;
+		var startDateObj, endDateObj;
+		if(startDate && startDate.innerHTML != "")
+		{
+			//Check for valid start date
+			if(checkDate(startDate.innerHTML) < 0)
+			{
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/AT/Promotions/Specifystartdate" ESCAPE="true" ENCODE="false"/>" );
+			<![CDATA[				
+				return false;
+			}
+			startDateObj = dateToObject(startDate.innerHTML);		
+			if(startDateObj)
+				startDateInMillis = startDateObj.getTime();
+				
+		}
+		if(endDate && endDate.innerHTML != "")
+		{
+			if(checkDate(endDate.innerHTML) < 0)
+			{
+			]]>
+				alert("<XLAT.STREAM KEY="dvin/AT/Promotions/Specifyenddate" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+				return false;
+			}
+			endDateObj = dateToObject(endDate.innerHTML);
+			if(endDateObj)
+				endDateInMillis = endDateObj.getTime();
+		}
+		if(startDateInMillis > 0 && endDateInMillis > 0)
+		{
+			if(startDateInMillis > endDateInMillis)
+			{
+			]]>
+				alert("<XLAT.STREAM KEY="fatwire/Alloy/UI/StartDateCannotBeAfterEndDate" ESCAPE="true" ENCODE="false"/>");
+			<![CDATA[
+				return false;
+			}
+		}
+		copyStartEndDateFields();
+		return true;
+	}
+	else
+		return true; //found no dates to check (FIXME -> #18708, #18691, ...)
+}
+
+
+function copyStartEndDateFields()
+{
+	var startDate = document.getElementById('startDateFieldIdDiv');
+	var endDate = document.getElementById('endDateFieldIdDiv');
+	
+	if(startDate != null && endDate != null)
+	{
+		var startDateField = dijit.byId('startDateFieldId');
+		var endDateField = dijit.byId('endDateFieldId');
+		startDateField.set('value',startDate.innerHTML);
+		endDateField.set('value',endDate.innerHTML);
+	}
+}
+]]>
+</replaceall>
+</SCRIPT>
+
+</FTCS>

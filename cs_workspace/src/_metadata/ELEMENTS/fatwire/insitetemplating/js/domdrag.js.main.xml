@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/insitetemplating/js/domdrag</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/insitetemplating/js/domdrag</string>
+        <string>domdrag library</string>
+        <string></string>
+        <string></string>
+        <string>fatwire/insitetemplating/js/domdrag.js</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/fatwire/insitetemplating/js/domdrag.js|null|_storable_type\=%2FELEMENTS%2Ffatwire%2Finsitetemplating%2Fjs%2Fdomdrag.js
+@hashval=-515920946
+key=@ELEMENTCATALOG-fatwire/insitetemplating/js/domdrag
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

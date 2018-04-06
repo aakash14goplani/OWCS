@@ -1,0 +1,481 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/AssetType/Device/Header
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Mobility/GetInfo">
+<ARGUMENT NAME="serviceName" VALUE="getDefaultDeviceGroup" />
+<ARGUMENT NAME="outVar" VALUE="defaultDeviceGroup" />
+</CALLELEMENT>
+
+<SCRIPT LANGUAGE="JavaScript">
+    <![CDATA[
+
+function getScaleValue (value) {
+	return value / 100;
+}
+	
+function transformDeviceImage(value)
+{
+	value = parseInt(value);
+	var deviceImage = dojo.byId("showSkin");
+	dojo.style (deviceImage, '-webkit-transform', 'scale(' + getScaleValue(value) + ')');
+	dojo.style (deviceImage, 'MozTransform', 'scale(' + getScaleValue(value) + ')');
+	dojo.style (deviceImage, '-ms-transform', 'scale(' + getScaleValue(value) + ')');
+	if(dojo.isIE <= 8) {
+		dojo.style(deviceImage, "filter", "progid:DXImageTransform.Microsoft.Matrix(M11=" + getScaleValue(value) + ", M12=0, M21=0, M22=" + getScaleValue(value) + ", SizingMethod='auto expand')");
+	}
+}
+	
+function validateDimensionFields(form,stopSave)
+{
+	if(form)
+	{
+		if(obj.elements['isEdit'].value == 'false') 
+			return isLeftOffsetNumeric(form,stopSave) && isHeightNumeric(form,stopSave) && isWidthNumeric(form,stopSave) && isTopOffsetNumeric(form,stopSave) && isPixelRatioNumeric();
+		
+		var leftOffSetField = document.getElementById("Device:leftoffset"),
+			topOffSetField = document.getElementById("Device:topoffset"),
+			heightField = document.getElementById("Device:height"),
+			widthField = document.getElementById("Device:width");
+		if(isLeftOffsetNumeric(form,stopSave) && isHeightNumeric(form,stopSave) && isWidthNumeric(form,stopSave) && isTopOffsetNumeric(form,stopSave) && document.getElementById("blobHeight") && document.getElementById("blobWidth"))
+		{					    			  		  			 			  												
+		    var imageWidth = document.getElementById("blobWidth").value,
+		     	imageHeight = document.getElementById("blobHeight").value,
+		     	bottomOffSet = parseInt(parseInt(imageHeight) - parseInt(parseInt(topOffSetField.value)+parseInt(heightField.value))),						  
+			 	rightOffSet = parseInt(parseInt(imageWidth) - parseInt(parseInt(leftOffSetField.value)+parseInt(widthField.value)));
+		   	if(bottomOffSet < 0 && stopSave)
+			{
+				window.alert(']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/DeviceImageHeightExceeds" ENCODE="false" ESCAPE="true"/> <![CDATA['+' (' +imageHeight+'). '+']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/CorrectDeviceImageHeightDimensions" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+				closeDimensionMsgDiv();
+				return false;
+			}
+			
+			if(rightOffSet < 0 && stopSave)
+			{
+				window.alert(']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/DeviceImageWidthExceeds" ENCODE="false" ESCAPE="true"/> <![CDATA['+' (' +imageWidth+'). '+']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/CorrectDeviceImageWidthDimensions" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+				closeDimensionMsgDiv();
+				return false;
+			}
+			return isPixelRatioNumeric();
+		}  //Fix for bug 16744374. On headless servers, with no graphic cards etc available to support AWT, blobHeight and blobWidth can not be calculated.
+		else if (!document.getElementById("blobHeight") && !document.getElementById("blobWidth")) 
+		{
+		return true;
+		}
+	}
+	return false;
+}	
+function testUserAgent(form)
+{
+var attrName = 'Device:useragent';
+var useragentstr=form.elements[attrName].value; 
+if (useragentstr == "")
+	{
+		window.alert(']]><XLAT.STREAM KEY="fatwire/admin/MustEnterUserAgent" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        return false;
+    }
+
+      var element = 'OpenMarket/Xcelerate/AssetType/Device/UserAgent',
+        urlArgs = {useragent: useragentstr },	    
+	    xhrArgs = {
+	        url: fw.util.getCSpath() + "ContentServer?pagename=fatwire/ui/controller/controller",
+		  content: {
+		    elementName: element,
+			responseType: 'json',
+			useragent: useragentstr
+		  },
+		  preventCache: true,
+		  load: function(response) {
+                   var responseObj = dojo.fromJson(response);
+			 var msgDiv = document.getElementById("msgDivId");
+			if(msgDiv)
+			{			 
+                   	if(responseObj.result == 'true')
+                   		{
+	                   	  if(hasValue(responseObj.matchedDeviceGroup) && hasValue(responseObj.matchedDevice) && (responseObj.matchedDeviceGroup != ']]><STRING.STREAM VARIABLE="defaultDeviceGroup" /><![CDATA['))
+								{			                   			                   		
+									var	 msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/UserAgentMatchedDevice" ENCODE="false" ESCAPE="true"/> <![CDATA[' +responseObj.matchedDevice+'. '+']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/UserAgentMatchedDeviceGroup" ENCODE="false" ESCAPE="true"/> <![CDATA['+responseObj.matchedDeviceGroup;
+									var severity = 'info'; 
+								}
+	                   	else if(hasValue(responseObj.matchedDevice))
+								{								
+									var  msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/UserAgentMatchedDevice" ENCODE="false" ESCAPE="true"/> <![CDATA[' +responseObj.matchedDevice+'. '+
+									      ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/UserAgentNotMatchedAnyGroup" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+									var severity = 'warning';						
+								}
+								else
+								{		
+								    var msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinAssociationFailedDeviceNotFound" ENCODE="false" ESCAPE="true"/> <![CDATA[';									
+									var severity = 'warning';
+								}
+						}
+                        else
+						{ 
+							//failed to identify device. put it into DESKTOP group
+							var msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinAssociationFailedDeviceNotFound" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+				 			var severity = 'warning';
+						}												
+						createMsgDiv(msgDiv,msg,severity);
+			}
+		    
+                		  },
+		  error: function(error) {
+				if(error.message && error.message.indexOf("403") != -1) {
+			  ]]>
+					<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/Security/TimeoutError" OUTSTRING="urlstring">
+					</SATELLITE.LINK>
+					<REPLACE STR="Variables.urlstring">
+						parent.parent.location="Variables.urlstring";
+					</REPLACE>		
+			  <![CDATA[
+			  }
+			  else {
+				var msgDiv = document.getElementById("msgDivId");						
+				var msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinAssociationFailedInternalError" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+				var severity = 'error';						
+				createMsgDiv(msgDiv,msg,severity);	
+			  }
+		  }
+          };
+
+	dojo.xhrGet(xhrArgs);
+}
+function createMsgDiv(msgDiv,msgTxt,severity)
+{
+	msgDiv.innerHTML="";
+	msgDiv.className = 'message-'+severity;
+	var imgPath = fw.util.getCSpath()+"Xcelerate/graphics/common/msg/"+severity+".png";
+
+	 
+	var img = document.createElement("img");
+	img.src=imgPath;
+	img.className='icon-img';
+	msgDiv.appendChild(img);
+
+	var msgTxtDiv = document.createElement("DIV");
+	msgTxtDiv.id = "msg-txt-id";
+	msgTxtDiv.className="msg-txt";
+	dojo.style(msgTxtDiv, 'line-height', 'normal');                   
+	var divMsg = document.createTextNode(msgTxt); 
+	msgTxtDiv.appendChild(divMsg);
+	msgDiv.appendChild(msgTxtDiv);
+
+
+	var msgCloseDiv = document.createElement("DIV");
+	msgCloseDiv.id = "msg-txt-id";
+	msgCloseDiv.className="right close-img"; 
+	msgCloseDiv.setAttribute('onClick','javascript:closeTheMessageDiv()');
+	msgDiv.appendChild(msgCloseDiv);
+
+	msgDiv.style.display="";
+}
+
+function createDimensionMsgDiv(msgDivs,msgTxt,severity)
+{
+    if(!msgDivs)
+    return;
+	
+	for(var i = 0;i<msgDivs.length;i++)
+	{
+	var msgDiv = msgDivs[i];
+	msgDiv.innerHTML="";
+	msgDiv.className = 'message-'+severity;
+	msgDiv.style.top = "2px";
+	var imgPath = fw.util.getCSpath()+"Xcelerate/graphics/common/msg/"+severity+".png";
+
+	 
+	var img = document.createElement("img");
+	img.src=imgPath;
+	img.clasName='icon-img';
+	msgDiv.appendChild(img);
+
+	var msgTxtDiv = document.createElement("DIV");
+	msgTxtDiv.id = "msg-txt-id";
+	msgTxtDiv.className="msg-txt";                   
+	var divMsg = document.createTextNode(msgTxt); 
+	msgTxtDiv.appendChild(divMsg);
+	msgDiv.appendChild(msgTxtDiv);
+
+
+	var msgCloseDiv = document.createElement("DIV");
+	msgCloseDiv.id = "msg-txt-id";
+	msgCloseDiv.className="right close-img"; 
+	msgCloseDiv.setAttribute('onClick','javascript:closeDimensionMsgDiv()');
+	msgDiv.appendChild(msgCloseDiv);
+
+	msgDiv.style.display="";
+	}
+}
+
+function closeDimensionMsgDiv()
+{
+	var msgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]'); 
+	if(msgDivs)
+	{
+		for(var i = 0;i< msgDivs.length;i++)
+		 {
+		  var msgDiv = msgDivs[i];
+		  msgDiv.innerHTML = "";
+		  msgDiv.className = "";
+		  }
+	}
+}
+/*
+Input str - A text or numeric variable or value. Not any DOM object.
+*/
+function hasValue(str)
+{
+return(str && str != 'null' && new String(str).length > 0)
+}
+
+ 
+ function closeTheMessageDiv()
+{
+ var msgDiv = document.getElementById("msgDivId");
+if(msgDiv)
+{
+msgDiv.innerHTML="";
+msgDiv.style.display="none";
+}
+}
+
+function valueChanged(event,_fieldid,_url)
+	{	
+	if(obj.elements['isEdit'].value == 'false') return;
+	var field = document.getElementById(_fieldid);
+		if(!isNaN(field.value))
+		{
+		      var keyCode = ('which' in event) ? event.which : event.keyCode;			  
+		      switch(keyCode)
+		      {
+		       case 38:
+		           field.value = parseInt(parseInt(field.value) + 1);
+				    break;
+		       case 40:
+		            field.value = parseInt(parseInt(field.value) - 1);
+		       }	   	      	
+	   		}
+	   if(document.getElementById("showSkin"))
+       {
+	    //If the skin is not being shown, call function 'showSkinImages', just to validate field values, not render skin image.
+		//If the skin is already being shown, re-render skin;
+	    if(document.getElementById("showSkin").style.display == "none")
+         showSkinImages(_url,'true');
+		 else
+		 showSkinImages(_url);
+       }
+	}
+	
+	
+	function showSkinImages(_url,validateOnly)
+	{	
+	    if(!hasValue(_url))    //If there is no url 
+		return;
+		
+		var msgDiv = document.getElementById("showSkin");		
+		if(msgDiv)
+			{				
+				var form = document.forms[0],
+				leftOffSetField = document.getElementById("Device:leftoffset"),
+				topOffSetField = document.getElementById("Device:topoffset"),
+				heightField = document.getElementById("Device:height"),
+				widthField = document.getElementById("Device:width");
+				if(isLeftOffsetNumeric(form) && isHeightNumeric(form) && isWidthNumeric(form) && isTopOffsetNumeric(form) && document.getElementById("blobHeight") && document.getElementById("blobWidth"))
+				{					    			  		  			 			  												
+					    var dimensionsValid = "true";
+					    var imageWidth = document.getElementById("blobWidth").value;
+					    var imageHeight = document.getElementById("blobHeight").value;
+					    var bottomOffSet = parseInt(parseInt(imageHeight) - parseInt(parseInt(topOffSetField.value)+parseInt(heightField.value)));						  
+						var rightOffSet = parseInt(parseInt(imageWidth) - parseInt(parseInt(leftOffSetField.value)+parseInt(widthField.value)));
+					   	clearFieldColors(leftOffSetField,topOffSetField,heightField,widthField);
+						
+						   if(bottomOffSet < 0)
+							{
+							var	 msg = ']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/DeviceImageHeightExceeds" ENCODE="false" ESCAPE="true"/> <![CDATA['+' (' +imageHeight+'). '+']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/CorrectDeviceImageHeightDimensions" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+							dimensionsValid = "false";					
+							colorFields(topOffSetField,heightField);
+							var msgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]'); 
+							createDimensionMsgDiv(msgDivs,msg,'error');							
+							}
+							
+							if(rightOffSet < 0)
+							{
+							var	 msg = ']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/DeviceImageWidthExceeds" ENCODE="false" ESCAPE="true"/> <![CDATA['+' (' +imageWidth+'). '+']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/CorrectDeviceImageWidthDimensions" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+							dimensionsValid = "false";
+							colorFields(leftOffSetField,widthField);							;
+							var msgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]');
+							createDimensionMsgDiv(msgDivs,msg,'error');
+							}
+							
+							if(dimensionsValid == 'true')
+							{
+								closeDimensionMsgDiv();
+							}
+						if(validateOnly == 'true')
+						  return;
+						msgDiv.innerHTML="";
+						msgDiv.style.height = imageHeight+"px";
+						msgDiv.style.width = imageWidth+"px";
+						msgDiv.style.padding = topOffSetField.value+"px  "+rightOffSet+"px"+"  "+bottomOffSet+"px  "+leftOffSetField.value+"px";
+						  
+						var previewDiv = getOffSetDiv(widthField.value,heightField.value,'preview');
+						previewDiv.style.backgroundColor="#c2dcf3";				
+						var	 screenAreaText = ']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/DeviceImageScreenArea" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+						previewDiv.style.textAlign="center";
+						previewDiv.style.lineHeight=heightField.value+"px";
+						previewDiv.style.fontSize="320%";
+						previewDiv.innerHTML = screenAreaText;
+						previewDiv.style.overflow = "hidden";
+						previewDiv.style.color = "#566d73";
+						previewDiv.style.fontFamily = "Tahoma, Arial";
+						previewDiv.style.fontWeight = "bold";
+
+						msgDiv.appendChild(previewDiv);
+							
+						msgDiv.style.display="";					
+				}
+			  }
+	}
+function colorFields(field1,field2)
+{
+if(field1 && field2)
+{
+field1.className = 'dimErrorField';
+field2.className = 'dimErrorField';
+}
+}
+
+function clearFieldColors(field1,field2,field3,field4)
+{
+if(field1 && field2 && field3 && field4)
+{
+field1.className = "";
+field2.className = "";
+field3.className = "";
+field4.className = "";
+}
+}	
+function getOffSetDiv(width,height,id)
+{
+var div = document.createElement("div");
+div.style.height = height+"px";
+div.style.width = width+"px";
+div.id = id;
+return div;
+}
+function removeSkinImage()
+{
+	var msgDiv = document.getElementById("showSkin");
+	msgDiv.style.display="none";
+}
+ 
+ 
+ function isWidthNumeric(form,stopSave)
+{
+var widthField = document.getElementById("Device:width");
+if (isNaN(new String(widthField.value)) || widthField.value <= 0)
+	{
+	   if(stopSave)
+	   {
+		window.alert(']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinWidthNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        closeDimensionMsgDiv();
+		}
+		else
+		{
+		var	 msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinWidthNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+		var dimensionMsgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]');
+		createDimensionMsgDiv(dimensionMsgDivs,msg,'error');
+		}
+        return false;
+    }
+	return true;
+
+}
+
+function isHeightNumeric(form,stopSave)
+{
+var heightField = document.getElementById("Device:height");
+if (isNaN(new String(heightField.value)) || heightField.value <= 0)
+	{
+	     if(stopSave)
+	   {
+		window.alert(']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinHeightNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        closeDimensionMsgDiv();
+		}
+		else
+		{
+		var	 msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinHeightNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+		var dimensionMsgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]');
+		createDimensionMsgDiv(dimensionMsgDivs,msg,'error');
+		}
+        return false;
+    }
+	return true;
+
+}
+
+function isLeftOffsetNumeric(form,stopSave)
+{
+var leftOffSetField = document.getElementById("Device:leftoffset");
+if (isNaN(new String(leftOffSetField.value)) || leftOffSetField.value <= 0)
+	{
+	    if(stopSave)
+	   {
+		window.alert(']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinLeftOffsetNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        closeDimensionMsgDiv();
+		}
+		else
+		{
+		var	 msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinLeftOffsetNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+		var dimensionMsgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]');
+		createDimensionMsgDiv(dimensionMsgDivs,msg,'error');
+		}
+        return false;
+    }
+	return true;
+
+}
+
+function isTopOffsetNumeric(form,stopSave)
+{
+var topOffSetField = document.getElementById("Device:topoffset");
+if (isNaN(new String(topOffSetField.value)) || topOffSetField.value <= 0)
+	{
+	    if(stopSave)
+		{
+		window.alert(']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinTopoffsetNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        closeDimensionMsgDiv();
+		}
+		else
+		{
+		var	 msg = ']]><XLAT.STREAM KEY="dvin/UI/MobilitySolution/SkinTopoffsetNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[';
+		var dimensionMsgDivs = dojo.query('div[name="screenDimensionErrorMsgDiv"]');
+		createDimensionMsgDiv(dimensionMsgDivs,msg,'error');
+		}
+        return false;
+    }
+	return true;
+
+}
+
+function isPixelRatioNumeric()
+{
+	var pixelRatioField = dojo.byId("Device:pixelratio");
+	if (pixelRatioField && (isNaN(pixelRatioField.value) || pixelRatioField.value <= 0))
+	{
+		window.alert(']]><XLAT.STREAM KEY="fatwire/admin/DeviceImage/PixelRatioNumeric" ENCODE="false" ESCAPE="true"/> <![CDATA[');
+        return false;
+    }
+	return true;
+}
+
+]]>
+</SCRIPT>
+
+</ftcs>

@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+	<!-- OpenMarket/Xcelerate/Actions/DeleteGroupPost
+	-
+	- INPUT
+	-
+	- OUTPUT
+	-
+	-->
+
+
+	<!-- Attempt to delete the workflow -->
+	<WORKFLOWENGINE.GETGROUPID OBJVARNAME="deletegroup" ID="Variables.id"/>
+	<WORKFLOWGROUP.SCATTER PREFIX="wfg:" NAME="deletegroup"/>
+
+	<WORKFLOWGROUP.GETID NAME="deletegroup" VARNAME="groupid"/>
+	<WORKFLOWENGINE.DELETEGROUPID ID="Variables.groupid"/>
+	<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+	<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+	
+	<IF COND="IsError.Variables.errno=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+				<ARGUMENT NAME="error" VALUE="DeleteFailed"/>
+			</CALLELEMENT>
+
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront">
+				<ARGUMENT NAME="id" VALUE="Variables.id"/>
+			</CALLELEMENT>
+		</THEN>
+		<ELSE>
+			<TABLE class="width-outer-70" CELLPADDING="0" CELLSPACING="0" BORDER="0">
+				<!-- Asset title with asset name -->
+				<TR>
+					<TD>
+						<SPAN CLASS="title-text">
+						<XLAT.STREAM KEY="dvin/Common/DeleteGroup"/>
+:
+						</SPAN>
+						<SPAN CLASS="title-value-text">
+						<STRING.STREAM VARIABLE="wfg:name"/>
+						</SPAN>
+					</TD>
+				</TR>
+
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+					<ARGUMENT NAME="SpaceBelow" VALUE="Yes"/>
+				</CALLELEMENT>
+
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<TR>
+					<TD>
+						<XLAT.LOOKUP KEY="dvin/UI/WorkflowGroupDeleted" VARNAME="_XLAT_"/>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+							<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+							<ARGUMENT NAME="severity" VALUE="info"/>
+						</CALLELEMENT>
+					</TD>
+				</TR>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<TR>
+					<TD>
+						<TABLE class="width-inner-100" CELLPADDING="0" CELLSPACING="0" BORDER="0">
+							<TR>
+								<TD CLASS="form-label-text">
+									<XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+								</TD>
+								<TD><IMG HEIGHT="1" WIDTH="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></TD>
+								<TD class="form-inset">
+									<STRING.STREAM VARIABLE="wfg:name"/>
+								</TD>
+							</TR>
+
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+							<TR>
+								<TD CLASS="form-label-text">
+									<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+								</TD>
+								<TD></TD>
+								<TD class="form-inset">
+									<STRING.STREAM VARIABLE="wfg:description"/>
+								</TD>
+							</TR>
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+							<TR>
+								<TD CLASS="form-label-text">
+									<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+								</TD>
+								<TD></TD>
+								<TD class="form-inset">
+									<STRING.STREAM VARIABLE="wfg:id"/>
+								</TD>
+							</TR>
+						</TABLE>
+					</TD>
+				</TR>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			</TABLE>
+			<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+			<IF  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+				<THEN>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+						<ARGUMENT NAME="__TreeRefreshKeys__" VALUE="Root:Groups"/>
+					</CALLELEMENT>
+				</THEN>
+			</IF>
+		</ELSE>
+	</IF>
+
+</FTCS>

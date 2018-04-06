@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+	<satellite.link assembler="query" pagename="OpenMarket/Xcelerate/UIFramework/LoginPage" outstring="loginurl">
+   		<satellite.argument name="cs_environment" value="preview"/>
+   		<satellite.argument name="AssetType" value="Variables.AssetType"/>
+   		<satellite.argument name="id" value="Variables.id"/>
+   		<satellite.argument name="mode" value="Variables.mode"/>
+   		<satellite.argument name="pubid" value="Variables.pubid"/>	        		
+   		<if cond="IsVariable.target=true">
+   		<then>
+   			<satellite.argument name="target" value="Variables.target"/>
+   		</then>
+   		</if>
+   	</satellite.link>		
+    <if cond="IsVariable.loginMessage=true">
+	<then>
+		<satellite.normalizeurl url="Variables.loginurl" outstring="normalizedUrl"/>      	
+		<satellite.link ASSEMBLER="query" pagename="OpenMarket/Xcelerate/UIFramework/LoginError" outstring="errorurl">
+			<satellite.argument name="destpage" value="Variables.normalizedUrl"/>
+			<satellite.argument name="error" value="LoginError"/>			
+		</satellite.link>      	
+     
+      	<replaceall LIST="Variables.errorurl">
+		<script>
+			document.location.replace("Variables.errorurl");
+		</script>
+		</replaceall>
+	</then>
+	<else>					       	 
+      	<replaceall list="Variables.loginurl">
+      	<script>
+      		document.location.replace("Variables.loginurl");
+      	</script>
+      	</replaceall>  
+     </else>
+     </if>    
+     <throwexception/>  
+</ftcs>

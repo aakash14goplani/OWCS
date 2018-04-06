@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Admin/CheckUserAdmin
+-
+- INPUT
+	Variables.adminRoleTocheck (can be either GeneralAdmin or SiteAdmin, other roles are ignored)
+	Variables.userObject (user object obtained usually from USERMANAGER.GETUSERFROMNAME tag)
+	
+	Variables.publicationId (publication id to check if the user has SiteAdmin role in that publication)
+-
+- OUTPUT
+-
+-->
+<IF COND="IsVariable.userObject=false">
+<THEN>
+	<USERMANAGER.GETLOGINUSERNAME VARNAME="currentUserName" />
+	<USERMANAGER.GETUSERFROMNAME USERNAME="Variables.currentUserName" OBJVARNAME="userObj"/>
+	<SETVAR NAME="userObject" VALUE="userObj"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.adminRoleToCheck=GeneralAdmin">
+<THEN>
+	<SETVAR NAME="userIsGeneralAdmin" VALUE="false" />
+	<IF COND="SessionVariables.pubid!=0">
+	<THEN>
+	<PUBLICATION.LIST LIST="listOfPublications"/>
+	<LOOP LIST="listOfPublications">
+		<PUBLICATION.LOAD name="currentPublication" OBJECTID="listOfPublications.id" />
+		<CCUSER.GETSITEROLES NAME="Variables.userObject" SITE="listOfPublications.id" OBJVARNAME="roleobject"/>
+		<ROLELIST.GETALL NAME="roleobject" VARNAME="roles"/>			
+		<ROLELIST.HASROLE NAME="roleobject" ROLE="Variables.adminRoleToCheck" VARNAME="roleexists"/> 
+		<IF COND="Variables.roleexists=true"> 
+		<THEN> 
+			<SETVAR NAME="userIsGeneralAdmin" VALUE="true" />
+			<!-- We found that the user is General Admin for atleast one site, we do not need to check for other sites,
+				simply go to the last row in the list of publications and return true -->
+			<SETROW LIST="listOfPublications" action="LAST"/>
+		</THEN> 
+		<ELSE> 
+			<SETVAR NAME="userIsGeneralAdmin" VALUE="false" />
+		</ELSE>  
+		</IF>	
+	</LOOP>
+	</THEN>
+	<ELSE>
+	<USERMANAGER.GETLOGINUSERNAME VARNAME="currentUserName" />
+	<USERMANAGER.GETUSERFROMNAME USERNAME="Variables.currentUserName" OBJVARNAME="userObj"/>
+	<CCUSER.GETSITEROLES NAME="userObj" SITE="SessionVariables.pubid" OBJVARNAME="roleobject"/>
+	<ROLELIST.HASROLE NAME="roleobject" ROLE="Variables.adminRoleToCheck" VARNAME="roleexists"/> 
+	<IF COND="Variables.roleexists=true"> 
+		<THEN> 
+			<SETVAR NAME="userIsGeneralAdmin" VALUE="true" />
+		</THEN> 
+	</IF> 
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<IF COND="Variables.adminRoleToCheck=SiteAdmin">
+	<THEN>
+		<SETVAR NAME="userIsSiteAdmin" VALUE="false" />
+		<CCUSER.GETSITEROLES NAME="Variables.userObject" SITE="Variables.publicationId" OBJVARNAME="roleobject"/>
+		<ROLELIST.HASROLE NAME="roleobject" ROLE="Variables.adminRoleToCheck" VARNAME="roleexists"/> 
+		<IF COND="Variables.roleexists=true"> 
+		<THEN> 
+			<SETVAR NAME="userIsSiteAdmin" VALUE="true" />
+		</THEN> 
+		<ELSE> 
+			<SETVAR NAME="userIsSiteAdmin" VALUE="false" />
+		</ELSE> 
+		</IF> 
+	</THEN>
+	</IF>
+</ELSE>
+</IF>
+</ftcs>

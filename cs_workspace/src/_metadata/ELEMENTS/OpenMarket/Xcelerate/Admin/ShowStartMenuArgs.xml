@@ -1,0 +1,232 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+
+
+<!-- OpenMarket/Xcelerate/Admin/ShowStartMenuArgs
+
+    INPUT
+
+    OUTPUT
+    This template renders startmenu child asset associations
+
+ *
+Modified:  March 22, 2011
+By:        JAG
+Reason:    Added Enhancement functionality which includes the following
+           1)  Added "asset" as allowable attribute type
+               asset Reference both for Single Value and MultiValue
+           2)  SV Named Associations
+           3)  MV Named Associations
+           4)  Provide the "pick asset" popup when tree is not available
+
+Modified:   April 22, 2011
+By:         JAG
+Reason:     PR#25705  Attribute Type for both money and float is mapped to Key word "Deciaml"
+                      and when clienttype equals "Deciaml" a Default Value Option needs to
+                      be generated.
+
+Modified:  April 25, 2011
+By:        JAG
+Reason:    PR#25709 Fixed the creating start menu item for an extensible page asset type
+           to select a Flex Page Definition ( Template ) and to collect, process, display
+           and set default values for all Extended and associated custom attributes
+           for that start menu selected page  definition.
+-->
+  <PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+  <if cond="Variables._enableForms!=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		</callelement>
+	</then>
+	</if>
+	<if cond="Variables.navigateLink=true">
+	<then>
+		<setvar name="IsAuthorized" value="false"/>
+	</then>
+	</if>
+	<if cond="Variables.navigateLink=true">
+	<then>
+		<!--  Since now it is verified that this assettype is not allowed to be shown
+			 in the Admin UI, the admin UI should behave as if there is no site tree.. 
+			This would provide the browse button to look up the assets.-->
+		<setvar name="showSiteTree" value="false"/>
+	</then>
+	</if>
+	
+  <LOOP LIST="lStartMenuArgValInspect">
+      
+ 	    <IF COND="lStartMenuArgValInspect.#curRow=2">
+        <THEN>
+            <SETVAR NAME="currentStyle" VALUE="display:inline;"/>
+        </THEN>
+        <ELSE>
+            <SETVAR NAME="currentStyle" VALUE="display:none;"/>
+        </ELSE>
+        </IF>
+
+        <IF COND="lStartMenuArgValInspect.clienttype=string">
+        <THEN>
+             <INPUT TYPE="TEXT" NAME="StartMenuValues_lStartMenuArgValInspect.#curRow" ID="StartMenuValueID_lStartMenuArgValInspect.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle" VALUE="[Value]" SIZE="32" onFocus="this.select();"/>
+        </THEN>
+        </IF>
+        <IF COND="lStartMenuArgValInspect.clienttype=Decimal">
+        <THEN>
+             <INPUT TYPE="TEXT" NAME="StartMenuValues_lStartMenuArgValInspect.#curRow" ID="StartMenuValueID_lStartMenuArgValInspect.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle" VALUE="[Value]" SIZE="32" onFocus="this.select();"/>
+        </THEN>
+        </IF>
+
+        <IF COND="lStartMenuArgValInspect.clienttype=String">
+        <THEN>
+            <INPUT TYPE="TEXT" NAME="StartMenuValues_lStartMenuArgValInspect.#curRow" ID="StartMenuValueID_lStartMenuArgValInspect.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle" VALUE="[Value]" SIZE="32" onFocus="this.select();"/>
+        </THEN>
+        <ELSE>
+            <IF COND="lStartMenuArgValInspect.clienttype=Number">
+            <THEN>
+            <INPUT TYPE="TEXT" NAME="StartMenuValues_lStartMenuArgValInspect.#curRow" ID="StartMenuValueID_lStartMenuArgValInspect.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle" VALUE="[Value]" SIZE="32" onFocus="this.select();"/>
+            </THEN>
+            <ELSE>
+
+                <IF COND="lStartMenuArgValInspect.clienttype=List">
+                <THEN>
+
+                    <!-- Is this Asset Reference Attibute -->
+
+                    <STRINGLIST NAME="lEnumVals" STR="lStartMenuArgValInspect.enumvals" DELIM=","/>
+                    <IF COND="lStartMenuArgValInspect.enumdisplay!=Variables.empty">
+                    <THEN>
+                        <STRINGLIST NAME="lEnumDisplay" STR="lStartMenuArgValInspect.enumdisplay" DELIM=","/>
+                        <SETROW LIST="lEnumDisplay" ACTION="FIRST"/>
+
+                        <SELECT NAME="StartMenuValues_lStartMenuArgValInspect.#curRow"
+                                ID="StartMenuValueID_lStartMenuArgValInspect.#curRow"
+                                STYLE="Variables.currentStyle"
+                                REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle">
+                            <LOOP LIST="lEnumVals">
+                                <STRING.ENCODE LIST="lEnumDisplay" COLUMN="ITEM" VARNAME="currentDisplayValue"/>
+                                <STRING.ENCODE LIST="lEnumVals" COLUMN="ITEM" VARNAME="currentEnumValue"/>
+                                <OPTION VALUE="Variables.currentEnumValue" REPLACEALL="Variables.currentEnumValue"><STRING.STREAM VALUE="Variables.currentDisplayValue"/></OPTION>
+                                <SETROW LIST="lEnumDisplay" ACTION="NEXT"/>
+                            </LOOP>
+                        </SELECT>
+                    </THEN>
+                    <ELSE>
+                           <!-- Pick From Tree Asset Attribute
+                                and Asset Associations Child Assets
+                                Set and assign the Refrence asset Spec
+                                used to filter PFT asset refrence selected item
+                                in essence the allowable type and subtype
+                                for the following three Asset Attribute / Association Refrerences
+
+                                 1) Attribute Asset Reference (SV And MV )
+                                 2) Named Asset Associations
+                                 3) childassettype,childsubtype
+                             -->
+                            <SETVAR NAME="attrname" VALUE="lStartMenuArgValInspect.fieldname"/>
+                            <SETVAR NAME="childassettype" VALUE="lStartMenuArgValInspect.reftype"/>
+                            <SETVAR NAME="refsubtype" VALUE="lStartMenuArgValInspect.refsubtype"/>
+                            <SETVAR NAME="multiple" VALUE="lStartMenuArgValInspect.multiple"/>
+
+                       <IF COND="Variables.showSiteTree=true">
+					   <THEN>
+                          <XLAT.LOOKUP KEY="dvin/Util/FlexAssets/SelectFromTree" VARNAME="SelectFromTree" ESCAPE="true"/>
+
+            		  	  <A   ID="StartMenuValueID_lStartMenuArgValInspect.#curRow"
+                               NAME="StartMenuValues_lStartMenuArgValInspect.#curRow"
+                               STYLE="Variables.currentStyle"
+
+                               onclick="return getChildAssociationFromTree ('Variables.attrname','Variables.childassettype','Variables.refsubtype', 'Variables.multiple')"
+
+                               onmouseover="window.status='Variables.SelectFromTree'; return true"
+                               OnMouseOut="return window.status='';"
+                               REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle,Variables.attrname,Variables.childassettype,Variables.refsubtype,Variables.multiple">
+
+                         <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddSelectedItems"/></CALLELEMENT>
+					     </A>
+                       </THEN>
+                       <ELSE>
+                            <!-- Provide the "pick asset" javascript -->
+                            <callelement NAME="OpenMarket/Xcelerate/Scripts/PickAssetPopup"/>
+
+                            <!-- Create a unique identifier to describe THIS asset popup -->
+						 	<SETVAR NAME="currentUniqueID" VALUE="CS.UniqueID"/>
+									<!-- Pick asset popup currently does not handle multiple asset types, and it is a considerable project to fix that -->
+									<IF COND="Variables.childassettype!=*">
+									<THEN>
+										<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+											<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+											<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+											<SATELLITE.ARGUMENT NAME="cs_PickAssetType" VALUE="Variables.childassettype"/>
+											<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+											<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+											<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+										</SATELLITE.LINK>
+									</THEN>
+									<ELSE>
+										<SATELLITE.LINK ASSEMBLER="query" OUTSTRING="url_Variables.currentUniqueID" PAGENAME="OpenMarket/Xcelerate/Actions/PickAssetPopup">
+											<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+											<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+											<SATELLITE.ARGUMENT NAME="cs_SelectionStyle" VALUE="single"/>
+											<SATELLITE.ARGUMENT NAME="cs_CallbackSuffix" VALUE="Variables.currentUniqueID"/>
+											<SATELLITE.ARGUMENT NAME="cs_FieldName" VALUE="associations.description"/>
+										</SATELLITE.LINK>
+									</ELSE>
+									</IF>
+									<ICS.RESOLVEVARIABLES NAME="$(Variables.url_$(Variables.currentUniqueID))" DELIMITED="true" OUTPUT="popupurl"/>
+									<script type="text/javascript">
+										<replaceall LIST="Variables.currentUniqueID,Counters.currentItem,Variables.AssetType,Variables.Assocname,Variables.popupurl,Variables.attrname,Variables.childassettype,Variables.refsubtype, Variables.multiple">
+
+											function PickAssetCallback_Variables.currentUniqueID(SelectedAssets)
+											{
+												var AssetInfo = SelectedAssets.split(":");
+											    var optionasset = {
+															assettype:    AssetInfo[0],
+															id:           AssetInfo[1],
+															name:         AssetInfo[2],
+											                displayItem : "Variables.attrname"+"="+AssetInfo[2],
+											                valueItem   : "Variables.attrname"+"="+AssetInfo[0]+":"+AssetInfo[1]
+											
+														} ;
+											   getChildAssociationFromPopUp ( "Variables.attrname","Variables.multiple",optionasset) ;
+											}
+											
+											function PickAssetPopup_Variables.currentUniqueID()
+											{
+											    OpenPickAssetPopup("Variables.popupurl", GetBannerHistory());
+											}
+										</replaceall>
+									</script>
+									<!-- draw the recent asset popup -->
+									<A  ID="StartMenuValueID_lStartMenuArgValInspect.#curRow"
+                                        NAME="StartMenuValues_lStartMenuArgValInspect.#curRow"
+                                        STYLE="Variables.currentStyle"
+                                        HREF="#"
+
+                                        ONCLICK="PickAssetPopup_Variables.currentUniqueID(Variables.currentUniqueID);return false;" TARGET="_blank"
+                                        REPLACEALL="Variables.currentUniqueID,lStartMenuArgValInspect.#curRow,Variables.currentStyle,Variables.attrname,Variables.childassettype,Variables.refsubtype,Variables.multiple"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Browse"/></CALLELEMENT></A>
+									<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="_XLAT_"/>
+									<XLAT.LOOKUP KEY="dvin/UI/Removethisassociation" VARNAME="mouseover" ESCAPE="true"/>
+                       </ELSE>
+                       </IF>                        
+                    </ELSE>
+                    </IF>
+                </THEN>
+                <ELSE>
+                	<!--
+                		Added the text fields required for 'Start Date' and 'End Date' default values in the start menu item.                		
+                	-->
+
+                    <IF COND="lStartMenuArgValInspect.clienttype=Date">
+                	<THEN>
+		            <INPUT TYPE="TEXT" NAME="StartMenuValues_lStartMenuArgValInspect.#curRow" ID="StartMenuValueID_lStartMenuArgValInspect.#curRow" STYLE="Variables.currentStyle" REPLACEALL="lStartMenuArgValInspect.#curRow,Variables.currentStyle" VALUE="[yyyy-mm-dd hh:mm:ss]" SIZE="32" onFocus="this.select();"/>                	
+			       </THEN>
+                	</IF>
+                </ELSE>
+                </IF>
+            </ELSE>
+            </IF>
+        </ELSE>
+        </IF>
+    </LOOP>
+</ftcs>

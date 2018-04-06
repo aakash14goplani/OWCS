@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/UnlockFront.xml $ 
+$Revision: 22 $ 
+$Modtime: 4/08/03 3:28p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- UnlockFront.xml
+-
+- DESCRIPTION
+-	Unlock what was previously locked by this user
+-
+- HISTORY 
+-->
+
+
+<!-- 
+    Check to see if tracking is enabled on
+    the content category. If not, then
+    indicate error and get out.
+
+    Check to see if anybody has it locked. If
+    current user has it locked, then we're okay
+    to unlock. Else, report an error
+
+    WARNING: This file is called "Unlock" for symmetry
+    with the Lock function. The actual parallel
+    for Lock in the ContentServer world is "Release".
+    This is the function that is executed.
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/> 
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/> 
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+    <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+</callelement>
+<if COND="Variables.trackingenabled=true">
+    <then>
+        <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+        <if COND="ItsHistory.lockedby=SessionVariables.username">
+            <then>
+                <!-- this is when we can unlock it! -->
+                <!-- unlock it and report status -->
+                <setvar NAME="errno" VALUE="0"/>
+			<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>
+			<ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+
+                <if COND="Variables.errno=0">
+                    <then>
+                    <XLAT.LOOKUP KEY="dvin/UI/RevisionTracking/Unlock-undoSuccess" VARNAME="_xlat_success"/>
+                    	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+							<argument NAME="msgtext" VALUE="Variables._xlat_success"/>
+							<argument NAME="severity" VALUE="info"/>
+						</callelement>
+                        
+
+<!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+
+			<implicitcheckout.clearcheckout ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+						<!-- SETVAR NAME="errno" VALUE="0"/>
+						<SETVAR NAME="assetid" VALUE="Variables.id"/>
+						<SETVAR NAME="username" VALUE="SessionVariables.username"/>
+						<SELECTTO LIST="COI" FROM="CheckOutInfo" WHAT="checkout" WHERE="assetid,username"/>
+						<IF COND="Variables.errno=0">
+							<THEN>
+								<CATALOGMANAGER SCOPED="STACKED">
+		        					<ARGUMENT NAME="tablename" VALUE="CheckOutInfo"/>
+		        					<ARGUMENT NAME="checkout" VALUE="COI.checkout"/>
+		        					<ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+    							</CATALOGMANAGER>
+							</THEN>
+						</IF -->
+                    </then>
+                    <else>
+                        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                            <argument NAME="error" VALUE="UnlockFailed"/>
+                        </callelement>
+                        <BR/>
+                        <CALLELEMENT NAME="FutureTense/Apps/AdminForms/RevisionMgt/errors"/>
+                    </else>
+                </if>
+            </then>
+            <else>        
+                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <argument NAME="error" VALUE="UnlockFailed"/>
+                </callelement>
+            </else>
+        </if>
+    </then>
+    <else>
+        <!-- unlock is going to fail -->
+        <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+            <argument NAME="error" VALUE="UnlockWillFail"/>
+        </callelement>
+        <BR/>
+        <CALLELEMENT NAME="FutureTense/Apps/AdminForms/RevisionMgt/errors"/>
+    </else>
+</if>
+<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	<argument NAME="id"        VALUE="Variables.id"/>
+</callelement>
+
+</FTCS>

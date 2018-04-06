@@ -1,0 +1,198 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/RemovePubSessionPost
+-
+- INPUT
+-        Variables.id -- pubsession id 
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<!-- Continue only if conditions from prologactions are satisfied -->
+<if COND="Variables.doproceed=true">
+<then>
+<setvar NAME="all_valid" VALUE="true" />
+<if COND="IsVariable.ignoreErrors=false">
+<then>
+	<SETVAR NAME="ignoreErrors" VALUE="false"/>
+	<SETVAR NAME="error_id" VALUE=""/>
+</then>
+</if>
+<STRINGLIST NAME="pubSessionDelIds" STR="Variables.id" DELIM="%20"/>
+<LOOP LIST="pubSessionDelIds">
+<setvar name="id" value="pubSessionDelIds.ITEM"/>
+<PUBSESSIONMANAGER.LOAD ID="Variables.id" OBJVARNAME="pubsess"/>
+<if COND="IsError.Variables.errno=false">
+<then>    
+    <PUBSESSION.GETTARGET NAME="pubsess" VARNAME="targetid" />
+    <!-- Verifies if user has access to specific pub session before delete -->
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Security/PublishAccessCheck">
+        <ARGUMENT NAME="targetid" VALUE="Variables.targetid"/>
+    </CALLELEMENT>
+    <if COND="Variables.doproceed=true">
+    <then>
+
+    <!-- delete the publish output file -->
+    <PublishClient.Flush ID="Variables.id" />
+    <PUBSESSION.GETSTARTDATE NAME="pubsess" VARNAME="publishdate" />
+    <PUBSESSION.GETUSER NAME="pubsess" VARNAME="publishedby" />
+
+   <!-- get target name -->
+ 	 <PUBTARGETMANAGER.LOAD ID="Variables.targetid" OBJVARNAME="pubtgt"/>
+	 <PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtgt:name"/>
+
+    <!-- delete the row from PubSession table -->
+    <PUBSESSIONMANAGER.Delete ID="Variables.id" IGNOREERRORS="Variables.ignoreErrors"/>
+    <if COND="IsError.Variables.errno=false">
+    <then>
+        
+        <table cellpadding="0" cellspacing="0" border="0" class="width-outer-70">
+        <tr>
+            <td><XLAT.LOOKUP KEY="dvin/UI/Publish/PublishSessionDeletedSuccess" VARNAME="_XLAT_"/>
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+                    <argument NAME="severity" VALUE="info"/>
+                </callelement>
+            </td>
+        </tr>
+        <tr><td><img width="1" height="15" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Destination"/>:</td>
+                    <td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                    <td class="form-inset"><STRING.STREAM VALUE="Variables.pubtgt:name"/></td>
+                </tr>       
+                
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <tr>
+                    <td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/PublishTime"/>:</td>
+                    <td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                    <td class="form-inset">
+                	<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.publishdate" VALUETYPE="jdbcdate"  VARNAME="publishdate"/>
+                    <STRING.STREAM VALUE="Variables.publishdate"/></td>
+                </tr>
+                
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <tr>
+                    <td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Status"/>:</td>
+                    <td></td>
+                    <td class="form-inset"><span class="alert-color"><XLAT.STREAM KEY="dvin/Common/Deleted"/></span></td>
+                </tr>
+                
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                <tr>
+                    <td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Publishedby"/>:</td>
+                    <td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                    <td class="form-inset"><STRING.STREAM VALUE="Variables.publishedby"/></td>
+                </tr>
+                </table>
+                
+            </td>
+        </tr>
+        </table>
+    </then>
+    </if>
+</then>
+</if>     
+</then>
+</if>     
+
+<if COND="IsError.Variables.errno=true">
+<then>
+    <if COND="Variables.errno=-12047">
+	<THEN>
+		<SETVAR NAME="forceDelete" VALUE="true"/>
+		<SETVAR NAME="error_id" VALUE="Variables.error_id Variables.id"/>
+		<table cellpadding="0" cellspacing="0" border="0" class="width-outer-70">
+		<tr>
+			<td>  
+				<XLAT.LOOKUP KEY="dvin/UI/Publish/PublishSessionDeleteRemoteFailure" ENCODE="false" VARNAME="_XLAT_"/>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+					<argument NAME="severity" VALUE="error"/>
+				</callelement>
+			</td>
+		</tr>
+    </table>
+	</THEN>
+	<ELSE>
+	<table cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td>  
+            <XLAT.LOOKUP KEY="dvin/UI/Publish/PublishSessionDeletedFail" VARNAME="_XLAT_"/>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+                <argument NAME="severity" VALUE="error"/>
+            </callelement>
+        </td>
+    </tr>
+    </table>
+	</ELSE>
+	</if>
+</then>
+<else>
+    <if cond="Variables.cs_environment=portal">
+    <then>
+        <callelement NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+    </then>
+    </if>
+</else>
+</if>
+</LOOP>
+<table class="width-outer-70"><tr><td align="left">
+<if cond="Variables.forceDelete=true">
+<then>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RemovePubSessionPost" outstring="urlRemPubSessPost">
+	<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	<satellite.argument name="id" value="Variables.error_id"/>
+	<satellite.argument name="ignoreErrors" value="true"/>
+</SATELLITE.LINK>
+<IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" REPLACEALL="Variables.cs_imagedir"/><A HREF="Variables.urlRemPubSessPost" REPLACEALL="Variables.urlRemPubSessPost" 
+		onClick="return confirmForceDelete();"><b><XLAT.STREAM KEY="dvin/UI/Publish/ForceDelete"/></b></A>
+</then>
+</if>
+</td>
+<if COND="Variables.doproceed=true"><then>
+<td align="right">
+<IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" REPLACEALL="Variables.cs_imagedir"/>
+<if cond="Variables.cs_environment=portal">
+<then>
+    <a HREF="javascript:void(0);" onclick="window.close();">
+    <b><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></b></a>
+</then>
+<else>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishConsoleFront" outstring="urlpubconsfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    </SATELLITE.LINK>
+    <A HREF="Variables.urlpubconsfront" REPLACEALL="Variables.urlpubconsfront">
+    <b><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></b></A>
+</else>
+</if>
+</td>
+</then></if>
+</tr>
+</table>
+<script type="text/javascript">
+<![CDATA[
+	function confirmForceDelete(){
+	]]>
+		if(confirm("<XLAT.STREAM KEY="dvin/UI/Publish/ForceDeleteSelectedPublishSessionsConfirmation" ESCAPE="true" ENCODE="false"/>"))
+		<![CDATA[
+		{
+			return true;
+		}
+		else
+		{
+		return false;
+		}
+    }
+]]>
+</script>
+</then></if>
+</FTCS> 

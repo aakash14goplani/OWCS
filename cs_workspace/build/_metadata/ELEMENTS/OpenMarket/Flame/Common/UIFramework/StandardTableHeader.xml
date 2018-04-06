@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Flame/Common/UIFramework/StandardTableHeader
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<![CDATA[
+<TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<TR>
+    <TD></TD><TD CLASS="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" SRC="/Xcelerate/graphics/common/screen/dotclear.gif"/></TD><TD></TD>
+</TR>
+<TR>
+    <TD CLASS="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" SRC="/Xcelerate/graphics/common/screen/dotclear.gif"/></TD>
+    <TD>
+]]>
+
+</ftcs>

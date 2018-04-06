@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/findBrowser.xml $
+$Revision: 17 $
+$Modtime: 2/19/04 10:15a $
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- findBrowser.xml
+-
+- DESCRIPTION
+-
+-
+- HISTORY
+-->
+
+
+<Script Language="Javascript">
+<![CDATA[
+
+function findBrowser()
+{
+	var brow = navigator.appName;
+	return brow;
+}
+]]>
+
+</Script>
+</FTCS>

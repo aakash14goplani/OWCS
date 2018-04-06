@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/AssetMaker/BuildEditFormStandardProperties</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/AssetMaker/BuildEditFormStandardProperties</string>
+        <string>Build the standard properties in the edit form</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/AssetMaker/BuildEditFormStandardProperties.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/AssetMaker/BuildEditFormStandardProperties.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FAssetMaker%2FBuildEditFormStandardProperties.xml
+@hashval=-387483927
+key=@ELEMENTCATALOG-OpenMarket/AssetMaker/BuildEditFormStandardProperties
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

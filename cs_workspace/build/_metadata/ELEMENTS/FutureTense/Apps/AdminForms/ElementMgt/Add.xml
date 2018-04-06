@@ -1,0 +1,111 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- ElementMgt/Add                                                          -->
+<!-- FutureTense, Inc.                                                       -->
+<!-- ####################################################################### -->
+
+
+<SATELLITE.FORM ASSEMBLER="query" ENCTYPE="multipart/form-data" ACTION="CatalogManager" METHOD="post">
+    <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+	<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+    
+<IF COND="IsVariable.key=true"><THEN>
+    <IF COND="Variables.key!=%"><THEN>
+        <SETSSVAR NAME="elementkey" VALUE="Variables.key"/>
+    </THEN></IF>
+</THEN><ELSE>
+    <SETVAR NAME="key" VALUE="Variables.empty"/>
+</ELSE></IF>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/CSAdminForms/AddElement"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<TABLE class="width-outer-50" BGCOLOR="#FFFFFF" BORDER="0"  CELLPADDING="0" CELLSPACING="0">
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>   
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <span class="alert-color">*</span> <XLAT.STREAM KEY="dvin/UI/Admin/ElementName"/>: 
+		</TD>
+        <TD><BR/></TD>
+        <TD class="form-inset" align="left">
+			<STRING.ENCODE VARIABLE="key" VARNAME="OutputQString"/>
+			<REPLACE STR="Variables.OutputQString">
+				<INPUT TYPE="text" NAME="elementname" SIZE="32" VALUE="Variables.OutputQString"/>                 
+			</REPLACE>
+    	</TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+   			<span class="alert-color">*</span> <XLAT.STREAM KEY="dvin/UI/CSAdminForms/URL"/>:
+		</TD>
+        <TD><BR/></TD>
+        <TD class="form-inset" align="left">
+			<callelement NAME="OpenMarket/Gator/AttributeTypes/CommonDojoxUploader">
+				<argument NAME="inputTagName" VALUE="url"/>
+			</callelement>
+        </TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <XLAT.STREAM KEY="dvin/UI/CSAdminForms/subfolder"/>:
+        </TD>
+        <TD><BR/></TD>
+        <TD class="form-inset" align="left">
+   			<INPUT TYPE="text" NAME="url_folder" SIZE="32" VALUE=""/>
+		</TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+        </TD>
+        <TD><BR/></TD>
+        <TD class="form-inset" align="left">
+   			<INPUT TYPE="text" NAME="description" SIZE="32" VALUE=""/>
+        </TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+   			<XLAT.STREAM KEY="dvin/AdminForms/Arguments1"/>:
+        </TD>
+        <TD><BR/></TD>
+        <TD class="form-inset" align="left">
+            <INPUT TYPE="text" NAME="resdetails1" SIZE="32" VALUE=""/>
+        </TD>
+    </TR>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+    <TR>
+        <TD class="form-label-text" align="right" NOWRAP="true">
+            <XLAT.STREAM KEY="dvin/AdminForms/Arguments2"/>:
+		</TD>
+		<TD><BR/></TD>
+        <TD class="form-inset" align="left">
+            <INPUT TYPE="text" NAME="resdetails2" SIZE="32" VALUE=""/>
+        </TD>
+    </TR>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	<TR>
+        <TD><BR/></TD><TD><BR/></TD><TD>
+			<INPUT TYPE="hidden" NAME="tablename" VALUE="ElementCatalog"/>
+			<INPUT TYPE="hidden" NAME="ftcmd" VALUE="addrow"/>
+			<XLAT.LOOKUP KEY="dvin/UI/CSAdminForms/Add"  VARNAME="_XLAT_"/>
+			<a onclick="if( checkAddElement(document.forms[0])) { document.forms[0].submit(); }" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/CSAdminForms/Add"/></CALLELEMENT></a>
+        </TD>
+    </TR>
+</TABLE>
+</SATELLITE.FORM>
+</FTCS>

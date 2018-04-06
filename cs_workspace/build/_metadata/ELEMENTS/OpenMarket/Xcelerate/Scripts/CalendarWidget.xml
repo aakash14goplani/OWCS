@@ -1,0 +1,95 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Scripts/CalendarWidget.xml
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<if COND="Variables.isJSCalendarLoaded!=true">
+<then>
+		<REPLACEALL List="CS.Property.ft.cgipath,SessionVariables.locale">
+		<SETVAR NAME="isJSCalendarLoaded" VALUE="true"/>
+		<link rel="stylesheet" type="text/css" href="CS.Property.ft.cgipathjs/dijit/themes/tundra/tundra.css"/>
+		<style type="text/css"><![CDATA[
+.tundra .dijitTextBox .dijitButtonNode {
+    border-color: #9B9B9B;
+}
+.tundra .dijitComboBox .dijitButtonNode {
+    padding: 0 0.2em;
+}
+.tundra .dijitArrowButton {
+    color: #111111;
+}
+.tundra .dijitButtonNode {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background: url("images/buttonEnabled.png") repeat-x scroll left bottom #FFFFFF;
+    border-color: #C0C0C0 #C0C0C0 #9B9B9B;
+    border-style: solid;
+    border-width: 1px;
+    padding: 0.1em 0.2em 0.2em;
+}
+
+.dateTimeFields .dijitTextBox, .dateTimeFields .dijitSpinner {
+	width: 35px;
+	font-size: 11px;
+}
+.dateTimeFields .dijitDateTextBox {
+	width: 70px;
+}
+.dateTimeFields .dijitValidationIcon {
+	/* takes up more space than it's useful for; background-color is enough */
+	display: none;
+}
+
+.dateTimeFields img {
+	vertical-align: bottom;
+	cursor: pointer; /* images (calendar / trash icons) have click actions */
+}
+
+.dj_ie .dijitSpinnerButtonContainer {
+	height: 14px; /* prevent no-cache race-condition css glitch */
+}
+		]]></style>
+		<script type="text/javascript" src="CS.Property.ft.cgipathjs/DateTimeFields.js"></script>
+		<script type="text/javascript"><![CDATA[
+dojo.addOnLoad(function() { dojo.addClass(dojo.body(), 'tundra'); });
+
+function showCalendar(inputname, imgid, props) {
+	//[KGF 2011] re-wiring this function for use with Dojo with minimal re-coding
+	//elsewhere, at potential (likely negligible) performance expense...
+	
+	dojo.addOnLoad(function() {
+		var
+			node = dojo.query("[name='" + inputname + "']")[0],
+			dtb, args;
+		
+		if (node) {
+			args = dojo.mixin({}, props, {
+				value: node.value
+			});
+			dtb = new fw.DateTimeFields(args, node);
+			dtb.startup();
+		}
+	});
+	
+	//don't need calendar image. destroy here instead of changing 50 files.
+	imgid && dojo.destroy(imgid);
+}
+       ]]>
+
+		</script>
+	</REPLACEALL>
+
+
+</then>
+</if>
+
+</ftcs>

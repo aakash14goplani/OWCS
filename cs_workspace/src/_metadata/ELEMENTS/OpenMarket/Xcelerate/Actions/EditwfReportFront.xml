@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>                                                              
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/EditwfReportFront
+-
+- INPUT
+-        Search Criteria String :: SearchCritSTR
+         Page that needs to be displayed :: frontpage
+         Post Page ::  pagename
+         The Asset being Edited ::AssetType
+         Criteria Name:: critname
+         
+        
+- OUTPUT
+-
+-->
+
+ <!-- Load the required Variables into the ICS objectspace so that they are available
+    when the appropriate search form is called -->
+
+<STRING.ENCODE VARIABLE="SScmd" VARNAME="SScmd"/> 
+<STRING.ENCODE VARIABLE="searchid" VARNAME="searchid"/>  
+<STRING.ENCODE VARIABLE="Shared" VARNAME="Shared"/>    
+  
+<SAVESEARCHMANAGER.CREATE OBJVARNAME="SSS"/>
+
+<if COND="Variables.frompage=SavewfReport">
+<then>
+   <!-- This is from SaveSearch  Page -->
+    <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.ssurlCritSTR"/>
+    <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+    <removar NAME="sharedOrPrivate"/>
+</then>
+<else>        
+    <if COND="IsVariable.SScmd=true">
+    <then>
+         
+        <INPUT type="hidden" name="SScmd" value="Variables.SScmd" REPLACEALL="Variables.SScmd"/>
+         <!-- This is from the SearchAdmin -->
+         <if COND="Variables.SScmd=edit">
+         <then>
+             <!-- edit from savesearch admin .... -->
+             <IF COND="IsVariable.searchid=true">
+             <THEN>
+                <setvar NAME="errno"  VALUE="0"/>
+                <SAVESEARCHMANAGER.LOAD OBJVARNAME="SSS" ID="Variables.searchid"/>
+                <SAVESEARCH.GETURLCRITSTR NAME="SSS" VARNAME="SearchCritSTR"/> 
+				  <STRING.ENCODE VARIABLE="SearchCritSTR" VARNAME="SearchCritSTR"/> 
+                  <INPUT type="hidden" name="SCritSTR" value="Variables.SearchCritSTR" REPLACEALL="Variables.SearchCritSTR"/>
+                 <SAVESEARCH.GETURLCRITSTR_FILE NAME="SSS" VARNAME="SearchCritSTR_file"/>
+                <!--removevar NAME="frontpage"/-->
+                 <SAVESEARCH.GETFRONTPAGE  NAME="SSS" VARNAME="frontpage"/>
+                 
+                 <SAVESEARCH.GETPOSTPAGE  NAME="SSS" VARNAME="postpage"/>
+                 <SAVESEARCH.GetCritName  NAME="SSS" VARNAME="criterianame"/>
+                 <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.SearchCritSTR"/>
+                 <SAVESEARCH.GetAcl  NAME="SSS" VARNAME="sharedOrPrivate"/>
+                 <SAVESEARCH.GETROLES NAME="SSS" OBJVARNAME="sroles"/>
+                 <ROLELIST.GETALL NAME="sroles"  VARNAME="s_comma_roles"/>
+  			     <SUBSTITUTE STR="Variables.s_comma_roles" OUTSTR="sharedRoles" WHAT="," WITH=";"/>
+                 <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+                 <SETVAR NAME="ThisPage"   VALUE="Variables.frontpage"/>
+                 <SETVAR NAME="PostPage"   VALUE="Variables.postpage"/>
+             </THEN>
+             </IF>
+         </then>
+         <else>
+            <!-- This is  'execute command'  ?????-->
+                <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.SearchCritSTR"/>
+               <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+				 <STRING.ENCODE VARIABLE="SearchCritSTR" VARNAME="SearchCritSTR"/> 
+                 <INPUT type="hidden" name="SCritSTR" value="Variables.SearchCritSTR" REPLACEALL="Variables.SearchCritSTR"/>
+          </else>
+         </if>
+    </then>
+    <else>
+         
+         <!--This edit is from workflowReportPost after executing the  saved search (from searchadmin)  or a new search   -->
+         <!-- This must be coming from SimpleSearchFront or SearchFront via SearchPost-->
+         <SAVESEARCH.FROMSTRING NAME="SSS" VALUE="Variables.SCritSTR"/>
+         <SAVESEARCH.SETVARIABLES NAME="SSS" VALUE="junk"/>
+        <!-- This is for the purpose of AtrBased Search -->
+         <!--INPUT type="hidden" name="SCHCritSTR" value="Variables.SCritSTR" REPLACEALL="Variables.SCritSTR"/-->
+      </else>
+    </if>
+</else>
+</if>
+
+
+    
+<IF COND="IsVariable.criterianame=true">
+ <THEN>
+	<STRING.ENCODE VARIABLE="criterianame" VARNAME="criterianame"/> 
+    <input type="hidden"  name="criterianame"  VALUE="Variables.criterianame"  REPLACEALL="Variables.criterianame"/>
+ </THEN>
+ </IF>
+<IF COND="IsVariable.searchid=true">
+<THEN>
+      <input type="hidden"  name="searchid"   VALUE="Variables.searchid"  REPLACEALL="Variables.searchid"/>
+</THEN>
+</IF>   
+
+<STRING.ENCODE VARIABLE="sharedRoles" VARNAME="sharedRoles"/> 
+<IF COND="IsVariable.Shared=true">
+<THEN>
+	<input type="hidden"  name="Shared"   VALUE="Variables.Shared"  REPLACEALL="Variables.Shared"/>
+    <!-- this is from the SaveSearch page -->
+    <IF COND="IsVariable.sharedRoles=true">
+    <THEN>
+	   
+      <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+      <input type="hidden"  name="sharedOrPrivate"   VALUE="shared"/>
+    </THEN>
+    </IF> 
+
+</THEN>
+<ELSE>
+    <IF COND="IsVariable.sharedOrPrivate=true">
+    <THEN>
+          <if COND="Variables.sharedOrPrivate=shared">
+          <then>
+              <STRING.ENCODE VARIABLE="sharedOrPrivate" VARNAME="sharedOrPrivate"/> 		  
+              <input type="hidden"  name="sharedOrPrivate"   VALUE="Variables.sharedOrPrivate"  REPLACEALL="Variables.sharedOrPrivate"/>
+              <IF COND="IsVariable.sharedRoles=true">
+                <THEN>
+                      <input type="hidden"  name="sharedRoles"   VALUE="Variables.sharedRoles"  REPLACEALL="Variables.sharedRoles"/>
+                      <input type="hidden"  name="Shared"   VALUE="true"/>
+                </THEN>
+                </IF>
+          </then>
+          </if> 
+    </THEN>
+    </IF> 
+</ELSE>
+</IF>
+
+
+<INPUT type="hidden"  name="frompage"  VALUE="EditSearchFront"/>
+<IF COND="IsVariable.frontpage=true">
+<THEN>
+    <IF COND="Variables.frontpage!=Variables.empty">
+    <THEN>
+         <IF COND="Variables.frontpage=WorkflowReportPost">
+         <THEN>
+            <SETVAR NAME="frontpage"  VALUE="WorkflowReportFront"/>
+         </THEN>
+         </IF>
+       	 <callelement NAME="OpenMarket/Xcelerate/PrologActions/Variables.frontpage">
+       	 <ARGUMENT NAME="action" VALUE="update"></ARGUMENT>
+       	 </callelement>
+         <callelement NAME="OpenMarket/Xcelerate/Actions/Variables.frontpage"/>
+    </THEN>
+    <ELSE>
+        <XLAT.STREAM KEY="dvin/UI/Error/CantfindVariablefrontpage"/> 
+    </ELSE>
+    </IF>
+</THEN>
+<ELSE>
+    <XLAT.STREAM KEY="dvin/UI/Error/CantfindVariablefrontpage"/> 
+</ELSE>
+</IF>
+
+
+</FTCS> 

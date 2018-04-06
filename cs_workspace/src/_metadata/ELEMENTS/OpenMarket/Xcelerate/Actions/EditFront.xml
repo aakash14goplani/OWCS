@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/EditFront.xml $ 
+$Revision: 28 $ 
+$Modtime: 6/28/04 1:10p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- EditFront.xml
+-
+- DESCRIPTION
+-	Edit a content item
+-
+- HISTORY 
+-->
+
+
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="delinkOption" VARNAME="delinkOption"/>
+<STRING.ENCODE VARIABLE="externaldocName" VARNAME="externaldocName"/>
+<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed"/>
+
+<if COND="Variables.doproceed=true">
+<then>
+	<if COND="IsVariable.delinkOption=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="elem" VALUE="Variables.delinkOption"/>
+			<argument NAME="severity" VALUE="info"/>
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="externaldocName" VALUE="Variables.externaldocName"/>
+		</callelement>
+	</then>
+	</if>
+                
+	<callelement NAME="OpenMarket/Xcelerate/Scripts/PickAssetPopup"/>
+	<callelement NAME="OpenMarket/Gator/Scripts/TabDirtyScript"/>
+
+	<!-- On 5/10/2008, added new support infrastructure for ContentForms.   The idea is to allow a ContentForm coder to not
+	      need to worry about the details of reposting, and also to allow certain widgets (e.g., the related asset widget) to
+	      be written in a way that can work without modification for lots of different situations.  This code is also present in
+	      NewContentFront and CopyFront, and should probably be made an element in its own right. -->
+	      
+	<!-- Leave chicken tracks so that the ContentForm elements do not need to do arcane calculation if they want to repost -->
+	<SETVAR NAME="AssetRepostPage" VALUE="OpenMarket/Xcelerate/Actions/EditFront"/>
+	
+	<!-- Provide standard javascript function that reposts -->
+	<SCRIPT TYPE="text/javascript">
+	function repostContentForm()
+	{
+		document.forms[0].pagename.value='OpenMarket/Xcelerate/Actions/EditFront';
+		document.forms[0].submit();
+	}
+	</SCRIPT>
+	
+	<!-- Provide variables that describe how to submit and repost in Javascript.  These variables can be superceded by individual
+	      Content Form elements to include code that causes fields to be checked, etc., allowing various widgets to be written that
+	      use just these variables to figure out what to do. -->
+	<SETVAR NAME="repostContentFormJavascript" VALUE="repostContentForm();"/>
+	<SETVAR NAME="submitContentFormJavascript" VALUE="document.forms[0].submit();"/>
+
+	<!-- Lastly, provide an indication to content forms, as a convenience, as to whether or not this is a repost.  This is
+	       mostly provided because we cannot make AssetMaker stub elements get updated, but it is potentially useful
+	       for all asset types.  -->
+	<INPUT TYPE="hidden" NAME="contentFormReposted" VALUE="true"/>
+	<IF COND="IsVariable.contentFormReposted!=true">
+	<THEN>
+		<SETVAR NAME="contentFormReposted" VALUE="false"/>
+	</THEN>
+	</IF>
+	
+	<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentForm"/>
+	
+	<if COND="Variables.doproceed=true">
+	<then>
+		<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+		<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+         
+		<if COND="IsVariable.delinkOption=true">
+		<then>
+			<INPUT TYPE="hidden" NAME="delink" VALUE="true"/>
+		</then>
+		</if>
+				 
+        
+		<callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+	</then>
+	</if>
+</then>
+</if>
+<if cond="IsVariable.preverr=true">
+<then>
+	<setvar name="errno" value="Variables.preverr"/>
+</then>
+</if>
+<if COND="Variables.doproceed!=true">
+<then>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="elem" VALUE="Variables.doproceed"/>
+		<argument NAME="severity" VALUE="error"/>
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+	</callelement>
+       
+	<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+		<argument NAME="errorAlreadyDisplayed" VALUE="true"/>
+	</callelement> 
+</then>
+</if>
+
+
+</FTCS>

@@ -1,0 +1,295 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Search/AppendSelectDetailsSE.xml $
+$Revision: 19 $
+$Modtime: 7/12/04 6:20p $
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Add to search engine query for common search parameters (as defined
+-	by SearchCommon.xml).
+-
+- INPUT
+-   AssetType
+-       current asset type
+-   seQuery
+-       SEARCH WHAT query string.  Append to this.
+-   seType
+-       SEARCH TYPE value.  Change it or leave it alone.
+-   seRelevance
+-       SEARCH RELEVANCE value.  Change it or leave it alone.
+-   sqlQueryend
+-       Tail end of WHERE expression for secondary SQL query.
+-   (FORM fields)
+-       All form fields defined by SearchCommom.xml
+-   seLeft, seRight
+-       Left and right strings.  Used as
+-		fieldname Variables.seLeft fieldvalue Variables.seRight
+-->
+
+	<IF COND="IsVariable.Id=true">
+		<THEN>
+<!--
+	AV does not find substrings, but words.  ID does not contain words.
+	so a LIKE substring search is more useful for AV.
+	TBD...WHAT ABOUT VERITY? IS THIS TRUE FOR ALL SEARCH ENGINES?
+-->
+			<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND Variables.AssetType.id = Variables.Id"/>
+		    <XLAT.LOOKUP KEY="dvin/UI/Search/idisId" VARNAME="_XLAT_"/>
+            <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+		</THEN>
+	</IF>
+
+<!--Updated date range-->
+	<IF COND="IsVariable.UpdatedBefore=true">
+		<THEN>
+			<IF COND="IsVariable.UpdatedAfter=true">
+				<THEN>
+
+<!--Range [min-max]-->
+					<XLAT.LOOKUP KEY="dvin/UI/Search/updateddateisAftertoBefore" VARNAME="_XLAT_"/>
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND updateddate:[Variables.UpdatedAfterText-Variables.UpdatedBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND (updateddate &#060; Variables.UpdatedBeforeText) AND (updateddate &#062; Variables.UpdatedAfterText)"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND Variables.AssetType.updateddate &#060; Variables.UpdatedBefore AND Variables.UpdatedAfter &#060; Variables.AssetType.updateddate"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+
+<!--Range [-max]-->
+                    <XLAT.LOOKUP KEY="dvin/UI/Search/updatedbeforeBefore" VARNAME="_XLAT_"/>
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+					
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND updateddate:[-Variables.UpdatedBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND (updateddate &#060; Variables.UpdatedBeforeText)"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND Variables.AssetType.updateddate &#060; Variables.UpdatedBefore"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="IsVariable.UpdatedAfter=true">
+				<THEN>
+
+<!--Range [min-]-->
+					
+                    <XLAT.LOOKUP KEY="dvin/UI/Search/updatedafterAfter" VARNAME="_XLAT_"/>
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+                    
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND updateddate:[Variables.UpdatedAfterText-]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND (updateddate &#062; Variables.UpdatedAfterText)"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND Variables.UpdatedAfter &#060; Variables.AssetType.updateddate"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+			</IF>
+		</ELSE>
+	</IF>
+	
+	<IF COND="IsVariable.StartDateBefore=true">
+		<THEN>
+			<IF COND="IsVariable.StartDateAfter=true">
+				<THEN>
+
+					<!--Range [min-max]-->
+					<SETVAR NAME="_XLAT_" VALUE="startdate is Variables.StartDateAfterText to Variables.StartDateBeforeText" />
+			                <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND startdate:[Variables.StartDateAfterText-Variables.StartDateBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((startdate &#060; Variables.StartDateBeforeText AND startdate &#062; Variables.StartDateAfterText) OR (startdate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND ((Variables.AssetType.startdate &#060; Variables.StartDateBefore AND Variables.StartDateAfter &#060; Variables.AssetType.startdate) OR (Variables.AssetType.startdate IS NULL))"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+
+					<!--Range [-max]-->
+	
+					<SETVAR NAME="_XLAT_" VALUE="startdate before Variables.StartDateBeforeText"/>
+					<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+					
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND startdate:[-Variables.StartDateBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((startdate &#060; Variables.StartDateBeforeText) OR (startdate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND (Variables.AssetType.startdate &#060; Variables.StartDateBefore OR Variables.AssetType.startdate IS NULL)"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="IsVariable.StartDateAfter=true">
+				<THEN>
+
+<!--Range [min-]-->
+					
+                    <SETVAR NAME="_XLAT_" VALUE="startdate after Variables.StartDateAfterText" />
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+                    
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND startdate:[Variables.StartDateAfterText-]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((startdate &#062; Variables.StartDateAfterText) OR (startdate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND ((Variables.StartDateAfter &#060; Variables.AssetType.startdate) OR (Variables.AssetType.startdate IS NULL))"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+			</IF>
+		</ELSE>
+	</IF>
+
+	<IF COND="IsVariable.EndDateBefore=true">
+		<THEN>
+			<IF COND="IsVariable.EndDateAfter=true">
+				<THEN>
+
+					<!--Range [min-max]-->
+					<SETVAR NAME="_XLAT_" VALUE="enddate is Variables.EndDateAfterText to Variables.EndDateBeforeText" />
+			                <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND enddate:[Variables.EndDateAfterText-Variables.EndDateBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((enddate &#060; Variables.EndDateBeforeText AND enddate &#062; Variables.EndDateAfterText) OR (enddate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND ((Variables.AssetType.enddate &#060; Variables.EndDateBefore AND Variables.EndDateAfter &#060; Variables.AssetType.enddate) OR (Variables.AssetType.enddate IS NULL))"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+					<!--Range [-max]-->
+	
+					<SETVAR NAME="_XLAT_" VALUE="enddate before Variables.EndDateBeforeText"/>
+					<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+					
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND enddate:[-Variables.EndDateBeforeText]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((enddate &#060; Variables.EndDateBeforeText) OR (enddate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND ((Variables.AssetType.enddate &#060; Variables.EndDateBefore) OR (Variables.AssetType.enddate IS NULL))"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="IsVariable.EndDateAfter=true">
+				<THEN>
+				<!--Range [min-]-->
+		                    <SETVAR NAME="_XLAT_" VALUE="enddate after Variables.EndDateAfterText" />
+		                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+                    
+					<IF COND="Variables.seNickname=AV">
+						<THEN>
+							<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND enddate:[Variables.EndDateAfterText-]"/>
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.seNickname=Verity">
+								<THEN>
+									<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND ((enddate &#062; Variables.EndDateAfterText) OR (enddate IS NULL))"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND ((Variables.EndDateAfter &#060; Variables.AssetType.enddate) OR (Variables.AssetType.enddate))"/>
+								</ELSE>
+							</IF>
+						</ELSE>
+					</IF>
+				</THEN>
+			</IF>
+		</ELSE>
+	</IF>
+
+	<IF COND="IsVariable.UpdatedBy=true">
+		<THEN>
+        
+            <ics.literal  table="Variables.AssetType" column="updatedby" string="Variables.UpdatedBy"  output="literal"/>
+			<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend AND Variables.AssetType.updatedby=Variables.literal"/>
+			
+            <XLAT.LOOKUP KEY="dvin/UI/Search/modifiedbyUpdatedBy" VARNAME="_XLAT_"/>
+            <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+		</THEN>
+	</IF>
+
+</FTCS>

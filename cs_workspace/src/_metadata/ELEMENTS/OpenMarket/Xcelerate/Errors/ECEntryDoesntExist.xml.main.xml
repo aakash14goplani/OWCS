@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Xcelerate/Errors/ECEntryDoesntExist</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Xcelerate/Errors/ECEntryDoesntExist</string>
+        <string>SiteEntry asset error mesage for missing element catalog entry</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Xcelerate/Errors/ECEntryDoesntExist.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Xcelerate/Errors/ECEntryDoesntExist.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FXcelerate%2FErrors%2FECEntryDoesntExist.xml
+@hashval=863922568
+key=@ELEMENTCATALOG-OpenMarket/Xcelerate/Errors/ECEntryDoesntExist
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

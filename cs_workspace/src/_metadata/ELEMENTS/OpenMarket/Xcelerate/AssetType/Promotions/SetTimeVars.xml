@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/AssetType/Promotions/SetTimeVars
+--
+-- INPUT
+--
+--	SegmentStartDate, SegmentEndType, SegmentEndDate, SegmentDuration, SegmentStartTimeZone, SegmenetEndTimeZone
+-- OUTPUT
+--
+	StartList (setup for time stuff), enddatestr - with correct comment for end information
+-->
+
+<!-- if end time is "until cancelled" display "Until cancelled"
+		else if end time is "soldInstances" display "Until $X instances of the promoted product are sold"
+		else if end time is "timePeriod" display "For $Number $TimePeriod"
+		else display a date
+-->
+
+<if COND="IsVariable.SegmentStartDate!=true">
+	<then>
+		<setvar NAME="startdatestr" VALUE=""/>	
+	</then>
+	<else>
+		<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.SegmentStartDate" VALUETYPE="milliseconds" VARNAME="startdatestr"/>
+	</else>
+</if>
+
+<if COND="IsVariable.SegmentEndType!=true">
+	<then>
+		<setvar NAME="SegmentEndType" VALUE="none"/>
+	</then>
+</if>
+<if COND="Variables.SegmentEndType=none">
+	<then>
+	  <XLAT.LOOKUP KEY="dvin/AT/Promotions/Untilcancelled" VARNAME="_Untilcancelled_" ENCODE="false"/>
+		<setvar NAME="enddatestr" VALUE="Variables._Untilcancelled_"/>
+	</then>
+	<else>
+		<if COND="Variables.SegmentEndType=fixed">
+			<then>
+				<if COND="IsVariable.SegmentEndDate!=true">
+				<then>
+					<setvar NAME="enddatestr" VALUE=""/>	
+				</then>
+				<else>
+					<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.SegmentEndDate" VALUETYPE="milliseconds" VARNAME="enddatestr"/>
+				</else>
+				</if>
+			</then>
+			<else>
+				<IF COND="Variables.SegmentEndType=hours">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/Common/hours" VARNAME="enddatelabel"/>
+					</THEN>
+					<ELSE>
+						<IF COND="Variables.SegmentEndType=weeks">
+							<THEN>
+								<XLAT.LOOKUP KEY="dvin/Common/weeks" VARNAME="enddatelabel"/>
+							</THEN>
+							<ELSE>
+								<IF COND="Variables.SegmentEndType=months">
+									<THEN>
+										<XLAT.LOOKUP KEY="dvin/Common/months" VARNAME="enddatelabel"/>
+									</THEN>
+									<ELSE>
+										<IF COND="Variables.SegmentEndType=years">
+											<THEN>
+												<XLAT.LOOKUP KEY="dvin/Common/years" VARNAME="enddatelabel"/>
+											</THEN>
+											<ELSE>
+												<XLAT.LOOKUP KEY="dvin/Common/lcdays" VARNAME="enddatelabel"/>
+											</ELSE>
+										</IF>
+									</ELSE>
+								</IF>
+							</ELSE>
+						</IF>
+					</ELSE>
+				</IF>
+			
+			  	<XLAT.LOOKUP KEY="dvin/AT/Common/For" VARNAME="enddatestr"/>
+			</else>
+		</if>
+	</else>
+</if>
+</FTCS> 

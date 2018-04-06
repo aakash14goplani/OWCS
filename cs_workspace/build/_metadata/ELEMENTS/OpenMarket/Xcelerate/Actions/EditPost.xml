@@ -1,0 +1,255 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/EditPost.xml $
+$Revision: 66 $
+$Modtime: 6/10/04 11:01a $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- EditPost.xml
+-
+- DESCRIPTION
+-	Edit a content item
+- 	Required input variables: id and AssetType
+-
+- HISTORY
+-->
+<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+<STRING.ENCODE VARIABLE="alreadylocked" VARNAME="alreadylocked"/>
+<STRING.ENCODE VARIABLE="__TEMPOBJECTS__" VARNAME="__TEMPOBJECTS__"/>
+<STRING.ENCODE VARIABLE="TemplateChosen" VARNAME="TemplateChosen"/>
+<STRING.ENCODE VARIABLE="lstOfParents" VARNAME="lstOfParents"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<!-- Do the following logic only if the user has chosen to submit the asset (not cancel) -->
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+
+	<IF COND="Variables.hasError=false">
+	<THEN>
+		<!-- call the treeupdate preedit function -->
+      <if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+			<then>
+  				<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+					<argument NAME="assetname" VALUE="theCurrentAsset"/>
+					<argument NAME="treecommand" VALUE="preedit"/>
+				</callelement>
+			</then>
+		</if>
+		<HASH.CREATE NAME="refreshHash"/>
+		
+		<callelement NAME="OpenMarket/Xcelerate/Actions/convertAssetFormsTZ" />
+		<!-- call the preupdate function -->
+		<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/PreUpdate">
+			<argument NAME="updatetype" VALUE="edit"/>
+			<argument NAME="prefix" VALUE="Variables.AssetType"/>
+		</callelement>
+
+		<if COND="IsError.Variables.errno=true">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<argument NAME="elem" VALUE="EnterAssetFailed"/>
+				<argument NAME="severity" VALUE="error"/>
+				<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			</callelement>
+			<setvar NAME="hasError" VALUE="true"/>
+		</then>
+		<else>
+			<if COND="IsVariable.delink=true">
+			<then>
+					 <ASSET.SET NAME="theCurrentAsset" FIELD="urlexternaldoc"/>
+					 <ASSET.SET NAME="theCurrentAsset" FIELD="externaldoctype"/>
+			</then>
+			</if>
+			<!-- force status to ED -->
+			<ASSET.SET NAME="theCurrentAsset" FIELD="status" VALUE="ED"/>
+			<!-- Save the asset -->
+			<ASSET.SAVE NAME="theCurrentAsset"/>
+
+			<if COND="IsError.Variables.errno=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="elem" VALUE="EnterAssetFailed"/>
+					<argument NAME="severity" VALUE="error"/>
+					<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+				</callelement>
+				<setvar NAME="hasError" VALUE="true"/>
+			</then>
+			<else>
+		
+				<callelement NAME="OpenMarket/Xcelerate/Actions/Search/ManageSeIndex">
+					<argument NAME="msicommand" VALUE="Replace"/>
+				</callelement>
+		
+				<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/PostUpdate">
+					<argument NAME="updatetype" VALUE="edit"/>
+				</callelement>
+		
+				<HASH.ADD NAME="refreshHash" VALUE="Parent:Variables.id"/>
+				<HASH.TOSTRING NAME="refreshHash" VARNAME="__TreeRefreshKeys__" DELIM=";"/>
+		
+				<if COND="IsError.Variables.errno=true">
+				<then>
+					<br/><XLAT.STREAM KEY="dvin/UI/Error/PostUpdateidfailederrorerrno"errno="Variables.errno" id="Variables.id" AssetType="Variables.AssetType" EVALALL="false"/>
+					<br/><XLAT.STREAM KEY="dvin/UI/Error/Detailserrdetail1" errdetail1="Variables.errdetail1" EVALALL="false"/>
+							<setvar NAME="hasError" VALUE="true"/>
+				</then>
+				</if>
+
+				<!-- call the treeupdate postedit function -->
+				<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+				<then>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+						<argument NAME="assetname" VALUE="theCurrentAsset"/>
+						<argument NAME="treecommand" VALUE="postedit"/>
+					</callelement>
+				</then>
+				</if>
+				<!--Update the content tree in the UI -->
+				<if COND="Variables.cs_environment=ucform">
+				<then>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateUITree">
+						<argument NAME="refreshKeys" VALUE="Variables.__TreeRefreshKeys__"/>
+					</callelement>
+				</then>
+				</if>
+			</else>
+			</if>
+		</else>
+		</if>
+		
+	<!-- decide whether to commit and create a new version.
+			 If the item was already locked, then no commit is
+			 needed. New behavior: saving on implicit check-out will not create new verion. So, on Save, we only do an undo checkout while preserving the changes done i.e. undocheckout without reverting back changes done after last implicit check-out. -->
+		<if COND="IsVariable.alreadylocked=true">
+		<then>
+			<if COND="Variables.alreadylocked!=true">
+				<then>
+					<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>					
+					<ASSET.UNDOCHECKOUT NAME="Release-Asset" REVERT="false" FLUSH="true"/>
+
+
+					<!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+
+					<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+					<if COND="IsError.Variables.errno=true">
+					<then>
+					      <if COND="Variables.errno!=-101">
+					      <then>
+						     <br/><XLAT.STREAM KEY="dvin/UI/ContentDetailsFrontidfailederrorerrno" errno="Variables.errno" id="Variables.id" AssetType="Variables.AssetType" EVALALL="false"/>
+						     <br/><XLAT.STREAM KEY="dvin/UI/Error/Detailserrdetail1" errdetail1="Variables.errdetail1" EVALALL="false"/>
+					      </then>
+					      </if>
+					</then>
+					</if>
+				</then>
+			</if>
+		</then>
+		</if>
+	</THEN>
+	</IF>
+
+</THEN>
+<ELSE>
+	<!-- If this is a cancel operation, release the implicit checkout (if any) -->
+	<if COND="IsVariable.alreadylocked=true">
+		<then>
+			<if COND="Variables.alreadylocked!=true">
+				<then>
+					<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>
+					<ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+					<!-- Remove entry from CheckOutInfo table about implicit checkout. Assume only one entry in the table -->
+
+					<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+
+					<if COND="IsError.Variables.errno=true">
+					<then>
+					      <if COND="Variables.errno!=-101">
+					      <then>
+						     <br/><XLAT.STREAM KEY="dvin/UI/ContentDetailsFrontidfailederrorerrno" errno="Variables.errno" id="Variables.id" AssetType="Variables.AssetType" EVALALL="false"/>
+						     <br/><XLAT.STREAM KEY="dvin/UI/Error/Detailserrdetail1" errdetail1="Variables.errdetail1" EVALALL="false"/>
+					      </then>
+					      </if>
+					</then>
+					</if>
+
+				</then>
+			</if>
+		</then>
+	</if>
+
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="atdescription"/>
+	<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/Edit-Cancelled" VARNAME="_xlat_cancelled" atdescription="Variables.atdescription" EVALALL="false"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="msgtext" VALUE="Variables._xlat_cancelled"/>
+		<argument NAME="severity" VALUE="info"/>
+	</callelement>
+
+</ELSE>
+</IF> <!-- end if upcommand=submit -->
+
+<setvar NAME="showDetailsPage" VALUE="true"/>
+<if COND="Variables.cs_environment=portal">
+<then>
+     <if COND="Variables.hasError!=true">
+     <then>
+          <setvar NAME="showDetailsPage" VALUE="false"/>
+          <callelement NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+      </then>
+      </if>
+</then>
+</if>
+
+
+<if COND="Variables.cs_environment=ucform">
+	<then>
+		<setvar name="showDetailsPage" value="false"/>
+	</then>
+</if>
+<if COND="Variables.showDetailsPage=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront"/>
+	</then>
+	<else>
+		<SETVAR NAME="contentFormReposted" VALUE="false" />
+		<callelement NAME="OpenMarket/Xcelerate/PrologActions/EditFront">
+		<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+		<argument NAME="PostPage" VALUE="EditPost"/>
+		<argument NAME="ThisPage" VALUE="EditFront"/>
+		<argument NAME="contentfunctions" VALUE="true"/>
+	</callelement>
+	<if COND="Variables.doproceed!=EditNotAllowed">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/EditFront">
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="PostPage" VALUE="EditPost"/>
+			<argument NAME="ThisPage" VALUE="EditFront"/>
+			<argument NAME="contentfunctions" VALUE="true"/>
+		</callelement>
+	</then>
+	<else>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="errorAlreadyDisplayed" VALUE="true"/>
+		</callelement> 
+	</else>
+	</if>
+	</else>
+</if>
+
+</FTCS>
+
+
+
+

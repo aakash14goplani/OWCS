@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 16 $ 
+$Modtime: 7/02/04 4:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildEditSelect.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+
+<setvar NAME="selectsourcetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sourcetype"/>
+<setvar NAME="hasmultiple" VALUE="NO"/>
+<setvar NAME="multiplesize" VALUE="1"/>
+<setvar NAME="bogosity" VALUE="VERYSILLY"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/multiple=true">
+<then>
+    <setvar NAME="hasmultiple" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/multiple"/>
+    <if COND="Variables.hasmultiple=YES">
+    <then>
+        <setvar NAME="bogosity" VALUE="MULTIPLE"/>
+    </then>
+    </if>
+    <if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/size=true">
+    <then>
+        <setvar NAME="multiplesize" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/size"/>
+    </then>
+    </if>
+</then>
+</if>
+
+<if COND="Variables.selectsourcetype=TABLE">
+<then>
+    <!-- get the LHS and RHS by running a query against the specified table -->
+
+    <setvar NAME="tablename" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/tablename"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <setvar NAME="lhskey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optionvaluekey"/>
+    <setvar NAME="rhskey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optiondesckey"/>
+    <setvar NAME="selectsql" VALUE="SELECT Variables.lhskey,Variables.rhskey
+                                    FROM Variables.tablename ORDER BY Variables.rhskey"/>
+    <if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/sql=true">
+    <then>
+        <setvar NAME="selectsql" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sql"/>
+		 <setvar NAME="selectsql" VALUE="Variables.selectsql"/>   <!-- to resolve any variables in the query -->
+    </then>
+    </if>
+    <execsql LIST="EditSelect" SQL="Variables.selectsql"/>
+    <if COND="IsError.Variables.errno=false">
+    <then>
+	    <SELECT NAME="Variables.AssetType:Variables.fieldname" dojoType="fw.dijit.UISimpleSelect" showErrors="false" clearButton="true" Variables.bogosity="Variables.hasmultiple" SIZE="Variables.multiplesize" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.hasmultiple,Variables.bogosity,Variables.multiplesize">
+	    <if COND="Variables.defaultFormStyle=true">
+		<then>
+	    	<script event='startup' type='dojo/connect'>
+			<![CDATA[
+				dojo.addClass(this.domNode, 'defaultFormStyle');
+			]]>
+			</script>
+		</then>
+		</if>
+	        <substitute STR="Variables.fieldvalue" WHAT=";" WITH="," OUTSTR="fieldvaluelist"/>
+	        <!-- the comparision for the field value is going to be different -->
+	        <loop LIST="EditSelect">
+	        <setvar NAME="optionlhs" VALUE="EditSelect.Variables.lhskey"/>
+	            <setvar NAME="errno" VALUE="0"/>
+	            <isinlist ITEM="Variables.optionlhs" STR="Variables.fieldvaluelist"/>
+	            <if COND="Variables.errno=1">
+	            <then>
+	                <OPTION VALUE="Variables.optionlhs" SELECTED="yes" REPLACEALL="Variables.optionlhs"/><STRING.STREAM LIST="EditSelect" COLUMN="Variables.rhskey"/>
+	            </then>
+	            <else>
+	                <OPTION VALUE="Variables.optionlhs" REPLACEALL="Variables.optionlhs"/><STRING.STREAM LIST="EditSelect" COLUMN="Variables.rhskey"/>
+	            </else>
+	            </if>
+	        </loop>
+	    </SELECT><IMG WIDTH="10px" HEIGHT="1" src='Variables.cs_imagedir/graphics/common/screen/dotclear.gif' REPLACEALL="Variables.cs_imagedir"/><IMG style="vertical-align:middle" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" /><br/>
+	</then>
+	<else>
+		<!-- If no rows are returned then the error code is -101 -->
+		<IF COND="Variables.errno=-101">
+		<THEN>
+			<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+		</THEN>
+		<ELSE>
+			<XLAT.STREAM KEY="dvin/Assetmaker/ErrorQuery" errno="Variables.errno" selectsql="Variables.selectsql" EVALALL="false"/>
+		</ELSE>
+		</IF>	  
+	</else>
+	</if>
+</then>
+</if>
+
+<if COND="Variables.selectsourcetype=STRING">
+<then>
+    <setvar NAME="lhs" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optionvalues"/>
+    <setvar NAME="rhs" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optiondescriptions"/>
+    <stringlist NAME="lhslist" STR="Variables.lhs" DELIM=","/>
+    <stringlist NAME="rhslist" STR="Variables.rhs" DELIM=","/>    
+    <SELECT NAME="Variables.AssetType:Variables.fieldname" dojoType="fw.dijit.UISimpleSelect" showErrors="false" clearButton="true" Variables.bogosity="Variables.hasmultiple" SIZE="Variables.multiplesize" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.hasmultiple,Variables.bogosity,Variables.multiplesize">
+    	<if COND="Variables.defaultFormStyle=true">
+		<then>
+    		<script event='startup' type='dojo/connect'>
+			<![CDATA[
+				dojo.addClass(this.domNode, 'defaultFormStyle');
+			]]>
+			</script>
+		</then>
+		</if>
+        <substitute STR="Variables.fieldvalue" WHAT=";" WITH="," OUTSTR="fieldvaluelist"/>
+        <loop LIST="lhslist">
+            <setvar NAME="errno" VALUE="0"/>
+            <isinlist ITEM="lhslist.ITEM" STR="Variables.fieldvaluelist"/>
+            <if COND="Variables.errno=1">
+            <then>
+                <OPTION VALUE="lhslist.ITEM" SELECTED="yes" REPLACEALL="lhslist.ITEM"/><STRING.STREAM VALUE="rhslist.ITEM"/>
+            </then>
+            <else>
+                <OPTION VALUE="lhslist.ITEM" REPLACEALL="lhslist.ITEM"/><STRING.STREAM VALUE="rhslist.ITEM"/>
+            </else>
+            </if>
+        <setrow LIST="rhslist" ACTION="NEXT"/>
+        </loop>
+    </SELECT>&nbsp;<IMG style="vertical-align:middle" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" /><br/>
+</then>
+</if>
+<removevar NAME="alttext"/>
+</FTCS> 

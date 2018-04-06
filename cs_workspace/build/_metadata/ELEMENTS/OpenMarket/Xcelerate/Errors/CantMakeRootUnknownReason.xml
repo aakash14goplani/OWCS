@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <!--
+    OpenMarket/Xcelerate/Errors/CantMakeRootUnknownReason
+
+    DESCRIPTION:
+    This error message tells a user that the asset specified by MakeRootId
+    cannot be made a master, but that the reason is unknown (check errno).
+
+    INPUT:
+    Variables.MakeRootID - the id of the desired master
+    Variables.AssetType - the type of the desired master and current asset
+    Variables.id - the id of the current asset
+    Variable.serrno - optional errno
+
+    OUTPUT:
+    text
+
+    SINCE: February 6, 2007
+
+    AUTHOR: Tony Field
+    -->
+    <SETVAR NAME="saveErrno" VALUE="Variables.errno" />
+    <XLAT.STREAM KEY="dvin/UI/Error/CantMakeTransMaster" ESCAPE="false" ENCODE="false"/>
+    <XLAT.STREAM KEY="dvin/UI/Error/CantMakeRootUnknownReason" ESCAPE="false" ENCODE="false"/>
+    <ics.logmsg severity="error" msg="Failed to make asset Variables.MakeRootID a translation master.  All built-in checks have passed but the actual operation failed with errno=Variables.errno.  Contact support to resolve this unexpected failure."/>
+</FTCS>

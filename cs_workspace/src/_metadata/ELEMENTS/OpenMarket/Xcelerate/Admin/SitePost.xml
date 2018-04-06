@@ -1,0 +1,156 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+
+
+<!--
+ Confidential and Proprietary Information of Oracle Corp.
+					All Rights Reserved.
+
+ Site.xml
+
+ DESCRIPTION
+	Admin things about a Publication (site)
+
+ HISTORY
+ [2007-09-18 KGF]
+ * XSS fixes (adapted from 6.3 fixes):
+   * isCleanString function usage
+   * CSVAR -> STRING.STREAM
+ * changed definitions of 'obj' to just forms[0] (not .elements[0])
+ [2008-02-25 KGF]
+ * further XSS fix: encode HTML special chars in description field
+
+ Updated :  Following Asset Types Can Not Be previewed
+
+   //   Template,CSElement, SiteEntry, AttributeEditor, Attributes,Definitions,
+   //   Filters, Promotion, Segments, StyleSheets, Visitor Stuff
+
+ Modified: March 09, 2011
+ By:       JAG 
+ Reason:   1)Added new property "cs_wrapperpage" to Publication  providing the
+             ability in pub site edit mode
+             to show the list of available wrapper pages and allow the user to select and
+             assign the default wrapper page for that site.
+
+           2)Cleaned up Insite preview asset functionality and
+             asset parsing and formating.
+-->
+
+
+					<if COND="Variables.action=edit">
+						<then>
+                             
+                            <!-- blank out the preview field if default was selected -->
+							    <IF COND="IsVariable.Publication:cs_preview=false">
+									<THEN>
+										<SETVAR NAME="Publication:cs_preview" VALUE="Variables.empty"/>
+									</THEN>
+									</IF>
+									<IF COND="IsVariable.Publication:cs_previewasset=false">
+									<THEN>
+										<SETVAR NAME="Publication:cs_previewasset" VALUE="Variables.empty"/>
+									</THEN>
+									</IF>
+										<PUBLICATION.LOAD NAME="publication" OBJECTID="Variables.pubid"/>
+										<PUBLICATION.GATHER NAME="publication" PREFIX="Publication"/>
+										<PUBLICATION.SAVE NAME="publication"/>
+											<if COND="Variables.errno!=0">
+												<then>
+													<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+														<ARGUMENT NAME="error" VALUE="UpdateFailed"/>
+													</CALLELEMENT>
+												</then>
+												<else>
+													<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/SiteFront">
+														<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+														<ARGUMENT NAME="action" VALUE="details"/>
+														<ARGUMENT NAME="showtitle" VALUE="true"/>
+													</CALLELEMENT>
+												</else>
+											</if>
+								
+						</then>
+					</if>
+
+<!-- Check for delete post -->
+
+					<if COND="Variables.action=delete">
+						<then>
+
+<!-- Load the publication record -->
+										<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Site/DeleteSite"/>
+										
+											<if COND="Variables.errno!=0">
+												<then>
+													<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+														<ARGUMENT NAME="error" VALUE="DeleteFailed"/>
+													</CALLELEMENT>
+												</then>
+												<else>
+													<XLAT.STREAM KEY="dvin/UI/Deletesuccessful"/>
+													<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/SiteFront">
+														<ARGUMENT NAME="action" VALUE="list"/>
+														<ARGUMENT NAME="showtitle" VALUE="true"/>
+													</CALLELEMENT>
+												</else>
+											</if>
+						</then>
+					</if>
+
+<!-- Check for new post -->
+
+					<if COND="Variables.action=new">
+						<then>
+<!-- Get the input information into a publication object -->
+
+											<PUBLICATION.CREATE NAME="publication"/>
+											<PUBLICATION.GATHER NAME="publication" PREFIX="Publication"/>
+											<PUBLICATION.SAVE NAME="publication"/>
+											<if COND="Variables.errno!=0">
+												<then>
+													<XLAT.STREAM KEY="dvin/UI/Error/AlreadyExistingSite"/>
+												</then>
+												<else>
+													<PUBLICATION.GET NAME="publication" FIELD="id" OUTPUT="pubid"/>
+													<if COND="Variables.errno!=0">
+														<then>
+															<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+																<ARGUMENT NAME="error" VALUE="EnterFailed"/>
+															</CALLELEMENT>
+														</then>
+														<else>	                                                             
+															<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/EnableSystemAssetTypes">
+																<ARGUMENT name="pubid" value='Variables.pubid'/>
+															</CALLELEMENT>
+															<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/ProcessDefaultSitePlan" >
+																<ARGUMENT NAME="primarypubid" VALUE="Variables.pubid"/>
+														    </CALLELEMENT>
+															<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/SiteFront">
+																<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+																<ARGUMENT NAME="action" VALUE="details"/>
+																<ARGUMENT NAME="showtitle" VALUE="true"/>
+															</CALLELEMENT>
+													
+															<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/NewSiteTreeUpdate">
+																<ARGUMENT NAME="pubname" VALUE="Variables.Publication:name"/>
+															</CALLELEMENT>
+															
+															
+															
+														</else>
+													</if>
+												</else>
+											</if>
+						</then>
+					</if>
+					<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+					<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+						<then>
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+								<argument NAME="__TreeRefreshKeys__" VALUE="Self:Sites"/>
+							</callelement>		
+						</then>
+					</if>
+
+</FTCS>

@@ -1,0 +1,282 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Admin/MirrorSiteFront
+-
+- INPUT
+-	Variables.pagetype - front or post
+-  Variables.pubid - site id
+-  Variables. target - pubtarget id
+- OUTPUT
+-
+-->
+
+<!-- get the publication name -->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<PUBLICATION.LOAD NAME="publication" OBJECTID="Variables.pubid"/>
+<PUBLICATION.GET NAME="publication" FIELD="name" OUTPUT="pubname"/>
+<!-- get the target name -->
+<PUBTARGETMANAGER.LOAD OBJVARNAME="pubtgt" ID="Variables.target"/>
+<PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtgt:name"/>
+
+<!-- front page -->
+
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+	<span class="title-text">
+	<XLAT.STREAM KEY="dvin/Admin/MirrorSiteConfigurationforTitle"/>
+	<XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisSite" VARNAME="_XLAT_" ESCAPE="true"/>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="urlsitefront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                         <satellite.argument name="action" value="details"/>
+                                         <satellite.argument name="pubid" value="Variables.pubid"/>
+                                          </SATELLITE.LINK>
+	<A HREF="Variables.urlsitefront" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlsitefront,Variables._XLAT_"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="Variables.pubname"/></A></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+
+	<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr><td>
+			<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Publishdestination"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.pubtgt:name"/>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			
+			<!-- Assets -->
+			<!-- Get the list of enabled asset types for this pubid-->
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+				<ARGUMENT NAME="upcommand" VALUE="ListEnabledAssetTypes"/>
+				<ARGUMENT NAME="list" VALUE="EnabledAssetTypes"/>
+				<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+			</CALLELEMENT>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Common/AssetTypes"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/EnabledInPub"/><br/>
+						<SELECT NAME="assettypes" MULTIPLE="yes" SIZE="5"> 
+							<if COND="IsList.EnabledAssetTypes=true">
+							<then>
+								<LOOP LIST="EnabledAssetTypes">
+									<STRING.ENCODE LIST="EnabledAssetTypes" COLUMN="assettype" VARNAME="EATassettype"/>
+									<OPTION VALUE="Variables.EATassettype" SELECTED="true" REPLACEALL="Variables.EATassettype"/><STRING.STREAM VALUE="EnabledAssetTypes.description"/>						
+								</LOOP>
+							</then>
+							</if>
+						</SELECT><br/>
+						<INPUT TYPE="CHECKBOX" NAME="assetsubtypes" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-AssetSubtypes"/><br/>
+						<INPUT TYPE="CHECKBOX" NAME="assetassociations"  VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-AssetAssociations"/><br/>
+						<INPUT TYPE="CHECKBOX" NAME="categories" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-Categories"/><br/>
+						<INPUT TYPE="CHECKBOX" NAME="cs-desktop" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-CS-Desktop"/><br/>
+						<INPUT TYPE="CHECKBOX" NAME="cs-doclink" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-CS-DocLink"/><br/>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- Start Menu Items -->
+			<STARTMENU.GETALLSTARTITEMS PUBID="Variables.pubid" LISTVARNAME="AllStartMenus"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Publish/TargetSiteEdit-startmenu"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availablein"/><br/>
+						<SELECT NAME="startmenus" MULTIPLE="yes" SIZE="5">
+							<if COND="AllStartMenus.#numRows!=0">
+							<then>
+								<LOOP LIST="AllStartMenus">
+									<STARTMENU.LOAD OBJVARNAME="sm" ID="AllStartMenus.id"/>
+									<STARTMENUITEM.GETID NAME="sm" VARNAME="sm:id"/>
+		     						<STARTMENUITEM.GETNAME NAME="sm" VARNAME="sm:name"/>
+									<STRING.ENCODE VARIABLE="sm:id" VARNAME="sm:id"/>
+									<OPTION VALUE="Variables.sm:id" SELECTED="true" REPLACEALL="Variables.sm:id"/><STRING.STREAM VALUE="Variables.sm:name"/>
+									<INCCOUNTER NAME="nth" VALUE="1"/>						
+								</LOOP>
+							</then>
+							</if>
+						</SELECT>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- Workflow Processes -->
+			<WORKFLOWENGINE.GETALLPROCESSES PUBID="Variables.pubid" PREFIX="wf:"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Publish/TargetSiteEdit-workflowprocesses"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availablein"/><br/>
+						<if COND="Variables.wf:Total!=0">
+						<then>
+							<SELECT NAME="workflows" MULTIPLE="yes" SIZE="5">
+								<SETCOUNTER NAME="nth" VALUE="0"/>
+								<LOOP COUNT="Variables.wf:Total">
+					     			<WORKFLOWPROCESS.GETID NAME="wf:Counters.nth" VARNAME="wf:id"/>
+		     						<WORKFLOWPROCESS.GETPROCESSNAME NAME="wf:Counters.nth" VARNAME="wf:name"/>
+									<STRING.ENCODE VARIABLE="wf:id" VARNAME="wf:id"/>
+									<OPTION VALUE="Variables.wf:id" SELECTED="true" REPLACEALL="Variables.wf:id"/><STRING.STREAM VALUE="Variables.wf:name"/>
+									<INCCOUNTER NAME="nth" VALUE="1"/>						
+								</LOOP>
+							</SELECT><br/>
+							<INPUT TYPE="CHECKBOX" NAME="workflowstates" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-WorkflowStates"/><br/>
+							<INPUT TYPE="CHECKBOX" NAME="workflowactions" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-WorkflowActions"/><br/>
+							<INPUT TYPE="CHECKBOX" NAME="workflowconditions" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-WorkflowConditions"/><br/>					
+						</then>
+						<else>
+							<!-- no workflows in this site -->
+							<XLAT.STREAM KEY="dvin/Common/lcnone"/>
+						</else>
+						</if>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- Workflow Groups -->
+			
+			<WORKFLOWENGINE.GETAVAILABLEGROUPS PUBID="Variables.pubid" PREFIX="wfg:"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/WorkflowGroups"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availablein"/><br/>
+						<if COND="Variables.wfg:Total!=0">
+						<then>
+							<SELECT NAME="workflowgroups" MULTIPLE="yes" SIZE="5">
+								<SETCOUNTER NAME="nth" VALUE="0"/>
+								<LOOP COUNT="Variables.wfg:Total">
+					     			<WORKFLOWGROUP.GETID NAME="wfg:Counters.nth" VARNAME="wfg:id"/>
+		     						<WORKFLOWGROUP.GETNAME NAME="wfg:Counters.nth" VARNAME="wfg:name"/>
+									<STRING.ENCODE VARIABLE="wf:id" VARNAME="wf:id"/>
+									<OPTION VALUE="Variables.wfg:id" SELECTED="true" REPLACEALL="Variables.wfg:id"/><STRING.STREAM VALUE="Variables.wfg:name"/>
+									<INCCOUNTER NAME="nth" VALUE="1"/>						
+								</LOOP>
+							</SELECT><br/>
+							<INPUT TYPE="CHECKBOX" NAME="workflowgroupactions" VALUE="true" CHECKED="CHECKED"/><XLAT.STREAM KEY="dvin/Admin/MirrorSite-WorkflowGroupActions"/><br/>
+						</then>
+						<else>
+							<XLAT.STREAM KEY="dvin/Common/lcnone"/>
+						</else>
+						</if>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- Tree Tabs -->
+			<TTM.GetAllOrderedTabs PUBID="Variables.pubid" LISTVARNAME="tt"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/TreeTabs"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availablein"/><br/>
+						<SELECT NAME="treetabs" MULTIPLE="yes" SIZE="5">
+							<if COND="tt.#numRows!=0">
+							<then>
+								<LOOP LIST="tt">
+									<STRING.ENCODE VARIABLE="tt:id" VARNAME="tt:id"/>
+									<OPTION VALUE="tt.id" SELECTED="true" REPLACEALL="tt.id"/><STRING.STREAM VALUE="tt.title"/>
+								</LOOP>
+							</then>
+							</if>
+						</SELECT>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- Saved Searches -->
+			<SAVESEARCHMANAGER.GETALL LISTVARNAME="sslist" PUBID="Variables.pubid"/>
+			
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/SavedSearches"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availablein"/><br/>
+						<SELECT NAME="savedsearches" MULTIPLE="yes" SIZE="5">
+							<if COND="IsList.sslist=true">
+							<then>
+								<LOOP LIST="sslist">
+									<STRING.ENCODE VARIABLE="sslist:id" VARNAME="sslist:id"/>
+									<OPTION VALUE="sslist.id" SELECTED="true" REPLACEALL="sslist.id"/><STRING.STREAM VALUE="sslist.criterianame"/>
+								</LOOP>
+							</then>
+							</if>
+						</SELECT>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<!-- CCRoles -->
+			<ROLEMANAGER.GETALLROLES PREFIX="role:"/>
+			<tr>
+				<td class="form-label-text">
+					<XLAT.STREAM KEY="dvin/UI/Admin/Publish/TargetSitePost-roles"/>:
+				</td>
+				<td class="form-inset">
+						<XLAT.STREAM KEY="dvin/Admin/availableinallsites"/><br/>
+						<SELECT NAME="roles" MULTIPLE="yes" SIZE="5">
+							<if COND="Variables.role:Total!=0">
+							<then>
+								<SETCOUNTER NAME="nth" VALUE="0"/>
+								<LOOP COUNT="Variables.role:Total">
+					     			<ROLE.GETNAME NAME="role:Counters.nth" VARNAME="role:name"/>
+					     			<ROLE.GETDESCRIPTION NAME="role:Counters.nth" VARNAME="role:description"/>
+									<STRING.ENCODE VARIABLE="role:name" VARNAME="role:name"/>
+									<OPTION VALUE="Variables.role:name" SELECTED="true" REPLACEALL="Variables.role:name"/><CSVAR NAME="Variables.role:name"/>
+									<INCCOUNTER NAME="nth" VALUE="1"/>						
+								</LOOP>
+							</then>
+							</if>
+						</SELECT>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			</table>
+		</td></tr>
+</table>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<INPUT TYPE="HIDDEN" NAME="target" VALUE="Variables.target" REPLACEALL="Variables.target"/>
+<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid"/>
+<INPUT TYPE="HIDDEN" NAME="pubid" VALUE="Variables.pubid" REPLACEALL="Variables.pubid"/>
+<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/MirrorSitePost"/>
+
+<XLAT.LOOKUP KEY="dvin/AdminForms/Mirror" VARNAME="_XLAT_" ESCAPE="true"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="SiteEditURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+      <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                         <satellite.argument name="action" value="details"/>
+                                         <satellite.argument name="pubid" value="Variables.pubid"/>
+                                          </SATELLITE.LINK>
+<div class="width-outer-70">
+<A HREF="Variables.SiteEditURL" REPLACEALL="Variables.SiteEditURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+<A HREF="javascript:void(0);" onClick="{document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Mirror"/></CALLELEMENT></A>
+</div>
+
+
+
+
+
+</ftcs>

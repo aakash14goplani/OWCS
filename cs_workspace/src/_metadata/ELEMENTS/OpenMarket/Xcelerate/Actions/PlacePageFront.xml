@@ -1,0 +1,263 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/PlacePageFront.xml $
+$Revision: 30 $ 
+$Modtime: 6/28/04 1:10p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/PlacePageFront
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+<IF COND="Variables.doproceed=true">
+	<THEN>
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function SetCancelFlag () {
+	var obj = document.forms[0].elements[0];
+	obj.form.elements['upcommand'].value="cancel";
+	obj.form.submit();
+	return false;
+}
+
+function CheckFields () {
+	var obj = document.forms[0].elements[0];
+    var Placedlist=obj.form.elements['idRankPlacedSubmit'].value;
+    var Unplacedlist=obj.form.elements['idRankUnPlacedSubmit'].value;
+    
+     if(Placedlist!="")
+     {
+		var removechkbox;
+		var chkbox;
+		
+		Placedlist =Placedlist.split(",");
+        
+        var rankname="";
+        
+        for(i=0;i<Placedlist.length; i++)
+        {   
+      		rankname = Placedlist[i];
+			removechkbox = rankname.replace(/Rank/,"Remove");
+			chkbox= new String(removechkbox);
+			
+			if (obj.form.elements[chkbox].checked==false)
+            {
+ 				 if(!IsInt(trim(obj.form.elements[rankname].value)))
+ 				 {
+ 						]]>
+                 	alert("<XLAT.STREAM KEY="dvin/UI/onlynumeralscanbeentered" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[                 
+                 	obj.form.elements[rankname].focus();
+                 	return false;
+                 }
+             }
+             
+         }// End of for loop
+     
+     }// End of if
+       
+     
+     if(Unplacedlist!="")
+     {
+        var i= 0;
+        var j= 0;
+        var index=0;
+
+		Unplacedlist =Unplacedlist.split(",");
+        
+        var rankname="";
+        
+        for(i=0;i<Unplacedlist.length; i++)
+        {   
+	        rankname = Unplacedlist[i];
+   
+            if (obj.form.elements[rankname].value !="")
+            {      
+              if(!IsInt(trim(obj.form.elements[rankname].value)))
+                {
+]]> 	
+                 alert("<XLAT.STREAM KEY="dvin/UI/onlynumeralscanbeentered" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[ 
+                 obj.form.elements[rankname].focus();
+                 return false;
+                }
+             }
+             
+         }// End of for loop
+         
+         
+     }  // End of if  
+  
+    document.forms['AppForm'].submit();
+    return false;
+}
+
+<!-- trim spaces from the String -->
+function trim(str) {
+	
+	if (str !="")
+	{
+			//left trim
+			str=str.replace(/^\s+/,"");
+			
+			// right trim
+			str=str.replace(/\s+$/,"");
+	}
+	
+	return str;
+}
+
+<!-- to check if the string is belong to the 'Integer'!-->
+function IsInt(str) {
+/* strip leading zeroes to prevent false negative! */
+
+    while (str.charAt(0) == '0' && str.length > 1) str = str.substr(1);
+    var i = parseInt(str);
+    if (isNaN(i))
+        return false;
+    i = i.toString();
+    if (i != str)
+        return false;
+    return true;
+}
+/*function IsInt(StrVar)
+{ var Test="T"; 		 
+ for(i=StrVar.length-1; i>=0; i--)
+	{ 	 
+	 	var Flag="F";
+		if(i==0)
+		{ 
+		 if(StrVar.charAt(0)=="-")
+		 {
+		 Flag="T";
+		 }
+		 else
+		 {
+		  for(j=9;j>=0; j--)
+				{
+				if(StrVar.charAt(0)==j)
+					{
+					 Flag="T";
+					 break;
+					}
+				}	
+		 }
+		}
+		else
+		{
+			for(j=9;j>=0; j--)
+				{
+				 if(StrVar.charAt(i)==j)
+					{
+					 Flag="T";
+					 break;
+					}
+				}
+		}
+ 		if(Flag=="F"){Test="F"; break;}
+	}
+ if(Test=="F") return false;
+ else return true;	
+}*/
+
+]]>
+</SCRIPT>
+
+		<div class="width-outer-70">
+			<IF COND="IsList.UnplacedPages=true">
+			<THEN>
+				<LI/><XLAT.STREAM KEY="dvin/UI/PlacePageInstruction"/>
+			</THEN>
+			</IF>
+			<IF COND="IsList.PlacedPages=true">
+			<THEN>
+				<LI/><XLAT.STREAM KEY="dvin/UI/InspectPagePickLink"/>
+			</THEN>
+			</IF>
+			<p/>
+        <!-- show a table of elements that have been placed in this node of the tree -->		
+			<span class="outer title-text"><XLAT.STREAM KEY="dvin/UI/PagesPlacedUnder"/>:</span>
+		</div>
+		
+		<IF COND="IsList.PlacedPages=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/PlacePagesTile">
+				<ARGUMENT NAME="list" VALUE="PlacedPages"/>
+				<ARGUMENT NAME="editCurrentRank" VALUE="true"/>
+				<ARGUMENT NAME="showRemove" VALUE="true"/>
+				<ARGUMENT NAME="linkToPlacePages" VALUE="true"/>
+			</CALLELEMENT>
+		</THEN>
+		<ELSE>
+			<div class="width-outer-70">
+				<span class="outer small-text"><XLAT.STREAM KEY="dvin/UI/NoPagesPlacedThisPage"/></span>
+         		<INPUT TYPE="hidden" NAME="idRankPlacedSubmit" VALUE="" />
+         	</div>
+		</ELSE>
+		</IF>
+		
+		<div class="width-outer-70">
+			<span class="outer title-text"><XLAT.STREAM KEY="dvin/UI/Pagesnotyetplaced"/>:</span>
+		</div>
+		<!-- show a table of elements that have not been placed in the tree -->
+		
+		<IF COND="IsList.UnplacedPages=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/PlacePagesTile">
+				<ARGUMENT NAME="list" VALUE="UnplacedPages"/>
+				<ARGUMENT NAME="editRank" VALUE="true"/>
+				<ARGUMENT NAME="editCurrentRank" VALUE="false"/>
+				<ARGUMENT NAME="showRemove" VALUE="false"/>
+				<ARGUMENT NAME="linkToPlacePages" VALUE="false"/>
+			</CALLELEMENT>
+		</THEN>
+		<ELSE>
+			<div class="width-outer-70">
+				<span class="small-text"><XLAT.STREAM KEY="dvin/UI/Nopagesremaintobeplaced"/></span>
+         		<INPUT TYPE="hidden" NAME="idRankUnPlacedSubmit" VALUE="" />
+         	</div>
+		</ELSE>
+		</IF>
+		<STRING.ENCODE VARIABLE="parentname" VARNAME="parentname"/>
+	    <INPUT type="hidden" name="parentname" value="Variables.parentname" REPLACEALL="Variables.parentname"/>
+		<STRING.ENCODE VARIABLE="parentnodeid" VARNAME="parentnodeid"/>
+	    <INPUT type="hidden" name="parentnodeid" value="Variables.parentnodeid" REPLACEALL="Variables.parentnodeid"/>
+		<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+		<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+		<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+		<INPUT type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+		<div class="width-outer-70">
+	        <XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+	        <A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+	        <XLAT.LOOKUP KEY="dvin/Common/SaveChanges" VARNAME="_XLAT_" ESCAPE="true"/>
+	        <A HREF="javascript:void(0)" onclick="return CheckFields()"  onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+		</div>
+	</THEN>
+	<ELSE>
+		<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed" />
+		<!-- Display error and Page Content Details -->
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<argument NAME="elem" VALUE="Variables.doproceed"/>
+			<argument NAME="severity" VALUE="info"/>
+			<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		</callelement>
+
+		<ASSET.GET NAME="thePage" FIELD="id"/> 
+		<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+			<argument NAME="id" VALUE="Variables.id"/>
+			<argument NAME="errorAlreadyDisplayed" VALUE="true"/>
+        </callelement>
+	</ELSE>
+</IF>
+</FTCS> 
+

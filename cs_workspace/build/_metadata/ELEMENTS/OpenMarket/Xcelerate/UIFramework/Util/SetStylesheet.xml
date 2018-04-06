@@ -1,0 +1,309 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- 
+$Logfile:  $ 
+$Revision:  $ 
+$Modtime:  $ 
+-->
+<!-- OpenMarket/Xcelerate/UIFramework/Util/SetStylesheet
+-
+- Manage the loading of common stylesheets based on user locale setting.
+- For now, also load a couple of page-specific stylesheets. This will 
+- change when new consolidated stylesheets are created.
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SETVAR NAME="locale" VALUE="SessionVariables.locale" />
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/common.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/content.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UITabContainer.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/Forms.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/Grid.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/Search.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/dnd_common.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/Calendar.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UIInput.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UITransferBox.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UITextarea.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UIComboBox.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/SWFUpload.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UILightbox.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UILayout.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/UITable.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/fw/css/ui/HoverableTooltip.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/wemAdvancedUI.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/dojox/layout/resources/FloatingPane.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<link href="Variables.cs_imagedir/../js/dojox/layout/resources/ResizeHandle.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<!-- Loading the extension css defined by customers. -->
+	<!-- checking whether UI.css file exists or not? -->
+	<callelement NAME="OpenMarket/Xcelerate/Util/DojoFileCheck">
+		<argument NAME="filepath" VALUE="Variables.cs_imagedir/../js/extensions/themes/UI.css"/>
+		<argument NAME="filename" VALUE="_uicss_"/>
+	</callelement>
+	<IF COND="Variables._uicss_=true">
+	<THEN>
+		<link href="Variables.cs_imagedir/../js/extensions/themes/UI.css" rel="stylesheet" type="text/css" REPLACEALL="Variables.cs_imagedir"/>
+	</THEN>
+	</IF>
+	
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="common.css,content.css,wemAdvancedUI.css"/>
+	</callelement>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/UIFramework/LoginPage">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/login.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="login.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/UIFramework/ShowAppToolbar">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/toolbar.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="toolbar.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/UIFramework/ShowBanner">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/toolbar.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="toolbar.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/UIFramework/LoginPage">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/login.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="login.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/PickAssetPopup">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/PublishConsoleFront">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/Admin/Publish/PublishEventEdit">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/Admin/WorkflowTimedActionEventFront">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/PrologActions/Publish/AdvPub/PublishingStatus">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="Variables.pagename=OpenMarket/Xcelerate/PrologActions/Publish/AdvPub/ShowPubSessionLog">
+<THEN>
+	<link href="Variables.cs_imagedir/data/css/Variables.locale/publish.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.locale"/>
+	<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+		<argument NAME="cssFilesToLoad" VALUE="publish.css"/>
+	</callelement>
+</THEN>
+</IF>
+<IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet=true">
+   <THEN>
+       <IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/NewContentFront">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet">
+			</CALLELEMENT>
+		</THEN>
+	  </IF>
+	   <IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/NewContentPost">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet">
+			</CALLELEMENT>
+		</THEN>
+	  </IF>
+      <IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/EditFront">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet">
+			</CALLELEMENT>
+		</THEN>
+	  </IF>
+	  <IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/EditPost">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet">
+			</CALLELEMENT>
+		</THEN>
+	  </IF>
+	   <IF COND="Variables.pagename=OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SetStylesheet">
+			</CALLELEMENT>
+		</THEN>
+	  </IF>
+   </THEN>
+</IF>
+<![CDATA[
+<SCRIPT type="text/javascript">
+if(dojo){
+	dojo.addOnLoad(function() {
+		if(typeof(dijit.byId('dijit_layout_BorderContainer_0')) != 'undefined'){
+			dijit.byId('dijit_layout_BorderContainer_0').resize();
+		}
+		//The following code is needed to remove the underline from the text in the dojo buttons..
+		var buttonsAndTitles = dojo.query('span.fwButton, div.new-table-title');
+		for(var i=0; i < buttonsAndTitles.length; i++){
+			var anchorNode = buttonsAndTitles[i].parentNode;
+			if(anchorNode && anchorNode.nodeName.toLowerCase() === 'a'){
+				anchorNode.className+=" button-anchor";
+			}
+			// buttons are inline
+			var tdNode = anchorNode.parentNode;
+			if(tdNode && tdNode.nodeName.toLowerCase() === 'td' && tdNode.className.indexOf("button-td") == -1){
+				tdNode.className+=" button-td";
+			}
+		}
+		
+		// The following code is needed for specific to select box which is scrollable.
+		var divScrollable = dojo.query('div.scrollable');
+		for(var i=0; i < divScrollable.length; i++){
+			var selNode = divScrollable[i].childNodes[0],
+				optNode = selNode.childNodes,
+				selWidth = 0;
+			for(var j=0; j < optNode.length; j++){
+				if(selWidth  < optNode[j].text.length)
+					selWidth = optNode[j].text.length;
+			}
+			selWidth = 8*selWidth + "px";
+			dojo.style(selNode,{width : selWidth});
+		}
+	});
+	
+	dojo.addOnLoad(function() {
+		// 	summary:
+		//		Remove the loading screen once page is loaded. 
+		var activeView, docIdElement, docId;
+		
+		// global ref
+		SitesApp = parent.SitesApp;
+		fwutil = parent.fw && parent.fw.util;
+		
+		if (!parent.dojo || !SitesApp) return;
+		
+		docIdElement = dojo.query('input[name="docId"]', dojo.query('form[name="AppForm"]')[0])[0]; 
+		if (docIdElement)
+			docId = parseInt(docIdElement.value);
+		
+		activeDoc = docId !== undefined ?
+			SitesApp.getDocument(docId):
+			SitesApp.getActiveDocument();
+		
+		if(activeDoc){
+			activeView = activeDoc.get('activeView');
+		}
+		
+		if(activeView){
+			if (!activeView.hideLoadingScreen) return;
+			activeView.hideLoadingScreen();
+			//Attach events
+			var iframe = parent.document.getElementById("contentPane_" + activeView.id);
+			if (iframe.attachEvent) {
+				var selectedRange = null;
+				iframe.attachEvent("onbeforedeactivate", function() {
+					var sel = iframe.contentWindow.document.selection;
+					if (sel.type != "None") {
+						selectedRange = sel.createRange();
+					}
+				});
+				iframe.contentWindow.attachEvent("onfocus", function() {
+					if (selectedRange) {
+						selectedRange.select();
+					}
+				});
+			}
+		}
+	});
+	
+	dojo.addOnUnload(function() {
+		// 	summary:
+		//		Show the loading screen till the page is fully loaded. 
+
+		var activeDoc, activeView, docIdElement, docId, LOADINGSCREEN_TIMEOUT = 5000;
+		
+		if (!parent.dojo || !SitesApp) return;
+		
+		docIdElement = dojo.query('input[name="docId"]', dojo.query('form[name="AppForm"]')[0])[0]; 
+		if (docIdElement)
+			docId = parseInt(docIdElement.value);
+		
+		activeDoc = docId !== undefined ?
+			SitesApp.getDocument(docId):
+			SitesApp.getActiveDocument();
+		
+		activeView = activeDoc.get('activeView');
+		if (!activeView.showLoadingScreen) return;
+		activeView.showLoadingScreen();
+
+		//	After a while we will surely remove loading screen 
+		//	and show the page even if it is not fully rendered.
+		setTimeout(function() {
+			if (!activeView.hideLoadingScreen) return;
+			activeView.hideLoadingScreen();
+		}, LOADINGSCREEN_TIMEOUT);
+	});
+}
+</SCRIPT>
+]]>
+<IF COND='IsVariable.__name__=true'>
+<THEN>
+	<IF COND='Variables.cs_environment=ucform'>
+	<THEN>
+<![CDATA[
+		<script>
+			dojo.ready(function() {
+				// for flex assets/flex parents:
+				// in case the name field has been provided in the definition selection screen
+				var doc = SitesApp.getActiveDocument();
+				// mark doc dirty
+				doc.set('dirty', true);
+			});
+		</script>
+]]>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+<!-- Check for default form style -->
+<if cond="IsVariable.AssetType=true">
+<then>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/DetermineDefaultStyleEligibility">
+		<argument NAME="styledassettype" VALUE="Variables.AssetType"/>
+	</callelement>
+</then>
+</if>
+</ftcs>

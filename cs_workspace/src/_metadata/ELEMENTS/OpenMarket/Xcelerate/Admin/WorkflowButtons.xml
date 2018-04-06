@@ -1,0 +1,131 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/WorkflowNew
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- Buttons where all steps are displayed with edit remove buttons and also in function privs add remove page -->
+<XLAT.LOOKUP KEY="dvin/UI/CancelEdits" VARNAME="_XLAT_" ESCAPE="true"/>
+<if COND="IsVariable.wfp:id=false">
+<then>
+	<if COND="IsVariable.wfp:name!=true">
+	<then>
+		<STRING.ENCODE VARIABLE="wfp:name" VARNAME="wfp:name"/>
+		<INPUT TYPE="hidden" NAME="wfp:name" VALUE="Variables.wfp:name" REPLACEALL="Variables.wfp:name"/>
+	</then>
+	</if>
+	<setvar NAME="CancelFrom" VALUE="CancelCreatingNewProcess"/>
+</then>
+<else>
+	<if COND="Variables.Copy=no">
+	<then>
+		<setvar NAME="CancelFrom" VALUE="CancelEditingProcess"/>
+		<if COND="Variables.subaction=steps">
+		<then>	
+			<setvar NAME="CancelFrom" VALUE="CancelAddingSteps"/>
+		</then>
+		</if>
+		<if COND="Variables.subaction=functions">
+		<then>	
+			<setvar NAME="CancelFrom" VALUE="CancelAddingPrivs"/>
+		</then>
+		</if>
+
+	</then>
+	<else>
+		<setvar NAME="CancelFrom" VALUE="CancelCopyingProcess"/>
+	</else>
+	</if>
+</else>
+</if>
+<INPUT TYPE="HIDDEN" NAME="CancelFrom" VALUE="Variables.CancelFrom" REPLACEALL="Variables.CancelFrom"/>
+<A HREF="javascript: CancelProcess(document.forms[0], 'Variables.wfp:name');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.wfp:name,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+
+<setvar NAME="IsStartStep" VALUE="false"/>
+<setcounter NAME="STEPS" VALUE="0"/>
+
+<if COND="IsVariable.wfp:stepsTotal=true">
+<then>
+	<setvar NAME="stpT" VALUE="Variables.wfp:stepsTotal"/>
+	<if COND="Variables.stpT!=0">
+	<then>
+		<setvar NAME="IsFirstPass" VALUE="false"/>
+		<loop FROM="0" COUNT="Variables.stpT">
+			<!-- startstate not defined -->
+			<setvar NAME="tmp" VALUE="Variables.wfp:stepsCounters.STEPSstartstate"/>
+			<if COND="Variables.tmp=Variables.empty">
+			<then>
+				<setvar NAME="IsStartStep" VALUE="true"/>
+				<setvar NAME="IdOfStartStep" VALUE="Variables.wfp:stepsCounters.STEPSid"/>
+			</then>
+			</if>
+			<setvar NAME="errno" VALUE="0"/>
+			<begins STR="Variables.tmp" WHAT="Variables"/>
+			<if COND="Variables.errno=1">
+			<then>
+				<setvar NAME="IsStartStep" VALUE="true"/>
+				<setvar NAME="IdOfStartStep" VALUE="Variables.wfp:stepsCounters.STEPSid"/>
+			</then>
+			</if>
+			<inccounter NAME="STEPS" VALUE="1"/>
+		</loop>
+	</then>
+	</if>
+</then>
+</if>
+
+<INPUT TYPE="HIDDEN" NAME="IsStartStep" VALUE="Variables.IsStartStep" REPLACEALL="Variables.IsStartStep"/>
+<XLAT.LOOKUP KEY="dvin/UI/SaveProcess" VARNAME="_XLAT_" ESCAPE="true"/>
+
+<if COND="Variables.subaction!=steps">
+<then>
+	
+	<if COND="Variables.subaction!=functions">
+	<then>
+		<A HREF="javascript: SaveProcess(document.forms[0]);" onClick="return DetailProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+	</then>
+	<else>
+		<A HREF="javascript: SaveProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+	</else>
+	</if>
+	
+	<if COND="Variables.action!=new">
+	<then>
+		<if COND="Variables.subaction!=functions">
+		<then>
+			<if COND="Variables.Copy!=yes">
+			<then>
+				
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/AddEditSteps" VARNAME="_XLAT_" ESCAPE="true"/>
+				<A HREF="javascript: AddEditSteps(document.forms[0]);" onClick="return DetailProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddEditSteps"/></CALLELEMENT></A>
+				
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/AddEditFunctionPrivs" VARNAME="_XLAT_" ESCAPE="true"/>
+				<A HREF="javascript: AddEditFunctionPrivs(document.forms[0]);" onClick="return DetailProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddEditFunctionPrivs"/></CALLELEMENT></A>
+				
+			</then>
+			</if>
+		</then>
+		</if>
+	</then>
+	</if>
+</then>
+<else>
+	
+	<A HREF="javascript: SaveProcess(document.forms[0]);" onClick="return CheckStartStepOnly(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+	
+</else>
+</if>
+
+<br/>
+<FONT COLOR="red"><XLAT.STREAM KEY="dvin/UI/Admin/saveprocessselectSavebutton"/></FONT><br/>
+
+				
+
+
+</FTCS> 
+
+

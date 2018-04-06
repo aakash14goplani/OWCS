@@ -1,0 +1,508 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/User/Modify.xml $
+$Revision: 15 $
+$Modtime: 2/27/04 2:46p $
+-->
+
+<!-- OpenMarket/Xcelerate/Admin/User/Modify
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function Cancel(obj) 
+{ 
+	obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Admin/User/List";
+	obj.form.elements['action'].value = "cancel";
+	obj.form.submit();
+}
+
+function checkfields() {
+var obj = document.forms[0];
+if (obj.elements['ACLList'].selectedIndex == -1)
+]]>
+	{alert("<XLAT.STREAM KEY="dvin/UI/Admin/Error/Youmustselectarole" ESCAPE="true" ENCODE="false"/>"); return false;
+	<![CDATA[
+	}
+	return true;
+}
+]]>
+</SCRIPT>
+
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<IF COND="Variables.action=details">
+<THEN>
+	<!-- check if logged in user has GeneralAdmin role -->
+	<USERMANAGER.GETLOGINUSER VARNAME="loginuser" />
+	<USERMANAGER.GETUSER USER="Variables.loginuser" OBJVARNAME="myUserObj" />
+
+	<CCUSER.GETSITEROLES NAME="myUserObj" SITE="SessionVariables.pubid" OBJVARNAME="loginuserroleobject"/>
+	<ROLELIST.GETALL NAME="loginuserroleobject" VARNAME="roles"/>
+	<ROLELIST.HASROLE NAME="loginuserroleobject" ROLE="GeneralAdmin" VARNAME="generalAdminExists"/> 
+	
+	<IF COND="Variables.generalAdminExists=false"><THEN>
+		<!-- check if user to be updated has GeneralAdmin role -->
+		<IF COND="IsVariable.thisuserid=true"><THEN>
+			<USERMANAGER.GETUSER USER="Variables.thisuserid" OBJVARNAME="myobj"/>
+		</THEN><ELSE>
+			<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.PubUser"/>
+		</ELSE></IF>
+		<CCUSER.GETSITEROLES NAME="myobj" SITE="Variables.pubid" OBJVARNAME="myrolelist"/>
+		<ROLELIST.HASROLE NAME="myrolelist" ROLE="GeneralAdmin" VARNAME="denyMod"/>
+	</THEN><ELSE>
+		<!-- logged-in user is GeneralAdmin, they can modify anyone -->
+		<SETVAR NAME="denyMod" VALUE="false"/>
+	</ELSE></IF>
+
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/UserRoleManagement"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+
+	<!-- Load the publication record -->
+	<PUBLICATION.LOAD NAME="site" OBJECTID="Variables.pubid"/>
+	<!-- Get the publication name and save it to a session variable -->
+	<PUBLICATION.GET NAME="site" FIELD="name"/>
+	<IF COND="IsVariable.thisuserid=true">
+	<THEN>
+	  <SETVAR NAME="currentuserid" VALUE="Variables.thisuserid" />
+	</THEN>
+	<ELSE>
+	  <SETVAR NAME="currentuserid" VALUE="CS.Empty" />
+	</ELSE>
+	</IF>
+	
+ 	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-50 margin-top-zero">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<tr>
+				<td colspan="3" class="form-label-text">
+						<table class="legacyAbar" border="0" cellpadding="0" cellspacing="0">
+						<tr>
+							<td><XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/Modify" outstring="urlusermodify">
+														<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+														 <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+														 <satellite.argument name="action" value="details"/>
+														 <satellite.argument name="pubid" value="Variables.pubid"/>
+														 <satellite.argument name="singleUser" value="no"/>
+														 <satellite.argument name="ValidUser" value="yes"/>
+														 <satellite.argument name="PubUser" value="Variables.PubUser"/>
+														 <satellite.argument name="thisuserid" value="Variables.currentuserid"/>
+                                 </SATELLITE.LINK>
+                                <A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContentUp.gif"  border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+							</td>
+							<td>
+								<A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Inspect"/></span></A>
+							</td>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+							<IF COND="Variables.denyMod=false"><THEN>
+								<!-- user logged in is allowed to modify this user -->
+							<td>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/Modify" outstring="urlusermodify">
+														 <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+														 <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+														 <satellite.argument name="action" value="edit"/>
+														 <satellite.argument name="pubid" value="Variables.pubid"/>
+														 <satellite.argument name="singleUser" value="no"/>
+														 <satellite.argument name="ValidUser" value="yes"/>
+														 <satellite.argument name="PubUser" value="Variables.PubUser"/>
+														 <satellite.argument name="thisuserid" value="Variables.currentuserid"/>
+                               </SATELLITE.LINK>
+                                <A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentUp.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+							</td>
+							<td>
+								<A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Edit"/></span></A>
+							</td>
+							</THEN><ELSE>
+								<!-- user logged in is not GeneralAdmin, but user being updated is;
+									do not allow edit (#16232) -->
+							<td>
+                                <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+							</td>
+							<td>
+								<span class="action-text" style="color: #999; cursor: default"><XLAT.STREAM KEY="dvin/Common/Edit"/></span>
+							</td>
+							</ELSE></IF>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+							<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+							<IF COND="Variables.denyMod=false"><THEN>
+								<!-- user logged in is allowed to delete this user from the site -->
+							<td>
+								<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/Modify" outstring="urlusermodify">
+														<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+														 <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+														 <satellite.argument name="action" value="confirmdelete"/>
+														 <satellite.argument name="pubid" value="Variables.pubid"/>
+														 <satellite.argument name="singleUser" value="no"/>
+														 <satellite.argument name="ValidUser" value="yes"/>
+														 <satellite.argument name="PubUser" value="Variables.PubUser"/>
+														 <satellite.argument name="thisuserid" value="Variables.currentuserid"/>
+                                                          </SATELLITE.LINK>
+                                <A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentUp.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+							</td>
+							<td>
+								<A HREF="Variables.urlusermodify" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlusermodify,Variables._XLAT_"><span class="action-text"><XLAT.STREAM KEY="dvin/Common/Delete"/></span></A>
+							</td>
+							</THEN><ELSE>
+								<!-- user logged in is not GeneralAdmin, but user being updated is;
+									do not allow deletion (#16232) -->
+							<td>
+                                <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentX.gif" hspace="2" border="0" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+							</td>
+							<td>
+								<span class="action-text" style="color: #999; cursor: default"><XLAT.STREAM KEY="dvin/Common/Delete"/></span>
+							</td>
+							</ELSE></IF>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+						</tr>
+						</table>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/UI/UserName"/>:
+				</td>
+				<td  class="form-inset">
+					   <STRING.STREAM VALUE="Variables.PubUser"/>
+				</td><td></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Site"/>:
+				</td>
+				<td  class="form-inset">
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="urlsitefront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="pubid" value="Variables.pubid"/>
+                                                          </SATELLITE.LINK>
+						<A HREF="Variables.urlsitefront" REPLACEALL="Variables.urlsitefront"><STRING.STREAM VALUE="Variables.name"/></A>
+				</td><td></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Roles"/>:
+				</td>
+				<td class="form-inset">
+						<IF COND="IsVariable.thisuserid=true">
+						<THEN>
+							<USERMANAGER.GETUSER USER="Variables.thisuserid"  OBJVARNAME="myobj" />
+						</THEN>
+						<ELSE>
+							<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.PubUser"/>
+						</ELSE>
+						</IF>
+						<!-- For each site get all the roles -->
+						<CCUSER.GETSITEROLES NAME="myobj" SITE="Variables.pubid" OBJVARNAME="myrolelist"/>
+						<ROLELIST.GETALL NAME="myrolelist" VARNAME="pubacl"/>
+						<SUBSTITUTE STR="Variables.pubacl" OUTSTR="aclListStr" WHAT="," WITH=",%20"/>
+						<IF COND="Variables.aclListStr=Variables.empty">
+						<THEN>
+							<XLAT.STREAM KEY="dvin/Common/PnoneP"/><BR/>
+						</THEN>
+						<ELSE>
+							<STRING.STREAM VALUE="Variables.aclListStr"/><BR/>
+						</ELSE>
+						</IF>
+                
+				</td><td><BR /></td>
+			</tr>
+		</table>
+	</td></tr>
+</table>
+<div class="width-outer-70">
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/List" outstring="urluserlist">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+        <satellite.argument name="action" value="ask"/>
+        <satellite.argument name="pubid" value="Variables.pubid"/>
+    </SATELLITE.LINK>
+	<A HREF="Variables.urluserlist" REPLACEALL="Variables.urluserlist"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Admin/Manageusersforthissite"/></A>
+</div>
+</THEN>
+</IF>
+<STRING.ENCODE VARIABLE="singleUser" VARNAME="singleUser" />
+<STRING.ENCODE VARIABLE="ValidUser" VARNAME="ValidUser" />
+
+<IF COND="Variables.action=edit">
+<THEN>
+	<!-- check if logged in user has GeneralAdmin role -->
+	<USERMANAGER.GETLOGINUSER VARNAME="loginuser" />
+	<USERMANAGER.GETUSER USER="Variables.loginuser" OBJVARNAME="myUserObj" />
+
+	<CCUSER.GETSITEROLES NAME="myUserObj" SITE="SessionVariables.pubid" OBJVARNAME="loginuserroleobject"/>
+	<ROLELIST.GETALL NAME="loginuserroleobject" VARNAME="roles"/>
+	<ROLELIST.HASROLE NAME="loginuserroleobject" ROLE="GeneralAdmin" VARNAME="generalAdminExists"/> 
+
+	<SETVAR NAME="username" VALUE="Variables.key"/>
+                   
+                   
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/EditRolesforUser"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+        <!-- Load the publication record -->
+        <PUBLICATION.LOAD NAME="site" OBJECTID="Variables.pubid"/>
+        <!-- Get the publication name and save it to a session variable -->
+        <PUBLICATION.GET NAME="site" FIELD="name"/>
+	<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-30">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/UserName"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.ENCODE VARIABLE="PubUser" VARNAME="PubUser"/>
+						<CSVAR NAME="Variables.PubUser"/>
+						<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid"/>
+						<INPUT TYPE="hidden" NAME="pubid" VALUE="Variables.pubid" REPLACEALL="Variables.pubid"/>
+						<INPUT TYPE="hidden" NAME="PubUser" VALUE="Variables.PubUser" REPLACEALL="Variables.PubUser"/>
+				</td><td><BR /></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Site"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.name"/>
+				</td><td><BR /></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/Common/Roles"/>:
+				</td>
+				<td class="form-inset">
+					<IF COND="IsVariable.thisuserid=true">
+						<THEN>
+						   <USERMANAGER.GETUSER USER="Variables.thisuserid"  OBJVARNAME="myobj" />
+						</THEN>
+						<ELSE>
+							<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.PubUser"/>
+						</ELSE>
+					</IF>
+                    <IF COND="Variables.errno!=-13051">
+                    <THEN>
+                        <CCUSER.GETID NAME="myobj" VARNAME="useridvarname"/>
+						<ROLEMANAGER.GETROLENAMES LISTVARNAME="ACLs"/>
+						
+                    </THEN>
+                    </IF>
+					<!-- For each site get all the roles -->
+					<CCUSER.GETSITEROLES NAME="myobj" SITE="Variables.pubid" OBJVARNAME="myrolelist"/>
+					<!-- check if user to be updated has GeneralAdmin role -->
+					<IF COND="Variables.generalAdminExists=false">
+					<THEN>
+					<ROLELIST.HASROLE NAME="myrolelist" ROLE="GeneralAdmin" VARNAME="generalAdminExists"/> 
+                    </THEN>
+                    </IF>
+					<!-- If logged in user does not have GeneralAdmin and User to be updated does not have GeneralAdmin then don't show it -->
+					<IF COND="Variables.generalAdminExists=false">
+					<THEN>
+						<LISTOBJECT.CREATE NAME="mylist" COLUMNS="aclname"/>
+						<LOOP LIST="ACLs">
+						<IF COND="ACLs.aclname!=GeneralAdmin">
+						<THEN>
+						<LISTOBJECT.ADDROW NAME="mylist" aclname="ACLs.aclname" />
+						</THEN>
+						</IF>
+						</LOOP>
+						<LISTOBJECT.TOLIST NAME="mylist" LISTVARNAME="ACLs"/>
+					</THEN>
+					</IF>
+					<ROLELIST.GETALL NAME="myrolelist" VARNAME="pubacl"/>
+                  	<INPUT TYPE="HIDDEN" NAME="acl" VALUE=""/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/ACLList">
+						<ARGUMENT NAME="selectList" VALUE="Variables.pubacl"/>
+					</CALLELEMENT>
+				</td><td><BR /></td>
+			</tr>
+			<IF COND="IsVariable.thisuserid=true">
+			<THEN>
+			  <SETVAR NAME="currentuserid" VALUE="Variables.thisuserid" />
+			  <STRING.ENCODE VARIABLE="thisuserid" VARNAME="thisuserid"/>
+			  <INPUT TYPE="hidden" NAME="thisuserid" VALUE="Variables.thisuserid" REPLACEALL="Variables.thisuserid"/>
+			</THEN>
+			<ELSE>
+			  <SETVAR NAME="currentuserid" VALUE="CS.Empty" />
+			</ELSE>
+			</IF>
+			<IF COND="Variables.singleUser=yes">
+			<THEN>
+				<INPUT TYPE="hidden" NAME="pattern" VALUE="Variables.PubUser" REPLACEALL="Variables.PubUser"/>
+			</THEN>
+			</IF>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/Modify" outstring="UserInspectURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+				 <satellite.argument name="action" value="details"/>
+				 <satellite.argument name="pubid" value="Variables.pubid"/>
+				 <satellite.argument name="singleUser" value="no"/>
+				 <satellite.argument name="ValidUser" value="yes"/>
+				 <satellite.argument name="PubUser" value="Variables.PubUser"/>
+				 <ics.argument name="thisuserid" value="Variables.currentuserid"/>
+			</SATELLITE.LINK>
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+					<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="Variables.UserInspectURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.UserInspectURL,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_XLAT_" ESCAPE="true"/>
+					<img height="1" width="16" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+					<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit();return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+				</TD>
+			</TR>	    
+			
+		</table>
+	</td></tr>
+</table>
+	<INPUT TYPE="hidden" NAME="singleUser" VALUE="Variables.singleUser" REPLACEALL="Variables.singleUser"/>
+	<INPUT TYPE="hidden" NAME="ValidUser" VALUE="Variables.ValidUser" REPLACEALL="Variables.ValidUser"/>
+	
+	<INPUT TYPE="HIDDEN" NAME="frompage" VALUE="Modify"/>
+	<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/User/Post"/>
+
+</THEN>
+</IF>
+
+<IF COND="Variables.action=confirmdelete">
+<THEN>
+
+		<SETVAR NAME="username" VALUE="Variables.key"/>
+                   
+         <table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/UserRoleManagement"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+			<tr>
+			<td><!-- Load the publication record -->
+				<PUBLICATION.LOAD NAME="site" OBJECTID="Variables.pubid"/>
+				<!-- Get the publication name and save it to a session variable -->
+				<PUBLICATION.GET NAME="site" FIELD="name"/>
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteUserFromSiteQ" VARNAME="msgtext" ENCODE="false"/>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="msgtext" VALUE="Variables.msgtext"/>
+					<argument NAME="severity" VALUE="warning"/>
+				</callelement></td>
+			</tr>
+		</table>          
+        <table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-30">
+		<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/UI/UserName"/>:
+				</td>
+				<td class="form-inset">
+			 	    <STRING.STREAM VALUE="Variables.PubUser"/>
+					<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid" />
+        			<INPUT TYPE="hidden" NAME="pubid" VALUE="Variables.pubid" REPLACEALL="Variables.pubid"/>
+					<STRING.ENCODE VARIABLE="PubUser" VARNAME="PubUser" />
+        			<INPUT TYPE="hidden" NAME="PubUser" VALUE="Variables.PubUser" REPLACEALL="Variables.PubUser"/>
+					<IF COND="IsVariable.thisuserid=true">
+					<THEN>
+					<SETVAR NAME="currentuserid" VALUE="Variables.thisuserid" />
+					<INPUT TYPE="hidden" NAME="thisuserid" VALUE="Variables.thisuserid" REPLACEALL="Variables.thisuserid"/>
+					</THEN>
+					</IF>
+				</td><td></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Site"/>:
+				</td>
+				<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.name"/>
+				</td><td><BR /></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+				<td VALIGN="TOP" class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Roles"/>:
+				</td>
+				<td  class="form-inset">
+						<IF COND="IsVariable.thisuserid=true">
+						<THEN>
+						   <USERMANAGER.GETUSER USER="Variables.thisuserid"  OBJVARNAME="myobj" />
+						   <SETVAR NAME="currentuserid" VALUE="Variables.thisuserid" />
+						</THEN>
+						<ELSE>
+							<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.PubUser"/>
+						</ELSE>
+					   </IF>
+
+						<!-- For each site get all the roles -->
+						<CCUSER.GETSITEROLES NAME="myobj" SITE="Variables.pubid" OBJVARNAME="myrolelist"/>
+						<ROLELIST.GETALL NAME="myrolelist" VARNAME="pubacl"/>
+						<SUBSTITUTE STR="Variables.pubacl" OUTSTR="aclListStr" WHAT="," WITH=",%20"/>
+						<IF COND="Variables.aclListStr=Variables.empty">
+						<THEN>
+							<XLAT.STREAM KEY="dvin/Common/PnoneP"/><BR/>
+						</THEN>
+						<ELSE>
+							<STRING.STREAM VALUE="Variables.aclListStr"/><BR/>
+						</ELSE>
+						</IF>
+                
+				</td><td><BR /></td>
+			</tr>
+			<IF COND="Variables.singleUser=yes">
+				<THEN>
+					<INPUT TYPE="hidden" NAME="pattern" VALUE="Variables.PubUser" REPLACEALL="Variables.PubUser"/>
+				</THEN>
+			</IF>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/User/Modify" outstring="UserInspectURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+				 <satellite.argument name="action" value="details"/>
+				 <satellite.argument name="pubid" value="Variables.pubid"/>
+				 <satellite.argument name="singleUser" value="no"/>
+				 <satellite.argument name="ValidUser" value="yes"/>
+				 <satellite.argument name="PubUser" value="Variables.PubUser"/>
+				 <satellite.argument name="thisuserid" value="Variables.currentuserid"/>
+			</SATELLITE.LINK>
+			<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+					<A HREF="Variables.UserInspectURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.UserInspectURL,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+					<!--<img height="1" width="16" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>	-->
+					<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit();return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/DeleteUserFromSite"/></CALLELEMENT></A>
+					<INPUT TYPE="HIDDEN" NAME="frompage" VALUE="Modify"/>
+					<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/User/Post"/>
+			</TD>
+			</TR>	
+
+		</table>
+	</td></tr>
+</table>
+	
+	<INPUT TYPE="hidden" NAME="singleUser" VALUE="Variables.singleUser" REPLACEALL="Variables.singleUser"/>
+	<INPUT TYPE="hidden" NAME="ValidUser" VALUE="Variables.ValidUser" REPLACEALL="Variables.ValidUser"/>
+
+</THEN>
+</IF>
+
+</FTCS> 

@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/CSClient/AskForAssignees
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<Participants.GetAllRoles NAME="partsobj" VARNAME="assigneeroles" />
+<stringlist NAME="roleslist" STR="Variables.assigneeroles" DELIM="," />
+
+<loop LIST="roleslist">
+    <REQUIREDVALUE NAME="ask:roleslist.ITEM" DISPLAYNAME="roleslist.ITEM" DATATYPE="MSList" REQUIRED="true" REPLACEALL="roleslist.ITEM">
+        <OPTIONS>    
+            <Participants.GetParticipantsForRole NAME="partsobj" ROLE="roleslist.ITEM" LISTVARNAME="userslist" />
+            <if COND="IsList.userslist=true">
+            <then>
+                <if COND="userslist.#numRows!=0">
+                <then>
+                    <loop LIST="userslist">
+                        <UserManager.GetDisplayableUserName USER="userslist.ITEM" VARNAME="uname" />
+                        <SUBSTITUTE STR="userslist.ITEM" WHAT="," WITH=";" OUTSTR="currentUser"/>
+                        <OPTION VALUE="Variables.currentUser" SELECTED="false" DISPLAYVALUE="Variables.uname" REPLACEALL="Variables.currentUser,Variables.uname"/>
+                    </loop>
+                </then>
+                </if>
+            </then>
+            </if>
+        </OPTIONS>
+    </REQUIREDVALUE>
+</loop>
+
+</ftcs>

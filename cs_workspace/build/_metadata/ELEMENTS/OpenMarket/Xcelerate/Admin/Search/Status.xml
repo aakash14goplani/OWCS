@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Search/Status.xml $ 
+$Revision: 22 $ 
+$Modtime: 3/01/04 9:15a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- Admin/Search/Status.xml
+-
+- DESCRIPTION
+-	Server status command.  
+-
+- HISTORY 
+-->
+
+<PROPERTY.GET PARAM="xcelerate.usese" INIFILE="futuretense_xcel.ini" VARNAME="propusese"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ServerStatus"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+    <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+	<tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		<td>
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="3" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td HEIGHT="16" class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;<BR /></td>
+				<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+			</tr>
+			<tr><td colspan="3" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+
+			<tr>
+				<td class="form-label-inset">
+					<XLAT.STREAM KEY="dvin/Common/ContentServer"/>:
+				</td>
+				<td class="form-inset">
+					<IF COND="Variables.propusese=true">
+					<THEN>
+						<XLAT.STREAM KEY="dvin/UI/Admin/Configuredforsearchengine"/>
+					</THEN>
+					<ELSE>
+						<XLAT.STREAM KEY="dvin/UI/Admin/NotconfiguredsearchenginesetProp"/>
+					</ELSE>
+					</IF>
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td class="form-label-inset" NOWRAP="NOWRAP">
+					<XLAT.STREAM KEY="dvin/UI/Admin/SearchEngine"/>:
+				</td>
+				<td class="form-inset">
+				        <STRING.STREAM VALUE="Variables.seDescription"/>
+				</td>
+			</tr>
+		</table>
+
+	</td>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+</table>
+
+<IF COND="Variables.propusese=true">
+  <THEN>
+    <XLAT.LOOKUP KEY="dvin/UI/Admin/SelectassettypeunderSearchingmanageuse" VARNAME="msgtext"/>
+    <div class="width-outer-70">
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<ARGUMENT NAME="severity" VALUE="info"/>
+	</CALLELEMENT>
+	</div>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Search/List"/>
+  </THEN>
+</IF>
+
+</FTCS>

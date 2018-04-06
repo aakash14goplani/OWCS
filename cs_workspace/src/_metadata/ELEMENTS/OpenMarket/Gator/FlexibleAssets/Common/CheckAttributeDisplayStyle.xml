@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/CheckAttributeDisplayStyle
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="attrDisplayStyle" VALUE="name"/>
+
+<!-- <LOADPROPERTY FILE="Variables.inifile;gator.ini"/>		-->
+
+<PROPERTY.GET INIFILE="gator.ini" PARAM="cc.attrDisplayStyle" VARNAME="LocalLoadDispStyle"/>
+<if COND="Variables.errno!=0">
+	<then>
+		<br/><XLAT.STREAM KEY="dvin/Error/UI/NogatoriniFile" errno="Variables.errno" EVALALL="false"/> 
+	</then>
+	<else>
+		<if COND="Variables.LocalLoadDispStyle=description">
+			<then>
+				<setvar NAME="attrDisplayStyle" VALUE="description"/>
+			</then>
+			<else>
+				<setvar NAME="attrDisplayStyle" VALUE="name"/>
+			</else>
+		</if>
+		
+		<REMOVEVAR NAME="LocalLoadDispStyle"/>
+	</else>
+</if>
+
+</FTCS> 

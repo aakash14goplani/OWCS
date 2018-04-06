@@ -1,0 +1,199 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- 
+$Revision: 21 $ 
+$Modtime: 2/27/04 3:19p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildEditTextArea.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<CALLELEMENT NAME="OpenMarket/Gator/Scripts/ValidateUITextArea" />
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+
+<removevar NAME="maxlength"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/maxlength=true">
+<then>
+	<setvar NAME="maxlength" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/maxlength"/>
+</then>
+<else>
+	<BEGINS STR="Variables.fieldname" WHAT="url"/>
+	<if COND="Variables.errno=0">
+	<then>
+		<if COND="IsVariable.assetmaker/property/Variables.fieldname/storage/length=true">
+		<then>
+			<setvar NAME="maxlength" VALUE="Variables.assetmaker/property/Variables.fieldname/storage/length"/>
+		</then>
+		<else>
+			<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Variables.fieldname/storage/type"/>
+			<if COND="Variables.storagetype!=LONGVARCHAR">
+			<then>
+				<setvar NAME="maxlength" VALUE="10"/>
+			</then>
+			</if>
+		</else>
+		</if>
+	</then>
+	</if>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/wrap=true">
+<then>
+    <setvar NAME="textareawrap" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/wrap"/>
+</then>
+<else>
+    <setvar NAME="textareawrap" VALUE="Variables.empty"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/resize=true">
+<then>
+    <setvar NAME="textarearesize" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/resize"/>
+</then>
+<else>
+    <setvar NAME="textarearesize" VALUE="Variables.empty"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/height=true">
+<then>
+    <setvar NAME="textareaheight" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/height"/>
+</then>
+<else>
+    <setvar NAME="textareaheight" VALUE="Variables.empty"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/width=true">
+<then>
+    <setvar NAME="textareawidth" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/width"/>
+</then>
+<else>
+    <setvar NAME="textareawidth" VALUE="Variables.empty"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/rows=true">
+<then>
+    <setvar NAME="textarearows" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/rows"/>
+</then>
+<else>
+    <setvar NAME="textarearows" VALUE="Variables.empty"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/cols=true">
+<then>
+    <setvar NAME="textareacols" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/cols"/>
+</then>
+<else>
+    <setvar NAME="textareacols" VALUE="Variables.empty"/>
+</else>
+</if>
+<if COND="Variables.textareawidth=Variables.empty">
+<then>
+	<setvar NAME="formStyle" VALUE="Variables.defaultFormStyle" />
+</then>
+</if>
+<if COND="Variables.textarearesize!=Variables.empty">
+<then>
+	<setvar NAME="formStyle" VALUE="false" />
+</then>
+</if>
+<div style="display: table;">
+<div style="display: table-cell; vertical-align: top;">
+<callelement name="OpenMarket/Gator/AttributeTypes/CommonTextArea">
+	<argument name="areaName" value='Variables.AssetType:Variables.fieldname'/>
+	<argument name="areaValue" value='Variables.fieldvalue'/>
+	<argument name="areaWrap" value='Variables.textareawrap'/>
+	<argument name="areaHeight" value='Variables.textareaheight'/>
+	<argument name="areaWidth" value='Variables.textareawidth'/>
+	<argument name="areaResize" value='Variables.textarearesize'/>
+	<argument name="applyDefaultFormStyle" value='Variables.formStyle' />
+	<argument name="maxLength" value='Variables.maxlength' />
+	<argument name="areaRows" value='Variables.textarearows' />
+	<argument name="areaCols" value='Variables.textareacols' />
+</callelement>
+</div>
+<div style="display: table-cell; vertical-align: top;">
+<IMG style="vertical-align: top; margin-left: 10px;" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" />
+</div>
+</div>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/embeddedlinks=true">
+<then>
+	<setvar NAME="embeddedlinks" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/embeddedlinks"/>
+	<if COND="Variables.embeddedlinks=YES">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Scripts/AddEmbeddedLink"/>
+        <div style="margin-top: 10px;">
+		<setvar NAME="enableAddLink" VALUE="0"/>
+		<INDEXOF STR="CS.Header.User-Agent" WHAT="MSIE" OUTSTR="dummy" />
+		<if COND="Variables.errno!=1">
+		<then>
+			<setvar NAME="enableAddLink" VALUE="1"/>
+		</then>
+		<else>
+			<INDEXOF STR="CS.Header.User-Agent" WHAT="safari" OUTSTR="dummy" />
+			<if COND="Variables.errno!=1">
+			<then>
+				<setvar NAME="enableAddLink" VALUE="1"/>
+			</then>
+			<else>
+				<INDEXOF STR="CS.Header.User-Agent" WHAT="mozilla" OUTSTR="dummy" />
+				<if COND="Variables.errno!=1">
+				<then>
+					<setvar NAME="enableAddLink" VALUE="3"/>
+				</then>
+				</if>
+			</else>
+			</if>
+		</else>
+		</if>
+		<if COND="Variables.enableAddLink!=0">
+           <then>
+                <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="alt" />
+                <XLAT.LOOKUP KEY="dvin/UI/AddEmbeddedLink" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.AssetType:Variables.fieldname', 'Variables.fielddescription', 'link', false);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.fieldname,Variables.fielddescription,Variables.mouseover">
+                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/AddLink"/></callelement>
+				</A>
+                <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="alt" />
+                <XLAT.LOOKUP KEY="dvin/UI/AddInclusion" VARNAME="mouseover" ESCAPE="true"/> 					                        
+                <A HREF="javascript:void(0)" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" onclick="addEmbeddedLink('Variables.ContentDetails:name', 'Variables.AssetType', 'Variables.AssetType:Variables.fieldname', 'Variables.fielddescription', 'include', false);" REPLACEALL="Variables.ContentDetails:name,Variables.AssetType,Variables.fieldname,Variables.fielddescription,Variables.mouseover">
+                    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument NAME="buttonkey" VALUE="UI/Forms/Include"/></callelement>
+                </A>
+                <setvar NAME="errno" VALUE="0" />
+           </then>
+           </if>
+       </div>
+	</then>
+	</if>
+</then>
+</if>
+<!-- a url field may be a TEXTAREA or UPLOAD, if it is text area, build up a list for the preUpdate element -->
+<BEGINS STR="Variables.fieldname" WHAT="url"/>
+<if COND="Variables.errno=1">
+<then>
+	<INPUT TYPE="hidden" NAME="editfileastext" VALUE="Variables.fieldname" REPLACEALL="Variables.fieldname"/>
+</then>
+</if>
+
+<removevar NAME="alttext"/>
+<removevar NAME="defaultFormStyleClass"/>
+</FTCS> 

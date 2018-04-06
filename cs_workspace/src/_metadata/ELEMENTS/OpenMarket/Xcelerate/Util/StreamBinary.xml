@@ -1,0 +1,105 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<IF COND="IsVariable.Revision=false">
+<THEN>
+	<IF COND="IsVariable.username=true">
+	<THEN>
+		<SETVAR NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceleditor"/>
+		<IF COND="Variables.errno=0">
+		<THEN>
+			<MISC.DOCLINKDECRYPT PASSWORD="Variables.password" VARNAME="password"/>
+			<USERMANAGER.LOGINUSER USERNAMEVARIABLE="username" PASSWORDVARIABLE="password" VARNAME="loggedIn"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="loggedIn" VALUE="true"/>
+		</ELSE>
+		</IF>
+		<IF COND="Variables.loggedIn=true">
+		<THEN>
+			<ICS.STREAMHEADER NAME="Content-Type" VALUE="Variables.mimetype"/>
+			<ICS.STREAMHEADER NAME="MDT-Type" VALUE="abinary; charset=UTF-8"/>
+			<ICS.STREAMHEADER NAME="Content-Disposition" VALUE="attachment; filename=Variables.filename"/>
+			<CATALOGMANAGER>
+				<ARGUMENT NAME="ftcmd" VALUE="retrievebinary"/>
+				<ARGUMENT NAME="tablename" VALUE="MungoBlobs"/>
+				<ARGUMENT NAME="tablekeyvalue" VALUE="Variables.blobwhere"/>
+				<ARGUMENT NAME="columnname" VALUE="urldata"/>
+				<ARGUMENT NAME="tablekey" VALUE="id"/>
+			</CATALOGMANAGER>
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<SETVAR NAME="errno" VALUE="0"/>
+	<USERISMEMBER GROUP="xceleditor"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+		<!-- UI timeout -->
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Security/TimeoutError" outstring="urltimeouterror">
+		</SATELLITE.LINK>
+		<REPLACE STR="Variables.urltimeouterror">
+			<SCRIPT LANGUAGE="JavaScript">
+	window.opener.window.opener.parent.parent.location="Variables.urltimeouterror";
+	window.opener.close();
+	window.close();
+			</SCRIPT>
+		</REPLACE>
+		<THROWEXCEPTION/>
+	</THEN>
+	<ELSE>
+		<ICS.STREAMHEADER NAME="Content-Type" VALUE="Variables.mimetype"/>
+		<ICS.STREAMHEADER NAME="MDT-Type" VALUE="abinary; charset=UTF-8"/>
+		<ICS.STREAMHEADER NAME="Content-Disposition" VALUE="attachment; filename=Variables.filename"/>
+
+		<ASSET.LOADREVISION TYPE="Variables.AssetType" OBJECTID="Variables.assetid" NAME="ainst" REVISION="Variables.Revision"/>
+		<IF COND="IsVariable.filterId=false">
+		<THEN>
+			<SETVAR NAME="filterId" VALUE="Variables.empty"/>
+		</THEN>
+		</IF>
+		<IF COND="IsVariable.filename=false">
+		<THEN>
+			<SETVAR NAME="filename" VALUE="Variables.empty"/>
+		</THEN>
+		</IF>
+		
+		<IF COND="Variables.filterId!=Variables.empty">
+		<THEN>
+			<FLEXASSET.GETATTRIBUTE NAME="ainst" ID="Variables.attrid" FILTERID="Variables.filterId" LISTVARNAME="lBlobVal"/>
+		</THEN>
+		<ELSE>
+			<FLEXASSET.GETATTRIBUTE NAME="ainst" ID="Variables.attrid"  LISTVARNAME="lBlobVal"/>
+		</ELSE>
+		</IF>
+		<IF COND="IsColumn.lBlobVal.urlvalue=true">
+		<THEN>
+			<IF COND="Variables.filename!=Variables.empty">
+			<THEN>
+				<LOOP LIST="lBlobVal">
+					<IF COND="lBlobVal.urlvalue=Variables.filename">
+					<THEN>
+						<STRING.STREAMBINARY LIST="lBlobVal" COLUMN="urlvalue" FILENAME="lBlobVal.urlvalue"/>
+						<GOTOROW LIST="lBlobVal" ROWNUM="lBlobVal.#numRows"/>
+					</THEN>
+					</IF>
+				</LOOP>
+			</THEN>
+			<ELSE>
+				<STRING.STREAMBINARY LIST="lBlobVal" COLUMN="urlvalue"/>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<STRING.STREAMBINARY LIST="lBlobVal" COLUMN="value"  />
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</ELSE>
+</IF>
+
+</FTCS> 

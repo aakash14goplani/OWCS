@@ -1,0 +1,64 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/DelegateAssignmentPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+
+<if COND="IsVariable.delegatecomment!=true">
+<then>
+     <setvar NAME="delegatecomment" VALUE=""/>
+</then>
+<else>
+     <substitute STR="Variables.delegatecomment" WHAT="%26" WITH=" AND " OUTSTR="delegatecomment"/>
+     <substitute STR="Variables.delegatecomment" WHAT="'" WITH=" " OUTSTR="delegatecomment"/>
+     <substitute STR="Variables.delegatecomment" WHAT="%22" WITH=" " OUTSTR="delegatecomment"/>
+</else>
+</if>
+
+<UserManager.GetDisplayableUserName USER="Variables.DelegateUser" VARNAME="uname" />
+<WorkflowEngine.DelegateAssignment OBJECT="workflowasset" ID="Variables.assignmentid" DELEGATEDTO="Variables.DelegateUser" COMMENT="Variables.delegatecomment" SITE="SessionVariables.pubid" />
+<if COND="Variables.errno!=0">
+<then>
+     <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	<argument NAME="error" VALUE="DelegateAssignmentFailed"/>
+	<argument NAME="delegateuser" VALUE="Variables.uname"/>
+     </callelement>
+</then>
+<else>
+     <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+     <ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+     <XLAT.LOOKUP KEY="dvin/UI/AssetDelegatedToUser" VARNAME="_XLAT_"/>
+     <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+	    <argument NAME="severity" VALUE="info"/>	
+     </callelement> 
+	<if COND="Variables.cs_environment=ucform">
+	<then>
+		<SCRIPT TYPE="text/javascript">
+			dojo.addOnLoad(function(){
+				SitesApp.notifyModelUpdate('workflowStatus');
+			});
+		</SCRIPT>
+	</then>
+	</if>	
+</else>
+</if>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	<argument NAME="id"        VALUE="Variables.id"/>
+</callelement>
+
+</FTCS> 

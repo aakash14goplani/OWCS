@@ -1,0 +1,225 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/BrowsePageChildren
+- 
+- INPUT
+-	showUnplaced - true or false to indicate whether to show the unplaced pages in a site or not
+- OUTPUT
+-  writes out browse links to each page it finds
+-
+-->
+<SITEPLAN.LOAD NAME="thePubNode" NODEID="Variables.sitenode"/>
+<!-- Do a join query, because SITEPLAN.LISTPAGES does way too much stuff and performs poorly -->
+<setvar NAME="tablename" VALUE="SitePlanTree"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+	<ARGUMENT NAME="columnvalue" VALUE="Variables.sitenode"/>
+	<ARGUMENT NAME="type" VALUE="Long"/>
+</CALLELEMENT>
+<IF COND="Variables.validatedstatus=true">
+<THEN>
+	<setvar NAME="childTablename" VALUE="Page" />
+	<IF COND="Variables.sitenodeType=Publication">
+	<THEN>
+		<setvar NAME="childTablename" VALUE="SitePlan" />
+	</THEN>
+	</IF>
+	<execsql LIST="PlacedPages" TABLE="SitePlanTree, Variables.childTablename"
+		SQL="SELECT spt.*, ctn.name AS name FROM  SitePlanTree spt, Variables.childTablename ctn 
+				WHERE spt.otype='Variables.childTablename' 
+				AND spt.oid=ctn.id 
+				AND spt.nparentid = Variables.sitenode
+				AND spt.ncode = 'Placed' 
+				ORDER BY spt.nrank ASC" />
+</THEN>
+</IF>
+
+<IF COND="Variables.showUnplaced=true">
+<THEN>
+	<setvar NAME="tablename" VALUE="SitePlanTree"/>
+	<IF COND="Variables.validatedstatus=true">
+	<THEN>
+		<execsql LIST="UnplacedPages"
+			TABLE="SitePlanTree,Page"
+			SQL="SELECT t0.*,t1.name AS name
+				FROM  SitePlanTree t0, Page t1
+				WHERE t0.otype='Page'
+				AND t0.oid=t1.id
+				AND t0.nparentid = Variables.sitenode
+				AND t0.ncode = 'UnPlaced'
+				ORDER BY t0.nrank ASC"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<IF COND="IsList.PlacedPages=true">
+<THEN>
+	<IF COND="PlacedPages.#numRows!=0">
+	<THEN>
+		<SETVAR NAME="tablename" VALUE="AssetRelationTree" />
+		<TABLE class="width-inner-100" CELLSPACING="2" CELLPADDING="0" BORDER="0">
+		<TR>
+		<TD class="form-label-text">
+		<IF COND="Variables.childTablename=SitePlan">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/UI/SitePlan" />
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/AssetMgt/Childpages" />
+			</ELSE>
+		</IF>:</TD>
+		<TD class="form-inset">		
+		<TABLE CELLSPACING="2" CELLPADDING="0" BORDER="0">
+		<TR>
+			<TD><XLAT.STREAM KEY="dvin/AT/Common/Name"/></TD>
+			<TD></TD>
+			<TD><XLAT.STREAM KEY="dvin/UI/AssetMgt/Children"/></TD>
+		</TR>
+		<LOOP LIST="PlacedPages">
+			<TR>
+				<TD>
+					<!-- Count the child nodes -->
+					<SETVAR NAME="mycount" VALUE="0"/>
+					<SETVAR NAME="tablename" VALUE="SitePlanTree"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+						<ARGUMENT NAME="columnvalue" VALUE="PlacedPages.nid"/>
+						<ARGUMENT NAME="type" VALUE="Long"/>
+					</CALLELEMENT>
+					<IF COND="Variables.validatedstatus=true">
+					<THEN>
+						<EXECSQL LIST="countlist" SQL="SELECT COUNT(*) AS mycount FROM SitePlanTree WHERE nparentid=PlacedPages.nid AND otype='Page'"/>
+					</THEN>
+					</IF>
+					<IF COND="IsList.countlist=true">
+					<THEN>
+						<IF COND="countlist.#numRows!=0">
+						<THEN>
+							<SETVAR NAME="mycount" VALUE="countlist.mycount"/>
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+					
+					<XLAT.LOOKUP KEY="dvin/UI/Browsethisitem" VARNAME="_XLAT_"/>
+					<IF COND="IsVariable.p=true">
+					<THEN>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BrowseAssetChildren" outstring="BrowseURL">
+							<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+							<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+							<satellite.argument name="c" value="PlacedPages.otype"/>
+							<satellite.argument name="p" value="Variables.p"/>
+							<satellite.argument name="cid" value="PlacedPages.oid"/>
+						</SATELLITE.LINK>
+						<A HREF="Variables.BrowseURL" TITLE="Variables._XLAT_" REPLACEALL="Variables.BrowseURL, Variables._XLAT_"><STRING.STREAM VALUE="PlacedPages.name"/></A>
+					</THEN>
+					<ELSE>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BrowseAssetChildren" outstring="BrowseURL">
+							<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+							<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+							<satellite.argument name="c" value="PlacedPages.otype"/>
+							<satellite.argument name="cid" value="PlacedPages.oid"/>
+						</SATELLITE.LINK>
+						<A HREF="Variables.BrowseURL" TITLE="Variables._XLAT_" REPLACEALL="Variables.BrowseURL, Variables._XLAT_"><STRING.STREAM VALUE="PlacedPages.name"/></A>
+					</ELSE>
+					</IF>
+				</TD>
+				<TD>&nbsp;</TD>
+				<TD><STRING.STREAM VALUE="Variables.mycount"/></TD>
+			</TR>
+		</LOOP>
+		</TABLE>
+		</TD></TR>
+		</TABLE>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<IF COND="Variables.showUnplaced=true">
+<THEN>
+<TABLE class="width-inner-100" CELLSPACING="2" CELLPADDING="0" BORDER="0">
+<TR>
+	<TD class="form-label-text"><XLAT.STREAM KEY="dvin/UI/AssetMgt/Unplacedpages"/>:</TD>
+	<TD class="form-inset">
+	<TABLE CELLSPACING="2" CELLPADDING="0" BORDER="0">
+	<IF COND="IsList.UnplacedPages=true">
+	<THEN>
+		<TR><TD><XLAT.STREAM KEY="dvin/UI/AssetMgt/sitecontainsfollowingunplacedpages"/>:</TD><TD colspan="2"></TD></TR>
+		<UL>
+		<LOOP LIST="UnplacedPages">
+		<TR><TD>			
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BrowseAssetChildren" outstring="BrowseURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+				<satellite.argument name="c" value="UnplacedPages.otype"/>
+				<satellite.argument name="cid" value="UnplacedPages.oid"/>
+			</SATELLITE.LINK>
+			<LI><A HREF="Variables.BrowseURL" REPLACEALL="Variables.BrowseURL"><STRING.STREAM VALUE="UnplacedPages.name"/></A></LI>
+			</TD><TD colspan="2"></TD></TR>
+		</LOOP></UL>
+	</THEN>
+	<ELSE>
+		<TR><TD><XLAT.STREAM KEY="dvin/UI/AssetMgt/Therenounplacedpages"/></TD><TD colspan="2"></TD></TR>
+	</ELSE>
+	</IF>
+	</TABLE>
+	</TD></TR>
+</TABLE>
+</THEN>
+</IF>
+
+<!-- offer Place Page function only on Placed pages -->
+<SITEPLAN.GET NAME="thePubNode" FIELD="ncode"/>
+<if COND="Variables.ncode!=UnPlaced">
+<then>
+	<SITEPLAN.NODEPATH NAME="thePubNode" LIST="myAncestors"/>
+	<GOTOROW LIST="myAncestors" ROWNUM="myAncestors.#numRows"/>
+	<SETROW LIST="myAncestors" ACTION="PREV"/>
+	<if COND="myAncestors.ncode!=UnPlaced">
+	<then>
+		<IF COND="IsVariable.cid=true">
+		<THEN>
+			<IF COND="Variables.sitenodeType=SitePlan">
+			<THEN>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PlacePageFront" outstring="PlaceURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="ID" value="Variables.cid"/>
+				</SATELLITE.LINK>
+			</THEN>
+			<ELSE>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PlacePageFront" outstring="PlaceURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="ParentPage" value="Variables.cid"/>
+				</SATELLITE.LINK>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PlacePageFront" outstring="PlaceURL">
+				<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+				<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+			</SATELLITE.LINK>
+		</ELSE>
+		</IF>
+
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/Page" VARNAME="item"/>
+		<SITEPLAN.GET NAME="thePubNode" FIELD="otype"/>
+		<IF COND="Variables.otype=Publication">
+		<THEN>
+			<XLAT.LOOKUP KEY="dvin/Common/Site" VARNAME="item"/>
+		</THEN>
+		</IF>
+		<IF COND="Variables.childTablename!=SitePlan">
+		<THEN>
+			<table class="width-outer-70"><tr><td><XLAT.STREAM KEY="dvin/UI/AssetMgt/Placepagesunderitem" ENCODE="false"/></td></tr></table>
+		</THEN>
+		</IF>
+	</then>
+	</if>
+</then>
+</if>
+
+</FTCS> 

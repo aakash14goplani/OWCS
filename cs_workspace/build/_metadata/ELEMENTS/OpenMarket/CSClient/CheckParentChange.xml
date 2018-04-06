@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/CheckParentChange
+-
+- INPUT
+-  command (add|remove)
+-  assetid
+-  parentid
+-
+- OUTPUT
+-  removeParent | addParent
+-  needToSave (true|false)
+-->
+
+<IF COND="Variables.command=remove">
+<THEN>
+   <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.oldParentID" LIST="lOldParent"/>
+   <ASSET.LIST TYPE="lParentFamily.templatetype" FIELD1="id" VALUE1="lOldParent.flexgrouptemplateid" LIST="lParentDef"/>
+   <ASSET.LOAD NAME="ainst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.SourceID" EDITABLE="true"/>
+   <ASSET.GET NAME="ainst" FIELD="flextemplateid" OUTPUT="defID"/>
+   <ASSET.LOAD NAME="defInst" TYPE="lFlexFamily.templatetype" FIELD="id" VALUE="Variables.defID"/>
+   <ASSET.GET NAME="defInst" FIELD="name" OUTPUT="defName"/>
+   <FLEXTEMPLATE.CHECKREQUIREDPARENT NAME="defInst" ID="lOldParent.flexgrouptemplateid" VARNAME="isRequired"/>
+   
+   <IF COND="Variables.isRequired=true">
+   <THEN>
+      <!-- how many immediate parents of the old parent def does this guy have -->
+      <ATM.LOCATE TYPE="lFlexFamily.grouptype" VARNAME="parentManager"/>
+      <LISTOBJECT.CREATE NAME="singleTmpl" COLUMNS="assetid"/>
+      <LISTOBJECT.ADDROW NAME="singleTmpl" assetid="lOldParent.flexgrouptemplateid"/>
+      <LISTOBJECT.TOLIST NAME="singleTmpl" LISTVARNAME="currentList"/>
+      <FLEXGROUPS.GETSORTEDTYPEDASSETS NAME="parentManager" SITE="Variables.primarypubid" LIST="currentList" LISTVARNAME="MyParentGroups"/>
+      <HASH.CREATE NAME="hTypedParents" LIST="MyParentGroups" COLUMN="assetid"/>
+
+      <FLEXASSET.GETPARENTS NAME="ainst" LISTVARNAME="lAllParents"/>
+      <SETCOUNTER NAME="numTypedParents" VALUE="0"/>
+      <LOOP LIST="lAllParents">
+         <HASH.CONTAINS NAME="hTypedParents" VALUE="lAllParents.assetid" VARNAME="hasit"/>
+         <IF COND="Variables.hasit=true">
+         <THEN>
+            <INCCOUNTER NAME="numTypedParents" VALUE="1"/>
+         </THEN>
+         </IF>
+      </LOOP>
+
+      <IF COND="Counters.numTypedParents=1">
+      <THEN>
+         <!-- Illegal since end result would be no parent -->
+         <XLAT.LOOKUP KEY="dvin/CSDocLink/defNamerequiresaparent" VARNAME="_XLAT_"/>
+         <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+         <SETVAR NAME="needToSave" VALUE="error"/>
+      </THEN>
+      <ELSE>
+         <!-- ok to change -->
+         <SETVAR NAME="removeParent" VALUE="Variables.oldParentID"/>
+         <SETVAR NAME="needToSave" VALUE="true"/>
+      </ELSE>
+      </IF>
+   </THEN>
+   <ELSE>
+      <!-- ok to change -->
+      <SETVAR NAME="removeParent" VALUE="Variables.oldParentID"/>
+      <SETVAR NAME="needToSave" VALUE="true"/>
+   </ELSE>
+   </IF>
+</THEN>
+<ELSE>
+   <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.DroppedOn" LIST="lNewParent"/>
+   <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.oldParentID" LIST="lOldParent"/>
+   <ASSET.LIST TYPE="lParentFamily.templatetype" FIELD1="id" VALUE1="lNewParent.flexgrouptemplateid" LIST="lParentDef"/>
+   
+   <ASSET.LOAD NAME="defInst" TYPE="lFlexFamily.templatetype" FIELD="id" VALUE="Variables.defID"/>
+   <ASSET.GET NAME="defInst" FIELD="name" OUTPUT="defName"/>
+   <FLEXTEMPLATE.GETALLPARENTS NAME="defInst" LISTVARNAME="lLegalParentDefs"/>
+   <HASH.CREATE NAME="hLegalParentDefs" LIST="lLegalParentDefs" COLUMN="assetid"/>
+   <HASH.CONTAINS NAME="hLegalParentDefs" VALUE="lNewParent.flexgrouptemplateid" VARNAME="hasit"/>
+   <IF COND="Variables.hasit=true">
+   <THEN>
+      <FLEXTEMPLATE.CHECKMULTIPLEPARENT NAME="defInst" ID="lOldParent.flexgrouptemplateid" VARNAME="isMultiple"/>
+      <IF COND="Variables.isMultiple=true">
+      <THEN>
+         <SETVAR NAME="addParent" VALUE="Variables.DroppedOn"/>
+         <SETVAR NAME="needToSave" VALUE="true"/>
+      </THEN>
+      <ELSE>
+         <!-- can only have 1 parent.  make sure current instance has 0 parents -->
+         <!-- how many immediate parents of the old parent def does this guy have -->
+         <ATM.LOCATE TYPE="lFlexFamily.grouptype" VARNAME="parentManager"/>
+         <LISTOBJECT.CREATE NAME="singleTmpl" COLUMNS="assetid"/>
+         <LISTOBJECT.ADDROW NAME="singleTmpl" assetid="lNewParent.flexgrouptemplateid"/>
+         <LISTOBJECT.TOLIST NAME="singleTmpl" LISTVARNAME="currentList"/>
+         <FLEXGROUPS.GETSORTEDTYPEDASSETS NAME="parentManager" SITE="Variables.primarypubid" LIST="currentList" LISTVARNAME="MyParentGroups"/>
+         <HASH.CREATE NAME="hTypedParents" LIST="MyParentGroups" COLUMN="assetid"/>
+   
+         <FLEXASSET.GETPARENTS NAME="ainst" LISTVARNAME="lAllParents"/>
+         <SETCOUNTER NAME="numTypedParents" VALUE="0"/>
+         <LOOP LIST="lAllParents">
+            <HASH.CONTAINS NAME="hTypedParents" VALUE="lAllParents.assetid" VARNAME="hasit"/>
+            <IF COND="Variables.hasit=true">
+            <THEN>
+               <INCCOUNTER NAME="numTypedParents" VALUE="1"/>
+               <SETVAR NAME="foundParent" VALUE="lAllParents.assetid"/>
+            </THEN>
+            </IF>
+         </LOOP>
+   
+         <IF COND="Counters.numTypedParents=0">
+         <THEN>
+            <SETVAR NAME="addParent" VALUE="Variables.DroppedOn"/>
+            <SETVAR NAME="needToSave" VALUE="true"/>
+         </THEN>
+         <ELSE>
+            <ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.foundParent" LIST="lExistingParent"/>
+            <XLAT.LOOKUP KEY="dvin/CSDocLink/assetNameisalreadyaparent" VARNAME="_XLAT_"/>
+            <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+            <SETVAR NAME="needToSave" VALUE="error"/>
+         </ELSE>
+         </IF>
+      </ELSE>
+      </IF>
+   </THEN>
+   <ELSE>
+      <XLAT.LOOKUP KEY="dvin/CSDocLink/newParentcannotbeaparent" VARNAME="_XLAT_"/>
+      <ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+      <SETVAR NAME="needToSave" VALUE="error"/>
+   </ELSE>
+   </IF>
+</ELSE>
+</IF>
+
+</FTCS> 

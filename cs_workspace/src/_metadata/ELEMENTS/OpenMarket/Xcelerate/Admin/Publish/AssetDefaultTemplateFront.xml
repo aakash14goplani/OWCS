@@ -1,0 +1,408 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/Publish/AssetDefaultTemplateFront
+-
+- INPUT
+-	Variables.target
+-
+- OUTPUT
+-
+-->
+
+<script LANGUAGE="JavaScript">
+    function SaveDefaultTemplates(frm)
+    {
+    frm.elements['pagename'].value = "OpenMarket/Xcelerate/Admin/Publish/AssetDefaultTemplatePost";
+	frm.submit();
+    }
+</script>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<if COND="IsError.Variables.errno=false">
+<then>
+	<PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtgt:name"/>
+	
+<!-- get only the asset types for which there is at least one template -->
+<SETVAR NAME="tablename" VALUE="Template"/>
+<EXECSQL LIST="assetTypes" SQL="SELECT DISTINCT Template.subtype as assettype,AssetType.description as description FROM Template,AssetType where AssetType.assettype=Template.subtype ORDER BY AssetType.description" TABLE="Template,AssetType"/>
+<!--	<ASSETTYPE.LIST LIST="assetTypes" ORDER="description"/>-->
+
+<!-- get any wrapper pages ther might be -->
+<SETVAR NAME="hasWrapperPage" VALUE="false"/>
+<ASSET.LIST LIST="Wrappers" TYPE="SiteEntry" FIELD1="cs_wrapper" VALUE1="y"/>
+<IF COND="IsList.Wrappers=true">
+<THEN>
+	<IF COND="Wrappers.#numRows!=0">
+	<THEN>
+		<SETVAR NAME="hasWrapperPage" VALUE="true"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+<!-- only display the Wrapper column if there are wrapper pages to choose from -->
+<IF COND="Variables.hasWrapperPage=true">
+<THEN>
+	<SETVAR NAME="colspan" VALUE="9"/>
+</THEN>
+<ELSE>
+	<SETVAR NAME="colspan" VALUE="7"/>
+</ELSE>
+</IF>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/Defaulttemplatesforpubtgtname"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+	<table style="min-width:800px" BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+		<tr>
+			<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+		<tr>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+			<td >
+				<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="Variables.colspan" class="tile-highlight" REPLACEALL="Variables.colspan"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+						<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AssetType"/></DIV></td>
+			            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Subtype"/></DIV></td>
+			            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Template"/></DIV></td>
+			            <IF COND="Variables.hasWrapperPage=true">
+			            <THEN>
+				            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/WrapperPage"/></DIV></td>
+							</THEN>
+							</IF>
+						<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+					<tr><td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<!-- Loop over all search results. -->
+		   			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+					<SETVAR NAME="separatorLine" VALUE="0"/>
+					<LOOP LIST="assetTypes">
+						<ASSETTEMPLATEMANAGER.GETTEMPLATES TARGET="Variables.target" TYPE="assetTypes.assettype" LISTVARNAME="dfltTemplates"/>
+						<SETCOUNTER NAME="numdefaultset" VALUE="dfltTemplates.#numRows"/>
+						<IF COND="Variables.separatorLine=1">
+						<THEN>
+							<!--<tr>
+								<td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+							</tr>-->
+						</THEN>
+						</IF>
+						<SETVAR NAME="separatorLine" VALUE="0"/>
+						
+		       		<SETVAR NAME="subtype" VALUE="notyet"/>
+			      	<ASSET.GetLegalSubtypes LIST="stypes" TYPE="assetTypes.assettype"/>
+	
+						<if COND="IsList.stypes=true">
+						<then>
+							<LOOP LIST="stypes">
+								<TEMPLATEMANAGER.GetTemplateNames LISTVARNAME="Templates" ASSETTYPE="assetTypes.assettype" SUBTYPE="stypes.subtype" EXCLUDEVARIANTS="true"/>
+								<IF COND="IsError.Variables.errno=false">
+								<THEN>
+									<IF COND="Variables.separatorLine=1">
+									<THEN>
+										<!--<tr>
+											<td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										</tr>-->
+									</THEN>
+									</IF>
+		
+									<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+										<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+						                    <DIV class="small-text-inset">
+												<IF COND="Variables.separatorLine=0">
+												<THEN>
+													<B><STRING.STREAM VALUE="assetTypes.description"/></B>
+													<SETVAR NAME="separatorLine" VALUE="1"/>
+												</THEN>
+												<ELSE><BR /></ELSE>
+												</IF>
+												<STRING.ENCODE LIST="assetTypes" COLUMN="assettype" VARNAME="aTassettype"/>
+								               <INPUT TYPE="hidden" NAME="assettype" VALUE="Variables.aTassettype" REPLACEALL="Variables.aTassettype"/>
+											</DIV>
+										</td>
+										<td><BR /></td>
+										<td VALIGN="TOP" ALIGN="LEFT">
+					            	        <DIV class="small-text-inset">
+								             	<IF COND="stypes.subtype=Variables.empty">
+								             	<THEN>
+								             		<XLAT.STREAM KEY="dvin/UI/Util/Standardnosubtype"/>
+						                  		<INPUT TYPE="hidden" NAME="subtype" VALUE="-none-"/>
+								             	</THEN>
+								             	<ELSE>
+									             	<STRING.STREAM LIST="stypes" COLUMN="subtype"/>
+													<STRING.ENCODE LIST="stypes" COLUMN="subtype" VARNAME="stsubtype"/>
+						                  		<INPUT TYPE="hidden" NAME="subtype" VALUE="Variables.stsubtype" REPLACEALL="Variables.stsubtype"/>
+									             </ELSE>
+									             </IF>
+						                    </DIV>
+						                 </td>
+										<td><BR /></td>
+										<td VALIGN="TOP" ALIGN="LEFT">
+						                    <DIV class="small-text-inset">
+								                <ASSETTEMPLATEMANAGER.LOAD OBJVARNAME="default" TARGET="Variables.target" TYPE="assetTypes.assettype" SUBTYPE="stypes.subtype"/>
+											<ASSETTEMPLATE.GETDEFAULTTEMPLATE NAME="default" VARNAME="template"/>
+										 		<IF COND="Variables.action=edit">
+										 		<THEN>
+		
+													<IF COND="Variables.errno!=-101">
+													<THEN>
+													    <SELECT name="template" size="1">
+													    	<OPTION VALUE="none"/>-- <XLAT.STREAM KEY="dvin/UI/Admin/nodefaultuseassetstemplatefield"/> --
+														    <LOOP LIST="Templates">
+																<STRING.ENCODE LIST="Templates" COLUMN="tname" VARNAME="Ttname"/>
+														        <if COND="Variables.template=Templates.tname">
+														        <then>
+																		<INCCOUNTER NAME="numdefaultset" VALUE="-1"/>
+																	
+														            <OPTION VALUE="Variables.Ttname" SELECTED="yes" REPLACEALL="Variables.Ttname"/><STRING.STREAM VALUE="Templates.name"/>
+														        </then>
+														        <else>
+														            <OPTION VALUE="Variables.Ttname" REPLACEALL="Variables.Ttname"/><STRING.STREAM VALUE="Templates.name"/>
+														        </else>
+														        </if>
+														     </LOOP>
+													     </SELECT>
+													</THEN>
+													<ELSE>
+													    <XLAT.STREAM KEY="dvin/UI/Util/Notemplatesavailable"/>
+											            <INPUT TYPE="hidden" NAME="template" VALUE="none"/>
+													</ELSE>
+													</IF>
+												</THEN>
+												<!-- not editing, show details -->
+												<ELSE>
+													<IF COND="IsVariable.template=false">
+													<THEN>
+														<span class="light-text-color"><XLAT.STREAM KEY="dvin/UI/Admin/Publish/AssetDefaultTemplate-notemplate"/></span>
+													</THEN>
+													<ELSE>
+														<INCCOUNTER NAME="numdefaultset" VALUE="-1"/>
+												 		<span><STRING.STREAM VARIABLE="template"/></span>
+												 	</ELSE>
+												 	</IF>
+												</ELSE>
+												</IF>
+					                    </DIV>
+					                 </td>
+					                 <td><BR /></td>
+					                 
+					                 <IF COND="Variables.hasWrapperPage=true">
+					                 <THEN>
+ 											<ASSETTEMPLATE.GETWRAPPERPAGE NAME="default" VARNAME="wrapper"/>
+											<td VALIGN="TOP" ALIGN="LEFT">
+						                    <DIV class="small-text-inset">
+										 		<IF COND="Variables.action=edit">
+										 		<THEN>
+												    <SELECT name="cs_wrapper" size="1">
+												    	<OPTION VALUE="none"/>-- <XLAT.STREAM KEY="dvin/Common/None"/> --
+													    <LOOP LIST="Wrappers">
+													        <if COND="Variables.wrapper=Wrappers.name">
+													        <then>
+													            <OPTION VALUE="Wrappers.name" SELECTED="yes" REPLACEALL="Wrappers.name"/><STRING.STREAM LIST="Wrappers" COLUMN="name"/>
+													        </then>
+													        <else>
+													            <OPTION VALUE="Wrappers.name" REPLACEALL="Wrappers.name"/><STRING.STREAM LIST="Wrappers" COLUMN="name"/>
+													        </else>
+													        </if>
+													     </LOOP>
+												     </SELECT>
+												</THEN>
+												<!-- not editing, show details -->
+												<ELSE>
+													<IF COND="IsVariable.wrapper=false">
+													<THEN>
+														<span class="light-text-color"><XLAT.STREAM KEY="dvin/Common/None"/></span>
+													</THEN>
+													<ELSE>
+														<INCCOUNTER NAME="numdefaultset" VALUE="-1"/>
+												 		<span><STRING.STREAM VARIABLE="wrapper"/></span>
+												 	</ELSE>
+												 	</IF>
+												</ELSE>
+												</IF>
+					                    </DIV>
+					                 </td>
+					                 <td><BR /></td>
+											</THEN>
+											</IF>
+					             </tr>
+				            <IF COND="Variables.rowStyle=tile-row-normal">
+			            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+			            </THEN>
+			            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+			            </ELSE>
+			            </IF>
+						</THEN>
+						</IF>
+						</LOOP>
+					</then>
+					</if>
+					<!-- see if there was any data not covered by current subtypes -->
+					<IF COND="Counters.numdefaultset!=0">
+					<THEN>
+						<SETVAR NAME="subtypelist" VALUE="Variables.empty"/>
+						<IF COND="stypes.#numRows!=0">
+						<THEN>
+			      			<LOOP LIST="stypes">
+			      				<IF COND="stypes.subtype=Variables.empty">
+			      				<THEN>
+			      					<SETVAR NAME="subtypelist" VALUE="Variables.subtypelist,-none-"/>
+			      				</THEN>
+			      				<ELSE>
+				      				<SETVAR NAME="subtypelist" VALUE="Variables.subtypelist,stypes.subtype"/>
+								</ELSE>
+								</IF>
+								</LOOP>
+							</THEN>
+							</IF>
+			      	
+							<STRINGLIST STR="Variables.subtypelist" NAME="subtypes" DELIM=","/>
+							<ASSETTEMPLATEMANAGER.GETTEMPLATES TARGET="Variables.target" TYPE="assetTypes.assettype" LISTVARNAME="dfltTemplates"/>
+							<LOOP LIST="dfltTemplates">
+					     		<ISINLIST ITEM="dfltTemplates.subtype" STR="Variables.subtypelist"/>
+								<IF COND="Variables.errno=0">
+								<THEN>
+									<!-- put this in the table -->
+									<IF COND="Variables.separatorLine=1">
+									<THEN>
+										<!--<tr>
+											<td colspan="Variables.colspan" REPLACEALL="Variables.colspan" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										</tr>-->
+									</THEN>
+									</IF>
+									<SETVAR NAME="separatorLine" VALUE="1"/>
+									
+									<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+										<td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+											<DIV class="small-text-inset">
+											<!--	<CSVAR NAME="assetTypes.assettype"/> -->
+											<STRING.ENCODE LIST="assetTypes" COLUMN="assettype" VARNAME="aTassettype1"/>
+												<INPUT TYPE="hidden" NAME="assettype" VALUE="Variables.aTassettype1" REPLACEALL="Variables.aTassettype1"/>
+											</DIV>
+										</td>
+										<td><BR /></td>
+										<td VALIGN="TOP" ALIGN="LEFT">
+						            		<DIV class="small-text-inset">
+												<IF COND="dfltTemplates.subtype=-none-">
+									            <THEN>
+									            	<XLAT.STREAM KEY="dvin/UI/Util/Standardnosubtype"/>
+								             	</THEN>
+								             	<ELSE>
+									             	<STRING.STREAM LIST="dfltTemplates" COLUMN="subtype"/>
+									            </ELSE>
+									            </IF>
+												<STRING.ENCODE LIST="dfltTemplates" COLUMN="subtype" VARNAME="dfltsubtype"/>
+												<INPUT TYPE="hidden" NAME="subtype" VALUE="Variables.dfltsubtype" REPLACEALL="Variables.dfltsubtype"/>
+											</DIV>
+										</td>
+										<td><BR /></td>
+										<td VALIGN="TOP" ALIGN="LEFT">
+											<DIV class="small-text-inset">
+												<ASSETTEMPLATEMANAGER.LOAD OBJVARNAME="default" TARGET="Variables.target" TYPE="assetTypes.assettype" SUBTYPE="stypes.subtype"/>
+												<SETVAR NAME="template" VALUE="dfltTemplates.template"/>
+												<IF COND="Variables.action=edit">
+												<THEN>
+													<TEMPLATEMANAGER.GetTemplateNames LISTVARNAME="Templates" ASSETTYPE="assetTypes.assettype" SUBTYPE="Variables.subtype"/>
+													<if COND="Variables.errno!=-101">
+													<then>
+													    <SELECT name="template" size="1">
+													    	<OPTION VALUE="none"/>-- <XLAT.STREAM KEY="dvin/UI/Admin/nodefaultuseassetstemplatefield"/> --
+														    <LOOP LIST="Templates">
+														        <if COND="Variables.template=Templates.tname">
+													    	    <then>
+													        	    <OPTION VALUE="Templates.tname" SELECTED="yes" REPLACEALL="Templates.tname"/><STRING.STREAM VALUE="Templates.name"/>
+														        </then>
+														        <else>
+														            <OPTION VALUE="Templates.tname" REPLACEALL="Templates.tname"/><STRING.STREAM VALUE="Templates.name"/>
+														        </else>
+														        </if>
+														     </LOOP>
+													     </SELECT>
+													</then>
+													<else>
+													    <XLAT.STREAM KEY="dvin/UI/Util/Notemplatesavailable"/>
+										                <INPUT TYPE="hidden" NAME="template" VALUE="none"/>
+													</else>
+													</if>
+												</THEN>
+												<!-- not editing, show details -->
+												<ELSE>
+												 	<STRING.STREAM VARIABLE="template"/>
+												</ELSE>
+												</IF>
+	 										</DIV>
+										</td>
+						                <td><BR /></td>
+									</tr>
+	   			            <IF COND="Variables.rowStyle=tile-row-normal">
+				            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+				            </THEN>
+				            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+				            </ELSE>
+				            </IF>
+							</THEN>
+							</IF>
+							</LOOP>
+					</THEN>
+					</IF>			            
+<!-- row style -->
+				</LOOP>
+
+			</table>
+			</td>
+			<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		</tr>
+		<tr>
+			<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		</tr>
+		<tr>
+			<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+		</tr>
+	</table> 
+
+<div class="width-outer-70">
+	<if COND="Variables.action!=edit">
+	<then>
+	   <!-- displaying details, bring up edit form -->
+		<ics.encode base="ContentServer" session="true" output="EditDefTempURL">
+			<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/Publish/AssetDefaultTemplateFront"/>
+			<ics.argument name="action" value="edit"/>
+			<ics.argument name="target" value="Variables.target"/>
+		</ics.encode>
+
+		<XLAT.LOOKUP KEY="dvin/UI/EditDefaultTemplates" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="Variables.EditDefTempURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.EditDefTempURL,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/EditConfiguration"/></CALLELEMENT></A>&nbsp;
+	</then>
+	<else>
+	  <!-- edited form, submit it -->
+		<ics.encode base="ContentServer" session="true" output="DefTempURL">
+			<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/Publish/AssetDefaultTemplateFront"/>
+			<ics.argument name="action" value="details"/>
+			<ics.argument name="target" value="Variables.target"/>
+		</ics.encode>
+		<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_"/>
+		<table><tr><td>
+		<A HREF="Variables.DefTempURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.DefTempURL,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+		</td><td>
+	    <INPUT TYPE="HIDDEN" NAME="pagename" VALUE=""/>
+		<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+        <INPUT TYPE="HIDDEN" NAME="target" VALUE="Variables.target" REPLACEALL="Variables.target"/>
+		<XLAT.LOOKUP KEY="dvin/UI/SaveDefaultTemplates" VARNAME="_XLAT_" ESCAPE="true"/>
+		<A HREF="javascript: SaveDefaultTemplates(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.stepid,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT></A>
+		</td></tr></table>&nbsp;
+	</else>
+	</if>
+</div>
+</then>
+<else>
+	<XLAT.STREAM KEY="dvin/Common/Error"/> = <CSVAR NAME="Variables.errno"/><br/>
+   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="NoPublishDest"/>
+  	</callelement>
+  	<setvar NAME="upcommand" value="cancel"/>
+</else>
+</if>
+
+</FTCS> 

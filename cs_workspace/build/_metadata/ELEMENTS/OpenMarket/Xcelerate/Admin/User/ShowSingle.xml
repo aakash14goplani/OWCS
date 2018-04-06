@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/User/ShowSingle
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+<ics.getproperty name="peopleparent" file="dir.ini" output="peopleparent"/>
+<ics.getproperty name="username" file="dir.ini" output="usernameattr"/>
+
+<dir.search list="ResultsList" operator="and" context="Variables.peopleparent">
+	<dir.argument name="Variables.usernameattr" value="Variables.pUser"/>
+</dir.search> 
+<setvar NAME="currentuserid" VALUE="CS.Empty"/>
+<IF COND="ResultsList.#numRows=1">
+<THEN>
+<LOOP LIST="ResultsList">
+	<ROLEMANAGER.GETROLENAMES LISTVARNAME="ACLs"/>
+    <setvar NAME="errno" VALUE="0"/>
+    <USERMANAGER.GETUSERROLES OBJVARNAME="rolelist" USER="ResultsList.NAME" SITE="Variables.pubid"/>
+	<ROLELIST.GETALL NAME="rolelist" VARNAME="useraclname"/>
+	<setvar NAME="currentuserid" VALUE="ResultsList.NAME"/>
+	<USERMANAGER.GETUSER USER="ResultsList.NAME" OBJVARNAME="userobj" />
+	<CCUSER.GETDISPLAYABLENAME NAME="userobj" VARNAME="currentusername"/>
+</LOOP>
+</THEN>
+</IF>
+
+<STRING.ENCODE VALUE="Variables.rowStyle" VARNAME="rowStyle" />
+<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+	<td style="vertical-align:middle"   NOWRAP="NOWRAP" ALIGN="LEFT">
+		<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/>
+			<ics.encode base="ContentServer" session="true" output="href">
+				<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/User/Modify"/>
+				<ics.argument name="pubid" value="Variables.pubid"/>
+				<ics.argument name="PubUser" value="Variables.currentusername"/>
+				<ics.argument name="singleUser" value="Variables.singleUser"/>
+				<ics.argument name="ValidUser" value="Variables.ValidUser"/>
+				<ics.argument name="thisuserid" value="Variables.currentuserid"/>
+				<ics.argument name="action" value="details"/>
+            </ics.encode>
+
+		<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+
+		<IF COND="Variables.pGenAdm=true"><THEN>
+			<!-- logged-in user is GeneralAdmin, they can modify anyone -->
+			<SETVAR NAME="denyMod" VALUE="false"/>
+		</THEN><ELSE>
+			<!-- check if user to be updated has GeneralAdmin role -->
+			<ROLELIST.HASROLE NAME="rolelist" ROLE="GeneralAdmin" VARNAME="denyMod"/>
+		</ELSE></IF>
+		<IF COND="Variables.denyMod=false"><THEN>
+		<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+			<ics.encode base="ContentServer" session="true" output="href">
+				<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/User/Modify"/>
+				<ics.argument name="pubid" value="Variables.pubid"/>
+				<ics.argument name="PubUser" value="Variables.currentusername"/>
+				<ics.argument name="singleUser" value="Variables.singleUser"/>
+				<ics.argument name="ValidUser" value="Variables.ValidUser"/>
+				<ics.argument name="thisuserid" value="Variables.currentuserid"/>
+				<ics.argument name="action" value="edit"/>
+            </ics.encode>
+		<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+
+		<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+			<ics.encode base="ContentServer" session="true" output="href">
+				<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/User/Modify"/>
+				<ics.argument name="pubid" value="Variables.pubid"/>
+				<ics.argument name="PubUser" value="Variables.currentusername"/>
+				<ics.argument name="singleUser" value="Variables.singleUser"/>
+				<ics.argument name="ValidUser" value="Variables.ValidUser"/>
+				<ics.argument name="thisuserid" value="Variables.currentuserid"/>
+				<ics.argument name="action" value="confirmdelete"/>
+            </ics.encode>
+		<A HREF="Variables.href" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.href,Variables._XLAT_"><img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+		</THEN><ELSE>
+			<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+			<img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+
+			<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_" ESCAPE="true"/>
+			<img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentX.gif"  border="0" alt="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+		</ELSE></IF>
+	</td>
+	<td><BR /></td>
+	<td style="vertical-align:middle"   NOWRAP="NOWRAP" ALIGN="LEFT">
+		<DIV class="small-text-inset">
+			<ics.encode base="ContentServer" session="true" output="href">
+				<ics.argument name="pagename" value="OpenMarket/Xcelerate/Admin/User/Modify"/>
+				<ics.argument name="pubid" value="Variables.pubid"/>
+				<ics.argument name="PubUser" value="Variables.currentusername"/>
+				<ics.argument name="singleUser" value="Variables.singleUser"/>
+				<ics.argument name="ValidUser" value="Variables.ValidUser"/>
+				<ics.argument name="thisuserid" value="Variables.currentuserid"/>
+				<ics.argument name="action" value="details"/>
+            </ics.encode>
+            <A HREF="Variables.href" REPLACEALL="Variables.href">
+                <STRING.STREAM VALUE="Variables.currentusername"/>
+            </A>		
+		</DIV>
+	</td>
+	<td><BR /></td>
+	<td ALIGN="LEFT">
+		<DIV class="small-text-inset" style="white-space:normal;">
+			<SUBSTITUTE STR="Variables.useraclname" OUTSTR="aclListStr" WHAT="," WITH=",%20"/>
+					<IF COND="Variables.aclListStr=Variables.empty">
+					<THEN>
+						<XLAT.STREAM KEY="dvin/Common/PnoneP"/><BR/>
+					</THEN>
+					<ELSE>
+						<STRING.STREAM VALUE="Variables.aclListStr"/><BR/>
+					</ELSE>
+					</IF>
+		</DIV>
+	</td>
+	<td><BR /></td>
+</tr>
+					                 	
+</FTCS> 

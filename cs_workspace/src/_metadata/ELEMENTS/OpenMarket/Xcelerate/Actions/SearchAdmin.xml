@@ -1,0 +1,338 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.0">
+
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SearchAdmin.xml $ 
+$Revision: 38 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- PostUpdate.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<INPUT type="hidden" name="ResultLimit" value="50"/>
+<INPUT type="hidden" name="OrderBy" VALUE="name"/>
+<INPUT type="hidden" name="SScmd" VALUE=""/>
+
+<if COND="Variables.frompage=DeletessFront">
+<then>
+     <if COND="Variables.delcan!=canceldel">
+     <then>
+          <SAVESEARCHMANAGER.DELETE ID="Variables.ssid"/>
+     </then>
+     </if>                                                                                                                   
+     <SAVESEARCHMANAGER.CREATE   OBJVARNAME="sss"/>
+ </then>
+</if>
+
+        
+
+<USERMANAGER.GETLOGINUSER  VARNAME="cuserid"/>
+
+<USERMANAGER.GETLOGINUSERNAME  VARNAME="LoginuserName"/>
+<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+<!-- See if this user is a system administrator  		
+       If so, he will have permission to edit, delete and update a 
+       Saved Search
+-->
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<callelement NAME="Variables.propmanageuserpub">
+    <argument NAME="upcommand" VALUE="IsSystemAdmin"/>
+    <argument NAME="username"  VALUE="SessionVariables.username"/>
+</callelement>
+<STRING.ENCODE VARIABLE="IsSystemAdmin" VARNAME="IsSystemAdmin"/>
+<INPUT TYPE="hidden" NAME="IsSystemAdmin"  VALUE="Variables.IsSystemAdmin"  REPLACEALL="Variables.IsSystemAdmin"/>
+
+<INPUT TYPE="hidden" NAME="LoginuserName"  VALUE="Variables.LoginuserName"  REPLACEALL="Variables.LoginuserName"/>
+
+<USERMANAGER.GETUSERROLES OBJVARNAME="rolelist" USER="Variables.cuserid" SITE="SessionVariables.pubid"/>
+<ROLELIST.GETALL NAME="rolelist" VARNAME="useraclname"/>
+     
+<IF COND="IsVariable.allAssetTypes=true">
+<THEN> 
+      <SAVESEARCHMANAGER.GETCRITERIA NAME="sss"  susername="SessionVariables.username" ssite="SessionVariables.pubid" sacl="Variables.useraclname" LISTVARNAME="qrylist"/>
+</THEN>
+<ELSE>
+     <SAVESEARCHMANAGER.GETCRITERIA NAME="sss" susername="SessionVariables.username"  sassettype="Variables.AssetType"  ssite="SessionVariables.pubid" LISTVARNAME="qrylist"/>
+</ELSE>
+</IF>
+
+<setvar NAME="schReportFound"  VALUE="false"/>
+<if COND="IsList.qrylist=true">
+<then>
+    <if COND="qrylist.#numRows!=0">
+    <then>
+       <loop LIST="qrylist">    
+        <IF COND="qrylist.frontpage=SearchFront">
+        <THEN>
+              <setvar NAME="schReportFound"  VALUE="true"/>
+        </THEN>
+        <ELSE>
+             <IF COND="qrylist.frontpage=SimpleSearchFront">
+            <THEN>
+                  <setvar NAME="schReportFound"  VALUE="true"/>
+            </THEN>
+            </IF>
+        </ELSE>
+        </IF>
+      </loop>
+    </then>
+    </if>
+ </then>
+ </if>
+<loop LIST="qrylist" UNTIL="Variables.IsAuthorized=true">    
+    <if cond="Variables._enableForms!=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+			<argument NAME="assettype" VALUE="qrylist.assettype"/>
+		</callelement>
+	</then>
+	</if>
+	<if cond="Variables.navigateLink=true">
+	<then>
+		<setvar name="IsAuthorized" value="false"/>
+	</then>
+	<else>
+		<setvar name="IsAuthorized" value="true"/>
+	</else>
+	</if>
+  </loop>
+   <IF COND="Variables.IsAuthorized=true">
+   <THEN>
+
+  <TABLE class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <tr>
+		<td class="title-text"><XLAT.STREAM KEY="dvin/UI/SavedSearches"/></td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+  <if COND="Variables.schReportFound=true">
+  <then>
+    
+    <tr>
+        <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/PleaseselectSavedSearchwishexecute"/></span><BR/>&nbsp;</td>
+    </tr>
+    <tr>
+       <td>
+            <!-- Table header -->
+
+             <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+             <tr>
+        		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+        	</tr>
+        	<tr>
+        	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+        	<td >
+        	<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="10" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Name"/></DIV></td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AssetType"/></DIV></td>
+                    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Shared"/></DIV></td>
+        			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+        		</tr>
+                <tr><td colspan="10" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+        
+                    <!-- Loop over all search results. -->
+                    <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+                    <SETVAR NAME="separatorLine" VALUE="0"/>
+                
+                                    
+                    <!-- Loop over all search results. -->
+                    <PROPERTY.GET PARAM="xcelerate.showSiteTree" INIFILE="futuretense_xcel.ini" VARNAME="propshowsitetree"/>
+                    <LISTOBJECT.CREATE NAME="encodedNodeData" COLUMNS="index,data"/>
+                    <SETCOUNTER NAME="nodeCount" VALUE="0"/>
+                    
+                    <setvar NAME="separatorLine" VALUE="0"/>
+                                
+                        
+                    <loop LIST="qrylist">
+					<SETVAR NAME="type" VALUE="qrylist.postpage"/>
+					<IF COND="Variables.type=SearchPost">
+					<THEN>
+                    <!--Check if asset forms are enabled in the ui -->
+					<if cond="Variables._enableForms!=true">
+					<then>
+						<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+							<argument NAME="assettype" VALUE="qrylist.assettype"/>
+						</callelement>
+					</then>
+					</if>
+					<if cond="Variables.navigateLink=true">
+					<then>
+						<setvar name="IsAuthorized" value="false"/>
+					</then>
+					<else>
+						<setvar name="IsAuthorized" value="true"/>
+					</else>
+					</if>
+					<IF COND="Variables.IsAuthorized=true">
+					<THEN>
+						<IF COND="qrylist.frontpage!=WorkflowReportFront">
+                    <THEN>
+                        <IF COND="Variables.separatorLine=1">
+                            <THEN>
+                                <tr>
+                                    <!--<td colspan="10" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+                                </tr>
+                            </THEN>
+                        </IF>
+                    
+                        <setvar NAME="separatorLine" VALUE="1"/>
+                            <tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+                        <td><BR /></td>
+                        <td><BR /></td>
+                        <td valign="middle" NOWRAP="NOWRAP" ALIGN="LEFT">
+                       
+                        <setvar NAME="OutputQString"  VALUE="Variables.empty"/>
+                        <SUBSTITUTE STR="qrylist.criterianame" WHAT="'" WITH="\'" 
+ 				        OUTSTR="OQString"/>
+                       
+
+                        <SUBSTITUTE STR="Variables.OQString" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="OutputQString"/> 
+                        
+                            <XLAT.LOOKUP KEY="dvin/UI/Executethissearch" VARNAME="_XLAT_"/>
+                            <XLAT.LOOKUP KEY="dvin/UI/Executethissearch" VARNAME="mouseover" ESCAPE="true"/>
+									<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/SearchPost" OUTSTRING="executeURL">
+										<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+										<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+										<SATELLITE.ARGUMENT NAME="AssetType" VALUE="qrylist.assettype"/>
+										<SATELLITE.ARGUMENT NAME="SScmd" VALUE="execute"/>
+										<SATELLITE.ARGUMENT NAME="searchid" VALUE="qrylist.id"/>
+										<SATELLITE.ARGUMENT NAME="sharedOrPrivate" VALUE="qrylist.acl"/>
+									</SATELLITE.LINK>
+                           <a href="Variables.executeURL" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.executeURL,Variables.mouseover"><img height="14" width="14" HSPACE="2" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></a>
+														
+														<SETVAR NAME="CanEditOrDelete" VALUE="false"/>
+														<IF COND="Variables.IsSystemAdmin=true">
+															<THEN>
+																<SETVAR NAME="CanEditOrDelete" VALUE="true"/>
+															</THEN>
+															<ELSE>
+																<IF COND="Variables.LoginuserName=qrylist.username">
+																	<THEN>
+																		<SETVAR NAME="CanEditOrDelete" VALUE="true"/>
+																	</THEN>
+																</IF>
+															</ELSE>
+														</IF>
+                            
+														<IF COND="Variables.CanEditOrDelete=true">
+															<THEN>
+																<XLAT.LOOKUP KEY="dvin/UI/Editlcthissearch" VARNAME="_XLAT_"/>
+																<XLAT.LOOKUP KEY="dvin/UI/Editlcthissearch" VARNAME="mouseover" ESCAPE="true"/>
+																<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/EditSearchFront" OUTSTRING="editURL">
+																	<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+																	<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+																	<SATELLITE.ARGUMENT NAME="AssetType" VALUE="qrylist.assettype"/>
+																	<SATELLITE.ARGUMENT NAME="SScmd" VALUE="edit"/>
+																	<SATELLITE.ARGUMENT NAME="critnam" VALUE="Variables.OutputQString"/>
+																	<SATELLITE.ARGUMENT NAME="searchid" VALUE="qrylist.id"/>
+																	<SATELLITE.ARGUMENT NAME="sharedOrPrivate" VALUE="qrylist.acl"/>
+																	<SATELLITE.ARGUMENT NAME="frontpage" VALUE="qrylist.frontpage"/>
+																</SATELLITE.LINK>
+																<a href="Variables.editURL" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.editURL,Variables.mouseover"><img height="14" width="14" HSPACE="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></a>
+																		 
+															 
+															 <XLAT.LOOKUP KEY="dvin/UI/DeletethisSavedSearch" VARNAME="_XLAT_"/>
+															 <XLAT.LOOKUP KEY="dvin/UI/DeletethisSavedSearch" VARNAME="mouseover" ESCAPE="true"/>
+															<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/DeletessFront" OUTSTRING="deleteURL">
+																<SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+																<SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+																<SATELLITE.ARGUMENT NAME="AssetType" VALUE="qrylist.assettype"/>
+																<SATELLITE.ARGUMENT NAME="SScmd" VALUE="delete"/>
+																<SATELLITE.ARGUMENT NAME="critname" VALUE="qrylist.criterianame"/>
+																<SATELLITE.ARGUMENT NAME="searchid" VALUE="qrylist.id"/>
+																<SATELLITE.ARGUMENT NAME="sharedOrPrivate" VALUE="qrylist.acl"/>
+															</SATELLITE.LINK>
+															 <a href="Variables.deleteURL" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.deleteURL,Variables.mouseover,"><img height="14" width="14" HSPACE="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></a>
+															</THEN>
+															<ELSE>
+																<XLAT.LOOKUP KEY="dvin/UI/Error/notallowededitSearch" VARNAME="_XLAT_"/>
+																<IMG HSPACE="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif" BORDER="0" ALT="Variables._XLAT_"  REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+
+																<XLAT.LOOKUP KEY="dvin/UI/Error/notalloweddeleteSearch" VARNAME="_XLAT_"/>
+																<IMG HEIGHT="14" WIDTH="14" HSPACE="2" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" BORDER="0" ALT="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+															</ELSE>
+														</IF>
+                    
+                        </td>
+                    
+                        <td><BR /></td>
+                        <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                            <DIV class="small-text-inset">
+                                <XLAT.LOOKUP KEY="dvin/UI/Executethissearch" VARNAME="_XLAT_"/>
+                                <XLAT.LOOKUP KEY="dvin/UI/Executethissearch" VARNAME="mouseover" ESCAPE="true"/>
+                                <A HREF="Variables.executeURL" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" title="Variables._XLAT_" REPLACEALL="Variables.executeURL,Variables._XLAT_,Variables.mouseover">
+                                <STRING.STREAM LIST="qrylist" COLUMN="criterianame"/>
+                                </A><BR />
+                            </DIV>
+                        </td>
+                        
+                        <td><BR /></td>
+                        <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                            <DIV class="small-text-inset">
+                                <STRING.STREAM LIST="qrylist" COLUMN="assettype"/>
+                            <BR />
+                            </DIV>
+                        </td>
+                    
+                        <td><BR /></td>
+                        <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                            <DIV class="small-text-inset">
+                                <STRING.STREAM LIST="qrylist" COLUMN="acl"/>
+                            <BR/>
+                            </DIV>
+                        </td>
+        
+                        <td><BR /></td>
+                        </tr>
+                        <IF COND="Variables.rowStyle=tile-row-normal">
+                        <THEN>
+                            <SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+                        </THEN>
+                        <ELSE>
+                            <SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+                        </ELSE>
+                        </IF>
+                     </THEN>
+                     </IF>
+					</THEN>
+					</IF>
+					</THEN>
+					</IF>
+                </loop>
+        	</table>
+        		</td>
+        		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+        	</tr>
+        	<tr>
+        		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+        	</tr>
+        	<tr>
+        		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+        	</tr>
+           </table>
+        </td>
+       </tr>
+   </then>
+   <else>
+     <tr>
+        <td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/TherenoSavedSearches"/> </span><BR/>&nbsp;</td>
+     </tr>
+   </else>
+   </if>
+    </TABLE>
+	</THEN>
+	</IF>
+  </FTCS>

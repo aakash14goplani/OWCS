@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/AttributeTypes/DisplayTEXTFIELD</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/AttributeTypes/DisplayTEXTFIELD</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/AttributeTypes/DisplayTEXTFIELD.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/AttributeTypes/DisplayTEXTFIELD.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FAttributeTypes%2FDisplayTEXTFIELD.xml
+@hashval=208287477
+key=@ELEMENTCATALOG-OpenMarket/Gator/AttributeTypes/DisplayTEXTFIELD
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

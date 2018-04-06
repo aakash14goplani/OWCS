@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/AssetMakerPost.xml 
+
+-->
+
+<!-- OpenMarket/Xcelerate/Admin/AssetMaker
+
+ INPUT
+  Variables.pagetype
+  Variables.action
+  Variables.assettype
+ OUTPUT
+
+-->
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+	<IF COND="Variables.action=new">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/AssetMaker/CreateAssetPost"/>
+	</THEN>
+	</IF>
+	<IF COND="Variables.action=register">
+	<THEN>
+	
+<!--	now ensure that all the "common"
+		asset-related queries are properly
+		copied into the Xcelerate ContentCategory
+		directory in the SQL subdirectory
+-->
+    <setvar NAME="errno" VALUE="0"/>
+    <CALLJAVA CLASS="com.openmarket.assetmaker.asset.CreateStubElements">
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLJAVA>
+	<div class="width-outer-70">
+    <if COND="IsVariable.assetmakererrno=true">
+    <then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables.assetmakererrnomessage"/>
+			</callelement>            
+    </then>
+    <else>
+    	<CATALOGDEF LIST="tbldef" FROM="Variables.assettype"/>
+    	<if COND="IsError.Variables.errno=true">
+    	<then>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/CreatetheTable" VARNAME="msgtext" ENCODE="false"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="info"/>
+			</callelement>
+		</then>
+		</if>            
+ 	</else>
+	</if>
+	</div>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<ARGUMENT NAME="action" VALUE="details"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLELEMENT>
+
+</THEN>
+</IF>
+	<IF COND="Variables.action=createtable">
+	<THEN>
+	
+<!-- process table creation -->
+	<ASSET.INSTALL TYPE="Variables.assettype" ACL="Browser,SiteGod,xceleditor,xceladmin" DIR="Variables.DefDir"/>
+<!--
+	Use the java code to parse the  descriptor file and create the asset table
+  <CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+          <ARGUMENT NAME="command" VALUE="createassettable"/>
+          <ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+          <ARGUMENT NAME="defdirvar" VALUE="DefDir"/>
+  </CALLJAVA>
+-->
+<div class="width-outer-70">
+  <if COND="IsError.Variables.errno=true">
+  <then>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.assettype"/>
+				<ARGUMENT NAME="type" VALUE="String"/>
+ 		</CALLELEMENT>
+		<IF cond="Variables.validatedstatus=true">
+		<THEN>
+  		<XLAT.LOOKUP KEY="dvin/Assetmaker/CreateTableError" VARNAME="msgtext" assettype="Variables.assettype" assetmakererrnomessage="Variables.assetmakererrnomessage" assetmakererrno="Variables.assetmakererrno" errno="Variables.errno" EVALALL="false"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <argument NAME="severity" VALUE="error"/>
+		    <argument NAME="msgtext" VALUE="Variables.msgtext"/>
+		</callelement>
+		</THEN>
+		</IF>		
+  </then>
+  <else>
+    <XLAT.LOOKUP KEY="dvin/Assetmaker/SuccessCreateAsset" VARNAME="msgtext"/>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="severity" VALUE="info"/>
+		<argument NAME="msgtext" VALUE="Variables.msgtext"/>
+	</callelement>     
+	<IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.assettype/ContentDetails=false">
+	<THEN>
+		<XLAT.LOOKUP KEY="dvin/Assetmaker/RegistertheElements" VARNAME="msgtext"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <ARGUMENT NAME="severity" VALUE="info"/>
+		    <ARGUMENT NAME="msgtext" VALUE="Variables.msgtext"/>
+		</CALLELEMENT> 
+	</THEN>
+	</IF>
+	
+	<if COND="IsVariable.addCategory=true">
+	<then>
+		<!--
+		check to see if it worked. If so, 
+		then add a "General" entry to the
+		Category table for this asset type.
+		-->
+		
+		<setvar NAME="id" VALUE="CS.UniqueID"/>
+		<setvar NAME="errno" VALUE="0"/>
+		<CATALOGMANAGER>
+			<ARGUMENT NAME="tablename" VALUE="Category"/>
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+			<ARGUMENT NAME="description" VALUE="General"/>
+			<ARGUMENT NAME="category" VALUE="g"/>
+			<ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+		</CATALOGMANAGER>
+
+		<if COND="IsError.Variables.errno=true">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/AddCategoryFailed" VARNAME="msgtext" assettype="Variables.assettype" errno="Variables.errno" EVALALL="false"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables.msgtext"/>
+			</callelement>            
+		</then>
+		</if>
+	</then>
+	</if>
+  </else>
+  </if>
+</div>  
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<ARGUMENT NAME="action" VALUE="details"/>
+		<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+	</CALLELEMENT>
+
+	</THEN>
+	</IF>
+	
+</FTCS> 

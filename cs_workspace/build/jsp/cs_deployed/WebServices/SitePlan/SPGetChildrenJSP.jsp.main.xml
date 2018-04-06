@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">WebServices/SitePlan/SPGetChildrenJSP</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>WebServices/SitePlan/SPGetChildrenJSP</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>WebServices/SitePlan/SPGetChildrenJSP.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/WebServices/SitePlan/SPGetChildrenJSP.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FWebServices%2FSitePlan%2FSPGetChildrenJSP.jsp
+@hashval=-290097340
+key=@ELEMENTCATALOG-WebServices/SitePlan/SPGetChildrenJSP
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

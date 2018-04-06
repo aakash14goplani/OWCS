@@ -1,0 +1,129 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- SiteMgmt/ClearCache.html                                                -->
+<!-- FutureTense, Inc.                                                       -->
+<!-- ####################################################################### -->
+
+<IF COND="IsVariable.key=true"><THEN>
+    <IF COND="Variables.key!=%"><THEN>
+        <SETSSVAR NAME="sitekey" VALUE="Variables.key"/>
+    </THEN></IF>
+</THEN></IF>
+<SETVAR NAME="tablename" VALUE="SiteCatalog"/>
+<SETVAR NAME="pagename" VALUE="Variables.key"/>
+<SELECTTO FROM="Variables.tablename" WHAT="*" LIST="ResultsList" WHERE="pagename" />
+
+<FONT SIZE="3" FACE="Arial, Helvetica">
+<IF COND="ResultsList.#numRows=0">
+    <THEN>
+        <table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/NoPageMatch"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+		<XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_"/>
+        <SATELLITE.FORM ASSEMBLER="query">
+        <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+		<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>   
+        <A onClick="javascript:history.go(-1);return false;" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Back"/></CALLELEMENT></A>
+        </SATELLITE.FORM>
+    </THEN>
+    <ELSE>
+        <SATELLITE.FORM ASSEMBLER="query" ACTION="CatalogManager" METHOD="POST" onSubmit="return setupClearCacheParams(this)">
+        <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+		<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+		<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+		<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+        
+        <table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/ClearPageCache"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+
+        <TABLE BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="2" CELLSPACING="1">
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD NOWRAP="true" COLSPAN="2">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<XLAT.STREAM KEY="dvin/AdminForms/Checkpagesclear"/>
+        			</B></FONT>
+        		</TD>
+        		<TD NOWRAP="true" width="170px">
+        			<FONT FACE="Arial, Helvetica" SIZE="-2">
+						<XLAT.LOOKUP KEY="dvin/Common/All" VARNAME="_XLAT_"/>
+	        			<A onClick="selectAll(document.forms[0],true,'FTcheckbox');" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/All"/></CALLELEMENT></A>
+						<XLAT.LOOKUP KEY="dvin/Common/None" VARNAME="_XLAT_"/>
+	        			<A onClick="selectAll(document.forms[0],false,'FTcheckbox');" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/None"/></CALLELEMENT></A>
+        			</FONT>
+        		</TD>
+        	</TR>
+        	<TR bgcolor="#ccccdd">
+        		<TD NOWRAP="true">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<XLAT.STREAM KEY="dvin/AdminForms/PageName"/> 
+        			</B></FONT>
+        		</TD>
+        		<TD NOWRAP="true">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<XLAT.STREAM KEY="dvin/AdminForms/CacheInfo"/> 
+        			</B></FONT>
+        		</TD>
+        		<TD NOWRAP="true">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<XLAT.STREAM KEY="dvin/Common/ClearQ"/>
+        			</B></FONT>
+        		</TD>
+        	</TR>
+        	<LOOP LIST="ResultsList">
+            	<TR bgcolor="#eeeeee">
+            		<TD VALIGN="BASELINE">
+            			<FONT FACE="Arial, Helvetica" SIZE="-1">
+            			    <REPLACE STR="ResultsList.pagename">
+                				<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="ResultsList.pagename"/>
+                				 ResultsList.pagename
+                			</REPLACE>
+            			</FONT>
+            		</TD>
+            		<TD VALIGN="BASELINE">
+            			<FONT FACE="Arial, Helvetica" SIZE="-1">
+            				<![CDATA[&nbsp;]]><STRING.STREAM VALUE="ResultsList.cacheinfo"/>
+            			</FONT>
+            		</TD>
+            		<TD VALIGN="BASELINE">
+            			<INPUT TYPE="checkbox" NAME="FTcheckbox"/>
+            		</TD>
+            	</TR>
+            </LOOP>
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD align="left" VALIGN="TOP">
+        			<FONT FACE="Arial, Helvetica" SIZE="-1"><B>
+        				<INPUT TYPE="hidden" NAME="ftcmd" VALUE="flushpages"/>
+        				<INPUT TYPE="hidden" NAME="tablename" VALUE="SiteCatalog"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Clear" VARNAME="_XLAT_"/>
+        			<A onClick="document.forms[0].submit();" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/Clear"/></CALLELEMENT></A>
+        			</B></FONT>
+        		</TD>
+        	</TR>
+        </TABLE>
+        </SATELLITE.FORM>
+    </ELSE>
+</IF>
+</FONT>
+</FTCS>

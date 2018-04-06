@@ -1,0 +1,235 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadSystemTools
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Config Log4J node -->
+
+
+<CALLELEMENT NAME="fatwire/systemtools/Log4J/CheckLog4J" />
+<CALLELEMENT NAME="fatwire/systemtools/CheckCacheTool" />
+
+<IF COND="Variables.Log4J=true">
+<THEN>
+	<REMOVEVAR NAME="LoadURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+	<REMOVEVAR NAME="Description"/>
+	<REMOVEVAR NAME="_XLAT_"/>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="test1"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	
+	<XLAT.LOOKUP KEY="dvin/TreeApplet/SystemTools/ConfigureLog4J" ENCODE="false" VARNAME="_XLAT_"/>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/Log4J/Log4J" outstring="ExecuteURL"/>
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+
+<!-- Load System info -->
+<REMOVEVAR NAME="_XLAT_"/>
+<REMOVEVAR NAME="ExecuteURL"/>
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="OKActions"/>
+<REMOVEVAR NAME="Description"/>
+
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="test2"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<XLAT.LOOKUP KEY="dvin/TreeApplet/SystemTools/SystemInformation/SystemInformation" ENCODE="false" VARNAME="_XLAT_"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/SystemInfo/SysInfoDownload" outstring="OpURL">
+</SATELLITE.LINK>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadAdminTree" outstring="LoadURL">
+	<satellite.argument name="op" value="load"/>
+	<satellite.argument name="NodeType" value="SystemInfo"/>
+	<satellite.argument name="Depth" value="1"/>
+</SATELLITE.LINK>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="LoadURL" VALUE="Variables.LoadURL"/>
+	<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL" />
+	<ARGUMENT NAME="OKActions" VALUE="Download;refresh"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+
+<!-- Cache Management -->
+<IF COND="Variables.isCacheManagerEnabled=true">
+<THEN>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	<REMOVEVAR NAME="OpURL"/>
+	<REMOVEVAR NAME="LoadURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+	
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="test3"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+	
+	<XLAT.LOOKUP KEY="fatwire/SystemTools/ManageCache/cacheManagement" ENCODE="false" VARNAME="_XLAT_"/>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadAdminTree" outstring="LoadURL">
+		<satellite.argument name="op" value="load"/>
+		<satellite.argument name="NodeType" value="CacheManager"/>
+		<satellite.argument name="Depth" value="1"/>
+		<satellite.argument name="isPageCacheEnabled" value="Variables.isPageCacheEnabled"/>
+		<satellite.argument name="isAssetCacheEnabled" value="Variables.isAssetCacheEnabled"/>
+		<satellite.argument name="isLinkedCacheEnabled" value="Variables.isLinkedCacheEnabled"/>
+		<satellite.argument name="isCasCacheEnabled" value="Variables.isCasCacheEnabled"/>
+		<satellite.argument name="isURLCacheEnabled" value="Variables.isURLCacheEnabled"/>
+	</SATELLITE.LINK>
+   
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="LoadURL" VALUE="Variables.LoadURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+
+<!-- Log viewer node -->
+<CALLELEMENT NAME="fatwire/systemtools/logs/activate">
+	<ARGUMENT NAME="render" VALUE="false"/>
+</CALLELEMENT>
+<IF COND="Variables.logOK=true">
+<THEN>
+	<REMOVEVAR NAME="ExecuteURL"/>
+	<REMOVEVAR NAME="OpURL"/>
+	<REMOVEVAR NAME="LoadURL"/>
+	<REMOVEVAR NAME="OKActions"/>
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+		<ARGUMENT NAME="AdHoc" VALUE="LogAnalyzer"/>
+		<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+	</CALLELEMENT>
+
+	<XLAT.LOOKUP KEY="dvin/TreeApplet/SystemTools/Logs/LogViewer/LogViewerName" ENCODE="false" VARNAME="LogViewerName"/>
+	<XLAT.LOOKUP KEY="dvin/TreeApplet/SystemTools/Logs/LogViewer/LogViewerDesc" ENCODE="false" VARNAME="LogViewerDesc"/>
+
+	<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/logs/logViewerHome" outstring="ExecuteURL" />
+
+	<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables.LogViewerName"/>
+		<ARGUMENT NAME="Description" VALUE="Variables.LogViewerDesc"/>
+		<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+		<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+		<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+	</CALLELEMENT>
+</THEN>
+</IF>
+<!-- End of Log viewer node -->
+
+<!-- File System Test -->
+<REMOVEVAR NAME="ExecuteURL"/>
+<REMOVEVAR NAME="OpURL"/>
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="OKActions"/>
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="fsTest"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<XLAT.LOOKUP KEY="fatwire/SystemTools/FSTest/fsTest" ENCODE="false" VARNAME="fsTest"/>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="fatwire/systemtools/FSTest/TestFS" outstring="ExecuteURL" />
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables.fsTest"/>
+	<ARGUMENT NAME="Description" VALUE="Variables.fsTest"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+
+<!-- Putting the code for Slots tools -->
+<REMOVEVAR NAME="ExecuteURL"/>
+<REMOVEVAR NAME="OpURL"/>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="Slots"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="Description"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/SlotsTools/Slots" ENCODE="false" VARNAME="_XLAT_"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/Slots" outstring="ExecuteURL">
+	<satellite.argument name="op" value="load"/>
+	<satellite.argument name="sort" value="asc"/>
+</SATELLITE.LINK>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+<!-- URL Management -->
+<REMOVEVAR NAME="ExecuteURL"/>
+<REMOVEVAR NAME="OpURL"/>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="URL"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="Description"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WebReferences" outstring="ExecuteURL">
+	<satellite.argument name="op" value="load"/>
+	<satellite.argument name="sort" value="asc"/>
+</SATELLITE.LINK>
+<XLAT.LOOKUP KEY="UI/Forms/VanityUrl" ENCODE="false" VARNAME="_XLAT_"/>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+		<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+<!-- Purge Assets -->
+<REMOVEVAR NAME="ExecuteURL"/>
+<REMOVEVAR NAME="OpURL"/>
+<REMOVEVAR NAME="Label"/>
+<REMOVEVAR NAME="Description"/>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="DeleteAssets"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="Description"/>
+<XLAT.LOOKUP KEY="fatwire/SystemTools/DeleteAssets/Heading" ENCODE="false" VARNAME="_XLAT_"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/DeleteAssets" outstring="ExecuteURL">
+	
+</SATELLITE.LINK>
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="Description" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/tools.png"/>
+</CALLELEMENT>
+</ftcs>

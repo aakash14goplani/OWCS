@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">fatwire/systemtools/logs/logRequestHandler</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>fatwire/systemtools/logs/logRequestHandler</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>fatwire/systemtools/logs/logRequestHandler.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/fatwire/systemtools/logs/logRequestHandler.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2Ffatwire%2Fsystemtools%2Flogs%2FlogRequestHandler.jsp
+@hashval=-642328101
+key=@ELEMENTCATALOG-fatwire/systemtools/logs/logRequestHandler
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

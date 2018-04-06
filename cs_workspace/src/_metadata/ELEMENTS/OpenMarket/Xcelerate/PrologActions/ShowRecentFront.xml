@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateA/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/ShowRecentFront.xml $ 
+$Revision: 6 $ 
+$Modtime: 1/15/02 4:06p $ 
+-->
+<!-- OpenMarket/Xcelerate/PrologActions/ShowRecentFront
+--   Confidential and Proprietary Information of Open Market, Inc.
+--					All Rights Reserved.
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<IF COND="IsVariable.historyarray!=true">
+<THEN>
+	<SETVAR NAME="historyarray" VALUE="Variables.empty"/>
+</THEN>
+<ELSE>
+<IF COND="Variables.historyarray!=Variables.empty">
+<THEN>
+	<STRINGLIST STR="Variables.historyarray" DELIM="," NAME="historylist"/>
+	<STRINGLIST STR="Variables.typearray" DELIM="," NAME="typelist"/>
+	<SETVAR NAME="HistoryLength" VALUE="0"/>
+	<SETVAR NAME="HistoryLength" VALUE="historylist.#numRows"/>
+	<LISTOBJECT.CREATE NAME="histobj" COLUMNS="assetid,assettype"/>
+	<LOOP COUNT="Variables.HistoryLength">
+		<LISTOBJECT.ADDROW NAME="histobj" assetid="historylist.ITEM" assettype="typelist.ITEM"/>
+		<SETROW LIST="historylist" ACTION="NEXT"/>
+		<SETROW LIST="typelist" ACTION="NEXT"/>
+	</LOOP>
+	<LISTOBJECT.TOLIST NAME="histobj" LISTVARNAME="theAssets"/>
+	
+</THEN>
+</IF>
+</ELSE>
+</IF>
+
+</FTCS> 

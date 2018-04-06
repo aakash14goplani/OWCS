@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/UpdateRelations.xml $
+$Revision: 10 $
+$Modtime: 3/07/03 1:32p $
+-->
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/UpdateRelations
+-- 
+-- Adds or removes assets from the Asset based on standard form variables
+--
+-- INPUT
+--			assetname	- name of asset being edited
+--			prefix	- prefix to use for Gather (same as used when AssetChildrenForm was called)
+--			Associates	- (optional) list of Associations, ordinarily set by (AssetChildrenForm)
+--			RemoveChildAsset - if removing named associatiosn (ordinarily set be AssetChildrenForm)
+--			doOrder	- if form ranks items (ordinarily set in ContentForm)
+-- OUTPUT
+--
+-->
+
+
+<!-- Gather input values related to child assets with named associations -->
+	<IF COND="IsVariable.Associates=true">
+		<THEN>
+			<ASSET.GATHER NAME="Variables.assetname" PREFIX="Variables.prefix" FIELDLIST="Association-named"/>
+			<!-- ASSET.CHILDGATHER is deprecated - use Asset.Gather instead -->
+			<!--<ASSET.CHILDGATHER NAME="Variables.assetname" PREFIX="Variables.prefix" CODELIST="Variables.Associates"/>-->
+			<IF COND="IsError.Variables.errno=true">
+				<THEN>
+					<STRING.STREAM VALUE="Variables.errno"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+						<ARGUMENT NAME="error" VALUE="UpdateAssetRelationError"/>
+						<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+					</CALLELEMENT>
+				</THEN>
+			</IF>
+		</THEN>
+	</IF>
+
+<!-- Remove child objects -->
+	<IF COND="IsVariable.RemoveChildAsset=true">
+		<THEN>
+			<STRINGLIST NAME="AssociationsToRemove" STR="Variables.RemoveChildAsset" DELIM=";"/>
+			<LOOP LIST="AssociationsToRemove">
+				<INDEXOF STR="AssociationsToRemove.ITEM" WHAT="," OUTSTR="index"/>
+				<SUBSTRING STR="AssociationsToRemove.ITEM" OUTSTR="assetType" ENDINDEX="Variables.index"/>
+				<SUBSTRING STR="AssociationsToRemove.ITEM" OUTSTR="temp" INDEX="Variables.index"/>
+				<SUBSTRING STR="Variables.temp" OUTSTR="childId" INDEX="1"/>
+				<ASSET.REMOVECHILDREN NAME="Variables.assetname" CHILDID="Variables.childId" TYPE="Variables.assetType"/>
+			</LOOP>
+		</THEN>
+	</IF>
+	<IF COND="IsVariable.doOrder=true">
+		<THEN>
+
+<!-- Remove what needs to be removed -->
+			<setvar NAME="OrderSize" VALUE="0"/>
+			<CALLJAVA CLASS="com.openmarket.xcelerate.util.XclUtil">
+				<ARGUMENT NAME="ftcmd" VALUE="GenRemoveItems"/>
+			</CALLJAVA>
+			
+			<IF COND="Variables.OrderSize!=0">
+			<THEN>
+				<setcounter NAME="currcount" VALUE="0"/>
+				<loop FROM="0" COUNT="Variables.OrderSize">
+					<!-- remove rank variable so that removed chilcd won't get added back in -->
+					<SETVAR NAME="removeRank" VALUE="Rank-Variables.IdCounters.currcount,Variables.TypeCounters.currcount"/>
+					<REMOVEVAR NAME="Variables.removeRank"/>
+					<ASSET.REMOVECHILDREN NAME="Variables.assetname" TYPE="Variables.TypeCounters.currcount" CHILDID="Variables.IdCounters.currcount"/>
+					<inccounter NAME="currcount" VALUE="1"/>
+				</loop>
+			</THEN>
+			</IF>
+
+<!-- Rank child objects -->
+			<setvar NAME="OrderSize" VALUE="0"/>
+			<CALLJAVA CLASS="com.openmarket.xcelerate.util.XclUtil">
+				<ARGUMENT NAME="ftcmd" VALUE="GenRankedItems"/>
+			</CALLJAVA>
+			
+			<IF COND="Variables.OrderSize!=0">
+			<THEN>
+				<setcounter NAME="currcount" VALUE="0"/>
+				<loop FROM="0" COUNT="Variables.OrderSize">
+					<ASSET.ADDCHILD NAME="Variables.assetname" TYPE="Variables.TypeCounters.currcount" CHILDID="Variables.IdCounters.currcount" RANK="Variables.RankCounters.currcount"/>
+					<IF COND="IsError.Variables.errno=true">
+						<THEN>
+							<STRING.STREAM VALUE="Variables.errno"/>
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+								<ARGUMENT NAME="error" VALUE="AddAssetChildError"/>
+								<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+								<ARGUMENT NAME="childtype" VALUE="Variables.TypeCounters.currcount"/>
+								<ARGUMENT NAME="childid" VALUE="Variables.IdCounters.currcount"/>
+							</CALLELEMENT>
+						</THEN>
+					</IF>
+					<inccounter NAME="currcount" VALUE="1"/>
+				</loop>
+			</THEN>
+			</IF>
+			
+		</THEN>
+	</IF>
+
+</FTCS> 

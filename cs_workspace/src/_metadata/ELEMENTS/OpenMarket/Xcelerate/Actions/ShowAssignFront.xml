@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/ShowAssignFront.xml $ 
+$Revision: 38 $ 
+$Modtime: 5/27/04 4:22p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-   Display the current assignments for this item
+-->
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<WorkflowAsset.GetObjectName OBJECT="workflowasset" VARNAME="objectname" />
+
+<setvar NAME="assetname" VALUE="theAsset"/>
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetname"/>
+<ASSET.GET NAME="Variables.assetname" FIELD="id" OUTPUT="id"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+
+<!-- Load the asset type -->
+
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+
+<WORKFLOWENGINE.GETFILTEREDASSIGNMENTS PREFIX="allAssignments:" OBJECT="workflowasset"
+	NOTSTATUS="notactive" SORTSTYLE="assigneddate"/>
+
+<setvar NAME="TileText" VALUE="This Variables.AssetTypeObj:description is currently assigned to the following:"/>
+<XLAT.LOOKUP KEY="dvin/UI/NocurrentassignmentsWorkflowisinactive" VARNAME="_XLAT_"/>
+<setvar NAME="NoTileText" VALUE="Variables._XLAT_"/>
+<setvar NAME="ResultLimit" VALUE="10000"/>
+<setvar NAME="report_assets" VALUE="all"/>
+<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/TileReportAssignments">
+	<argument NAME="showSelect" VALUE="false"/>
+	<argument NAME="showType" VALUE="false"/>
+	<argument NAME="showId" VALUE="false"/>
+	<argument NAME="showAssignedBy" VALUE="true"/>
+	<argument NAME="showAssignedDate" VALUE="true"/>
+	<argument NAME="showAssignedTo" VALUE="true"/>
+	<argument NAME="showClearedBy" VALUE="false"/>
+	<argument NAME="showClearedDate" VALUE="false"/>
+	<argument NAME="showActionTaken" VALUE="false"/>
+	<argument NAME="showActionToTake" VALUE="true"/>
+	<argument NAME="showWorkflowStatus" VALUE="false"/>
+	<argument NAME="showIsActive" VALUE="true"/>
+	<argument NAME="showStepTaken" VALUE="true"/>
+	<argument NAME="showDeadlocked" VALUE="true"/>
+	<argument NAME="showClearAssignmentButton" VALUE="false"/>
+
+	<argument NAME="TileText" VALUE="Variables.TileText"/>
+	<argument NAME="NoTileText" VALUE="Variables.NoTileText"/>
+</callelement>
+</FTCS>

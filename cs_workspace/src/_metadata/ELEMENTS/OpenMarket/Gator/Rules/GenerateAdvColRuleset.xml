@@ -1,0 +1,344 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/Rules/GenerateAdvColRuleset
+--
+-- INPUT
+--
+--	nvSegRule - a nvobject with a correct advoltype value
+--  id is the advcols id
+--
+--
+-- OUTPUT
+--
+--	AdvColsSelRuleText - is set with the xml rule text
+-->
+<setvar NAME="RuleOK" VALUE="true"/>
+<!--If we don't have an id yet, use a tempoarary name so that the rules look ok
+    this will be resolved on the final save-->
+
+<!-- First, build the empty ruleset to contain the results -->
+<SETVAR NAME="advcolid" VALUE="$(this?:x)"/>
+<RULESETDEF.CREATE NAME="myruleset"/>
+<RULESETDEF.SETNAME NAME="myruleset" RULESETNAME="Selection_Variables.advcolid"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.gator.ruleobjects.*"/>
+
+<!-- Look for ADVCOLTYPE -->
+<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="ADVCOLTYPE" VARNAME="advcoltype"/>
+<IF COND="IsVariable.advcoltype=true">
+	<THEN>
+		<SETVAR NAME="typefound" VALUE="false"/>
+
+		<IF COND="Variables.advcoltype=assetlocal">
+		<THEN>
+			<SETVAR NAME="typefound" VALUE="true"/>
+			<RULEDEF.CREATE NAME="myrule"/>
+			<RULEDEF.SETNAME NAME="myrule" RULENAME="R1_Variables.advcolid"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="InputListGenerator:Variables.advcolid"
+				CLASS="InputListGenerator" VARIABLE="a"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="AssetLocalGenerator:Variables.advcolid"
+				CLASS="AssetLocalGenerator" VARIABLE="b"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="RecommendationAccumulator:Variables.advcolid"
+				CLASS="RecommendationAccumulator" VARIABLE="c"/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='c.setRecommendations("main",b.getRecommendations(a.getList()))'/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='c.setDependencies("main",b.getDependencies(a.getDependencies(),a.getList()))'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='c.clear("main")'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='c.setDependencies("main",b.getDependencies(a.getDependencies(),a.getList()))'/>
+			<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.advcoltype=sql">
+		<THEN>
+			<SETVAR NAME="typefound" VALUE="true"/>
+			<RULEDEF.CREATE NAME="myrule"/>
+			<RULEDEF.SETNAME NAME="myrule" RULENAME="R1_Variables.advcolid"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="SQLGenerator:Variables.advcolid"
+				CLASS="SQLGenerator" VARIABLE="a"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="RecommendationAccumulator:Variables.advcolid"
+				CLASS="RecommendationAccumulator" VARIABLE="b"/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setRecommendations("main",a.getList())'/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.clear("main")'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.advcoltype=element">
+		<THEN>
+			<SETVAR NAME="typefound" VALUE="true"/>
+			<RULEDEF.CREATE NAME="myrule"/>
+			<RULEDEF.SETNAME NAME="myrule" RULENAME="R1_Variables.advcolid"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="ElementGenerator:Variables.advcolid"
+				CLASS="ElementGenerator" VARIABLE="a"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="RecommendationAccumulator:Variables.advcolid"
+				CLASS="RecommendationAccumulator" VARIABLE="b"/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setRecommendations("main",a.getList())'/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.clear("main")'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.advcoltype=manual">
+		<THEN>
+			<SETVAR NAME="typefound" VALUE="true"/>
+			<!-- There will be one rule for each segment in this list, plus a final rule which fires
+				if nothing else does.  The final rule will be based on a signal -->
+			<SETCOUNTER NAME="mycounter" VALUE="0"/>
+			<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="NUMSEGS" VARNAME="numsegs"/>
+			<IF COND="IsVariable.numsegs=false">
+			<THEN>
+				<SETVAR NAME="numsegs" VALUE="0"/>
+			</THEN>
+			</IF>
+
+			<LOOP UNTIL="Counters.mycounter=Variables.numsegs">
+				<!-- Grab all the rule materials from the hints -->
+				<REMOVEVAR NAME="segid"/>
+				<REMOVEVAR NAME="segkey"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="SEGIDCounters.mycounter" VARNAME="segid"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="SEGKEYCounters.mycounter" VARNAME="segkey"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="ITEMSCounters.mycounter" VARNAME="items"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="NOTITEMSCounters.mycounter" VARNAME="notitems"/>
+
+				<IF COND="Variables.items!=Variables.empty">
+				<THEN>
+					<RULEDEF.CREATE NAME="myrule"/>
+					<RULEDEF.SETNAME NAME="myrule" RULENAME="Seg_Counters.mycounter_Variables.advcolid"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="ManualGenerator:Variables.items:Variables.advcolid"
+						CLASS="ManualGenerator" VARIABLE="a"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="RecommendationAccumulator:Variables.advcolid"
+						CLASS="RecommendationAccumulator" VARIABLE="b"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="EffectiveSegments" CLASS="EffectiveSegments"
+						VARIABLE="es"/>
+					<IF COND="IsVariable.segkey=true">
+					<THEN>
+						<SUBSTRING.CREATE NAME="mycondition"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='es.member("'/>
+						<SUBSTRING.ADDVAR NAME="mycondition" VALUE="Variables.segkey?:x"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='")'/>
+						<RULEDEF.APPENDCONDITION NAME="myrule" SUBSTRING="mycondition"/>
+					</THEN>
+					<ELSE>
+						<RULEDEF.APPENDCONDITION NAME="myrule"
+				    			VALUE='es.member("Variables.segid")'/>
+					</ELSE>
+					</IF>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setRecommendations("Bucket:Variables.items",a.getList())'/>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.items",a.getDependencies())'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.clear("Bucket:Variables.items")'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.items",a.getDependencies())'/>
+					<RULEDEF.ADDASSERT NAME="myrule"
+			    			CLASS="Signal" KEY="Return_Variables.advcolid"/>
+					<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+				</THEN>
+				</IF>
+
+				<IF COND="Variables.notitems!=Variables.empty">
+				<THEN>
+					<RULEDEF.CREATE NAME="myrule"/>
+					<RULEDEF.SETNAME NAME="myrule" RULENAME="NotSeg_Counters.mycounter_Variables.advcolid"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="ManualGenerator:Variables.notitems:Variables.advcolid"
+						CLASS="ManualGenerator" VARIABLE="a"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="RecommendationAccumulator:Variables.advcolid"
+						CLASS="RecommendationAccumulator" VARIABLE="b"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="EffectiveSegments" CLASS="EffectiveSegments"
+						VARIABLE="es"/>
+					<IF COND="IsVariable.segkey=true">
+					<THEN>
+						<SUBSTRING.CREATE NAME="mycondition"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='!es.member("'/>
+						<SUBSTRING.ADDVAR NAME="mycondition" VALUE="Variables.segkey?:x"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='")'/>
+						<RULEDEF.APPENDCONDITION NAME="myrule" SUBSTRING="mycondition"/>
+					</THEN>
+					<ELSE>
+						<RULEDEF.APPENDCONDITION NAME="myrule"
+				    			VALUE='!es.member("Variables.segid")'/>
+					</ELSE>
+					</IF>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setRecommendations("Bucket:Variables.notitems",a.getList())'/>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.notitems",a.getDependencies())'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.clear("Bucket:Variables.notitems")'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.notitems",a.getDependencies())'/>
+					<RULEDEF.ADDASSERT NAME="myrule"
+			    			CLASS="Signal" KEY="Return_Variables.advcolid"/>
+					<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+				</THEN>
+				</IF>
+
+				<INCCOUNTER NAME="mycounter" VALUE="1"/>
+			</LOOP>
+
+			<RULEDEF.CREATE NAME="myrule"/>
+			<RULEDEF.SETNAME NAME="myrule" RULENAME="R1_Variables.advcolid"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="ManualGenerator:Variables.advcolid"
+				CLASS="ManualGenerator" VARIABLE="a"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="RecommendationAccumulator:Variables.advcolid"
+				CLASS="RecommendationAccumulator" VARIABLE="b"/>
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+				ID="Signal:Return_Variables.advcolid"/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setRecommendations("main",a.getList())'/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.clear("main")'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+		</THEN>
+		</IF>
+		
+		<IF COND="Variables.advcoltype=dynamic">
+		<THEN>
+			<SETVAR NAME="typefound" VALUE="true"/>
+			<!-- There will be one rule for each segment in this list, plus a final rule which fires
+				if nothing else does.  The final rule will be based on a signal -->
+			<SETCOUNTER NAME="mycounter" VALUE="0"/>
+			<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="NUMSEGS" VARNAME="numsegs"/>
+			<IF COND="IsVariable.numsegs=false">
+			<THEN>
+				<SETVAR NAME="numsegs" VALUE="0"/>
+			</THEN>
+			</IF>
+
+			<LOOP UNTIL="Counters.mycounter=Variables.numsegs">
+				<!-- Grab all the rule materials from the hints -->
+				<REMOVEVAR NAME="segid"/>
+				<REMOVEVAR NAME="segkey"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="SEGIDCounters.mycounter" VARNAME="segid"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="SEGKEYCounters.mycounter" VARNAME="segkey"/>
+				<NVOBJECT.GETVALUE NAME="nvSegRule" VALUENAME="ITEMSCounters.mycounter" VARNAME="items"/>
+
+				<IF COND="Variables.items!=Variables.empty">
+				<THEN>
+					<RULEDEF.CREATE NAME="myrule"/>
+					<RULEDEF.SETNAME NAME="myrule" RULENAME="Seg_Counters.mycounter_Variables.advcolid"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="DynamicListGenerator:Variables.items:Variables.advcolid"
+						CLASS="DynamicListGenerator" VARIABLE="a"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="RecommendationAccumulator:Variables.advcolid"
+						CLASS="RecommendationAccumulator" VARIABLE="b"/>
+					<RULEDEF.ADDEXISTS NAME="myrule"
+						ID="EffectiveSegments" CLASS="EffectiveSegments"
+						VARIABLE="es"/>
+					<IF COND="IsVariable.segkey=true">
+					<THEN>
+						<SUBSTRING.CREATE NAME="mycondition"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='es.member("'/>
+						<SUBSTRING.ADDVAR NAME="mycondition" VALUE="Variables.segkey?:x"/>
+						<SUBSTRING.ADDSTRING NAME="mycondition" VALUE='")'/>
+						<RULEDEF.APPENDCONDITION NAME="myrule" SUBSTRING="mycondition"/>
+					</THEN>
+					<ELSE>
+						<RULEDEF.APPENDCONDITION NAME="myrule"
+				    			VALUE='es.member("Variables.segid")'/>
+					</ELSE>
+					</IF>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setRecommendations("Bucket:Variables.items",a.getList())'/>
+					<RULEDEF.APPENDACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.items",a.getDependencies())'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.clear("Bucket:Variables.items")'/>
+					<RULEDEF.APPENDUNDOACTION NAME="myrule"
+						VALUE='b.setDependencies("Bucket:Variables.items",a.getDependencies())'/>
+					<RULEDEF.ADDASSERT NAME="myrule"
+			    			CLASS="Signal" KEY="Return_Variables.advcolid"/>
+					<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+				</THEN>
+				</IF>
+
+				<INCCOUNTER NAME="mycounter" VALUE="1"/>
+			</LOOP>
+
+			<RULEDEF.CREATE NAME="myrule"/>
+			<RULEDEF.SETNAME NAME="myrule" RULENAME="R1_Variables.advcolid"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="DynamicListGenerator:Variables.advcolid"
+				CLASS="DynamicListGenerator" VARIABLE="a"/>
+			<RULEDEF.ADDEXISTS NAME="myrule"
+				ID="RecommendationAccumulator:Variables.advcolid"
+				CLASS="RecommendationAccumulator" VARIABLE="b"/>
+			<RULEDEF.ADDNOTEXISTS NAME="myrule"
+				ID="Signal:Return_Variables.advcolid"/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setRecommendations("main",a.getList())'/>
+			<RULEDEF.APPENDACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.clear("main")'/>
+			<RULEDEF.APPENDUNDOACTION NAME="myrule"
+				VALUE='b.setDependencies("main",a.getDependencies())'/>
+			<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.typefound=false">
+		<THEN>
+			<br/><XLAT.STREAM KEY="dvin/UI/Error/ADVCOLTYPEhinthasunexpectedvalueE"/> <STRING.STREAM VALUE="Variables.advcoltype"/>
+			<setvar NAME="RuleOK" VALUE="false"/>
+		</THEN>
+		</IF>
+
+	</THEN>
+	<ELSE>
+		<br/><XLAT.STREAM KEY="dvin/UI/Error/HintinnvSegRulemissingADVCOLTYPEE"/>
+		<setvar NAME="RuleOK" VALUE="false"/>
+	</ELSE>
+</IF>
+
+<if COND="Variables.RuleOK=true">
+	<then>
+		<nvobject.tostring NAME="nvSegRule" VARNAME="hintstring"/>
+		<RULESETDEF.SETENCODING NAME="myruleset" VALUE="Variables.hintstring"/>
+		<RULESETDEF.TOXML NAME="myruleset" VARNAME="tempxml"/>
+		<if COND="Variables.errno!=0">
+			<then>
+				<br/><XLAT.STREAM KEY="dvin/UI/Error/RulesetdefsXMLcreationerrno" errno="Variables.errno" EVALALL="false"/>
+			</then>
+		</if>
+	</then>
+</if>
+</FTCS> 
+

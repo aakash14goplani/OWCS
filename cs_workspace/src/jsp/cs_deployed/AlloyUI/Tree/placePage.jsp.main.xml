@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">AlloyUI/Tree/placePage</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>AlloyUI/Tree/placePage</string>
+        <string>Place Page</string>
+        <string></string>
+        <string></string>
+        <string>AlloyUI/Tree/placePage.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/AlloyUI/Tree/placePage.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FAlloyUI%2FTree%2FplacePage.jsp
+@hashval=2068842529
+key=@ELEMENTCATALOG-AlloyUI/Tree/placePage
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

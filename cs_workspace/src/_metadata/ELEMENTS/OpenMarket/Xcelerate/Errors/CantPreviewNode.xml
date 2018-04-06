@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Errors/CantPreviewNode
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<XLAT.STREAM KEY="dvin/UI/Error/CantPreviewNode" ESCAPE="false" ENCODE="false"/>
+</FTCS> 

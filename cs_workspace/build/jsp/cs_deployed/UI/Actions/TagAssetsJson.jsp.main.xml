@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">UI/Actions/TagAssetsJson</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>UI/Actions/TagAssetsJson</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>UI/Actions/TagAssetsJson.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/UI/Actions/TagAssetsJson.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FUI%2FActions%2FTagAssetsJson.jsp
+@hashval=553300576
+key=@ELEMENTCATALOG-UI/Actions/TagAssetsJson
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

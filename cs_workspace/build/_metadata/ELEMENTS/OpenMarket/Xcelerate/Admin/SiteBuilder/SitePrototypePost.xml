@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSSiteBuilder/Admin/SitePrototypePost
+-
+- INPUT
+-		Variables.pagetype - 'front' or 'post'
+-		Variables.pubid 	- publication id
+- OUTPUT
+-
+-->
+
+
+
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/SiteBuilder/SitePrototypeCommon"/>
+
+
+	<PUBLICATION.LOAD NAME="pub" OBJECTID="Variables.pubid"/>
+	<PUBLICATION.GATHER NAME="pub" PREFIX="sb" FIELDLIST="cs_prefix,replicatespecs"/>
+	<PUBLICATION.SAVE NAME="pub"/>
+	<if COND="IsError.Variables.errno=true">
+	<then>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<ARGUMENT NAME="error" VALUE="UpdateFailed"/>
+		</CALLELEMENT>
+	</then>
+	<else>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/SiteFront">
+			<ARGUMENT NAME="action" VALUE="details"/>
+			<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+		</CALLELEMENT>
+	</else>
+	</if>
+			
+
+</FTCS>

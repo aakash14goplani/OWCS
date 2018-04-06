@@ -1,0 +1,449 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceleditor"/>
+<if COND="Variables.errno=0">
+	<!-- user is not logged in. Display logout screen -->
+	<then> 
+		<SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/Security/TimeoutError" OUTSTRING="urlTimeoutError"/>
+			<script LANGUAGE="JavaScript">
+				parent.parent.location="<ics.resolvevariables NAME="Variables.urlTimeoutError"/>";
+			</script>
+		<throwexception/>
+	</then>
+</if>
+<callelement NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+
+<IF COND="IsSessionVariable.locale=true">
+    <THEN>
+        <LOCALE.CREATE VARNAME="LocaleName" LOCALENAME="SessionVariables.locale"/>
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+    </THEN>
+    <ELSE>
+        <DATEFORMAT.CREATE NAME="_shortFormatDate_" DATESTYLE="SHORT" TIMESTYLE="SHORT" TIMEZONEID="SessionVariables.time.zone"/>
+    </ELSE>
+</IF>
+   	<IF COND="IsVariable.displayPage=false">
+	<THEN>
+		<SETVAR NAME="displayPage" VALUE="1"/>
+	</THEN>
+    </IF>
+	<IF COND="IsVariable.rowsPerPage=false">
+	<THEN>
+		<SETVAR NAME="rowsPerPage" VALUE="25"/>
+	</THEN>
+    </IF>
+	<IF COND="Variables.doIcons!=false">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="1"/>
+	</THEN>
+    </IF>
+	<SETCOUNTER NAME="colspan_count" VALUE="15"/>
+    <IF COND="Variables.doDescription!=false">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+    </IF>
+	<IF COND="Variables.doStartDate!=false">
+	<THEN>
+		<INCCOUNTER NAME="colspan_count" VALUE="2"/>
+	</THEN>
+	</IF>
+<!-- unapprove first -->
+<IF COND="Variables.function=unapprove"><THEN>
+  <IF COND="IsVariable.assetsToUnApprove=true">
+  <THEN>
+	<STRINGLIST NAME="assetsListToUnApprove" STR="Variables.assetsToUnApprove" DELIM="%20"/>
+		<LOOP LIST="assetsListToUnApprove">
+			<setvar name="asset" value="assetsListToUnApprove.ITEM"/>
+			<STRINGLIST NAME="assetIDTypeList" STR="Variables.asset" DELIM=":"/>
+			<LOOP LIST="assetIDTypeList">
+			<IF COND="assetIDTypeList.#curRow=1">
+			<THEN>
+				<setvar name="AssetType" value="assetIDTypeList.ITEM"/>
+			</THEN>
+			</IF>
+			<IF COND="assetIDTypeList.#curRow=2">
+			<THEN>
+				<setvar name="id" value="assetIDTypeList.ITEM"/>
+			</THEN>
+			</IF>
+			</LOOP>
+			<ASSET.LIST LIST="lunapproveMe" FIELD1="id" VALUE1="Variables.id" TYPE="Variables.AssetType"/>
+            <APPROVEDASSETS.NOTESAVE ID="Variables.id" TYPE="Variables.AssetType" UPDATEDDATE="lunapproveMe.updateddate"/>
+		</LOOP>
+  </THEN>
+  <ELSE>
+  <ASSET.LIST LIST="lunapproveMe" FIELD1="id" VALUE1="Variables.id" TYPE="Variables.AssetType"/>
+  <APPROVEDASSETS.NOTESAVE ID="Variables.id" TYPE="Variables.AssetType" UPDATEDDATE="lunapproveMe.updateddate"/>
+  </ELSE>
+  </IF>
+</THEN>
+</IF>
+<ApprovedAssets.GetAssetsToPublishExt DISPLAYPAGE="Variables.displayPage" ROWSPERPAGE="Variables.rowsPerPage" TARGET="Variables.target" LISTVARNAME="lCurrentAsset" ONDEMANDMAP="ODQueue:Variables.target"/>
+<table WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<tr><td colspan="3">
+<SETVAR NAME="numAssets" VALUE="Variables.totalNumberOfAssets"/>
+<if COND="Variables.numAssets=1">
+<then>
+ <XLAT.STREAM KEY="dvin/UI/Publish/numAssetsAssettobepublished"/>&nbsp;:<br/>
+</then>
+<else>
+ <XLAT.STREAM KEY="dvin/UI/Publish/numAssetsAssetstobepublished"/>&nbsp;:<br/>
+</else>
+</if>
+</td></tr>
+<tr><td/><td><table width="100%"><tr><td width="15%"/><td align="center"><span class="alertMsg" style="display:none;" id="Variables.divContainerId:alert" REPLACEALL="Variables.divContainerId"/></td><td width="15%"/></tr></table></td><td/></tr>
+<tr>
+<td></td>
+<td>
+<table width="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<callelement name="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<tr>
+<td colspan="3" NOWRAP="NOWRAP" align="left">
+<img border="0" style="position:relative;top:2px;" src="Variables.cs_imagedir/graphics/common/icon/iconUnapproveContent.gif" REPLACEALL="Variables.cs_imagedir" />&nbsp;<a href="#" onclick="unApprove('Variables.divContainerId');return false;" REPLACEALL="Variables.divContainerId"><b><XLAT.STREAM KEY="dvin/UI/OnDemandPublishing/Unapprove"/></b></a>
+</td>
+<td/>
+</tr>
+<CALLELEMENT name="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<tr>
+	<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+<tr>
+<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+<td >
+<table id="Variables.divContainerId:Assets" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" REPLACEALL="Variables.divContainerId">
+	<thead>
+	<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" style="vertical-align:middle;text-align:center;" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><input id="_allAssetsTabChBx" type="checkbox" onclick="changeCheckBoxes(this,'Variables.divContainerId:chbx');" REPLACEALL="Variables.divContainerId"/></td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td>
+		<td NOWRAP="NOWRAP" align="left" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td NOWRAP="NOWRAP" align="left" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+        <IF COND="Variables.doDescription!=false">
+		<THEN>
+			<td align="left" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title">&nbsp;</DIV></td>
+        </THEN>
+        </IF>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td NOWRAP="NOWRAP" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Dimension/Locale"/></DIV></td>
+		<IF COND="Variables.doStartDate!=false">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td NOWRAP="NOWRAP" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="fatwire/Alloy/UI/StartDate"/></DIV></td>		
+		</THEN>
+		</IF>
+		<IF COND="Variables.doEndDate!=false">
+		<THEN>
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td NOWRAP="NOWRAP" class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="fatwire/Alloy/UI/EndDate"/></DIV></td>				
+			<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><BR/></td><td class="tile-b" NOWRAP="NOWRAP" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="fatwire/Alloy/UI/DaysExpired"/></DIV></td>			
+		</THEN>
+		</IF>	
+		<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	</tr>
+	</thead>
+    <tbody id="Variables.divContainerId:AssetsBody" REPLACEALL="Variables.divContainerId">	
+	<SETCOUNTER NAME="assignment_count" VALUE="0"/>
+	<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+	<setvar NAME="separatorLine" VALUE="0"/>
+	
+	<!-- Prepare the list of available asset type icons in a list -->
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GetImagePath"/>
+	<FILELIST NAME="ImagesList" PATH="Variables.realPath" FILTER="*.gif" />	
+	<SETVAR NAME="fileslist" VALUE="" />	
+	<LOOP LIST="ImagesList">
+		<ICS.LISTGET LISTNAME="ImagesList" FIELDNAME="NAME" OUTPUT="filename" />		
+		<SETVAR NAME="fileslist" VALUE="Variables.fileslistVariables.filename%" />
+	</LOOP>
+	<STRINGLIST NAME="imageList" STR="Variables.fileslist" DELIM="%25" />
+	<CALCULATOR.GO VALUE="Variables.displayPage 1 +" VARNAME="next"/>
+	<CALCULATOR.GO VALUE="Variables.displayPage 1 -" VARNAME="prev"/>
+	<CALCULATOR.GO VALUE="Variables.totalPages 1 -" VARNAME="pageBeforeLast"/>
+	<CALCULATOR.GO VALUE="Variables.displayPage Variables.totalPages LT" VARNAME="shownext"/>
+	<CALCULATOR.GO VALUE="Variables.displayPage 1 GT" VARNAME="showprev"/>
+	<CALCULATOR.GO VALUE="Variables.totalPages 1 GT" VARNAME="showPagination"/>
+	<IF COND="lCurrentAsset.#numRows!=0">
+	<THEN>
+	<loop LIST="lCurrentAsset">
+
+	<!-- Retrieve the asset type description to be used as a tooltip -->
+	<SETVAR NAME="assettype" VALUE="lCurrentAsset.assettype"/>
+	<ASSETTYPE.LOAD NAME="theAssetType" TYPE="Variables.assettype"/>
+	<ASSETTYPE.GET NAME="theAssetType" FIELD="description" OUTPUT="atdescription"/>	
+	
+	<if COND="IsError.Variables.errno=false">
+	<then>
+        <SETVAR NAME="name" VALUE="lCurrentAsset.name"/>
+        <SETVAR NAME="description" VALUE="lCurrentAsset.description"/>
+        <SETVAR NAME="updateddate" VALUE="lCurrentAsset.updateddate"/>
+        <SETVAR NAME="assetid" VALUE="lCurrentAsset.assetid"/>
+		<SETVAR NAME="assettype" VALUE="lCurrentAsset.assettype" />
+        <SETVAR NAME="status" VALUE="lCurrentAsset.status"/>
+		<SETVAR NAME="startDate" VALUE="lCurrentAsset.startdate" />
+		<SETVAR NAME="endDate" VALUE="lCurrentAsset.enddate" />
+		
+	<!--<tr id="Variables.assetid" class="Variables.rowStyle" REPLACEALL="Variables.rowStyle,Variables.assetid">-->
+	<tr id="Variables.divContainerId:Variables.assettype:Variables.assetid" REPLACEALL="Variables.assetid,Variables.assettype,Variables.divContainerId">
+		<td class="border"><BR /></td>
+		<td class="border"><BR /></td>
+		<td class="border" style="vertical-align:middle;text-align:center;"  >
+            <input type="checkbox" id="Variables.divContainerId:Variables.assettype:Variables.assetid:Variables.status:chbx" onclick="changeRowColor(this)" name="Variables.divContainerId:chbx" REPLACEALL="Variables.assetid,Variables.assettype,Variables.divContainerId,Variables.status"/>
+          </td>
+        <td class="border" ><BR /></td>
+        <td class="border" ><BR /></td>
+		<td class="border" style="vertical-align:middle"  NOWRAP="NOWRAP">
+				<if COND="Variables.CanPreview=true">
+				<then>
+					<if COND="IsVariable.target=true">
+					<then>
+                        <PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="Variables.assettype" ASSETID="Variables.assetid" PUBID="SessionVariables.pubid" TARGET="Variables.target"/>
+                        <IF COND="IsVariable.previewURL=true">
+                        <THEN>
+    						<XLAT.LOOKUP KEY="dvin/UI/Previewthisfortargetname" VARNAME="_XLAT_"/>
+    						<XLAT.LOOKUP KEY="dvin/UI/Previewthisfortargetname" VARNAME="mouseover" ESCAPE="true"/>
+                            <A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.previewURL,Variables.targetname,Variables.mouseover"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+                        </THEN>
+						<ELSE>
+							<img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" border="0" REPLACEALL="Variables.cs_imagedir"/>
+						</ELSE>
+                        </IF>
+					</then>
+					<else>
+						<XLAT.LOOKUP KEY="dvin/Common/PreviewThisItem" VARNAME="_XLAT_"/>
+						<XLAT.LOOKUP KEY="dvin/Common/PreviewThisItem" VARNAME="mouseover" ESCAPE="true"/>
+                        <PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="Variables.assettype" ASSETID="Variables.assetid" PUBID="SessionVariables.pubid"/>
+						<A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.previewURL,Variables.mouseover"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+					</else>
+					</if>
+				</then>
+				<else>
+					<img height="14" width="14" hspace="2" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" border="0" REPLACEALL="Variables.cs_imagedir"/>
+				</else>
+				</if>
+				<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="mouseover" ESCAPE="true"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+					<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+					<ARGUMENT NAME="assetid" VALUE="Variables.assetid"/>
+					<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+					<ARGUMENT NAME="function" VALUE="inspect"/>
+				</CALLELEMENT>
+				<ICS.GETPROPERTY NAME="advancedUI.enableAssetForms" FILE="futuretense_xcel.ini" OUTPUT="isEnableAssetForms"></ICS.GETPROPERTY>
+				<IF COND="IsVariable.isEnableAssetForms=false">
+                <THEN>
+                	<SETVAR NAME='isEnableAssetForms' VALUE='false'/>
+                </THEN>
+                </IF>
+				<IF COND="Variables.isEnableAssetForms=true">
+				<THEN>
+					<A href="Variables.urlInspectItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlInspectItem,Variables.mouseover"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+					<XLAT.LOOKUP KEY="dvin/Common/EditThisItem" VARNAME="_XLAT_"/>
+					<XLAT.LOOKUP KEY="dvin/Common/EditThisItem" VARNAME="mouseover" ESCAPE="true"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+						<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+						<ARGUMENT NAME="assetid" VALUE="Variables.assetid"/>
+						<ARGUMENT NAME="varname" VALUE="urlEditItem"/>
+						<ARGUMENT NAME="function" VALUE="edit"/>
+					</CALLELEMENT>
+					<A href="Variables.urlEditItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlEditItem,Variables.mouseover"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+				</THEN>
+				</IF>
+				</td>
+        <td class="border"><br/></td>
+		<td class="border" style="vertical-align:middle"  NOWRAP="NOWRAP">
+					<!-- 
+						This section of code performs validation of the start date and end date of the current asset (the asset that is a row in the to-be-published assets table)
+						The validation is done to check for two things 
+							1) if the start date of the asset occurs in the future 
+							2) if the end date of the asset occurs in the past
+						If either of the above is true, then we need to warn the user in the publshing screen
+						
+						We show the warning by means of an image that is displayed near the Start and end dates column.
+						On mouse over this image shows the reason in the status bar (either 'Start date occurs in future' or 'End date occurs in the past' message)
+						The validation is actually done in the JSP element CheckStartDateEndDateValidity.jsp, which takes the start date and end date as input
+						and checks for the conditions (1 and 2 above). If any of the conditions match, the jsp element sets the appropriate message in the ICS variable
+						called dateRangeFailureDetail, which can then later be used for the image mouseover.
+						
+						-Sathish Paul Leo for the Site Preview Proj
+					-->
+						<SETVAR NAME="dateRangeValid" VALUE="true" />
+						<SETVAR NAME="dateRangeFailureDetail" VALUE=""/>
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/CheckStartDateEndDateValidity">
+							<ARGUMENT NAME="startDate" VALUE="Variables.startDate" />
+							<ARGUMENT NAME="endDate" VALUE="Variables.endDate" />							
+						</CALLELEMENT>
+						<IF COND="Variables.dateRangeValid=false">
+						<THEN>							
+							<IMG NAME="imageForDates" SRC="Variables.cs_imagedir/graphics/common/logo/startEndDateValidity.gif" TITLE="Variables.dateRangeFailureDetail" REPLACEALL="Variables.cs_imagedir,Variables.dateRangeFailureDetail" HEIGHT="14" WIDTH="14" VSPACE="4"/>
+						</THEN>
+						<ELSE>
+							<IMG NAME="imageForDates" SRC="Variables.cs_imagedir/graphics/common/logo/spacer.gif" REPLACEALL="Variables.cs_imagedir"/>
+						</ELSE>						
+						</IF>
+		</td>
+		<td class="border"><BR /></td>
+		<!-- Replace the asset type description with an icon and have the description text as a tool tip -->
+		<td style="vertical-align:middle"  NOWRAP="NOWRAP" class="border">
+			<DIV class="small-text-inset">
+				<!-- <STRING.STREAM VALUE="Variables.atdescription"/> -->
+				<SETVAR NAME="currentAtype" VALUE="Variables.assettype.png" />
+				<ISINLIST ITEM="Variables.currentAtype" LIST="imageList" />
+				<STRING.ENCODE VARIABLE="atdescription" VARNAME="atdescription"/>
+				<IF COND="Variables.errno=1">
+				<THEN>
+					<IMG NAME="assetTypeImage" SRC="Variables.cs_imagedir/OMTree/TreeImages/AssetTypes/Variables.assettype.png" TITLE="Variables.atdescription" REPLACEALL="Variables.cs_imagedir,Variables.assettype,Variables.atdescription" />
+				</THEN>
+				<ELSE>
+					<!-- If we do not have an icon for the asset type use the default icon -->
+					<IMG NAME="assetTypeImage" SRC="Variables.cs_imagedir/OMTree/TreeImages/default.png" TITLE="Variables.atdescription" REPLACEALL="Variables.cs_imagedir,Variables.atdescription" />
+				</ELSE>
+				</IF>
+				<BR />
+			</DIV>
+		</td>
+
+		<td class="border" ><BR /></td>
+			<td class="border" style="vertical-align:middle"  >
+				<DIV class="small-text-inset">
+                  	<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_"/>
+					<XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="mouseover" ESCAPE="true"/>
+					<STRING.LENGTH VALUE="Variables.name" VARNAME="strlen" />
+					<CALCULATOR.GO VALUE="Variables.strlen 30 GT" VARNAME="result"/> 
+					<IF COND="Variables.result=1">
+					<THEN>
+						<SUBSTRING STR="Variables.name" OUTSTR="shortName" ENDINDEX="25" />
+						<SETVAR NAME="shortName" VALUE="Variables.shortName..."/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="shortName" VALUE="Variables.name" />
+					</ELSE>
+					</IF>
+					<A HREF="Variables.urlInspectItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" title="Variables._XLAT_"  REPLACEALL="Variables.urlInspectItem,Variables._XLAT_,Variables.mouseover">
+					<STRING.STREAM VARIABLE="shortName"/>
+					</A>
+                </DIV>
+			</td>
+		
+		<!-- Show the description as a tool tip for an icon -->
+		<!-- <td><BR /></td> 	-->
+		<td class="border" style="vertical-align:middle"  >
+		<DIV class="small-text-inset">
+		<IF COND="Variables.description=Variables.empty">
+		<THEN>
+			<XLAT.LOOKUP KEY="fatwire/Alloy/UI/AssetHasNoDescription" VARNAME="assetHasNoDescription" />
+			<SETVAR NAME="description" VALUE="Variables.assetHasNoDescription" />							
+		</THEN>
+		<ELSE>
+			<STRING.ENCODE VARIABLE="description" VARNAME="description"/>
+		</ELSE>
+		</IF>
+		<IMG NAME="imageForDescription" SRC="Variables.cs_imagedir/graphics/common/icon/infosmall.gif" TITLE="Variables.description" REPLACEALL="Variables.cs_imagedir,Variables.description" HEIGHT="15" WIDTH="15" />
+		</DIV>
+		</td>		
+		<td class="border"><BR/></td>
+            <td class="border" style="vertical-align:middle"  >
+                <DIV class="small-text-inset">
+                    <ASSET.GETLOCALES TYPE="Variables.assettype" OBJECTID="Variables.assetid" LIST="asset:locales"/>
+                    <LOOP LIST="asset:locales">
+                        <STRING.STREAM LIST="asset:locales" COLUMN="NAME"/>
+                    </LOOP>
+                    <BR />
+                </DIV>
+            </td>
+		<!-- Code to print out the start and end date values for the asset -->
+			<td class="border"><BR /></td>
+			<td class="border" style="vertical-align:middle"  NOWRAP="NOWRAP">
+				<DIV class="small-text-inset">
+					<DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Variables.startDate" VALUETYPE="jdbcdate" VARNAME="startDateShortVersion" />
+					<IF COND="Variables.startDateShortVersion=Variables.empty">
+					<THEN>
+						<STRING.STREAM VALUE="-" />
+					</THEN>
+					<ELSE>						
+						<STRING.STREAM VALUE="Variables.startDateShortVersion" />
+					</ELSE>
+					</IF>
+				</DIV>
+			</td>
+	
+			<td class="border"><BR /></td>
+			<td class="border" style="vertical-align:middle"  NOWRAP="NOWRAP">
+				<DIV class="small-text-inset">
+					<DATEFORMAT.GETDATETIME NAME="_shortFormatDate_" VALUE="Variables.endDate" VALUETYPE="jdbcdate" VARNAME="endDateShortVersion" />
+					<IF COND="Variables.endDateShortVersion=Variables.empty">
+					<THEN>
+						<STRING.STREAM VALUE="-" />
+					</THEN>
+					<ELSE>
+						<STRING.STREAM VALUE="Variables.endDateShortVersion" />
+					</ELSE>
+					</IF>
+				</DIV>
+			</td>
+				
+			<td class="border"><BR /></td>
+			<td style="vertical-align:middle"  class="border" NOWRAP="NOWRAP">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.daysExpired" />
+				</DIV>
+			</td>
+	<td class="border"><BR/></td>
+	</tr>
+		<inccounter NAME="assignment_count" VALUE="1"/>
+		<IF COND="Variables.rowStyle=tile-row-normal">
+		<THEN>
+			<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+		</ELSE>
+		</IF>
+
+	</then>
+	<else>
+		<XLAT.STREAM KEY="dvin/UI/Error/errnoloadingassetassettypewithididcol" errno="Variables.errno" assettype="Variables.list.assettype" assetid="Variables.list.assetid" EVALALL="false"/>
+	</else>
+	</if>
+	</loop>
+	</THEN>
+	<ELSE>
+	<tr>
+	<td height="40px" style="background-color:#F7F8FA" align="center" colSpan="22"><XLAT.STREAM KEY="dvin/UI/NoAssetslcfound"/></td>
+	</tr>
+	</ELSE>
+	</IF>
+	</tbody>
+		</table>
+		</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+<FLUSH LIST="Variables.list"/>
+<callelement name="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+</table>
+</td><td/></tr>
+<IF COND="Variables.showPagination=1">
+<THEN>
+<tr><td/>
+	<td><span style="float: right;"><IF COND="Variables.displayPage!=1"><THEN><A REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rowsPerPage,Variables.pagename,Variables.prev,Variables.cs_imagedir,Variables.target,Variables.divContainerId" href="#" ONCLICK="updatePanel('Variables.divContainerId','ContentServer?pagename=Variables.pagename&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;target=Variables.target&#38;rowsPerPage=Variables.rowsPerPage&#38;displayPage=1&#38;divContainerId=Variables.divContainerId');return false"><IMG BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/doubleArrowLeft.gif" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/First"/></A>
+     </THEN></IF>&nbsp;<IF COND="Variables.showprev=1"><THEN><IF COND="Variables.displayPage!=2"><THEN><A REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rowsPerPage,Variables.pagename,Variables.prev,Variables.cs_imagedir,Variables.target,Variables.divContainerId" href="#" ONCLICK="updatePanel('Variables.divContainerId','ContentServer?pagename=Variables.pagename&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;target=Variables.target&#38;rowsPerPage=Variables.rowsPerPage&#38;displayPage=Variables.prev&#38;divContainerId=Variables.divContainerId');return false"><IMG BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/leftArrow.gif" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/Previous"/></A>
+     </THEN></IF></THEN></IF><SPAN REPLACEALL="Variables.displayPage,Variables.totalPages">&nbsp;<XLAT.STREAM KEY="dvin/UI/PageOf"/>&nbsp;</SPAN><IF COND="Variables.shownext=1"><THEN><IF COND="Variables.displayPage!=Variables.pageBeforeLast"><THEN>
+     <a REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rowsPerPage,Variables.pagename,Variables.next,Variables.displayPage,Variables.cs_imagedir,Variables.target,Variables.divContainerId" href="#" ONCLICK="updatePanel('Variables.divContainerId','ContentServer?pagename=Variables.pagename&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;target=Variables.target&#38;rowsPerPage=Variables.rowsPerPage&#38;displayPage=Variables.next&#38;divContainerId=Variables.divContainerId');return false"><XLAT.STREAM KEY="dvin/Common/Next"/><IMG BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/rightArrow.gif" REPLACEALL="Variables.cs_imagedir"/></a>
+     </THEN></IF></THEN></IF>&nbsp;<IF COND="Variables.displayPage!=Variables.totalPages"><THEN>
+     <a REPLACEALL="Variables.cs_environment,Variables.cs_formmode,Variables.rowsPerPage,Variables.pagename,Variables.next,Variables.displayPage,Variables.totalPages,Variables.cs_imagedir,Variables.target,Variables.divContainerId" href="#" ONCLICK="updatePanel('Variables.divContainerId','ContentServer?pagename=Variables.pagename&#38;cs_environment=Variables.cs_environment&#38;cs_formmode=Variables.cs_formmode&#38;cs_imagedir=Variables.cs_imagedir&#38;target=Variables.target&#38;rowsPerPage=Variables.rowsPerPage&#38;displayPage=Variables.totalPages&#38;divContainerId=Variables.divContainerId');return false"><XLAT.STREAM KEY="dvin/UI/Last"/><IMG BORDER="0" HEIGHT="12" WIDTH="15" src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" REPLACEALL="Variables.cs_imagedir"/></a>
+     </THEN></IF></span></td>
+<td/></tr>
+</THEN>
+</IF>
+</table>
+<INPUT TYPE="HIDDEN" ID="Variables.divContainerId:displayPage" VALUE="Variables.displayPage" REPLACEALL="Variables.displayPage,Variables.divContainerId"/>
+</ftcs>

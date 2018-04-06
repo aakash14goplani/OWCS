@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/ControlPanel/ShowWorkListFront
+-
+- This element is copied and modified from the original:
+-  OpenMarket/Xcelerate/Actions/ShowWorkListFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- display all the task assignments for this user -->
+<USERMANAGER.GETLOGINUSER VARNAME="theCurrentUser"/>
+<USERMANAGER.GETLOGINUSERNAME VARNAME="theCurrentUserName"/>
+<STRINGLIST STR="Variables.theCurrentUser" NAME="theCurrentUserList" DELIM=";"/>
+<WORKFLOWENGINE.GETFILTEREDASSIGNMENTS PREFIX="allAssignments:" SITE="SessionVariables.pubid" NOTSTATUS="notactive" ASSIGNEDTO="theCurrentUserList"  SORTSTYLE="assigneddate" LIMITASSIGNEEROLES="true"/>
+
+<setvar NAME="ResultLimit" VALUE="10"/>
+<setvar NAME="report_assets" VALUE="all"/>
+<setvar NAME="TileText" VALUE="The following assets have been assigned to: Assignments.assignedto"/>
+<setvar NAME="NoTileText" VALUE="You have no assignments"/>
+
+<!-- <if COND="IsList.Assignments=true"><THEN> -->
+<callelement NAME="OpenMarket/Xcelerate/ControlPanel/TileAssignments">
+    <argument NAME="showSelect" VALUE="false"/>
+    <argument NAME="showType" VALUE="false"/>
+    <argument NAME="showKey" VALUE="false"/>
+	<argument NAME="showDescription" VALUE="false"/>
+    <argument NAME="showId" VALUE="false"/>
+    <argument NAME="showAssignedBy" VALUE="false"/>
+    <argument NAME="showAssignedDate" VALUE="false"/>
+    <argument NAME="showAssignedTo" VALUE="false"/>
+    <argument NAME="showClearedBy" VALUE="false"/>
+    <argument NAME="showClearedDate" VALUE="false"/>
+    <argument NAME="showActionTaken" VALUE="false"/>
+    <argument NAME="showActionToTake" VALUE="false"/>
+    <argument NAME="showWorkflowStatus" VALUE="false"/>
+    <argument NAME="showIsActive" VALUE="false"/>
+    <argument NAME="showClearAssignmentButton" VALUE="true"/>
+    <argument NAME="showCPFinish" VALUE="true"/>
+    <argument NAME="showCPHref" VALUE="true"/>
+
+    <argument NAME="TileText" VALUE="Variables.TileText"/>
+    <argument NAME="NoTileText" VALUE="Variables.NoTileText"/>
+</callelement>
+<!-- </THEN></if> -->
+</FTCS> 

@@ -1,0 +1,169 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/Workflow/FormatDeadline.xml $ 
+$Revision: 8 $ 
+$Modtime: 3/11/03 8:56p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/Workflow/FormatDeadline
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<IF COND="Variables.deadline!=0">
+<THEN>
+<SETVAR NAME="duedate_ms" VALUE="Variables.deadline"/>
+<SETDATE DATE="Variables.empty"/>
+<SUBSTRING STR="CS.SQLDate" OUTSTR="month" INDEX="5" ENDINDEX="7"/>
+<CALCULATOR.GO VALUE="Variables.month 1 -" VARNAME="month"/>
+<DATE.DEFAULTTZ VARNAME="tzone"/>
+<!-- Commenting out below code that was for supporting clientTimeZone, since we are not supporting two time zones at this time. Will uncomment it in future when we will provide
+dates in client format on all the pages where dates are present.
+<IF COND="IsSessionVariable.clientTimezoneOffset=true">
+<THEN>
+<SETVAR NAME="tzone" VALUE="SessionVariables.clientTimezoneOffset" />
+</THEN>
+</IF> -->
+<DATE.CONVERT  VARNAME="now_ms" YEAR="CS.Year" MONTH="Variables.month" DAY="CS.DDate" HOUR="CS.Hour24" MINUTE="CS.Min" TIMEZONE="Variables.tzone"/>
+<DATE.CLOCKLIST TIMEZONE="Variables.tzone" LISTVARNAME="dd"  CLOCK="Variables.deadline"/> 
+
+<CALCULATOR.GO VALUE="Variables.now_ms Variables.duedate_ms GT" VARNAME="ispastdue"/>
+
+<IF COND="Variables.ispastdue=1">
+<THEN>
+	<CALCULATOR.GO VALUE="Variables.now_ms Variables.duedate_ms -" VARNAME="duediff_ms"/>
+	<CALCULATOR.GO VALUE="Variables.duediff_ms 86400000 LT" VARNAME="withinDay"/>
+	<IF COND="Variables.withinDay=1">
+	<THEN>
+		<CALCULATOR.GO VALUE="Variables.duediff_ms 3600000 LT" VARNAME="withinHour"/>
+		<IF COND="Variables.withinHour=1">
+		<THEN>
+			<DATE.CLOCKLIST LISTVARNAME="PastDue"  CLOCK="Variables.duediff_ms"/>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+			<XLAT.LOOKUP VARNAME="_xlat_overdue" KEY="dvin/Common/OverdueTimeWithinHour" mins="PastDue.minute" EVALALL="false" />
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/OverDueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	
+            <span class="alert-color" TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip"><B><STRING.STREAM VALUE="Variables._xlat_overdue" REPLACEALL="Variables._xlat_overdue"/></B></span><BR/>
+		</THEN>
+		<ELSE>
+			<DATE.CLOCKLIST LISTVARNAME="PastDue" TIMEZONE="Variables.tzone" CLOCK="Variables.duediff_ms"/>
+
+			<SETVAR NAME="hour" VALUE="PastDue.hour"/>
+			<IF COND="PastDue.ampm=1">
+			<THEN>
+				<CALCULATOR.GO VALUE="Variables.hour 12 +" VARNAME="hour"/>
+			</THEN>
+			</IF>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>			
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/OverDueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	       		
+			<XLAT.LOOKUP VARNAME="_xlat_overdue" KEY="dvin/Common/OverdueTimeWithinDay" hours="Variables.hour" mins="PastDue.minute" EVALALL="false" />		
+			<span class="alert-color" TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip" ><B><STRING.STREAM VALUE="Variables._xlat_overdue" REPLACEALL="Variables._xlat_overdue"/></B></span><BR/>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<CALCULATOR.GO VALUE="Variables.duediff_ms 604800000 LT" VARNAME="withinWeek"/>
+		<IF COND="Variables.withinWeek=1">
+		<THEN>
+			<DATE.CLOCKLIST LISTVARNAME="PastDue"  CLOCK="Variables.duediff_ms"/>
+			<CALCULATOR.GO VALUE="PastDue.dayofmonth 1 -" VARNAME="day"/>
+
+			<SETVAR NAME="hour" VALUE="PastDue.hour"/>
+			<IF COND="PastDue.ampm=1">
+			<THEN>
+				<CALCULATOR.GO VALUE="Variables.hour 12 +" VARNAME="hour"/>
+			</THEN>
+			</IF>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/OverDueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />		
+			<XLAT.LOOKUP VARNAME="_xlat_overdue" KEY="dvin/Common/OverdueTimeWithinWeek" days="Variables.day" hours="Variables.hour" mins="PastDue.minute" EVALALL="false" />		
+			<span class="alert-color" TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip" ><B> <STRING.STREAM VALUE="Variables._xlat_overdue" REPLACEALL="Variables._xlat_overdue"/></B></span><BR/>
+		</THEN>
+		<ELSE>
+			
+            <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+            <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds" VARNAME="formattedDueDate"/>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/OverDueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	
+			<span TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip">
+                <STRING.STREAM Variable="formattedDueDate"/>
+            </span>
+            <BR/>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<CALCULATOR.GO VALUE="Variables.duedate_ms Variables.now_ms  -" VARNAME="duediff_ms"/>
+	<CALCULATOR.GO VALUE="Variables.duediff_ms 86400000 LT" VARNAME="withinDay"/>
+	<IF COND="Variables.withinDay=1">
+	<THEN>
+		
+		<CALCULATOR.GO VALUE="Variables.duediff_ms 3600000 LT" VARNAME="withinHour"/>
+		<IF COND="Variables.withinHour=1">
+		<THEN>
+			<DATE.CLOCKLIST LISTVARNAME="DueDate"  CLOCK="Variables.duediff_ms"/>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>			
+			<XLAT.LOOKUP VARNAME="_xlat_due" KEY="dvin/Common/DueTimeWithinHour" mins="DueDate.minute" EVALALL="false" />			
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/DueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	
+            <span  TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip"><B><STRING.STREAM VALUE="Variables._xlat_due" REPLACEALL="Variables._xlat_due"/></B></span><BR/>
+		</THEN>
+		<ELSE>
+			<DATE.CLOCKLIST LISTVARNAME="PastDue"  CLOCK="Variables.duediff_ms"/>
+			<SETVAR NAME="hour" VALUE="PastDue.hour"/>
+			<IF COND="PastDue.ampm=1">
+			<THEN>
+				<CALCULATOR.GO VALUE="Variables.hour 12 +" VARNAME="hour"/>
+			</THEN>
+			</IF>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>			
+			<XLAT.LOOKUP VARNAME="_xlat_due" KEY="dvin/Common/DueTimeWithinDay" hours="Variables.hour" mins="PastDue.minute" EVALALL="false" />			
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/DueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	 
+            <span  TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip"><STRING.STREAM VALUE="Variables._xlat_due" REPLACEALL="Variables._xlat_due"/></span><BR/>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+
+		<CALCULATOR.GO VALUE="Variables.duediff_ms 604800000 LT" VARNAME="withinWeek"/>
+		<IF COND="Variables.withinWeek=1">
+		<THEN>
+			<DATE.CLOCKLIST LISTVARNAME="PastDue"  CLOCK="Variables.duediff_ms"/>
+			<CALCULATOR.GO VALUE="PastDue.dayofmonth 1 -" VARNAME="day"/>
+
+			<SETVAR NAME="hour" VALUE="PastDue.hour"/>
+			<IF COND="PastDue.ampm=1">
+			<THEN>
+				<CALCULATOR.GO VALUE="Variables.hour 12 +" VARNAME="hour"/>
+			</THEN>
+			</IF>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/DueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />						
+			<XLAT.LOOKUP VARNAME="_xlat_due" KEY="dvin/Common/DueTimeWithinWeek" days="Variables.day" hours="Variables.hour" mins="PastDue.minute" EVALALL="false" />			
+            <span TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip">
+            <STRING.STREAM VALUE="Variables._xlat_due" REPLACEALL="Variables._xlat_due"/><BR/>
+            </span>
+        </THEN>
+		<ELSE>
+            <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="LocaleName" TIMEZONEID="SessionVariables.time.zone"/>
+            <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds" VARNAME="formattedDueDate"/>
+            <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.duedate_ms" VALUETYPE="milliseconds"  VARNAME="formatteddateFullVersion"/>
+			<XLAT.LOOKUP VARNAME="_xlat_dateToolTip" KEY="dvin/Common/DueFullDateTime" formatteddateFullVersion="Variables.formatteddateFullVersion" EVALALL="false" />	
+            <span TITLE="Variables._xlat_dateToolTip" REPLACEALL="Variables._xlat_dateToolTip">
+                <STRING.STREAM VALUE="Variables.formattedDueDate"/>
+            </span>
+            <BR/>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+
+</ELSE>
+</IF>
+<SETDATE DATE="Variables.empty"/>
+</THEN>
+</IF>
+</FTCS> 

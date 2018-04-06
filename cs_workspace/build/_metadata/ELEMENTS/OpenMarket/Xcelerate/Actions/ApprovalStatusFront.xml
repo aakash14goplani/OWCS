@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ApprovalStatusFront
+-
+- INPUT
+-	Variables.AssetType
+-  Variables.id
+- OUTPUT
+-
+-->
+
+
+<setvar NAME="assetname" VALUE="theCurrentAsset"/>
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetname"/>
+<if COND="Variables.errno=0">
+	<then>
+		<ASSET.GET NAME="Variables.assetname" FIELD="id" OUTPUT="id"/>
+			<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/ApprovalStatusPost"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/Util/InsertStdVariables"/>
+
+			<ASSET.GET NAME="Variables.assetname" FIELD="name"/>
+			<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+			<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="atdescription"/>
+			<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+			<PUBTARGET.GETNAME NAME="pubtgt" VARNAME="pubtargetname"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ApprovalStatusDetails">
+				<ARGUMENT NAME="name" VALUE="Variables.name"/>
+				<ARGUMENT NAME="atdescription" VALUE="Variables.atdescription"/>
+				<ARGUMENT NAME="pubtargetname" VALUE="Variables.pubtargetname"/>
+			</callelement>
+	</then>
+	<else>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<argument NAME="error" VALUE="InvalidContentId"/>
+		</callelement>
+	</else>
+</if>
+<if COND="Variables.showHeldAssets=true">
+<then>
+<ApprovedAssets.GetHeldAssets TARGET="Variables.target" LISTVARNAME="heldAssets"/>
+	<if COND="IsList.heldAssets=true">
+	<then>
+	      <if COND="heldAssets.#numRows=0">
+	      <then>
+				<XLAT.LOOKUP KEY="dvin/UI/Noassetsareheldforpublish" VARNAME="_XLAT_"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+					<ARGUMENT NAME="severity" VALUE="info"/>
+				</CALLELEMENT>
+				<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront"/>
+		  </then>
+	      <else>
+		  <STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+	      <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ITileHeldAssets">
+					<ARGUMENT NAME="target" VALUE="Variables.target"/>
+					<ARGUMENT NAME="targetname" VALUE="Variables.pubtargetname"/>
+					<ARGUMENT NAME="docheckbox" VALUE="false"/>
+		   </CALLELEMENT>
+	 
+	      </else>
+	       </if>
+	</then>
+	<else>
+	     <p><XLAT.STREAM KEY="dvin/UI/ErrorCouldnotgetheldassets"/></p>
+	</else>
+	</if>
+</then>
+</if>
+</FTCS>

@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/Login/LoginScreen"/> 	
+	<SETVAR NAME="errno" VALUE="-1"/>  
+</ftcs>

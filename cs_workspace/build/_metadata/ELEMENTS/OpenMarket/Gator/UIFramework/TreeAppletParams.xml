@@ -1,0 +1,214 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/TreeParams
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<PARAM NAME="Debug" VALUE="false"/>
+<PARAM NAME="URLTarget" VALUE="XcelAction"/>
+<PARAM NAME="ServerBaseURL" VALUE=""/>
+
+<PARAM NAME="DefaultIcon" VALUE="Variables.cs_imagedir/OMTree/TreeImages/default.png" REPLACEALL="Variables.cs_imagedir"/>
+<PARAM NAME="NodeExecuteColor" VALUE="0,0,0"/>
+<PARAM NAME="NodeVisitedColor" VALUE="255,0,255"/>
+<PARAM NAME="TabTextColor" VALUE="0,0,0"/>
+<PARAM NAME="TabSelectedTextColor" VALUE="255,255,255"/>
+<PARAM NAME="TabbedPaneBGColor" VALUE="206,206,206"/>
+<PARAM NAME="TabbedPaneBorderColor" VALUE="190,190,190"/>
+<!-- Vertical space between tree nodes -->
+<PARAM NAME="TreeRowHeight" VALUE="20"/>
+<PARAM NAME="TreePaneBGColor" VALUE="246,246,246"/>
+<PARAM NAME="TabBGColor" VALUE="244,244,244"/>
+<PARAM NAME="TabBorderColor" VALUE="158,158,158"/>
+<PARAM NAME="TabSelectedColor" VALUE="54,78,107"/>
+<PARAM NAME="TabSelectedFontFamily" VALUE="Arial,Helvetica,sans-serif"/>
+<PARAM NAME="TabSelectedFontSize" VALUE="11"/>
+<!-- 
+Font Style
+--------------
+BOLD 	1
+CENTER_BASELINE 	1
+HANGING_BASELINE 	2
+ITALIC 	2
+LAYOUT_LEFT_TO_RIGHT 	0
+LAYOUT_NO_LIMIT_CONTEXT 	4
+LAYOUT_NO_START_CONTEXT 	2
+LAYOUT_RIGHT_TO_LEFT 	1
+PLAIN 	0
+ROMAN_BASELINE 	0
+TRUETYPE_FONT 	0
+-->
+
+<PARAM NAME="TabSelectedFontStyle" VALUE="1"/>
+<PARAM NAME="TabFontFamily" VALUE="Arial,Helvetica,sans-serif"/>
+<PARAM NAME="TabFontSize" VALUE="11"/>
+<PARAM NAME="TabFontStyle" VALUE="1"/>
+<PARAM NAME="TreeFontFamily" VALUE="Arial,Helvetica,sans-serif"/>
+<PARAM NAME="TreeFontSize" VALUE="11"/>
+<PARAM NAME="TreeFontStyle" VALUE="0"/>
+<!-- Node selection color -->
+<PARAM NAME="SelectionColor" VALUE="226,235,254"/>
+<!-- Node text selected color -->
+<PARAM NAME="NodeSelectedColor" VALUE="0,0,0"/>
+<!-- Node normal text color -->
+<PARAM NAME="NodeNormalColor" VALUE="0,0,0"/>
+<PARAM NAME="TabStyle" VALUE="Windows"/>  <!-- dont change this yet -->
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeAppletParamsCookie"/>
+<PROPERTY.GET PARAM="xcelerate.treehierassettype" INIFILE="futuretense_xcel.ini" VARNAME="treehierassettype"/>
+<PARAM NAME="treehierassettype" VALUE="Variables.treehierassettype" REPLACEALL="Variables.treehierassettype"/>
+
+
+<!--PARAM NAME="BackgroundColor" VALUE="F1F1F1"/-->
+<XLAT.LOOKUP KEY="dvin/TreeApplet/TooManyAssetsFound" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="TooManyAssetsFound" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/NoCriteriaFound" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="NoCriteriaFound" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/SelectMoreItems" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="SelectMoreItems" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/ReduceNumberOfAssets" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="ReduceNumberOfAssets" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/NoMatchingItemFound" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="NoMatchingItemFound" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/LastCriteriaWas" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="LastCriteriaWas" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/Loading" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="Loading" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/ClearALL" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="ClearALL" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/ExpandingNode" ENCODE="false" VARNAME="_XLAT_"/>
+<STRING.UTF8ENCODE VALUE="Variables._XLAT_" VARNAME="_XLAT_"/>
+<PARAM NAME="Expanding" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+
+<setvar NAME="LegacyURLPath" VALUE="CS.Property.ft.cgipath"/>
+<setvar NAME="LegacyURLPath" VALUE="Variables.LegacyURLPathCS.Property.ft.approot"/>
+<PARAM NAME="LegacyURLPath" VALUE="Variables.LegacyURLPath" REPLACEALL="Variables.LegacyURLPath"/>
+<IF COND="Variables.errno=0">
+<THEN>
+	<SETCOUNTER NAME="tabcount" VALUE="0"/>
+	<LOOP LIST="tabs">
+		<SUBSTITUTE STR="tabs.title" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="OutputQTitle"/>
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeTabSysCheck" >
+			<ARGUMENT NAME="tabuid" VALUE="tabs.fwuid" />
+		</CALLELEMENT>
+		
+		<IF COND="Variables.systab=true" >
+			<THEN>
+				<SUBSTITUTE STR="Variables.OutputQTitle" WHAT="%20" WITH="" OUTSTR="titlewrds"/>
+				<XLAT.LOOKUP KEY="dvin/UI/Treetab/Variables.titlewrds" VARNAME="NewWord" ESCAPE="true"/>	
+				<PARAM NAME="TitleCounters.tabcount" VALUE="Variables.NewWord" REPLACEALL="Counters.tabcount,Variables.NewWord"/>
+			</THEN>
+			<ELSE>
+				<PARAM NAME="TitleCounters.tabcount" VALUE="Variables.OutputQTitle" REPLACEALL="Counters.tabcount,Variables.OutputQTitle"/>
+			</ELSE>
+		</IF>
+		
+		<SUBSTITUTE STR="tabs.tooltip" WHAT="&#34;" WITH="&#38;quot;" OUTSTR="OutputQTip"/>
+		
+		<PARAM NAME="RootIDCounters.tabcount" VALUE="ROOT" REPLACEALL="Counters.tabcount"/>
+		<PARAM NAME="LineStyleCounters.tabcount" VALUE="tabs.linestyle" REPLACEALL="Counters.tabcount,tabs.linestyle"/>
+		<PARAM NAME="ToolTipCounters.tabcount" VALUE="Variables.OutputQTip" REPLACEALL="Counters.tabcount,Variables.OutputQTip"/>
+		<PARAM NAME="PaneTypeCounters.tabcount" VALUE="tabs.panetype" REPLACEALL="Counters.tabcount,tabs.panetype"/>
+
+        <!-- action, global, and loaduris may or may not already have the cgipath/approot appended already -->
+        <!-- if they don't we need to prepend it -->
+        <SETVAR NAME="errno" VALUE="0"/>
+        <BEGINS STR="/tabs.globalaction"  WHAT="Variables.LegacyURLPathContentServer"/>
+        <IF COND="Variables.errno=0">
+        <THEN>
+            <SUBSTRING INDEX="1" STR="Variables.LegacyURLPath" OUTSTR="fixedLegacyURI"/>
+            <SETVAR NAME="fixedPopupURI" VALUE="Variables.fixedLegacyURItabs.globalpopup"/>
+            <SETVAR NAME="fixedActionURI" VALUE="Variables.fixedLegacyURItabs.globalaction"/>
+        </THEN>
+        <ELSE>
+            <SETVAR NAME="fixedPopupURI" VALUE="tabs.globalpopup"/>
+            <SETVAR NAME="fixedActionURI" VALUE="tabs.globalaction"/>
+        </ELSE>
+        </IF>
+		<PARAM NAME="ActionURICounters.tabcount" VALUE="Variables.fixedActionURI" REPLACEALL="Counters.tabcount,Variables.fixedActionURI"/>
+		<PARAM NAME="GlobalPopupURICounters.tabcount" VALUE="Variables.fixedPopupURI&#38;tabid=tabs.id" REPLACEALL="Counters.tabcount,Variables.fixedPopupURI,tabs.id"/>
+		<PARAM NAME="OpenIconCounters.tabcount" VALUE="Variables.LegacyURLPathjs/fw/images/ui/tree/treeCollapse.png" REPLACEALL="Counters.tabcount,Variables.LegacyURLPath"/>
+        <PARAM NAME="CloseIconCounters.tabcount" VALUE="Variables.LegacyURLPathjs/fw/images/ui/tree/treeExpand.png" REPLACEALL="Counters.tabcount,Variables.LegacyURLPath"/>
+        <!--<PARAM NAME="CloseIconCounters.tabcount" VALUE="tabs.nodeclosed" REPLACEALL="Counters.tabcount,tabs.nodeclosed"/>
+		-->
+      <XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/RefreshAll" VARNAME="RefreshAll" ENCODE="false"/>
+      <STRING.LENGTH VALUE="Variables.RefreshAll=refreshAll" VARNAME="currentLen"/>
+      <STRING.UTF8ENCODE VALUE="Item:Variables.currentLen:Variables.RefreshAll=refreshAll:" VARNAME="encoded"/>
+      <PARAM NAME="GlobalItemsCounters.tabcount" VALUE="Variables.encoded" REPLACEALL="Counters.tabcount,Variables.encoded"/>
+
+      <XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/RefreshDisplay" VARNAME="Refresh"/>
+		<XLAT.LOOKUP KEY="dvin/TreeApplet/Commands/PreviewDisplay" VARNAME="Preview"/>
+      <STRING.LENGTH VALUE="Variables.Refresh=refresh" VARNAME="refreshLen"/>
+		<STRING.LENGTH VALUE="Variables.Preview=Preview" VARNAME="previewLen"/>
+      <STRING.UTF8ENCODE VALUE="Item:Variables.refreshLen:Variables.Refresh=refresh:Item:Variables.previewLen:Variables.Preview=Preview:" VARNAME="encoded"/>
+      <PARAM NAME="NodeItemsCounters.tabcount" VALUE="Variables.encoded" REPLACEALL="Counters.tabcount,Variables.encoded"/>
+
+		<TTM.GETORDEREDITEMS ID="tabs.id" LISTVARNAME="items"/>
+		<LOOP LIST="items">
+			<IF COND="items.name=GLOBALITEMS">
+			<THEN>
+            <!--
+				<STRING.UTF8ENCODE VALUE="items.value" VARNAME="encoded"/>
+				<PARAM NAME="GlobalItemsCounters.tabcount" VALUE="Variables.encoded" REPLACEALL="Counters.tabcount,Variables.encoded"/>
+            -->
+			</THEN>
+			<ELSE>
+				<IF COND="items.name=NODEITEMS">
+				<THEN>
+               <!--
+					<STRING.UTF8ENCODE VALUE="items.value" VARNAME="encoded"/>
+					<PARAM NAME="NodeItemsCounters.tabcount" VALUE="Variables.encoded" REPLACEALL="Counters.tabcount,Variables.encoded"/>
+               -->
+				</THEN>
+				<ELSE>
+					<IF COND="items.name=LOADURI">
+					<THEN>
+                        <!-- action, global, and loaduris may or may not already have the cgipath/approot appended already -->
+                        <!-- if they don't we need to prepend it -->
+                        <SETVAR NAME="errno" VALUE="0"/>
+                        <BEGINS STR="/items.value"  WHAT="Variables.LegacyURLPathContentServer"/>
+                        <IF COND="Variables.errno=0">
+                        <THEN>
+                            <SUBSTRING INDEX="1" STR="Variables.LegacyURLPath" OUTSTR="fixedLegacyURI"/>
+                            <SETVAR NAME="fixedLoadURI" VALUE="Variables.fixedLegacyURIitems.value"/>
+                        </THEN>
+                        <ELSE>
+                            <SETVAR NAME="fixedLoadURI" VALUE="items.value"/>
+                        </ELSE>
+                        </IF>
+						<PARAM NAME="LoadURICounters.tabcount" VALUE="Variables.fixedLoadURI&#38;tabid=tabs.id" REPLACEALL="Counters.tabcount,Variables.fixedLoadURI,tabs.id"/>
+					</THEN>
+					</IF>
+				</ELSE>
+				</IF>
+			</ELSE>
+			</IF>
+		</LOOP>
+		
+		<INCCOUNTER NAME="tabcount" VALUE="1"/>
+	</LOOP>
+	<PARAM NAME="TotalPanes" VALUE="tabs.#numRows" REPLACEALL="tabs.#numRows"/>
+</THEN>
+<ELSE>
+	<PARAM NAME="TotalPanes" VALUE="0"/>
+</ELSE>
+</IF>
+
+</FTCS> 

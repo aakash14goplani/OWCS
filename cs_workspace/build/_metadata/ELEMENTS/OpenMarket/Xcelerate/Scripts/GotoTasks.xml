@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/GotoTasks.xml $ 
+$Revision: 11 $ 
+$Modtime: 2/02/04 5:43p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- gotoSearch.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->
+
+<Script Language="Javascript">
+    function gotoTasks(F, dict)
+    {
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowWorkListFront" outstring="urlworklistfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    </SATELLITE.LINK>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowCheckoutsFront" outstring="urlcheckoutfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    </SATELLITE.LINK>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowRecentFront" outstring="urlrecentfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    </SATELLITE.LINK>
+    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/WorkflowGroupsFront" outstring="urlwfgrpfront">
+        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    </SATELLITE.LINK>
+        <replace STR="Variables.urlworklistfront,Variables.urlcheckoutfront,Variables.urlrecentfront,Variables.urlwfgrpfront">
+        var pURL= "";
+        var pURL1 = "Variables.urlworklistfront";
+        var pURL2 = "Variables.urlcheckoutfront";
+        var pURL3 = "Variables.urlrecentfront";
+        var pURL4 = "Variables.urlwfgrpfront";
+        </replace>
+    <![CDATA[
+        i = 0;
+        doNothing=false;
+        while (i < dict.options.length) {
+            if (dict.options[i].selected) {
+                var value = dict.options[i].value;
+    
+                if (value == "ShowTasks") {
+                    pURL = pURL1;                
+                }
+		    else if (value == "ShowCheckouts") {
+                    pURL = pURL2;
+                }
+                else if (value == "*") {
+                    doNothing=true;
+                }
+                else if (value == "ShowRecentFront") {
+                	pURL = pURL3;
+                	}
+                else if (value == "AddNew") {
+                	pURL = pURL4 + "&action=new";
+				pURL = pURL + "&pagetype=front";
+                	}
+                else {
+                    pURL = pURL4 + "&name=";
+		    		pURL = pURL + value;
+					pURL = pURL + "&action=details";
+						pURL = pURL + "&pagetype=front";
+                  }	
+		  
+                break;
+            }
+            i++;
+        }
+        if (doNothing == false) {
+            parent.frames['XcelAction'].location=pURL;
+        }
+    }
+
+
+    ]]>
+
+</Script>
+
+</FTCS>

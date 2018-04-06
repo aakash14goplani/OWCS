@@ -1,0 +1,210 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+	<!-- OpenMarket/Xcelerate/Actions/EditWorkflowGroupPost
+	-
+	- INPUT
+	-
+	- OUTPUT
+	-
+	-->
+	<!-- group deletion of stuff -->
+	<IF COND="Variables.action=delete">
+		<THEN>
+			<TABLE BGCOLOR="#FFFFFF" CELLSPACING="0" CELLPADDING="0">
+				<TR>
+					<TD BGCOLOR="#FFFFFF" COLSPAN="2">
+						<FONT FACE="Arial, Helvetica" SIZE="2">
+						<H3>
+						<XLAT.STREAM KEY="dvin/UI/DeleteGroupemnameem" ENCODE="false"/>
+						</H3>
+						</FONT>
+					</TD>
+				</TR>
+				<TR>
+					<TD BGCOLOR="#FFFFFF">
+
+						<!-- Attempt to delete the workflow -->
+						<WORKFLOWENGINE.GETGROUPNAME OBJVARNAME="deletegroup" NAME="Variables.name"/>
+						<WORKFLOWGROUP.GETID NAME="deletegroup" VARNAME="groupid"/>
+						<WORKFLOWENGINE.DELETEGROUPID OBJVARNAME="deletegroup" ID="Variables.groupid"/>
+
+						<FONT FACE="Arial, Helvetica" SIZE="2">
+						<IF COND="IsError.Variables.errno=true">
+							<THEN>
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+									<ARGUMENT NAME="error" VALUE="DeleteFailed"/>
+								</CALLELEMENT>
+							</THEN>
+							<ELSE>
+								<XLAT.STREAM KEY="dvin/UI/Deletesuccessful"/>
+							</ELSE>
+						</IF>
+						</FONT>
+					</TD>
+				</TR>
+			</TABLE>
+		</THEN>
+	</IF>	<!--delete-->
+
+	<!-- group cancellation of groupstuff -->
+	<IF COND="Variables.action=cancel">
+		<THEN>
+			<TABLE BGCOLOR="#FFFFFF" CELLSPACING="0" CELLPADDING="0">
+				<TR>
+					<TD BGCOLOR="#FFFFFF" COLSPAN="2">
+						<FONT FACE="Arial, Helvetica" SIZE="2">
+						<H3>
+						<IF COND="Variables.new=true">
+							<THEN>
+								<XLAT.STREAM KEY="dvin/UI/CancelCreatingNewGroup"/>
+							</THEN>
+							<ELSE>
+								<XLAT.STREAM KEY="dvin/UI/CancelEditingGroupemnameem" ENCODE="false"/>
+							</ELSE>
+						</IF>
+						</H3>
+						</FONT>
+					</TD>
+				</TR>
+				<TR>
+					<TD BGCOLOR="#FFFFFF">
+						<XLAT.STREAM KEY="dvin/UI/Cancelsuccessful"/>
+					</TD>
+				</TR>
+			</TABLE>
+
+		</THEN>
+	</IF>	<!--cancel-->
+
+	<IF COND="Variables.action=save">
+		<THEN>
+			<STRINGLIST NAME="editroles" STR="Variables.editroles" DELIM=";"/>
+			<STRINGLIST NAME="removeroles" STR="Variables.removeroles" DELIM=";"/>
+			<IF COND="IsVariable.grpactions=true">
+				<THEN>
+
+					<STRINGLIST NAME="grpactions" STR="Variables.grpactions" DELIM=";"/>
+
+				</THEN>
+			</IF>
+
+			<!-- create or load group with prefix wf:-->
+			<IF COND="Variables.new=true">
+				<THEN>
+					<WORKFLOWENGINE.CREATENEWGROUP OBJVARNAME="newgroup"/>
+				</THEN>
+				<ELSE>
+					<WORKFLOWENGINE.GETGROUPNAME OBJVARNAME="newgroup" NAME="Variables.name"/>
+					<!-- to change an existing group, we need to pass its id -->
+					<WORKFLOWGROUP.GETID NAME="newgroup" VARNAME="groupid"/>
+					<SETVAR NAME="wfg:id" VALUE="Variables.groupid"/>
+				</ELSE>
+			</IF>
+			<!-- set process deadline -->
+			<IF COND="IsVariable.pdeadline=true">
+				<THEN>
+					<WORKFLOWGROUP.SETABSDEADLINE NAME="newgroup" ABSDEADLINE="Variables.pdeadline"/>
+                
+
+					<IF COND="Variables.new!=true">
+						<THEN>
+							<WORKFLOWENGINE.GETGROUPMEMBERS GROUPID="Variables.groupid" PREFIX="GroupItems"/>
+							<IF COND="IsVariable.GroupItemsTotal=true">
+								<THEN>
+									<IF COND="Variables.GroupItemsTotal!=0">
+										<THEN>
+											<SETCOUNTER NAME="GOBJS" VALUE="0"/>
+											<LOOP FROM="0" COUNT="Variables.GroupItemsTotal">
+												<WORKFLOWENGINE.SETABSDEADLINE OBJECT="GroupItemsCounters.GOBJS" ABSDEADLINE="Variables.pdeadline"/>
+												<INCCOUNTER NAME="GOBJS" VALUE="1"/>
+											</LOOP>
+										</THEN>
+									</IF>
+								</THEN>
+							</IF>
+						</THEN>
+					</IF>
+				</THEN>
+			</IF>
+			<WORKFLOWGROUP.SETNAME NAME="newgroup" VALUE="Variables.name"/>
+			<WORKFLOWGROUP.SETDESCRIPTION NAME="newgroup" VALUE="Variables.description"/>
+			<WORKFLOWGROUP.SETWORKFLOWPROCESSID NAME="newgroup" VALUE="Variables.process"/>
+			<WORKFLOWGROUP.GETEDITROLES NAME="newgroup" OBJVARNAME="eroles"/>
+			<ROLELIST.CLEAR NAME="eroles"/>
+            <IF COND="Variables.addremove=any">
+            <THEN>
+                <ROLELIST.SETALL NAME="eroles"/>
+            </THEN>
+            <ELSE>
+                <LOOP LIST="editroles">
+                    <ROLELIST.ADD NAME="eroles" ROLE="editroles.ITEM"/>
+                </LOOP>
+            </ELSE>
+            </IF>
+			<WORKFLOWGROUP.SETEDITROLES NAME="newgroup" OBJECT="eroles"/>
+			<WORKFLOWGROUP.GETDELETEROLES NAME="newgroup" OBJVARNAME="rroles"/>
+			<ROLELIST.CLEAR NAME="rroles"/>
+            <IF COND="Variables.editdelete=any">
+            <THEN>
+                <ROLELIST.SETALL NAME="rroles"/>
+            </THEN>
+            <ELSE>
+                <LOOP LIST="removeroles">
+                    <ROLELIST.ADD NAME="rroles" ROLE="removeroles.ITEM"/>
+                </LOOP>
+            </ELSE>
+            </IF>
+			<WORKFLOWGROUP.SETDELETEROLES NAME="newgroup" OBJECT="rroles"/>
+
+			<!-- group is site specific -- create for current site only -->
+			<WORKFLOWGROUP.GETSITES NAME="newgroup" OBJVARNAME="siteobj"/>
+			<SITELIST.CLEAR NAME="siteobj"/>
+			<SITELIST.ADD NAME="siteobj" PUBID="SessionVariables.pubid"/>
+			<WORKFLOWGROUP.SETSITES NAME="newgroup" OBJECT="siteobj"/>
+			
+
+			<WORKFLOWGROUP.GETPARTICIPANTS NAME="newgroup" OBJVARNAME="pparticipants"/>
+			<PARTICIPANTS.CLEAR NAME="pparticipants"/>
+			<STRINGLIST NAME="rlist" STR="Variables.allRoles" DELIM=","/>
+			<LOOP LIST="rlist">
+				<SETVAR NAME="testvar" VALUE="Variables.rlist.ITEM"/>
+				<STRINGLIST NAME="participants" STR="Variables.testvar" DELIM=";"/>
+				<LOOP LIST="participants">
+					<PARTICIPANTS.ADDPARTICIPANT NAME="pparticipants" ROLE="rlist.ITEM" USER="participants.ITEM"/>
+				</LOOP>
+			</LOOP>
+			<WORKFLOWGROUP.SETPARTICIPANTS NAME="newgroup" OBJECT="pparticipants"/>
+
+			<WORKFLOWGROUP.GETGROUPACTIONS NAME="newgroup" OBJVARNAME="gactions"/>
+			<WORKFLOWACTIONLIST.CLEARACTIONS NAME="gactions"/>
+
+			<SETVAR NAME="wfg:groupactionsactionTotal" VALUE="grpactions.#numRows"/>
+			<IF COND="IsList.grpactions=true">
+				<THEN>
+					<LOOP LIST="grpactions">
+						<WORKFLOWACTIONLIST.ADDACTION NAME="gactions" VALUE="grpactions.ITEM"/>
+					</LOOP>
+				</THEN>
+			</IF>
+			<WORKFLOWGROUP.SETGROUPACTIONS NAME="newgroup" OBJECT="gactions"/>
+
+			<WORKFLOWENGINE.SETGROUP OBJECT="newgroup"/>
+			<WORKFLOWGROUP.SCATTER PREFIX="wfg:" NAME="newgroup"/>
+
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/WorkflowGroupDetailsFront">
+				<ARGUMENT NAME="id" VALUE="Variables.wfg:id"/>
+			</CALLELEMENT>
+			<!--update tree-->
+			<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+			<IF  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+				<THEN>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+						<ARGUMENT NAME="__TreeRefreshKeys__" VALUE="Root:Groups"/>
+					</CALLELEMENT>
+				</THEN>
+			</IF>
+		</THEN>
+	</IF>	<!--save-->
+
+</FTCS>

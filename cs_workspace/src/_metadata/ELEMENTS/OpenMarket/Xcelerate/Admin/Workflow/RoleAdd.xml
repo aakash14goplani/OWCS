@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+    <PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Workflow/RoleAdd.xml $ 
+$Revision: 29 $ 
+$Modtime: 2/03/04 2:43p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- RoleAdd.xml
+-
+- DESCRIPTION
+-	Add a workflow role
+-
+- HISTORY 
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<HTML>
+<HEAD>
+<PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+<IF COND="IsVariable.docDomain=true">
+<THEN>
+	<IF COND="Variables.docDomain!=Variables.empty">
+	<THEN>
+	    <SCRIPT LANGUAGE="JavaScript">
+		document.domain = "<CSVAR NAME="Variables.docDomain"/>";
+	    </SCRIPT>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+</HEAD>
+<!-- first check to see if the user is logged in or not -->
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceladmin"/>
+<if COND="Variables.errno=0">
+	<then> 
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/Util/ShowError" outstring="urlshowerror">
+            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                          <satellite.argument name="error" value="AdminTimeoutError"/>
+                                           </SATELLITE.LINK>
+		<REPLACE STR="Variables.urlshowerror">
+			<script LANGUAGE="JavaScript">
+				parent.parent.location="Variables.urlshowerror";
+			</script>
+		</REPLACE>
+		<throwexception/>
+	</then>
+</if>
+<BODY BGCOLOR="#FFFFFF">
+    <SATELLITE.FORM ASSEMBLER="query" ENCTYPE="application/x-www-form-urlencoded" METHOD="post">
+    <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.charset" REPLACEALL="Variables.charset"/>
+    <INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.cs_environment" REPLACEALL="Variables.cs_environment"/>
+    <INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.cs_formmode" REPLACEALL="Variables.cs_formmode"/>
+
+<!-- Get the name of the current workflow -->
+<setvar NAME="id" VALUE="Variables.wfid"/>
+<selectto LIST="wfid" FROM="Workflow" WHERE="id" WHAT="*"/>
+
+<TABLE BGCOLOR="#FFFFFF" CELLSPACING="0" CELLPADDING="0">
+    <TR>
+	<TD BGCOLOR="#FFFFFF" COLSPAN="2">
+	<FONT FACE="Arial, Helvetica" SIZE="2">
+	<h3><XLAT.STREAM KEY="dvin/UI/Admin/AddRoleProcesswfidworkflow" ENCODE="false"/></h3>
+	</FONT>
+	</TD>
+    </TR>
+    <TR>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/Security/GetACL">
+	    <argument NAME="qryprefix" VALUE="ACLList"/>
+	</callelement>
+	<TD ALIGN="RIGHT" BGCOLOR="#FFFFFF">
+	    <FONT FACE="Arial, Helvetica" SIZE="2">
+		<XLAT.STREAM KEY="dvin/Common/Role"/>: 
+	    </FONT>
+	</TD>
+	<TD>
+	<FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#000000">
+	<setvar NAME="FoundOne" VALUE="false"/>
+	<LOOP LIST="ACLList">
+	    <!-- check to see if role has already been added -->
+	    <setvar NAME="errno" VALUE="0"/>
+	    <setvar NAME="tablename" VALUE="WorkflowRoles"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="ACLList.aclname"/>
+			<ARGUMENT NAME="type" VALUE="String"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.wfid"/>
+				<ARGUMENT NAME="type" VALUE="Long"/>
+			</CALLELEMENT>
+			<IF COND="Variables.validatedstatus=true">
+			<THEN>
+				<execsql LIST="RoleDefined" 
+					SQL="SELECT workflowrole FROM WorkflowRoles
+					WHERE workflowrole='ACLList.aclname'
+					AND workflowid='Variables.wfid'"/>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+	    <if COND="Variables.errno=-101">
+	    <then>
+	        <if COND="Variables.FoundOne=false">
+		<then>
+		    <![CDATA[
+		    <SELECT NAME="workflowrole" SIZE="10" MULTIPLE="YES">
+		    ]]>
+		    <setvar NAME="FoundOne" VALUE="true"/>
+		</then>
+		</if>
+		<OPTION VALUE="ACLList.aclname" REPLACEALL="ACLList.aclname"/><STRING.STREAM VALUE="ACLList.aclname"/>
+            </then>
+	    </if>
+	</LOOP>
+	<if COND="Variables.FoundOne=true">
+	<then>
+	    <![CDATA[
+	    </SELECT>
+	    ]]>
+        </then>
+	<else>
+	    <TD COLSPAN="2">
+	        <FONT FACE="Arial, Helvetica" SIZE="2">
+		    <XLAT.STREAM KEY="dvin/UI/Admin/Noavailableroles"/>
+		    <if COND="ACLList.#numRows=0">
+		    <then>
+		        <XLAT.STREAM KEY="dvin/UI/Admin/Nonehavebeendefinedyet"/>
+		    </then>
+		    <else>
+		        <XLAT.STREAM KEY="dvin/UI/Admin/Allrolesarealreadyadded"/>
+		    </else>
+		    </if>
+		</FONT>
+	    </TD>
+	</else>
+	</if>
+	</FONT>
+	</TD>
+    </TR>
+
+    <TR>
+        <if COND="Variables.FoundOne=true">
+	<then>
+	    <TD ALIGN="RIGHT" BGCOLOR="#FFFFFF">
+		<FONT FACE="Arial, Helvetica" SIZE="2">
+		    &nbsp;
+		</FONT>
+	    </TD>
+	    <TD>
+		<FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#000000">
+		<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/Workflow/RoleAddPost"/>
+		<INPUT TYPE="HIDDEN" NAME="wfid" VALUE="Variables.wfid" REPLACEALL="Variables.wfid"/>
+		<INPUT TYPE="Submit" VALUE="Add"/>
+		</FONT>
+	    </TD>
+        </then>
+	</if>
+    </TR>
+</TABLE>
+</SATELLITE.FORM>
+</BODY>
+</HTML>
+</FTCS>

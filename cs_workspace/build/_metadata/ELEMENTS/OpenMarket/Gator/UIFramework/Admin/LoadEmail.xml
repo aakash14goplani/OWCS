@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadEmail
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<!-- This element handles all children of the Email root node -->
+
+<IF COND="Variables.Depth=1">
+<THEN>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+				<ARGUMENT NAME="AdHoc" VALUE="Email:New"/>
+				<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+			
+			<REMOVEVAR NAME="LoadURL"/>
+			<REMOVEVAR NAME="OKActions"/>
+            <XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>      
+            <XLAT.LOOKUP KEY="dvin/TreeApplet/AddANewEmailObject" ENCODE="false" VARNAME="_XLAT1_"/>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowSubjectFront" outstring="ExecuteURL">
+				<satellite.argument name="action" value="new"/>
+			</SATELLITE.LINK>
+
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+				<satellite.argument name="AssetType" value="Variables.AssetType"/>
+			</SATELLITE.LINK>
+
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+				<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+				<ARGUMENT NAME="Description" VALUE="Variables._XLAT1_"/>
+				<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+				<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+				<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+				<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/StatusCode.png"/>
+			</CALLELEMENT>
+			
+			<!-- display the email objects -->
+			<SELECTTO LIST="ActiveWflSubject" FROM="WorkflowSubject" WHAT="*" ORDERBY="name"/> 
+			<loop LIST="ActiveWflSubject">
+				<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+					<ARGUMENT NAME="AdHoc" VALUE="Email:Existing:ActiveWflsubject.name"/>
+					<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+				</CALLELEMENT>
+				
+				<REMOVEVAR NAME="Description"/>
+				<REMOVEVAR NAME="LoadURL"/>
+				<REMOVEVAR NAME="OKActions"/>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/WorkflowSubjectFront" outstring="ExecuteURL">
+					<satellite.argument name="action" value="details"/>
+					<satellite.argument name="name" value="ActiveWflSubject.name"/>
+				</SATELLITE.LINK>
+
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL">
+					<satellite.argument name="AssetType" value="Variables.AssetType"/>
+				</SATELLITE.LINK>
+
+				<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+					<ARGUMENT NAME="Label" VALUE="ActiveWflSubject.name"/> 
+					<ARGUMENT NAME="Description" VALUE="ActiveWflSubject.description"/> 
+					<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+					<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+					<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+					<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+				</CALLELEMENT>
+			</loop>
+</THEN>
+</IF>
+
+</FTCS> 

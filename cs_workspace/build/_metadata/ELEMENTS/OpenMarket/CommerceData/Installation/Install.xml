@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/AnalysisConnector/Installation/ElementCatalog/OpenMarket/CommerceData/Installation/Install.xml $
+$Revision: 12 $
+$Modtime: 5/10/04 4:39p $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-    Element which gets called from installer which initializes all tables.
+-
+- INPUT
+-    upgrade-log - the file to which any pertinent info the client needs to know should be written
+-    upgradefrom - the version string of the previous ContentCentre installed on this system
+-    adminacl - the ACL to give to tables which can only be edited by administrators
+-    editacl - the ACL to give to tables which can be edited by both administrators and
+-		editorial users
+- OUTPUT
+-    
+-->
+<setvar NAME="result" VALUE="Variables.empty"/>
+
+<IF COND="Variables.upgradefrom=D">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.upgradefrom=C">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.upgradefrom=5.0.0">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.upgradefrom=4.0.0">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.upgradefrom=3.6.0">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+<IF COND="Variables.upgradefrom=0.0.0.0.0">
+<THEN>
+	<CALLELEMENT NAME="OpenMarket/CommerceData/Installation/AddReportTable"/>
+</THEN>
+</IF>
+
+
+<!-- Check for error -->
+<if COND="Variables.result!=Variables.empty">
+    <then>
+	    <logmsg STR="Installation Error in CommerceData/Install: Variables.result"/>
+	    ##ERROR## <csvar NAME="Variables.result"/><BR/>
+    </then>
+    <else>
+	    ##SUCCESS## <csvar NAME="Variables.result"/><BR/>
+    </else>
+</if>
+
+</FTCS>

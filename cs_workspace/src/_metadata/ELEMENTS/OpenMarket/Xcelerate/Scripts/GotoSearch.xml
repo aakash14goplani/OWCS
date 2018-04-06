@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/GotoSearch.xml $ 
+$Revision: 11 $ 
+$Modtime: 2/02/04 5:43p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- gotoSearch.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->
+
+<Script Language="Javascript">
+    function gotoSearch(F, dict)
+    {
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SimpleSearchFront" outstring="urlsimpsearchfront">
+            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+        </SATELLITE.LINK>
+        <replace STR="Variables.urlsimpsearchfront">
+        var pURL = "Variables.urlsimpsearchfront";
+        </replace>
+        i = 0;
+        <![CDATA[
+        while (i < dict.options.length) {
+            if (dict.options[i].selected) {
+                var value = dict.options[i].value;
+    
+                if (value == "*") return;
+    
+                pURL = pURL + "&AssetType="+dict.options[i].value;
+                break;
+            }
+            i++;
+        }
+        parent.frames['XcelAction'].location=pURL;
+        ]]>
+    }
+</Script>
+
+</FTCS>

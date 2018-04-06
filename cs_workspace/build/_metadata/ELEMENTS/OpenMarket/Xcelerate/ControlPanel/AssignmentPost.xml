@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/AssignmentPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- ChangeStatus might be in the form, "assignmentid,stepid" -->
+<STRINGLIST NAME="wfstep" STR="Variables.ChangeStatus" DELIM=","/>
+<IF COND="wfstep.#numRows!=1">
+<THEN>
+	<SETVAR NAME="assignmentid" VALUE="wfstep.ITEM"/>
+	<SETROW LIST="wfstep" ACTION="NEXT"/>
+	<SETVAR NAME="stepid" VALUE="wfstep.ITEM"/>
+</THEN>
+</IF>
+
+<!-- disallow this if the asset is locked by the current user 
+	If this asset is a folder, then disallow this if any asset in the 
+	folder is checked out -->
+<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckCanSetStatus">
+	<argument NAME="id" VALUE="Variables.id"/>
+	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	<argument NAME="Step" VALUE="Variables.stepid"/>
+</callelement>	
+	
+<if COND="Variables.foundcheckout=true">
+<then>
+    <br/><XLAT.STREAM KEY="dvin/UI/AssetMgt/AssetLockedcannotfinish" ESCAPE="true"/>
+</then>
+<else>
+    <WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+    <WorkflowEngine.GetObjectWorkflowProcess OBJECT="workflowasset" VARNAME="workflowid" />
+    <WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+    <WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.stepid" OBJVARNAME="stepobj"/>
+    <WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+    
+    <setvar NAME="needsetassignees" VALUE="true" />
+    <if COND="Variables.steptype!=ask">
+    <then>
+         <setvar NAME="needsetassignees" VALUE="false" />
+    </then>
+    <else>
+        <if COND="IsVariable.assigneeroles=true">
+        <then>
+             <setvar NAME="needsetassignees" VALUE="false" />
+        </then>
+        </if>
+    </else>
+    </if>   
+        
+    <if COND="Variables.needsetassignees!=true">
+    <then>
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/FinishAssignmentSubmit"/>
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/AssignmentFront"/>
+    </then>
+    <else>
+         <setvar NAME="assignmentAction" VALUE="FinishAssignmentForAskStep" />
+         <CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/AssignmentFront"/>
+    </else>
+    </if>
+</else>
+</if>
+
+</FTCS>

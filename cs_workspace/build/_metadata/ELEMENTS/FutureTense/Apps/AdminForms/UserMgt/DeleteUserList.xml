@@ -1,0 +1,165 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!--
+  - UserMgt/DeleteUserList
+  - Copyright (c) Open Market, Inc., 1999, 2000, 2001, All Rights Reserved
+  - $Revision: 11 $
+  -->
+
+<ics.getproperty name="peopleparent" file="dir.ini" output="peopleparent"/>
+<ics.getproperty name="username" file="dir.ini" output="usernameattr"/>
+
+<IF COND="IsVariable.key=true">
+	<THEN>
+		<SETSSVAR NAME="userkey" VALUE="Variables.key"/>
+		<dir.search list="ResultsList" operator="and" context="Variables.peopleparent">
+			<dir.argument name="Variables.usernameattr" value="Variables.key"/>
+		</dir.search>
+
+	</THEN>
+	<ELSE>
+		<dir.listusers list="ResultsList"/>
+	</ELSE>
+</IF>
+<TABLE CLASS="width-outer-70" BORDER="0" CELLPADDING="0" CELLSPACING="0" >
+	<TR><TD>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/DeleteUser"/></span>
+	</TD></TR>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</TABLE>
+
+<IF COND="ResultsList.#numRows=0">
+    <THEN>
+		<div CLASS="width-outer-70">
+        <XLAT.LOOKUP KEY="dvin/UI/Admin/NoUsersmatchpattern" VARNAME="nousermatch"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables.nousermatch"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+        <BR/><BR/>
+        <SATELLITE.FORM ASSEMBLER="query">
+            <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+            <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+            <STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+            <INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+            <STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+            <INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+            <XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_" ENCODE="false" ESCAPE="true"/>
+            <A onClick="javascript:history.go(-1);return false;" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/UI/Back"/></CALLELEMENT></A>
+		</SATELLITE.FORM>
+		</div>
+    </THEN>
+    <ELSE>
+        <SATELLITE.FORM ASSEMBLER="query" METHOD="POST">
+        <STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+        <INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+        <STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+        <INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+        <STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+        <INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+     
+       
+		<TABLE CLASS="width-outer-70" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD class="form-label-inset"  NOWRAP="true" COLSPAN="2">
+			 		<XLAT.STREAM KEY="dvin/AdminForms/Checkuserdelete"/>
+	       		</TD>
+        		<TD></TD>
+        	</TR>
+        	<tr><td>
+				<TABLE  BORDER="0" CELLSPACING="0" CELLPADDING="0">
+					<tr>
+						<td></td>
+						<td class="tile-dark" HEIGHT="1">
+							<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" 
+							REPLACEALL="Variables.cs_imagedir"/> 
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+						<td> 
+							<TABLE width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+								<tr>
+									<td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</td>
+								</tr>
+								<tr>
+									<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/DeleteQ"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" nowrap="true"><DIV class="new-table-title" ><XLAT.STREAM KEY="dvin/UI/UserName"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/ACL"/></DIV></td>
+									<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								</tr>	
+								<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+								<SETVAR NAME="separatorLine" VALUE="0"/>
+								<LOOP LIST="ResultsList">
+									<SETVAR NAME="separatorLine" VALUE="1"/>
+									<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+										<TD align="LEFT" class="small-text-inset" style="vertical-align: middle;" NOWRAP="NOWRAP" >
+										<REPLACE STR="atts.VALUE">
+											<dir.getattrs list="atts" name="ResultsList.NAME" attrs="Variables.usernameattr"/>
+											<SETROW LIST="atts" ACTION="FIRST"/>
+											<INPUT TYPE="radio" NAME="username" VALUE="atts.VALUE"/>
+										</REPLACE>  
+										</TD>
+										<td><BR /></td>
+										<TD align="LEFT" class="small-text-inset" style="vertical-align: middle;" NOWRAP="NOWRAP" >
+											<STRING.STREAM VALUE="atts.VALUE"/>
+										</TD>
+										<td><BR /></td>
+										<TD class="small-text-inset" style="white-space: normal;" VALIGN="BASELINE">
+											<CALLELEMENT NAME="FutureTense/Apps/AdminForms/Common/ACLString" SCOPED="STACKED">
+												<ARGUMENT NAME="userid" VALUE="ResultsList.NAME"/>
+												<ARGUMENT NAME="aclString" VALUE="CS.Empty"/>
+											</CALLELEMENT>
+											<STRING.STREAM VARIABLE="aclString"/>
+										</TD>
+									<td><BR /></td>
+									</TR>
+									<IF COND="Variables.rowStyle=tile-row-normal">
+									<THEN>
+										<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+									</ELSE>
+									</IF>
+								</LOOP>
+								
+								</TABLE>
+								</td><td class="tile-dark" VALIGN="top" WIDTH="1"><BR /></td>
+							</tr>
+							<tr>
+								<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+							</tr>
+							<tr>
+								<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+							</tr>
+				</TABLE> 
+			</td></tr>
+        	<TR>
+        		<TD COLSPAN="3" HEIGHT="5"></TD>
+        	</TR>
+        	<TR>
+        		<TD align="left" VALIGN="TOP" colspan="3">
+   	    			<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+					<INPUT TYPE="hidden" NAME="tool" VALUE="UserMgt"/>
+   					<INPUT TYPE="hidden" NAME="form" VALUE="DoDelete"/>
+					<INPUT TYPE="hidden" NAME="userid" VALUE=""/>
+					<XLAT.LOOKUP KEY="dvin/Common/Delete" VARNAME="_XLAT_"/>
+					<A onClick="setupDeleteParams(document.forms[0]); document.forms[0].submit();" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/Delete"/></CALLELEMENT></A>        				
+        		</TD>
+        	</TR>
+        </TABLE>
+        </SATELLITE.FORM>
+    </ELSE>
+</IF>
+</FTCS>

@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- OpenMarket/Xcelerate/Actions/EventPublish
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<HTML>
+<HEAD>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+<PROPERTY.GET PARAM="xcelerate.batchuser" INIFILE="futuretense_xcel.ini" VARNAME="batchuser"/>
+<PROPERTY.GET PARAM="xcelerate.batchpass" INIFILE="futuretense_xcel.ini" VARNAME="batchpass"/>
+
+<USERMANAGER.LOGINUSER USERNAME="Variables.batchuser" PASSWORD="Variables.batchpass" VARNAME="loggedIn"/>
+<IF COND="Variables.loggedIn=true">
+<THEN>
+     <callelement NAME="OpenMarket/Xcelerate/Actions/PublishApprovedAssets">
+        <argument NAME="target" VALUE="Variables.target" />
+        <argument NAME="publishedby" VALUE="Variables.batchuser" />
+     </callelement>
+</THEN>
+</IF>
+
+<USERMANAGER.LOGOUT/>
+
+</BODY>
+</HTML>
+</FTCS> 

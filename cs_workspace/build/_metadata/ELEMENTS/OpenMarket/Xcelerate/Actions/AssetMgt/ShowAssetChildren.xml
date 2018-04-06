@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/AssetMgt/ShowAssetChildren.xml $ 
+$Revision: 26 $ 
+$Modtime: 2/16/04 4:48p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market, Inc.
+-					All Rights Reserved.
+-
+- DESCRIPTION
+-	Show Asset Children
+--	expects
+--		Variables.assetname   - name of loaded asset for which we want children
+--		Variables.childassettype   - (optional) to restrict display child assets of given assettypes (a string separated by delimiter ",")
+--		Variables.revisionInspect - (optional) if true, this is Inspect of a previous revision 
+--											and we do not display asset relations
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+<STRING.ENCODE VARIABLE="childassettype" VARNAME="childassettype"/>
+<IF COND="Variables.revisionInspect=true">
+<THEN>
+    <ASSET.LOADREVISION TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Variables.assetname" REVISION="Variables.revision"/>
+</THEN>
+<ELSE>
+    <ASSET.LOAD NAME="Variables.assetname" OBJECTID="Variables.id" TYPE="Variables.AssetType"/>
+    <ASSET.SCATTER NAME="Variables.assetname" PREFIX="ContentDetails"/>
+</ELSE>
+</IF>
+
+<ASSET.GETSUBTYPE name="Variables.assetname" OBJECTID="Variables.id" TYPE="Variables.AssetType"/>
+<IF COND="IsVariable.subtype=true">
+<THEN>
+	<ASSOCNAMEDMANAGER.LIST LISTVARNAME="associations" TYPE="Variables.AssetType" SUBTYPE='Variables.subtype' ORDER="childassettype,name desc"/>
+</THEN>
+<ELSE>
+	<ASSOCNAMEDMANAGER.LIST LISTVARNAME="associations" TYPE="Variables.AssetType" ORDER="childassettype,name desc"/>
+</ELSE>
+</IF>
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ManageAssetChildren">
+	<ARGUMENT NAME="action" VALUE="createDS"/>
+</CALLELEMENT>
+	<!-- get the list of child asset type -->
+	<IF COND="IsVariable.childassettype=true">
+	<THEN>
+	        <STRINGLIST NAME="AssetTypeList" STR="Variables.childassettype" DELIM="," />
+	</THEN>
+	<ELSE>
+			<ASSET.CHILDTYPES NAME="Variables.assetname" LIST="AssetTypeList"/>
+	</ELSE>
+	</IF>
+	
+	<IF COND="AssetTypeList.#numRows!=0">
+	<THEN>
+	        <LOOP LIST="AssetTypeList">
+		    <IF COND="IsColumn.AssetTypeList.otype=true">
+		    <THEN><SETVAR NAME="otype" VALUE="AssetTypeList.otype"/></THEN>
+		    <ELSE><SETVAR NAME="otype" VALUE="AssetTypeList.ITEM"/></ELSE>
+		    </IF>
+		    <ASSET.CHILDREN NAME="Variables.assetname" LIST="theAssetChildren" OBJECTTYPE="Variables.otype" ORDER="ncode desc,nrank asc"/>
+		    <IF COND="IsList.theAssetChildren=true">
+		    <THEN>
+		        <ASSETTYPE.LOAD NAME="child" TYPE="Variables.otype" />
+      			<ASSETTYPE.GET NAME="child" FIELD="description" OUTPUT="atdescription"/>
+			    <LOOP LIST="theAssetChildren">
+				<!-- Update the hash -->
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ManageAssetChildren">
+					<ARGUMENT NAME="action" VALUE="updateDS"/>
+					<ARGUMENT NAME="m:assocname" VALUE="theAssetChildren.ncode"/>
+					<ARGUMENT NAME="m:assettype" VALUE="theAssetChildren.otype"/>
+					<ARGUMENT NAME="m:assetname" VALUE="theAssetChildren.name"/>
+					<ARGUMENT NAME="m:assetid" VALUE="theAssetChildren.oid"/>
+				</CALLELEMENT> 
+				</LOOP>
+			</THEN>
+		    <ELSE>
+		      <!-- No children - no problem -->
+		      <SETVAR NAME="errno" VALUE="0"/>
+		    </ELSE>	      
+		    </IF>
+		</LOOP>
+	</THEN>
+	</IF>
+	<IF COND="AssetTypeList.#numRows!=0">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ManageAssetChildren">
+			<ARGUMENT NAME="action" VALUE="displayDS"/>
+		</CALLELEMENT>
+	</THEN>
+	<ELSE>
+		
+		
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<TR>
+		<TD class="form-label-text">
+			<XLAT.STREAM KEY="dvin/Common/Related"/>:
+		</TD>
+		<TD>
+			<img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+		</TD>
+		<TD class="form-inset">
+			<!-- No children - no problem -->
+			<span class="disabledText"><XLAT.STREAM KEY="dvin/UI/AssetMgt/NoRelatedAssets"/><BR/></span>
+		</TD>
+		</TR>
+		<SETVAR NAME="errno" VALUE="0"/>
+	</ELSE>
+	</IF>
+</FTCS>

@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Search/SearchFooter
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<SCRIPT LANGUAGE="Javascript1.2">
+<![CDATA[
+/*
+	This function checks for the availability of start/end date fields in the search form
+	and if they are available, checks if they are specified in the proper format
+	This function submits the form only if the dates specified (if any) are of the proper format
+	Otherwise the 'formatSetDate' provides the appropriate error message and checkFields simply returns false
+	-Sathish Paul Leo
+*/
+function checkFields()
+{
+	if(!validateID())
+		return false;
+	var obj = document.forms[0].elements[0];
+	if(!formatSetDate(document.getElementById('updatedAfterFieldIdDiv').innerHTML,'UpdatedAfter')) 
+		return false;
+	
+	if(!formatSetDate(document.getElementById('updatedBeforeFieldIdDiv').innerHTML,'UpdatedBefore'))
+		return false;
+	var doc = document.forms[0];
+	if(doc.elements['StartDateBeforeText']==null ||  doc.elements['StartDateBefore']==null || 
+		doc.elements['StartDateAfterText']==null || doc.elements['StartDateAfter']==null ||
+		doc.elements['EndDateBeforeText']==null || doc.elements['EndDateBefore']==null ||
+		doc.elements['EndDateAfterText']==null || doc.elements['EndDateAfter']==null)
+	{
+		obj.form.submit();
+		return false;
+	}
+	
+	var startDateBeforeStr = "";
+	if(document.getElementById('startDateBeforeFieldIdDiv')) {
+		startDateBeforeStr = document.getElementById('startDateBeforeFieldIdDiv').innerHTML;
+	} else if(doc.elements['StartDateBeforeText']){
+		startDateBeforeStr = doc.elements['StartDateBeforeText'].value;
+	}
+	var startDateAfterStr = "";
+	if(document.getElementById('startDateAfterFieldIdDiv')) {
+		startDateAfterStr = document.getElementById('startDateAfterFieldIdDiv').innerHTML;
+	} else if(doc.elements['StartDateAfterText']){
+		startDateAfterStr = doc.elements['StartDateAfterText'].value;
+	}
+	var endDateBeforeStr = "";
+	if(document.getElementById('endDateBeforeFieldIdDiv')) {
+		endDateBeforeStr = document.getElementById('endDateBeforeFieldIdDiv').innerHTML;
+	} else if(doc.elements['EndDateBeforeText']){
+		endDateBeforeStr = doc.elements['EndDateBeforeText'].value;
+	}
+	var endDateAfterStr = "";
+	if(document.getElementById('endDateAfterFieldIdDiv')) {
+		endDateAfterStr = document.getElementById('endDateAfterFieldIdDiv').innerHTML;
+	} else if(doc.elements['EndDateAfterText']){
+		endDateAfterStr = doc.elements['EndDateAfterText'].value;
+	}
+	
+	if(!formatSetDate(startDateBeforeStr,'StartDateBefore'))
+		return false;
+	if(!formatSetDate(startDateAfterStr,'StartDateAfter'))
+		return false;
+	if(!formatSetDate(endDateBeforeStr,'EndDateBefore'))
+		return false;
+	
+	if(!formatSetDate(endDateAfterStr,'EndDateAfter'))
+		return false;
+	obj.form.submit();	
+	return false;
+}
+
+/*
+	The function is added to set the value for the OrderByDesc hidden field to propogate the
+	value selected for the sort by drop down insdie various search screens. 
+ */
+function setSortedBy()
+{
+   var doc = document.forms[0];
+   var sortBy = doc.elements['OrderBy'][doc.elements['OrderBy'].selectedIndex].text;
+   document.forms[0].elements['OrderByDesc'].value=sortBy;
+}
+]]>
+</SCRIPT>
+<input name="OrderByDesc" type="hidden" value=""/>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+	 <tr>
+ 			<XLAT.LOOKUP KEY="dvin/FlexibleAssets/FlexAssets/SimpleSearchButton" VARNAME="_XLAT_" ESCAPE="true"/>
+        <td>
+			<A HREF="javascript:void(0)" onclick="setSortedBy();return checkFields();"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>
+			<IF COND="Variables.cs_environment!=portal">
+          <THEN>
+		     <IF COND="IsVariable.cs_StartID=false">
+			  <THEN>
+				<SETVAR NAME="cs_StartID" VALUE="Variables.empty" />
+			  </THEN>
+		     </IF>
+              <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SimpleSearchFront" outstring="urlsimpsearchfront">
+                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                <satellite.argument name="cs_StartID" value="Variables.cs_StartID"/>
+              </SATELLITE.LINK>
+              <a href="Variables.urlsimpsearchfront" onmouseover="window.status='Variables._XLAT_';return true" onmouseout="window.status='';return true" REPLACEALL="Variables.urlsimpsearchfront,Variables._XLAT_" target="_self"><span class="small-text"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><XLAT.STREAM KEY="dvin/UI/simplesearch"/></span></a>
+          </THEN>
+          </IF>
+        </td>
+    </tr>
+
+</table>
+
+</FTCS> 

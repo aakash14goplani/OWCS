@@ -1,0 +1,300 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--             
+Displays the save search form.
+
+There is a bit of Black Magic going on here and the following lines need to be read if you have any hope
+of understanding how Save Search (and UI in general) is working.
+
+Search for 'ThisPage' in this template and you will find that a variable called ThisPage is being passed to this template
+and is in turn being set as a hidden parameter on the form. In this case the value of ThisPage is 'SearchPost'.
+
+When you click on 'Save' on the form a bit of black magic happens. Apparently all calls to ContentServer in the UI first pass thru another template called:
+Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/ApplicationPage.xml 
+
+This template then routes the request to Xcelerate/PrologActions/Variables.ThisPage which in this case resolves to:
+Xcelerate/PrologActions/SearchPost
+
+After this it is easy to trace thru (I think!) the rest of the logic - Prashant Saraswat
+
+
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SaveSearch.xml $ 
+$Revision: 35 $ 
+$Modtime: 4/26/04 4:41p $ 
+-->
+<!-- OpenMarket/Xcelerate/Actions/SaveSearch.xml
+--
+-	Form for Saving  Searches
+-- INPUT
+--			Criteria Name ,  Asset Type , Criteria String
+-- OUTPUT
+--
+-- HISTORY 
+   [2007-09-1x KG]
+   * XSS fixes (adapted from 6.3 fixes):
+     * isCleanString function usage
+     * CSVAR -> STRING.STREAM
+   * changed definitions of 'obj' to just forms[0] (not .elements[0])
+   [2007-10-09 KG] More XSS fixes:
+   * added STRING.ENCODE before SCritSTR REPLACEALL
+   * minimized set of restricted characters.
+-->
+<!-- 
+	 When this page is called, we need to have the search object loaded with  all 
+     the necessary Variables including the Filter String .  It should have :-  
+        1. urlCritStr  - an output  Variable  which holds the the URL Criteria String
+        2. ExcludeStr -  A String representing the variables that needs to be excluded 
+          	 
+         
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/ValidateInputForXSS" />
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+function checkfields()
+{
+
+	var obj = document.forms[0];
+	if (obj.elements['criterianame']) 
+	{
+		if (obj.elements['criterianame'].value=="")
+		{
+			alert("]]><XLAT.STREAM KEY="dvin/UI/Search/Youmustspecifyanameforthiscriteria" ESCAPE="true" ENCODE="false"/><![CDATA[");
+			obj.elements['criterianame'].focus();
+			return false;
+		}
+		var isclean = isCleanString(obj.elements['criterianame'].value, '<">', true);		
+		if (!isclean) {
+			alert("]]><XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/ApostropheNotAllowedMinimal" ESCAPE="true" ENCODE="false"/><![CDATA[");
+			return false;
+		}
+	}
+	obj.frompage.value='SaveSearch';
+	obj.searchcmd.value='save';
+	ssel_selAllAll();
+	obj.submit();
+	return false;
+}
+
+
+function CheckShared()
+{
+	var obj = document.forms[0];
+    
+    if (obj.sharedRoles.value!="")
+	{   
+      if(obj.sharedRoles.length>0)
+      {
+         obj.Shared.checked='true';
+        }
+      else
+      { 
+         obj.Shared.checked='false';
+       }
+    } 
+    else
+    {           
+         obj.Shared.checked='false'; 
+    }
+    
+    return true;
+}
+
+
+function shareThisSch()
+{
+   return true;
+}
+
+
+function editthisSearch()
+{
+	var obj = document.forms[0];
+    obj.pagename.value='OpenMarket/Xcelerate/Actions/EditSearchFront';
+    
+    obj.frompage.value='SaveSearch';
+    obj.searchcmd.value='edit';
+    obj.submit();
+	return false;
+}
+ 
+function SetCancelFlag () {
+	var obj = document.forms[0];
+
+	obj.elements['upcommand'].value="cancel";
+ 	obj.submit();
+	return false;
+
+}
+]]>
+</SCRIPT>
+ 
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+
+<INPUT TYPE="hidden" NAME="searchcmd" VALUE=""/>
+<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/SearchPost"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<INPUT type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+<STRING.ENCODE VARIABLE="ResultLimit" VARNAME="ResultLimit"/>
+<INPUT type="hidden" name="ResultLimit" value="Variables.ResultLimit" REPLACEALL="Variables.ResultLimit"/>
+<STRING.ENCODE VARIABLE="OrderBy" VARNAME="OrderBy"/>
+<INPUT type="hidden" name="OrderBy" VALUE="Variables.OrderBy" REPLACEALL="Variables.OrderBy"/>
+<STRING.ENCODE VARIABLE="ThisPage" VARNAME="ThisPage"/>
+<INPUT type="hidden" name="frompage" VALUE="Variables.ThisPage" REPLACEALL="Variables.ThisPage"/>
+<STRING.ENCODE VARIABLE="frontpage" VARNAME="frontpage"/>
+<INPUT type="hidden" name="frontpage" VALUE="Variables.frontpage" REPLACEALL="Variables.frontpage"/>
+<STRING.ENCODE VARIABLE="postpage" VARNAME="postpage"/>
+<INPUT type="hidden" name="postpage" VALUE="Variables.postpage" REPLACEALL="Variables.postpage"/>
+<STRING.ENCODE VARNAME="encSCritSTR" VARIABLE="SCritSTR" />
+<INPUT type="hidden" name="ssurlCritSTR" VALUE="Variables.encSCritSTR" REPLACEALL="Variables.encSCritSTR"/>
+<IF COND="IsVariable.searchid=true">
+<THEN>
+      <input type="hidden"  name="searchid"   VALUE="Variables.searchid"  REPLACEALL="Variables.searchid"/>
+</THEN>
+<ELSE>
+	<SETVAR NAME="sharedRoles" VALUE="CS.Empty" />
+	<SETVAR NAME="SelectedSites" VALUE="CS.Empty" />
+</ELSE>
+</IF> 
+<IF COND="IsVariable.criterianame!=true">
+<THEN>
+    <setvar NAME="criterianame"  VALUE="Variables.empty"/>
+</THEN>
+</IF>
+
+<table class="width-outer-70" border="0" cellpadding="0" cellspacing="0">
+
+	<!-- page title w/ asset name -->
+	<assettype.list LIST="ThisAsset" FIELD1="assettype" VALUE1="Variables.AssetType"/>
+    <tr>
+		<td><span class="title-text"> <XLAT.STREAM KEY="dvin/UI/SaveSearch"/>: </span><span class="title-value-text"> </span></td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+
+ 	<tr>
+		<td>
+           <table class="width-inner-100" border="0" cellpadding="0" cellspacing="0">
+           <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+ 		     <tr>
+				<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</td>
+				<TD><BR/></TD>
+ 				<td class="form-inset">
+   				   <![CDATA[<input TYPE="TEXT" NAME="criterianame" SIZE="32" MAXLENGTH="32" VALUE="]]><STRING.STREAM VALUE="Variables.criterianame"/><![CDATA["/>]]>
+  				</td>
+            </tr>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            
+            <!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+
+            <TR>
+    			<TD CLASS="form-label-text"><SPAN CLASS="alert-color"></SPAN><XLAT.STREAM KEY="dvin/UI/SharingSearchCriteria"/>:</TD>
+    			<TD><BR/></TD>
+    			<TD nowrap="nowrap" class="form-inset">
+    				<SETVAR NAME="errno" VALUE="0"/>
+
+                    <setvar NAME="SharedVar"  VALUE="Variables.Shared"/>
+                     <removevar NAME="Shared"/>
+                    
+                    <table border="0" cellpadding="0" cellspacing="0">
+                    <IF COND="Variables.SharedVar=none">
+                       <THEN>
+                              <setvar NAME="Shared.checked"  VALUE="true"/>                                          
+                              
+                              <INPUT TYPE="radio" style="margin-left:0px" NAME="Shared" VALUE="none" checked="checked" onClick="sharedRoles.selectedIndex=-1"/><XLAT.STREAM KEY="dvin/Common/Private"/><BR/>
+  					          <INPUT TYPE="radio" style="margin-left:0px" NAME="Shared" VALUE="some" onClick="sharedRoles.selectedIndex==-1 ? sharedRoles.options[0].selected=true : void(0)"/><XLAT.STREAM KEY="dvin/UI/Usersofthefollowingroles"/>:<BR/>
+                       </THEN>
+                       <ELSE>
+                              <setvar NAME="Shared.checked"  VALUE="true"/>
+                              
+                              <INPUT TYPE="radio" style="margin-left:0px" NAME="Shared" VALUE="none" onClick="sharedRoles.selectedIndex==-1"/><XLAT.STREAM KEY="dvin/Common/Private"/><BR/>
+ 					          <INPUT TYPE="radio" style="margin-left:0px" NAME="Shared" VALUE="some"  checked="checked"/><XLAT.STREAM KEY="dvin/UI/Usersofthefollowingroles"/>:<BR/>
+                       </ELSE>
+                       </IF>
+
+ 				    <ROLEMANAGER.GETROLENAMES LISTVARNAME="acls"/>
+           		    <STRINGLIST NAME="selectedRoles" STR="Variables.sharedRoles" DELIM=";"/>                                                      
+    				<HASH.CREATE NAME="selRoles" LIST="selectedRoles" COLUMN="ITEM"/>
+    				<IF COND="IsList.acls=true">
+                    <THEN>
+        				<SELECT NAME="sharedRoles" MULTIPLE="yes" SIZE="4" onChange="sharedRoles.selectedIndex==-1 ? this.form.elements['Shared'][1].checked=false:this.form.elements['Shared'][1].checked=true">
+        					<LOOP LIST="acls">
+        						<HASH.CONTAINS NAME="selRoles" VALUE="acls.aclname" VARNAME="hasit"/>
+        						<IF COND="Variables.hasit=true">
+        						<THEN>
+        							<OPTION SELECTED="yes"/><STRING.STREAM VALUE="acls.aclname"/>
+        						</THEN>
+        						<ELSE>
+        							<OPTION/><STRING.STREAM VALUE="acls.aclname"/>
+        						</ELSE>
+        						</IF>
+        					</LOOP>
+        				</SELECT>
+                     </THEN>
+                     </IF>
+                    </table>
+    			</TD>
+    		</TR>
+              
+            
+            <callelement NAME="OpenMarket/Xcelerate/Actions/Search/ShowSites"/>
+            
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            
+            <!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+ 
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/CreatedbyLowCase"/>:</td>
+				<td></td>
+			    <td valign="top" class="light-text-color" colspan="3">
+			    <USERMANAGER.GETDISPLAYABLELOGINUSERNAME VARNAME="loginusername"/>
+			    <STRING.STREAM VARIABLE="loginusername"/></td>
+			</tr>
+            
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+  			<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+ 			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/FilterString"/>:</td>
+				<td></td>
+			    <td valign="top" class="light-text-color" colspan="3"><IF COND="IsVariable.filterstring=true"><THEN><STRING.STREAM VARIABLE="filterstring"/></THEN></IF>
+                
+				 <img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/> 
+                  <XLAT.LOOKUP KEY="dvin/UI/Editlcthissearch" VARNAME="_XLAT_"/>
+                  <XLAT.LOOKUP KEY="dvin/UI/Editlcthissearch" VARNAME="mouseover" ESCAPE="true"/>
+                  (<A HREF="javascript:editthisSearch()" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" title="Variables._XLAT_" REPLACEALL="Variables._XLAT_,Variables.mouseover"><XLAT.STREAM KEY="dvin/UI/EditThisSearch"/></A>)
+                 </td>
+ 			</tr>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+	
+	<tr>
+		<td></td><td></td><td>
+			<XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="_XLAT_"/>
+			<XLAT.LOOKUP KEY="dvin/Common/CancelChanges" VARNAME="mouseover" ESCAPE="true"/>
+   			<A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover">
+   				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+			</A>
+			<img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+           <XLAT.LOOKUP KEY="dvin/UI/Savelcthislcsearch" VARNAME="_XLAT_"/>
+           <XLAT.LOOKUP KEY="dvin/UI/Savelcthislcsearch" VARNAME="mouseover" ESCAPE="true"/>
+
+			 <STRING.ENCODE VARIABLE="outcrit" VARNAME="outcrit"/>
+             <A HREF="javascript:void(0)" onclick="return checkfields();" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" title="Variables._XLAT_" REPLACEALL="qrylist.id, qrylist.criterianame, qrylist.postpage, qrylist.assettype, Variables.outcrit,Variables._XLAT_,Variables.mouseover">
+             	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT>
+            </A>
+             
+      </td>
+
+	</tr>
+
+           </table> 
+         </td>
+	</tr>
+	
+
+
+</table>
+
+</FTCS>

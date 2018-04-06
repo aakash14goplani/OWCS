@@ -1,0 +1,232 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!--
+  - RevisionMgt/DeleteList
+  - Copyright (c) Open Market, Inc., 1999, 2000, 2001, All Rights Reserved
+  - $Revision: 12 $
+  -->
+
+	<IF COND="IsVariable.table=true">
+		<THEN>
+			<SETSSVAR NAME="tablekey" VALUE="Variables.table"/>
+		</THEN>
+	</IF>
+	<IF COND="IsVariable.asset=true">
+		<THEN>
+			<SETSSVAR NAME="assetkey" VALUE="Variables.asset"/>
+		</THEN>
+		<ELSE>
+			<SETVAR NAME="asset" VALUE="Variables.empty"/>
+		</ELSE>
+	</IF>
+
+	<SETVAR NAME="tblname" VALUE="Variables.table"/>
+	<SELECTTO FROM="SystemInfo" WHAT="*" WHERE="tblname" LIST="TableResults" ORDERBY="tblname"/>
+
+
+	<IF COND="IsList.TableResults=false">
+		<THEN>
+			<table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+				<tr><td>
+					<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/NoCatalogs"/></span>
+				</td></tr>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+			</table>
+			<ics.encode base="ContentServer" output="url" session="true">
+				<ics.argument name="pagename" value="FutureTense/Apps/AdminForms/AdminForm"/>
+				<ics.argument name="tool" value="RevisionMgt"/>
+				<ics.argument name="form" value="main"/>
+			</ics.encode>
+			<A HREF="Variables.url" REPLACEALL="Variables.url"><XLAT.STREAM KEY="dvin/UI/Back"/> </A>
+		</THEN>
+		<ELSE>
+			<SATELLITE.FORM ASSEMBLER="query" METHOD="POST" onSubmit="return verifyTableListParams(this,'dodelete','revisions')">
+			<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+			<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+			<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+			<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+				<tr><td>
+					<span class="title-text"><XLAT.STREAM KEY="dvin/AdminForms/DeleteRevisions"/></span>
+				</td></tr>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+			</table>                    				
+			<TABLE class="width-outer-70" BGCOLOR="#FFFFFF" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+				<TR>
+					<TD COLSPAN="8" HEIGHT="5"></TD>
+				</TR>
+				<TR>
+					<TD class="form-label-inset" NOWRAP="true" COLSPAN="7">
+						<XLAT.STREAM KEY="dvin/AdminForms/CheckRevisions"/>
+					</TD>
+					<TD NOWRAP="true" class="inline-right" >
+						<XLAT.LOOKUP KEY="dvin/Common/All" VARNAME="_XLAT_"/>
+						<A onClick="selectAll(document.forms[0],true,'dodelete');" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/All"/></CALLELEMENT></A>
+						<XLAT.LOOKUP KEY="dvin/Common/None" VARNAME="_XLAT_"/>
+						<A onClick="selectAll(document.forms[0],false,'dodelete');" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/Common/None"/></CALLELEMENT></A>
+					</TD>
+				</TR>
+				<tr><td colspan="8">
+					<TABLE width="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+						<tr>
+							<td></td>
+							<td class="tile-dark" HEIGHT="1">
+								<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" 
+								REPLACEALL="Variables.cs_imagedir"/> 
+							</td>
+							<td></td>
+						</tr>
+						<tr>
+						<td class="tile-dark" VALIGN="top" WIDTH="1"><BR/></td>
+						<td> 
+							<TABLE width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+								<tr>
+									<td colspan="17" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</td>
+								</tr>
+								<tr>
+									<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir" nowrap="true"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/Catalog"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"  nowrap="true" ><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/Row"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"  nowrap="true"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/RevisionNumber"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"  nowrap="true"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/RevisionDate"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"  nowrap="true"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AdminForms/Lockedby"/> </DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"> <XLAT.STREAM KEY="dvin/Common/CreatedbyLowCase"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Util/StoreID" ENCODE="false"/></DIV></td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+									<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/DeleteQ"/></DIV></td>
+									<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+								</tr>
+								<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+								<SETVAR NAME="separatorLine" VALUE="0"/>
+								<SETCOUNTER NAME="DeleteCounter" VALUE="1"/>
+								<LOOP LIST="TableResults">
+									<IF COND="IsTracked.TableResults.tblname=true">
+										<THEN>
+											<SETVAR NAME="showtable" VALUE="true"/>
+											<SETVAR NAME="errno" VALUE="0"/>
+							
+											<HISTORY TABLE="TableResults.tblname"
+													 ASSET="Variables.asset"
+													 LIST="HistoryResults"/>
+							
+											<IF COND="Variables.errno=0"><THEN>
+												<SETVAR NAME="lastasset" VALUE="Variables.empty"/>
+												<LOOP LIST="HistoryResults">
+													<TR class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+														<TD  class="small-text-inset" style="vertical-align: middle;" VALIGN="BASELINE">
+															<REPLACEALL LIST="TableResults.tblname,Counters.DeleteCounter">
+																<INPUT TYPE="HIDDEN" NAME="deletemeTableCounters.DeleteCounter" VALUE="TableResults.tblname"/>
+																<IF COND="Variables.showtable=true">
+																	<THEN>
+																		TableResults.tblname
+																		<SETVAR NAME="showtable" VALUE="false"/>
+																	</THEN>
+																	<ELSE>
+																		<![CDATA[&nbsp;]]>
+																	</ELSE>
+																</IF>
+															</REPLACEALL>
+														</TD>
+														<td><BR /></td>
+														<TD  class="small-text-inset" style="vertical-align: middle;" VALIGN="BASELINE">
+															<REPLACEALL LIST="HistoryResults.asset,Counters.DeleteCounter">
+																<INPUT TYPE="HIDDEN" NAME="deletemeAssetCounters.DeleteCounter" VALUE="HistoryResults.asset"/>
+															</REPLACEALL>
+															<IF COND="Variables.lastasset!=HistoryResults.asset">
+																<THEN>
+																	<STRING.STREAM VALUE="HistoryResults.asset"/>
+																</THEN>
+																<ELSE>
+																	<![CDATA[&nbsp;]]>
+																</ELSE>
+															</IF>
+														</TD>
+														<td><BR /></td>
+														<TD  class="small-text-inset" style="vertical-align: middle;"  VALIGN="BASELINE">
+															<REPLACEALL LIST="HistoryResults.versionnum,Counters.DeleteCounter">
+																<INPUT TYPE="HIDDEN" NAME="deletemeVersionCounters.DeleteCounter" VALUE="HistoryResults.versionnum"/>
+																HistoryResults.versionnum
+															</REPLACEALL>
+														</TD>
+														<td><BR /></td>
+														<TD class="small-text-inset" style="vertical-align: middle;" VALIGN="BASELINE" NOWRAP="true">
+															<STRING.STREAM VALUE="HistoryResults.versiondate"/>
+														</TD>
+														<td><BR /></td>
+														<TD class="small-text-inset" style="vertical-align: middle;"  VALIGN="BASELINE" NOWRAP="true">
+															<STRING.STREAM VALUE="HistoryResults.lockedby"/>
+														</TD>
+														<td><BR /></td>
+														<TD  class="small-text-inset" style="vertical-align: middle;"  VALIGN="BASELINE" NOWRAP="true">
+															<STRING.STREAM VALUE="HistoryResults.createdby"/>
+														</TD>
+														<td><BR /></td>
+														<TD class="small-text-inset" style="vertical-align: middle;"  VALIGN="BASELINE">
+															<STRING.STREAM VALUE="HistoryResults.annotation"/>
+														</TD>
+														<td><BR /></td>
+														<TD  class="small-text-inset" style="vertical-align: middle;"  VALIGN="BASELINE">
+															<REPLACE STR="Counters.DeleteCounter">
+																<INPUT TYPE="checkbox" NAME="dodeleteCounters.DeleteCounter" VALUE="true"/>
+															</REPLACE>
+														</TD>
+														<td><BR /></td>
+													</TR>
+													<INCCOUNTER NAME="DeleteCounter" VALUE="1"/>
+													<SETVAR NAME="lastasset" VALUE="HistoryResults.asset"/>
+													<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+													</IF>
+												</LOOP>
+											</THEN></IF>
+										</THEN>
+									</IF>
+								</LOOP>
+							</TABLE>
+						</td><td class="tile-dark" VALIGN="top" WIDTH="1"><BR /></td>
+					</tr>
+					<tr>
+						<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+						<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</TABLE> 
+				</td></tr>	
+							
+				<TR>
+					<TD COLSPAN="8" HEIGHT="5"></TD>
+				</TR>
+				<TR>
+					<TD align="LEFT" COLSPAN="8">
+						<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+						<INPUT TYPE="hidden" NAME="tool" VALUE="RevisionMgt"/>
+						<INPUT TYPE="hidden" NAME="form" VALUE="DeleteRevision"/>
+						<REPLACE STR="Counters.DeleteCounter">
+							<INPUT TYPE="hidden" NAME="numdeletes" VALUE="Counters.DeleteCounter"/>
+						</REPLACE>
+						<XLAT.LOOKUP KEY="dvin/AdminForms/DeleteRevisions" VARNAME="_XLAT_"/>
+						<A onClick="document.forms[0].submit();" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AdminForms/DeleteRevisions"/></CALLELEMENT></A>
+					</TD>
+				</TR>
+			</TABLE>
+			</SATELLITE.FORM>
+		</ELSE>
+	</IF>
+</FTCS>

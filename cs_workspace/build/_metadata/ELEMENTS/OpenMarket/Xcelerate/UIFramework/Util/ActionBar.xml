@@ -1,0 +1,756 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+    <!--
+    $Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/Util/ActionBar.xml $
+    $Revision: 68 $
+    $Modtime: 8/30/04 2:55p $
+    -->
+    <!--
+    - Confidential and Proprietary Information of Open Market, Inc.
+    -					All Rights Reserved.
+    -
+    - ActionBar
+    -
+    - DESCRIPTION
+    -	UI utility to display an "action bar" on Inspect, Edit & Status screens.
+    -
+    - Arguments
+    -	Screen: "Inspect", "Edit" or "Status"
+    -		Indicates whether the "Inspect" and "Edit" icons and names are hot
+    -		and determines the set of "more..." actions.
+    -       NoPreview: If set, we are not going to display "Preview" icon.  This is needed
+    -                  for templates.
+    -     revisionInspect - if true, then inspecting a previous revision of an asset
+    -		revision - if revisionInspect is true, then this shows the revsion of the asset
+    -
+    - HISTORY
+    -->
+	<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+	<if cond="Variables._enableForms!=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/Util/CheckTypeForGenerateLink">
+			<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		</callelement>
+	</then>
+	</if>
+	<if cond="Variables.navigateLink=true">
+	<then>
+		<setvar name="IsAuthorized" value="false"/>
+	</then>
+	<else>
+		<setvar name="IsAuthorized" value="true"/>
+	</else>
+	</if>
+	<if COND="Variables.cs_environment!=ucform">
+	<then>
+	<if COND="Variables.IsAuthorized=true">
+	<then>
+    <if COND="IsVariable.revisionInspect=false">
+        <then>
+
+            <!-- Load the asset type information -->
+
+            <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+            <ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+            <ASSET.GETASSETTYPEPROPERTIES TYPE="Variables.AssetType"/>
+            <IF COND="Variables.CanPreview=false">
+                <THEN>
+                    <SETVAR NAME="NoPreview" VALUE="true"/>
+                </THEN>
+            </IF>
+            <IF COND="Variables.NoPreview!=true">
+                <THEN>
+                    <WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset"/>
+                    <WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="preview" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="false"/>
+                    <IF COND="Variables.isLegal=false">
+                        <THEN>
+                            <SETVAR NAME="NoPreview" VALUE="true"/>
+                        </THEN>
+                    </IF>
+                </THEN>
+            </IF>
+
+
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+                <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+            </CALLELEMENT>
+            <IF COND="Variables.updatetype!=setformdefaults">
+                <THEN>
+                    <callelement NAME="OpenMarket/Xcelerate/Scripts/AssetFunctions"/>
+                    <callelement NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+
+                    <tr>
+                        <td>
+                            <table border="0" cellpadding="0" cellspacing="0" WIDTH="100%">
+                                <tr>
+                                    <td>
+                                        <table border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <IF COND="IsVariable.NoPreview!=true">
+                                                    <THEN>
+                                                        <PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="Variables.AssetType" ASSETID="Variables.id" PUBID="SessionVariables.pubid"/>
+                                                        <IF COND="IsVariable.previewURL=true">
+                                                            <THEN>
+                                                                <IF COND="Variables.Screen=Preview">
+                                                                    <THEN>
+                                                                        <SETVAR NAME="spanClass" VALUE="action-selected-text"/>
+                                                                    </THEN>
+                                                                    <ELSE>
+                                                                        <SETVAR NAME="spanClass" VALUE="action-text"/>
+                                                                    </ELSE>
+                                                                </IF>
+                                                                <td>
+                                                                    <XLAT.LOOKUP KEY="dvin/Common/Preview" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                                    <XLAT.LOOKUP KEY="dvin/UI/Admin/PreviewThisDescription" VARNAME="_ALT_"/>
+
+                                                                    <A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.previewURL,Variables._XLAT_">
+                                                                        <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContentUp.gif" hspace="2" border="0" alt="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+                                                                    </A>
+                                                                </td>
+                                                                <td nowrap="true">
+                                                                    <XLAT.LOOKUP KEY="dvin/Common/Preview" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                                    <A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.previewURL,Variables._XLAT_">
+                                                                        <span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+                                                                            <XLAT.STREAM KEY="dvin/Common/Preview"/>
+                                                                        </span>
+                                                                    </A>
+                                                                </td>
+
+                                                                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                            </THEN>
+                                                        </IF>
+                                                    </THEN>
+                                                </IF>
+
+                                                <IF COND="Variables.Screen=Inspect">
+                                                    <THEN>
+                                                        <SETVAR NAME="spanClass" VALUE="action-selected-text"/>
+                                                    </THEN>
+                                                    <ELSE>
+                                                        <SETVAR NAME="spanClass" VALUE="action-text"/>
+                                                    </ELSE>
+                                                </IF>
+                                                <td>
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Inspect" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisDescription" VARNAME="_ALT_"/>
+                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ContentDetailsFront" outstring="urlcontdetfront">
+                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                        <satellite.argument name="id" value="Variables.id"/>
+                                                    </SATELLITE.LINK>
+                                                    <A HREF="Variables.urlcontdetfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlcontdetfront,Variables._XLAT_">
+                                                        <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContentUp.gif" hspace="2" border="0" alt="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+                                                    </A>
+                                                </td>
+                                                <td nowrap="true">
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Inspect" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <A HREF="Variables.urlcontdetfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urlcontdetfront,Variables._XLAT_">
+                                                        <span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+                                                            <XLAT.STREAM KEY="dvin/Common/Inspect"/>
+                                                        </span>
+                                                    </A>
+                                                </td>
+
+                                                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+                                                <IF COND="Variables.Screen=Edit">
+                                                    <THEN>
+                                                        <SETVAR NAME="spanClass" VALUE="action-selected-text"/>
+                                                    </THEN>
+                                                    <ELSE>
+                                                        <SETVAR NAME="spanClass" VALUE="action-text"/>
+                                                    </ELSE>
+                                                </IF>
+                                                <td>
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Edit" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/Admin/EditThisDescription" VARNAME="_ALT_"/>
+                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/EditFront" outstring="urleditfront">
+                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                        <satellite.argument name="id" value="Variables.id"/>
+                                                    </SATELLITE.LINK>
+                                                    <SETVAR NAME="editCheck" VALUE="true"/>
+                                                    <IF COND="Variables.AssetType=Template">
+                                                    <THEN>
+														<!-- check whther user is allowed to edit SiteCatalog or ElementCatalog -->
+														<USERISMEMBER GROUP="PageEditor"/>
+														<if COND="Variables.errno=0">
+														<then>
+															<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+															<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+															<setvar NAME="editCheck" VALUE="WrongACLToEditAsset"/>
+														</then>
+														<else>
+															<USERISMEMBER GROUP="ElementEditor"/>
+															<if COND="Variables.errno=0">
+															<then>
+																<ASSET.GETASSETTYPE NAME="Variables.assetname" OUTNAME="at"/>
+																<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+																<setvar NAME="editCheck" VALUE="WrongACLToEditAsset"/>
+															</then>
+															</if>
+														</else>
+														</if>                                                    
+                                                    </THEN>
+                                                    </IF>
+                                                    <IF COND="Variables.editCheck=true">
+                                                    <THEN>
+                                                    <A HREF="Variables.urleditfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urleditfront,Variables._XLAT_">
+                                                        <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentUp.gif" hspace="2" border="0" alt="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+                                                    </A>
+                                                    </THEN>
+                                                    <ELSE>
+														<XLAT.LOOKUP VARNAME="_ALT_" KEY="dvin/AT/Template/Youdonthaveprivilegestoedit"/>
+                                                         <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif" hspace="2" border="0" alt="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+
+                                                    </ELSE>
+                                                    </IF>
+                                                </td>
+                                                <td nowrap="true">
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Edit" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <IF COND="Variables.editCheck=true">
+                                                    <THEN>
+                                                    <A HREF="Variables.urleditfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urleditfront,Variables._XLAT_">
+                                                        <span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+                                                            <XLAT.STREAM KEY="dvin/Common/Edit"/>
+                                                        </span>
+                                                    </A>
+                                                    </THEN>
+                                                    <ELSE>
+                                                        <span class="action-text" TITLE="Variables._ALT_" REPLACEALL="Variables._ALT_">
+                                                           <XLAT.STREAM KEY="dvin/Common/Edit"/>
+                                                        </span>
+
+                                                    </ELSE>
+                                                    </IF>
+                                                </td>
+
+                                                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+                                                <IF COND="Variables.Screen=Delete">
+                                                    <THEN>
+                                                        <SETVAR NAME="spanClass" VALUE="action-selected-text"/>
+                                                    </THEN>
+                                                    <ELSE>
+                                                        <SETVAR NAME="spanClass" VALUE="action-text"/>
+                                                    </ELSE>
+                                                </IF>
+                                                <td>
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Delete" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteThisDescription" VARNAME="_ALT_"/>
+                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/DeleteFront" outstring="urldelfront">
+                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                        <satellite.argument name="id" value="Variables.id"/>
+                                                    </SATELLITE.LINK>
+                                                    <A HREF="Variables.urldelfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urldelfront,Variables._XLAT_">
+                                                        <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContentUp.gif" hspace="2" border="0" alt="Variables._ALT_" REPLACEALL="Variables.cs_imagedir,Variables._ALT_"/>
+                                                    </A>
+                                                </td>
+                                                <td nowrap="true">
+                                                    <XLAT.LOOKUP KEY="dvin/Common/Delete" ESCAPE="true" VARNAME="_XLAT_"/>
+                                                    <A HREF="Variables.urldelfront" onclick="return checkLock(event);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.urldelfront,Variables._XLAT_">
+                                                        <span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+                                                            <XLAT.STREAM KEY="dvin/Common/Delete"/>
+                                                        </span>
+                                                    </A>
+                                                </td>
+
+                                                <td>
+                                                    <img height="20" width="16" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+                                                </td>
+
+                                                <td>
+                                                    <SELECT NAME="EditFunctions" onChange="assetHandler(this.form, EditFunctions)">
+                                                        <OPTION VALUE="*" SELECTED=""/>
+                                                        <XLAT.STREAM KEY="dvin/UI/Admin/moredotdotdot"/>
+                                                        <!-- Approve for Publish -->
+                                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ApproveFront" outstring="urlapprfront">
+                                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                            <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                            <satellite.argument name="id" value="Variables.id"/>
+                                                        </SATELLITE.LINK>
+                                                        <OPTION VALUE="Variables.urlapprfront" REPLACEALL="Variables.urlapprfront"/>
+                                                        <XLAT.STREAM KEY="dvin/UI/ApproveforPublish"/>
+
+                                                        <!-- Copy & Translate[Asset] -->
+                                                        <!-- for copy and translate, allow only start menu items that allow any subtype or the subtype of the item asset to copy -->
+                                                        <ASSET.GETSUBTYPE NAME="Variables.assetname" OUTPUT="currentSubType"/>
+                                                        <STARTMENU.FIND PREFIX="items:" ITEMTYPE="ContentForm" PUBID="SessionVariables.pubid" ASSETSUBTYPE="Variables.currentSubType" ASSETTYPE="Variables.AssetType" USER="SessionVariables.username"/>
+                                                        <IF COND="Variables.items:Total!=0">
+                                                            <THEN>
+                                                                <SETCOUNTER NAME="currentItem" VALUE="0"/>
+                                                                <LOOP COUNT="Variables.items:Total">
+                                                                    <STARTMENUITEM.GETNAME NAME="items:Counters.currentItem" VARNAME="currentName"/>
+                                                                    <STARTMENUITEM.GETID NAME="items:Counters.currentItem" VARNAME="currentStartID"/>
+                                                                    <!-- the copy link -->
+                                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/CopyFront" outstring="urlcopyfront">
+                                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                        <satellite.argument name="id" value="Variables.id"/>
+                                                                        <satellite.argument name="ccsourceid" value="Variables.id"/>
+                                                                        <satellite.argument name="StartItem" value="Variables.currentStartID"/>
+                                                                    </SATELLITE.LINK>
+                                                                    <OPTION VALUE="Variables.urlcopyfront" REPLACEALL="Variables.urlcopyfront"/>
+                                                                    <XLAT.STREAM KEY="dvin/UI/CopyViaStartMenu"/>
+                                                                    <!-- 
+                                                                    	Show the translate link ONLY if the asset has ATLEAST ONE dimension associated with it
+                                                                    -->                                                                   
+									<ASSET.LOAD NAME="assetObj" TYPE="Variables.AssetType" OBJECTID="Variables.id" />										
+									<ASSET.SCATTER NAME="assetObj" FIELDLIST="Dimension,Dimension-parent" PREFIX="prefixForDimCheck"/>		
+									<IF COND="Variables.prefixForDimCheck:Dimension:Total!=0" >
+									<THEN>
+										<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/TranslateFront" outstring="urltranslatefront">
+											<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+											<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+											<satellite.argument name="AssetType" value="Variables.AssetType"/>
+											<satellite.argument name="id" value="Variables.id"/>
+											<satellite.argument name="ccsourceid" value="Variables.id"/>
+											<satellite.argument name="StartItem" value="Variables.currentStartID"/>
+										</SATELLITE.LINK>
+										<OPTION VALUE="Variables.urltranslatefront" REPLACEALL="Variables.urltranslatefront"/>
+										<XLAT.STREAM KEY="dvin/UI/TranslateViaStartMenu"/>
+									</THEN>
+									</IF>
+                                                                    <INCCOUNTER NAME="currentItem" VALUE="1"/>
+                                                                </LOOP>
+                                                            </THEN>
+                                                        </IF>
+                                                        <!-- New [Asset] -->
+                                                        <!-- check for start menu items -->
+                                                        <STARTMENU.FIND PREFIX="items:" ITEMTYPE="ContentForm" PUBID="SessionVariables.pubid" ASSETSUBTYPE="Variables.currentSubType" ASSETTYPE="Variables.AssetType" USER="SessionVariables.username"/>
+                                                        <IF COND="Variables.items:Total!=0">
+                                                            <THEN>
+                                                                <SETCOUNTER NAME="currentItem" VALUE="0"/>
+                                                                <LOOP COUNT="Variables.items:Total">
+                                                                    <STARTMENUITEM.GETNAME NAME="items:Counters.currentItem" VARNAME="currentName"/>
+                                                                    <STARTMENUITEM.GETID NAME="items:Counters.currentItem" VARNAME="currentStartID"/>
+                                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="urlnewcontfront">
+                                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                        <satellite.argument name="StartItem" value="Variables.currentStartID"/>
+                                                                    </SATELLITE.LINK>
+                                                                    <OPTION VALUE="Variables.urlnewcontfront" REPLACEALL="Variables.urlnewcontfront"/>
+                                                                    <STRING.STREAM VARIABLE="currentName"/>
+                                                                    <INCCOUNTER NAME="currentItem" VALUE="1"/>
+                                                                </LOOP>
+                                                            </THEN>
+                                                        </IF>
+                                                        <IF COND="Variables.cs_environment!=portal">
+                                                        <THEN>
+                                                            <!-- Simple Search -->
+                                                            <STARTMENU.FIND PREFIX="items:" ITEMTYPE="Search" PUBID="SessionVariables.pubid" ASSETSUBTYPE="Variables.currentSubType" ASSETTYPE="Variables.AssetType" USER="SessionVariables.username"/>
+                                                            <IF COND="Variables.items:Total!=0">
+                                                                <THEN>
+                                                                    <SETCOUNTER NAME="currentItem" VALUE="0"/>
+                                                                    <LOOP COUNT="Variables.items:Total">
+                                                                        <STARTMENUITEM.GETNAME NAME="items:Counters.currentItem" VARNAME="currentName"/>
+                                                                        <STARTMENUITEM.GETID NAME="items:Counters.currentItem" VARNAME="currentStartID"/>
+                                                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SimpleSearchFront" outstring="urlsimpsearchfront">
+                                                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                            <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                            <satellite.argument name="cs_StartID" value="Variables.currentStartID"/>
+                                                                        </SATELLITE.LINK>
+                                                                        <OPTION VALUE="Variables.urlsimpsearchfront" REPLACEALL="Variables.urlsimpsearchfront"/>
+                                                                        <STRING.STREAM VARIABLE="currentName"/>
+                                                                        <INCCOUNTER NAME="currentItem" VALUE="1"/>
+                                                                    </LOOP>
+                                                                </THEN>
+                                                            </IF>
+                                                        </THEN>
+                                                        </IF>
+                                                        <!-- Preview (optional) -->
+                                                        <IF COND="IsVariable.NoPreview!=true">
+                                                            <THEN>
+                                                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/StatusDetailsFront" outstring="urlstatdetfront">
+                                                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                    <satellite.argument name="id" value="Variables.id"/>
+                                                                </SATELLITE.LINK>
+                                                                <OPTION VALUE="Variables.urlstatdetfront" REPLACEALL="Variables.urlstatdetfront"/>
+                                                                <XLAT.STREAM KEY="dvin/AT/Common/Status"/>
+                                                            </THEN>
+                                                            <ELSE>
+                                                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/StatusDetailsFront" outstring="urlstatdetfront">
+                                                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                    <satellite.argument name="id" value="Variables.id"/>
+                                                                    <satellite.argument name="NoPreview" value="true"/>
+                                                                </SATELLITE.LINK>
+                                                                <OPTION VALUE="Variables.urlstatdetfront" REPLACEALL="Variables.urlstatdetfront"/>
+                                                                <XLAT.STREAM KEY="dvin/AT/Common/Status"/>
+                                                            </ELSE>
+                                                        </IF>
+                                                        <!-- if user has access to more than one pub, Share function -->
+                                                        <IF COND="IsSessionVariable.userNumPubs=false">
+                                                        <THEN>
+                                                          <USERMANAGER.GETLOGINUSER VARNAME="loginuser"/>
+                                                          <PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+                                                          <setvar NAME="numrows" VALUE="0"/>
+                                                          <callelement NAME="Variables.propmanageuserpub">
+                                                              <argument NAME="upcommand" VALUE="GetPublications"/>
+                                                              <argument NAME="qryprefix" VALUE="UP"/>
+                                                              <argument NAME="username" VALUE="Variables.loginuser"/>
+                                                          </callelement>
+                                                          <setssvar NAME="userNumPubs" VALUE="Variables.numrows"/>
+                                                        </THEN>
+                                                        </IF>
+                                                        <IF COND="SessionVariables.userNumPubs!=1">
+                                                            <THEN>
+                                                                <IF COND="Variables.AssetType!=Page">
+                                                                    <THEN>
+                                                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShareAssetFront" outstring="urlshrassttfront">
+                                                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                            <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                            <satellite.argument name="id" value="Variables.id"/>
+                                                                        </SATELLITE.LINK>
+                                                                        <OPTION VALUE="Variables.urlshrassttfront" REPLACEALL="Variables.urlshrassttfront"/>
+                                                                        <XLAT.STREAM KEY="dvin/UI/ShareAssetTypeObjdescription"/>
+                                                                    </THEN>
+                                                                </IF>
+                                                            </THEN>
+                                                        </IF>
+                                                        <!-- if user has authority and the asset is not in workflow, then asset privileges can be set -->
+                                                        <WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset"/>
+                                                        <WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="authorize" SITE="SessionVariables.pubid" VARNAME="isLegal" MUSTBEASSIGNED="false"/>
+                                                        <IF COND="Variables.isLegal=true">
+                                                            <THEN>
+                                                                <!-- KDW: Need to allow access privs to be settable even in workflow -->
+                                                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/AssetSecurityDetailsFront" outstring="urlasstsecdetfront">
+                                                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                                    <satellite.argument name="id" value="Variables.id"/>
+                                                                </SATELLITE.LINK>
+                                                                <OPTION VALUE="Variables.urlasstsecdetfront" REPLACEALL="Variables.urlasstsecdetfront"/>
+                                                                <XLAT.STREAM KEY="dvin/UI/AccessPrivileges"/>
+                                                            </THEN>
+                                                        </IF>
+
+                                                        <!-- if Collectoion, Build function -->
+                                                        <IF COND="Variables.AssetType=Collection">
+                                                            <THEN>
+                                                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BuildCollectionFront" outstring="urlbldcollfront">
+                                                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                    <satellite.argument name="Collection" value="Variables.id"/>
+                                                                </SATELLITE.LINK>
+                                                                <OPTION VALUE="Variables.urlbldcollfront" REPLACEALL="Variables.urlbldcollfront"/>
+                                                                <XLAT.STREAM KEY="dvin/Common/AT/Build"/>
+                                                            </THEN>
+                                                        </IF>
+                                                        <!-- if Page, Browse SitePlan function -->
+                                                        <IF COND="Variables.AssetType=Page">
+                                                            <THEN>
+                                                                <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/BrowseAssetChildren" outstring="urlbrwsassetfront">
+                                                                    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                                    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                                    <satellite.argument name="c" value="Page"/>
+                                                                    <satellite.argument name="cid" value="Variables.id"/>
+                                                                </SATELLITE.LINK>
+                                                                <OPTION VALUE="Variables.urlbrwsassetfront" REPLACEALL="Variables.urlbrwsassetfront"/>
+                                                                <XLAT.STREAM KEY="dvin/UI/BrowseinSitePlan"/>
+                                                            </THEN>
+                                                        </IF>
+                                                        <!-- if Additional links, Flex inspection screen use it to switch between DM and WCM views -->
+                                                        <IF COND="IsVariable.EditFunction:Total=true">
+                                                            <THEN>
+                                                                <SETCOUNTER NAME="currentItem" VALUE="0"/>
+                                                                <LOOP COUNT="Variables.EditFunction:Total">
+                                                                    <ICS.RESOLVEVARIABLES NAME="$(Variables.EditFunction:$(Counters.currentItem):URL)" OUTPUT="_URL_" DELIMITED="true"/>
+                                                                    <OPTION VALUE="Variables._URL_" REPLACEALL="Variables._URL_"/>
+                                                                    <REMOVEVAR NAME="_URL_"/>
+                                                                    <ICS.RESOLVEVARIABLES NAME="$(Variables.EditFunction:$(Counters.currentItem):Text)" DELIMITED="true"/>
+                                                                    <INCCOUNTER NAME="currentItem" VALUE="1"/>
+                                                                </LOOP>
+                                                                <REMOVECOUNTER NAME="currentItem"/>
+                                                            </THEN>
+                                                        </IF>
+                                                    </SELECT>
+                                                </td>
+                                                <if COND="Variables.Screen!=Edit">
+                                                    <then>
+                                                        <td>&nbsp;&nbsp;</td>
+                                                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/AddToActiveListPost" outstring="AddActiveListURL">
+                                                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                            <satellite.argument name="AddALAsset" value="Variables.AssetType;Variables.id"/>
+                                                        </SATELLITE.LINK>
+                                                        <SETVAR NAME="assetid" VALUE="Variables.id"/>
+                                                        <USERMANAGER.GETLOGINUSER VARNAME="userid"/>
+                                                        <SELECTTO LIST="currentItem" FROM="ActiveList" WHERE="userid,assetid"/>
+                                                        <IF COND="Variables.errno=-101">
+                                                            <THEN>
+
+                                                                <td ALIGN="RIGHT" NOWRAP="NOWRAP">
+                                                                    <TABLE CELLPADDING="0" CELLSPACING="0">
+                                                                        <TR>
+                                                                            <TD>
+                                                                                <A HREF="Variables.AddActiveListURL" REPLACEALL="Variables.AddActiveListURL">
+                                                                                    <img ALIGN="ABSBOTTOM" height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconAddToActiveListUp.gif" hspace="2" border="0" REPLACEALL="Variables.cs_imagedir"/>
+                                                                                </A>
+                                                                            </TD>
+                                                                            <TD>
+                                                                                <A HREF="Variables.AddActiveListURL" REPLACEALL="Variables.AddActiveListURL">
+                                                                                    <span class="action-text">
+                                                                                        <XLAT.STREAM KEY="dvin/UI/AddtoMyActiveList"/>
+                                                                                    </span>
+                                                                                </A>
+                                                                            </TD>
+                                                                        </TR>
+                                                                    </TABLE>
+                                                                </td>
+                                                            </THEN>
+                                                            <ELSE>
+                                                                <td ALIGN="RIGHT" NOWRAP="NOWRAP">
+                                                                    <TABLE CELLPADDING="0" CELLSPACING="0">
+                                                                        <TR>
+                                                                            <TD>
+                                                                                <img height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconAddToActiveListUp.gif" hspace="2" border="0" REPLACEALL="Variables.cs_imagedir"/>
+                                                                            </TD>
+                                                                            <TD>
+                                                                                <span class="action-text">
+                                                                                    <XLAT.STREAM KEY="dvin/UI/ItemisinyourActiveList"/>
+                                                                                </span>
+                                                                            </TD>
+                                                                        </TR>
+                                                                    </TABLE>
+                                                                </td>
+                                                            </ELSE>
+                                                        </IF>
+                                                    </then>
+                                                </if>
+
+
+
+				<!-- start Analytics Performance Indiacator-->
+
+				<USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="u"/>
+				<CCUSER.GETSITEROLES NAME="u" SITE="Variables.pubid" OBJVARNAME="srl"/>
+				<ROLELIST.HASROLE NAME="srl" ROLE="Analytics" VARNAME="hasit"/>
+
+				<IF COND="Variables.hasit=true">   			
+          			<THEN>
+
+
+						<PROPERTY.GET INIFILE="futuretense_xcel.ini" PARAM="analytics.enabled" VARNAME="AnalyticsInst"/>
+						<IF COND="Variables.AnalyticsInst=true">
+							<THEN>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td>
+							<span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+
+								<PUBLICATION.LOAD NAME="publication" OBJECTID="SessionVariables.pubid"/>
+								<PUBLICATION.GET NAME="publication" FIELD="name" />		
+								<CALLELEMENT NAME="Analytics/AddPerformanceIndicatorGraph">
+									<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+									<ARGUMENT NAME="AssetId" VALUE="Variables.id"/>
+									<ARGUMENT NAME="sitename" VALUE="Variables.name"/>									
+								</CALLELEMENT>
+							</span>						
+							</td>
+							</THEN>
+						</IF>
+				</THEN>
+				</IF>
+				<!-- end Analytics Performance Indiacator--> 
+
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <IF COND="Variables.trackingenabled=true">
+                        <THEN>
+                            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                            <tr>
+                                <td>
+                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/LockFront" outstring="CheckOutURL">
+                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                        <satellite.argument name="id" value="Variables.id"/>
+                                    </SATELLITE.LINK>
+                                    <history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+                                    <IF COND="ItsHistory.#numRows!=0">
+                                        <THEN>
+                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/HistoryFront" outstring="HistoryURL">
+                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                <satellite.argument name="id" value="Variables.id"/>
+                                            </SATELLITE.LINK>
+                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/UnlockFront" outstring="UnlockURL">
+                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                <satellite.argument name="id" value="Variables.id"/>
+                                            </SATELLITE.LINK>
+                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/RollbackFront" outstring="RollbackURL">
+                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                <satellite.argument name="id" value="Variables.id"/>
+                                            </SATELLITE.LINK>
+                                            <XLAT.STREAM KEY="dvin/UI/AssetMgt/Version"/>&nbsp;
+                                            <STRING.STREAM VALUE="ItsHistory.versionnum"/>
+
+                                            <IF COND="ItsHistory.lockedby!=Variables.empty">
+                                                <THEN>&nbsp;-&nbsp;
+                                                    <span class="alert-color">
+                                                        <XLAT.STREAM KEY="dvin/UI/AssetMgt/LockedbyItsHistorylockedby"/>
+                                                    </span>
+		                                            <IF COND="ItsHistory.lockedby=SessionVariables.username">
+                                                  <THEN>
+                                                  <!-- it is checked out by me -->
+                                                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/CommitFront" outstring="CheckInURL">
+                                                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                        <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                                                        <satellite.argument name="id" value="Variables.id"/>
+                                                    </SATELLITE.LINK>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/Checkinasset" VARNAME="_xlat_checkin"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/Checkinasset" VARNAME="_xlat_M_checkin" ESCAPE="true"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/UndoCheckout" VARNAME="_xlat_undocheckout"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/UndoCheckout" VARNAME="_xlat_M_undocheckout" ESCAPE="true"/>
+                                                    <A HREF="Variables.CheckInURL" onmouseover="window.status='Variables._xlat_M_checkin';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.CheckInURL,Variables._xlat_M_checkin">
+                                                        <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/check_in1.gif" BORDER="0" HSPACE="10" ALIGN="TOP" ALT="Variables._xlat_checkin" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._xlat_checkin"/>
+                                                    </A> &nbsp;
+                                                    <A HREF="Variables.UnlockURL" onmouseover="window.status='Variables._xlat_M_undocheckout';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.UnlockURL,Variables._xlat_M_undocheckout">
+                                                        <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/undo_checkout.gif" BORDER="0" HSPACE="10" ALIGN="TOP" ALT="Variables._xlat_undocheckout" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._xlat_undocheckout"/>
+                                                    </A>
+														
+                                         		<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+                                                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                                                <argument NAME="assetObjectName" VALUE="Variables.assetname"/>
+                                                <argument NAME="Function" VALUE="rollback"/>
+                                            </callelement>
+                                            <IF COND="Variables.PrivsFailed!=true">
+                                                <THEN>
+                                                    <CALCULATOR.GO VALUE="ItsHistory.#numRows 2 GT" VARNAME="checknumver"/>
+                                                    <IF COND="Variables.checknumver=1">
+                                                        <THEN>
+                                                            <A HREF="Variables.RollbackURL" REPLACEALL="Variables.RollbackURL">
+                                                                <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/rollback1.gif" BORDER="0" HSPACE="10" ALIGN="TOP" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale"/>
+                                                            </A>
+                                                        </THEN>
+                                                    </IF>
+                                                </THEN>
+                                            </IF>
+
+                                                	</THEN>
+ 		                                            </IF>
+ 		                                        </THEN>
+ 		                                        <ELSE>
+ 		                                        	<!-- no one has it checked out -->
+ 		                                      <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+                                                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                                                <argument NAME="assetObjectName" VALUE="Variables.assetname"/>
+                                                <argument NAME="Function" VALUE="checkout"/>
+                                            </callelement>
+                                            <IF COND="Variables.PrivsFailed!=true">
+                                            <THEN>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/CheckOut" VARNAME="_xlat_checkout"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/CheckOut" VARNAME="_xlat_M_checkout" ESCAPE="true"/>
+                                                    <A HREF="Variables.CheckOutURL" onmouseover="window.status='Variables._xlat_M_checkout';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.CheckOutURL,Variables._xlat_M_checkout">
+                                                        <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/check_out.gif" BORDER="0" HSPACE="10" ALIGN="TOP" ALT="Variables._xlat_checkout" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._xlat_checkout"/>
+                                                    </A>
+ 															</THEN>
+ 															</IF>
+                                         		<callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+                                                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                                                <argument NAME="assetObjectName" VALUE="Variables.assetname"/>
+                                                <argument NAME="Function" VALUE="rollback"/>
+                                            </callelement>
+                                            <IF COND="Variables.PrivsFailed!=true">
+                                                <THEN>
+                                                    <CALCULATOR.GO VALUE="ItsHistory.#numRows 2 GT" VARNAME="checknumver"/>
+                                                    <IF COND="Variables.checknumver=1">
+                                                        <THEN>
+                                                            <A HREF="Variables.RollbackURL" REPLACEALL="Variables.RollbackURL">
+                                                                <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/rollback1.gif" BORDER="0" HSPACE="10" ALIGN="TOP" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale"/>
+                                                            </A>
+                                                        </THEN>
+                                                    </IF>
+                                                </THEN>
+                                            </IF>
+                                              </ELSE>
+                                               </IF>
+                                            <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+                                                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                                                <argument NAME="assetObjectName" VALUE="Variables.assetname"/>
+                                                <argument NAME="Function" VALUE="showversion"/>
+                                            </callelement>
+                                            <IF COND="Variables.PrivsFailed!=true">
+                                                <THEN>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/ShowVersions" VARNAME="_xlat_showversions"/>
+                                                    <XLAT.LOOKUP KEY="dvin/UI/ShowVersions" VARNAME="_xlat_M_showversions" ESCAPE="true"/>
+                                                    <A HREF="Variables.HistoryURL" onmouseover="window.status='Variables._xlat_M_showversions';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.HistoryURL,Variables._xlat_M_showversions">
+                                                        <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/show_versions.gif" BORDER="0" HSPACE="10" ALIGN="TOP" ALT="Variables._xlat_showversions" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._xlat_showversions"/>
+                                                    </A>
+                                                </THEN>
+                                                <ELSE>
+
+                                                </ELSE>
+                                            </IF>
+
+                                        </THEN>
+                                        <ELSE>
+                                            <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+                                                <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+                                                <argument NAME="assetObjectName" VALUE="Variables.assetname"/>
+                                                <argument NAME="Function" VALUE="checkout"/>
+                                            </callelement>
+                                            <IF COND="Variables.PrivsFailed!=true">
+                                            <THEN>
+                                            <XLAT.LOOKUP KEY="dvin/UI/CheckOut" VARNAME="_xlat_checkout"/>
+                                            <XLAT.LOOKUP KEY="dvin/UI/CheckOut" VARNAME="_xlat_M_checkout" ESCAPE="true"/>
+                                            <A HREF="Variables.CheckOutURL" onmouseover="window.status='Variables._xlat_M_checkout';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.CheckOutURL,Variables._xlat_M_checkout">
+                                                <IMG src="Variables.cs_imagedir/graphics/SessionVariables.locale/button/content/images/check_out.gif" BORDER="0" HSPACE="10" ALIGN="TOP" ALT="Variables._xlat_checkout" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables._xlat_checkout"/>
+                                            </A>
+		                                       </THEN>
+                                                <ELSE>
+
+                                                </ELSE>
+                                            </IF>
+                                        </ELSE>
+                                    </IF>
+                                    <BR/>
+                                </td>
+                            </tr>
+                        </THEN>
+                    </IF>
+                </THEN>
+            </IF>
+        </then>
+        <else>
+            <!-- inspect on a previous revision of the asset - show no editing functions -->
+            <tr>
+                <td>
+                    <XLAT.STREAM KEY="dvin/UI/AssetMgt/Version"/>&nbsp;
+                    <STRING.STREAM VALUE="Variables.revision"/>
+                </td>
+            </tr>
+        </else>
+    </if>
+
+</then>
+</if>
+</then>
+</if>
+</FTCS>
+

@@ -1,0 +1,325 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/SetWorkflowParticipantsFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function CancelSetParticipants()
+{
+    var obj = document.forms[0].elements[0];
+    obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/StatusDetailsFront";
+}
+function selectAll(ourPage,op)
+{
+	var obj = document.forms[0].elements[0];
+	if (typeof(obj.form.elements['workflowroles']) != 'undefined' &&
+			 obj.form.elements['workflowroles'].value!="")
+	{             
+		var allRoles = obj.form.elements['workflowroles'].value;
+		roleArray = allRoles.split(",");
+		var currentSel,j,numSelected;
+		for (var i=0;i<roleArray.length;i++)
+		{
+			numSelected=0;
+			currentSel = obj.form.elements[roleArray[i]];
+			for (j=0;j<currentSel.options.length;j++)
+			{
+				currentSel.options[j].selected=true;
+				numSelected++;
+			}
+		}
+	}
+	return false;
+}
+function SaveParticipants()
+{
+    var obj = document.forms[0].elements[0];
+
+    if (typeof(obj.form.elements['workflowroles']) != 'undefined' &&
+         obj.form.elements['workflowroles'].value!="")
+    {
+        var allRoles = obj.form.elements['workflowroles'].value;
+        roleArray = allRoles.split(",");
+        var currentSel,j,numSelected;
+        for (var i=0;i<roleArray.length;i++)
+        {
+            numSelected=0;
+            currentSel = obj.form.elements[roleArray[i]];
+
+            for (j=0;j<currentSel.options.length;j++)
+            {
+                if (currentSel.options[j].selected)
+                    numSelected++;
+            }
+
+            if (numSelected==0)
+            {
+                ]]>
+                 var replacestr=/\bVariables.role\b/ ;
+                 var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/UsersOfTheRoleNotSelected" ENCODE="false" ESCAPE="true"/>';
+          	     alert(xlatstr.replace(replacestr, roleArray[i]));
+  
+                <![CDATA[
+                return false;
+            }
+        }
+    }
+	obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/SetWorkflowParticipantsPost";
+}
+
+]]>
+</SCRIPT>
+
+           
+            
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+<ASSET.GETASSETTYPE NAME="theAsset" OUTNAME="type"/>
+<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="atDescription"/>
+
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" FUNCTIONNAME="setparticipants" SITE="SessionVariables.pubid" VARNAME="isLegal" REASONVARNAME="denialreason"  MUSTBEASSIGNED="false"/>
+<if COND="Variables.isLegal=false">
+<then>
+  <setvar NAME="AbortFlag" VALUE="true"/>
+  <setvar NAME="ErrorName" VALUE="IllegalTransition"/>
+  <setvar NAME="severity" VALUE="info"/>
+</then>
+</if>
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+    <WORKFLOWENGINE.GETOBJECTWORKFLOWPROCESS OBJECT="workflowasset" VARNAME="workflowid" />
+    <WORKFLOWENGINE.GETOBJECTPARTICIPANTS OBJECT="workflowasset" OBJVARNAME="partsobj" />
+		
+		<WORKFLOWENGINE.GETPOTENTIALPARTICIPANTS OBJVARNAME="myParts" SITE="SessionVariables.pubid" PROCESS="Variables.workflowid" OBJECT="workflowasset"/>
+		<PARTICIPANTS.GETALLROLES NAME="myParts" VARNAME="roles" />
+		<STRINGLIST NAME="roleslist" STR="Variables.roles" DELIM="," />
+    <DIV class="title-text"><XLAT.STREAM KEY="dvin/UI/SetParticipants"/></DIV><br/>
+	<B><XLAT.STREAM KEY="dvin/UI/Pleaseselectatleastoneuserfromeachrole"/></B><br/> 
+    <WORKFLOWENGINE.GETPROCESSID ID="Variables.workflowid" OBJVARNAME="workflowobj"/>
+    <WORKFLOWPROCESS.GETPROCESSNAME NAME="workflowobj" VARNAME="workflowname" />
+
+    <INPUT TYPE="hidden" NAME="workflowroles" VALUE="Variables.roles" REPLACEALL="Variables.roles"/>
+    <REMOVEVAR NAME="roles"/>
+    <table><tr><td>
+    <XLAT.LOOKUP KEY="dvin/UI/CancelSetParticipantsforWorkflow" VARNAME="alt_cancel"/>
+    <XLAT.LOOKUP KEY="dvin/UI/CancelSetParticipantsforWorkflow" VARNAME="mouseover_cancel" ESCAPE="true"/>
+    <A HREF="javascript:void(0);" onClick="if(CancelSetParticipants()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+    </td><td>
+    <XLAT.LOOKUP KEY="dvin/UI/SetParticipantsforWorkflow" VARNAME="alt_setparticipants"/>
+    <XLAT.LOOKUP KEY="dvin/UI/SetParticipantsforWorkflow" VARNAME="mouseover_setparticipants" ESCAPE="true"/>
+    <A HREF="javascript:void(0);" onClick="if(SaveParticipants()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover_setparticipants';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover_setparticipants"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SetParticipants"/></CALLELEMENT></A>
+</td></tr></table>
+    <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <tr>
+        <td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+    </tr>
+    <tr>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+    <td>
+		<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="3" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr><td HEIGHT="16" class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;<BR /></td>
+				<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+			</tr>
+			<tr><td colspan="3" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+			<tr>
+				<td class="form-label-text" VALIGN="TOP" NOWRAP="NOWRAP">
+					<STRING.STREAM VARIABLE="atDescription" />&nbsp;<XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+				</td>
+				<td class="form-inset" VALIGN="TOP">
+					<STRING.STREAM VALUE="Variables.assetname"/><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td class="form-label-text" VALIGN="TOP" NOWRAP="NOWRAP">
+					<XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.assetdesc"/><BR />
+				</td>
+			</tr>
+			<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+			<tr>
+				<td class="form-label-text" VALIGN="TOP" NOWRAP="NOWRAP">
+					<XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+				</td>
+				<td class="form-inset">
+					<STRING.STREAM VALUE="Variables.workflowname"/><BR />
+				</td>
+			</tr>
+				<tr>
+				<!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+			</tr>
+	        <tr>
+				<td class="form-label-text" VALIGN="TOP">
+					<XLAT.STREAM KEY="dvin/Common/Participants"/>:
+				</td>
+				<td class="form-inset" VALIGN="top" ALIGN="LEFT" WIDTH="300">
+					
+        		<table BORDER="0" CELLSPACING="0" CELLPADDING="0" >
+                <tr>
+            		<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+            	</tr>
+            	<tr>
+                	<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                	<td >
+                	    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="6" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+                		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Role"/></DIV></td>
+                            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Users"/></DIV></td>
+                			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                		</tr>
+                        <tr><td colspan="6" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+                            <!-- for each role, list the available participants -->
+                            <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+                            <SETVAR NAME="separatorLine" VALUE="0"/>
+                            
+                            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                            
+                            <!-- Code for Alloy UI -->
+                            		<LISTOBJECT.CREATE NAME="myUserNameList" COLUMNS="username,role_name,userID" />
+                            <!-- Code for Alloy UI -->
+                            <loop LIST="roleslist">
+                                <PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="partsobj" ROLE="roleslist.ITEM" LISTVARNAME="ulist" />
+                                <PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="myParts" ROLE="roleslist.ITEM" LISTVARNAME="GreaterList" />
+                                <USERMANAGER.GETUSERIDS LIST="GreaterList" PREFIX="greaterUsers:"/>
+                                <IF COND="Variables.separatorLine=1">
+                                <THEN>
+                                <tr>
+                                    <!--<td colspan="6" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+                                </tr>
+                                </THEN>
+                                </IF>
+            
+                                <SETVAR NAME="separatorLine" VALUE="1"/>
+                                <tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+                                    <td><BR /></td>                    
+                                    <td class="form-label-text" VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                						<span class="alert-color">*</span><STRING.STREAM VALUE="roleslist.ITEM"/>:
+                                    </td>
+                                    <td><BR /></td>
+                                    <td class="form-inset" VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                                    <HASH.CREATE NAME="hashroleslist.ITEM" LIST="ulist" COLUMN="ITEM"/>
+
+                                    <SELECT NAME="roleslist.ITEM" MULTIPLE="yes" SIZE="7" REPLACEALL="roleslist.ITEM" >
+																		<IF COND="IsVariable.greaterUsers:Total=true">
+																			<THEN>
+																				<IF COND="Variables.greaterUsers:Total!=0">
+																					<THEN>
+                                                                                        <SETCOUNTER NAME="COUNT" VALUE="0"/>
+																						<LOOP FROM="0" COUNT="Variables.greaterUsers:Total">
+                                                                                            <CCUSER.GETID NAME="greaterUsers:Counters.COUNT" VARNAME="uid"/>
+                                                                                            <CCUser.GETDISPLAYABLENAME NAME="greaterUsers:Counters.COUNT" VARNAME="uname"/>
+                                                                                           <!--Code for alloy UI-->
+																			<LISTOBJECT.ADDROW NAME="myUserNameList" username="Variables.uname" role_name="roleslist.ITEM" userID="Variables.uid"/>
+																		<!--Code for alloy UI-->
+																							<HASH.CONTAINS NAME="hashroleslist.ITEM" VALUE="Variables.uid" VARNAME="hasit"/>
+																							<IF COND="Variables.hasit=true">
+																								<THEN>
+																									<OPTION VALUE="Variables.uid" REPLACEALL="Variables.uid" SELECTED="yes"/><STRING.STREAM VALUE="Variables.uname"/>
+																								</THEN>
+																								<ELSE>
+																									<OPTION VALUE="Variables.uid" REPLACEALL="Variables.uid"/><STRING.STREAM VALUE="Variables.uname"/>
+																								</ELSE>
+																							</IF>
+                                                                                            <INCCOUNTER NAME="COUNT" VALUE="1"/>
+																						</LOOP>
+																					</THEN>
+																				</IF>
+																			</THEN>
+																		</IF>
+                                    </SELECT>
+                                    </td>
+                                    <td><BR /></td>
+                                </tr>
+
+                                <IF COND="Variables.rowStyle=tile-row-normal">
+                                <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+                                </THEN>
+                                <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+                                </ELSE>
+                                </IF>
+                				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                            </loop>
+                            
+                            <!--Code for alloy UI-->
+                            	<LISTOBJECT.TOLIST NAME="myUserNameList" LISTVARNAME="userNameList"/>
+                            <!--Code for alloy UI-->
+
+	                    </table>
+	                    </td>
+                		<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+            		</tr>
+                    <tr>
+                    <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                    </tr>
+                    <tr>
+                    <td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+                    </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr><td></td>
+				<td align="RIGHT" width="1">
+					<XLAT.LOOKUP KEY="dvin/Common/SelectAll" VARNAME="_XLAT_"/>
+					<A HREF="javascript:document.forms;" onClick="return selectAll();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SelectAll"/></CALLELEMENT></A>
+				</td>
+			</tr>
+        </table>
+    
+    </td>
+
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	</tr>
+	<tr>
+		<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+    </table>
+
+<table><tr><td>
+	<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+    <INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+    <INPUT TYPE="hidden" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+	<INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+
+    <A HREF="javascript:void(0);" onClick="if(CancelSetParticipants()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover_cancel';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover_cancel"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+    </td><td>
+    <A HREF="javascript:void(0);" onClick="if(SaveParticipants()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover_setparticipants';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover_setparticipants"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SetParticipants"/></CALLELEMENT></A>
+    </td></tr></table>
+</then>
+<else> 
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="elem" VALUE="Variables.ErrorName"/>
+        <argument NAME="severity" VALUE="Variables.severity"/>
+    </callelement>
+
+    <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        <argument NAME="id"        VALUE="Variables.id"/>
+    </callelement>    
+</else>
+</if>           
+</FTCS> 

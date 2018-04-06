@@ -1,0 +1,826 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/CSClient/TranslateUsingUpload
+-
+- INPUT
+-	DroppedOn - id of asset that was dropped on
+-	AssetType - asset type tp create
+-	TheFile - binary file
+-
+- OUTPUT
+-
+-->
+
+<IF COND="IsVariable.TheFile_file=true">
+<THEN>
+	<!-- if the drop is on a flexasset then the operation is an edit -->
+	<!-- an edit means update the document field and save.  the other property data
+		is updated through the property dialog and a normal update -->
+   
+	<SETVAR NAME="AssetType" VALUE="Variables.Node2"/>
+	<SETVAR NAME="primarypubid" VALUE="Variables.Node1"/>
+	<SETSSVAR NAME="pubid" VALUE="Variables.primarypubid"/>
+	<FATM.GETALL ASSETTYPE="Variables.AssetType" LISTVARNAME="lFlexFamily"/>
+	<FGTM.GETALL ASSETTYPE="lFlexFamily.grouptype" LISTVARNAME="lParentFamily"/>
+	<ATM.LOCATE VARNAME="gm" TYPE="lFlexFamily.templatetype"/>
+   
+	<SETVAR NAME="InvalidParent" VALUE="false"/>
+
+	<LISTOBJECT.CREATE NAME="parents" COLUMNS="assetid"/>
+	<IF COND="Variables.DroppedOn!=Variables.Node2">
+	<THEN>
+		<!-- dropped on a parent folder, look for valid child subtypes -->
+		<ASSET.LIST TYPE="lFlexFamily.grouptype" FIELD1="id" VALUE1="Variables.DroppedOn" LIST="lCurrentParent" EXCLUDEVOIDED="true"/>
+		<IF COND="Variables.errno!=0">
+		<THEN>
+			<SETVAR NAME="InvalidParent" VALUE="true"/>
+		</THEN>
+		<ELSE>
+			<ASSET.LIST TYPE="lParentFamily.templatetype" FIELD1="id" VALUE1="lCurrentParent.flexgrouptemplateid" LIST="lCurrentParentDef" EXCLUDEVOIDED="true"/>
+			<LISTOBJECT.ADDROW NAME="parents" assetid="lCurrentParent.flexgrouptemplateid"/>
+		</ELSE>
+		</IF>
+
+	</THEN>
+	</IF>
+
+	<IF COND="Variables.InvalidParent=false">
+	<THEN>
+		<LISTOBJECT.TOLIST NAME="parents" LISTVARNAME="lParentDefs"/>
+		<FLEXTEMPLATES.GETALLTYPES NAME="gm" SITE="Variables.primarypubid" LIST="lParentDefs" PARTIAL="true" LISTVARNAME="lLegalSubtypes"/>
+      
+		<!-- startmenu items for this guy? -->
+		<STARTMENU.GETMATCHINGSTARTITEMS ITEMTYPE="CSDocLink" PUBID="Variables.primarypubid" ASSETTYPE="Variables.AssetType" LISTVARNAME="lStartItems"/>
+      
+		<IF COND="IsVariable.new:Subtype=true">
+		<THEN>
+			<LISTOBJECT.CREATE NAME="loMatchingSubtype" COLUMNS="subtype"/>
+			<LISTOBJECT.ADDROW NAME="loMatchingSubtype" subtype="Variables.new:Subtype"/>
+			<LISTOBJECT.TOLIST NAME="loMatchingSubtype" LISTVARNAME="lLegalSubtypes"/>
+		</THEN>
+		</IF>
+	 
+		<IF COND="IsVariable.new:StartMenu=true">
+		<THEN>
+			<LISTOBJECT.CREATE NAME="loMatchingSubtype" COLUMNS="name"/>
+			<LISTOBJECT.ADDROW NAME="loMatchingSubtype" name="Variables.new:StartMenu"/>
+			<LISTOBJECT.TOLIST NAME="loMatchingSubtype" LISTVARNAME="lStartItems"/>
+		</THEN>
+		</IF>
+
+		<!-- If there is any sub type associated with this start menu then please show only that
+			Here this is overwriting the previuosly created lLegalSubtypes with correct subtype -->
+
+		<IF COND="lStartItems.#numRows=1">
+		<THEN>
+			<IF COND="lStartItems.assetsubtype!=CS.Empty">
+			<THEN>
+				<LISTOBJECT.CREATE NAME="startMenuSubtype" COLUMNS="subtype"/>
+				<LISTOBJECT.ADDROW NAME="startMenuSubtype" subtype="lStartItems.assetsubtype"/>
+				<LISTOBJECT.TOLIST NAME="startMenuSubtype" LISTVARNAME="lLegalSubtypes"/>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+
+     
+		<IF COND="IsVariable.new:Decision=true">
+		<THEN>
+			<IF COND="Variables.new:Decision=0">
+			<THEN>
+				<SETVAR NAME="op" VALUE="new"/>
+			</THEN>
+			<ELSE>
+				<SETVAR NAME="op" VALUE="edit"/>
+				<SETVAR NAME="Edit" VALUE="Variables.new:Decision"/>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<!-- figure out if its an edit from the filename and where it was dropped -->
+			<!-- get children of DroppedOn -->
+			<ATM.LOCATE TYPE="Variables.AssetType" VARNAME="OrphanManager"/>
+			<ATM.LOCATE TYPE="lFlexFamily.grouptype" VARNAME="ParentManager"/>
+			<IF COND="Variables.DroppedOn=Variables.Node2">
+			<THEN>
+				<FLEXASSETS.GETROOTS SITE="Variables.primarypubid" NAME="OrphanManager" LISTVARNAME="lChildList"/>
+			</THEN>
+			<ELSE>
+				<FLEXGROUPS.GETIMMEDIATECHILDREN NAME="ParentManager" ID="Variables.DroppedOn" LISTVARNAME="lChildList"/>
+			</ELSE>
+			</IF>
+			<COMPLEXASSETS.GETSORTEDLIST NAME="OrphanManager" LISTVARNAME="lChildList" LIST="lChildList"/>
+			<HASH.CREATE NAME="hTargetChildren" LIST="lChildList" COLUMN="name"/>
+			<HASH.CONTAINS NAME="hTargetChildren" VALUE="Variables.TheFile_file" VARNAME="hasit"/>
+			<SETVAR NAME="errno" VALUE="0"/>
+			<ASSET.LIST TYPE="Variables.AssetType" LIST="lDropAsset" FIELD1="name" VALUE1="Variables.TheFile_file"/>
+   
+			<IF COND="Variables.hasit=true">
+			<THEN>
+				<SETVAR NAME="op" VALUE="edit"/>
+				<SETVAR NAME="new:Decision" VALUE="lDropAsset.id"/>
+			</THEN>
+			<ELSE>
+
+				<IF COND="Variables.errno=-101">
+				<THEN>
+					<SETVAR NAME="op" VALUE="new"/>
+				</THEN>
+				<ELSE>
+					<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/FileAlreadyExists" VARNAME="_XLAT_"/>
+					<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+				</ELSE>
+				</IF>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	      
+		<IF COND="Variables.op=new">
+		<THEN>
+			<IF COND="IsList.lStartItems=true">
+			<THEN>
+				<IF COND="lStartItems.#numRows!=0">
+				<THEN>
+					<IF COND="lStartItems.#numRows!=1">
+					<THEN>
+						<!-- need to prompt for selection of start menu -->
+						<!-- if more than one subtype too we can prompt on the same screen -->
+						<SETVAR NAME="startMenuPrompt" VALUE="yes"/>
+					</THEN>
+					<ELSE>
+						<SETVAR NAME="startMenuPrompt" VALUE="no"/>
+						<!-- start menu workflow, have name of start menu item -->
+						<STARTMENU.LOAD NAME="lStartItems.name" ITEMTYPE="CSDocLink" OBJVARNAME="si"/>
+						<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+						<PROCESSLIST.GETALL NAME="currentProc" VARNAME="process"/>
+						<if COND="Variables.process!=Variables.empty">
+						<then>
+							<!-- The worflow tags may stream status information, which the client won't like.  For now
+								I'll wrap a comment around any status info -->
+							<!-- For an ask start step, we need to display a list of roles and users -->
+							<IGNORETHIS>
+								<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.process" SITE="Variables.primarypubid" VARNAME="canstartworkflow"/>
+								<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+								<WorkflowProcess.GetProcessName NAME="workflow" VARNAME="workflowname" />
+							</IGNORETHIS>
+							<if COND="Variables.canstartworkflow!=true">
+							<then>
+								<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/CanNotStartWorkflow" VARNAME="_XLAT_"/>
+								<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+								<IF COND="IsList.lLegalSubtypes=true">
+								<THEN>
+									<FLUSH LIST="lLegalSubtypes"/>
+								</THEN>
+								</IF>
+							</then>
+							</if>
+						</then>
+						</if>
+					</ELSE>
+					</IF>
+
+					<!-- need to determine available subtypes based on where doc was dropped.  If it was dropped as an orphan, prompt for definition,
+						otherwise we might be able to select a subtype if there is only 1 that is a legal child of the drop folder. -->
+					<IF COND="IsList.lLegalSubtypes=true">
+					<THEN>
+						<IF COND="lLegalSubtypes.#numRows!=0">
+						<THEN>
+							<SETVAR NAME="errno" VALUE="0"/>
+							<EXTERNALCLIENTSMANAGER.LOADFROMFIELDS SITE="Variables.primarypubid" OBJVARNAME="oClient" ASSETTYPE="Variables.AssetType" CLIENTAPP="CSDocLink"/>
+							<IF COND="Variables.errno=0">
+							<THEN>
+								<EXTERNALCLIENTSITEM.GETID NAME="oClient" VARNAME="clientid"/>
+								<IF COND="lLegalSubtypes.#numRows=1">
+								<THEN>
+									<IF COND="Variables.startMenuPrompt=yes">
+									<THEN>
+										<STRINGLIST NAME="lFileExtension" STR="Variables.TheFile_file" DELIM="."/>
+										<SETROW LIST="lFileExtension" ACTION="LAST"/>
+										<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+											<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ChooseAStartMenuItem" VARNAME="_XLAT_"/>
+											<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+												<XLAT.LOOKUP KEY="dvin/UI/Admin/StartMenuItem" VARNAME="_XLAT_"/>
+												<REQUIREDVALUE NAME="StartMenu" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+													<OPTIONS>
+														<LOOP LIST="lStartItems">
+															<STRING.ENCODE LIST="lStartItems" COLUMN="name" VARNAME="currentStart"/>
+															<!--This portion checks if this STARTUP Menu support the dropped file -->
+															<STRING.ENCODE LIST="lStartItems" COLUMN="assetsubtype" VARNAME="currentAssetsubtype"/>
+															<if COND="Variables.currentAssetsubtype!=Variables.empty">
+															<then>
+																<!-- Add the code here to see if this start menu accepts the specified file extension-->
+																<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lDropField" SUBTYPE="Variables.currentAssetsubtype" ACTION="acceptdocs" NOTVALUE="No"/>
+																	
+																<IF COND="IsList.lDropField=true">
+																<THEN>
+																	<IF COND="lDropField.#numRows!=0">
+																	<THEN>
+																		<IF COND="lDropField.value=*.*">
+																		<THEN>
+																			<OPTION VALUE="Variables.currentStart" SELECTED="false" DISPLAYVALUE="Variables.currentStart" REPLACEALL="Variables.currentStart"/>
+																		</THEN>
+																		<ELSE>
+																			<SETVAR NAME="errno" VALUE="0"/>
+																			<TOLOWER STR="lFileExtension.ITEM" OUTSTR="currentExtension"/>
+																			<TOLOWER STR="lDropField.value" OUTSTR="validExtensions"/>
+																			<ISINLIST ITEM="Variables.currentExtension" STR="Variables.validExtensions"/>
+																			<IF COND="Variables.errno=1">
+																			<THEN>
+																				<OPTION VALUE="Variables.currentStart" SELECTED="false" DISPLAYVALUE="Variables.currentStart" REPLACEALL="Variables.currentStart"/>
+																			</THEN>
+																			</IF>
+																		</ELSE>
+																		</IF>
+																	</THEN>
+																	</IF>
+																	<FLUSH LIST="lDropField"/>
+																</THEN>
+																<ELSE>
+																	<XLAT.LOOKUP KEY="dvin/CSDocLink/Nostartmenuitems" VARNAME="_XLAT_"/>
+																	<ERROR CODE="5" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+																</ELSE>
+																</IF>
+															</then>	
+															<else>
+																<OPTION VALUE="Variables.currentStart" SELECTED="false" DISPLAYVALUE="Variables.currentStart" REPLACEALL="Variables.currentStart"/>
+															</else>
+															</if>	
+														</LOOP>
+													</OPTIONS>
+												</REQUIREDVALUE>
+											</REQUIREDINFORMATION>
+										</ERROR>
+									</THEN>
+									<ELSE>
+										<!-- a tag would be nice to determine the available children for a parentdef that are enabled for doclink -->
+										<!-- for now assume all subtypes are enabled -->
+										<!-- determine file attribute to drop to -->
+											
+										<ASSET.LIST TYPE="lFlexFamily.templatetype" FIELD1="name" VALUE1="lLegalSubtypes.subtype" LIST="lCurrentSubtype"/>
+											
+										<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lClientFields" SUBTYPE="lCurrentSubtype.name" ACTION="acceptdocs" NOTVALUE="No"/>
+										<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lMaxSize" SUBTYPE="lCurrentSubtype.name" ACTION="maxfilesize" NOTVALUE="No"/>
+										<IF COND="IsList.lMaxSize=true">
+										<THEN>
+											<IF COND="lMaxSize.#numRows!=0">
+											<THEN>
+												<!-- check file size -->
+												<SETVAR NAME="tooBig" VALUE="0"/>
+												<IF COND="lMaxSize.value!=unlimited">
+												<THEN>
+													<CALCULATOR.GO VALUE="Variables.TheFile_size lMaxSize.value GT" VARNAME="tooBig"/>
+												</THEN>
+												</IF>
+								
+												<IF COND="Variables.tooBig=1">
+												<THEN>
+													<XLAT.LOOKUP KEY="dvin/CSDocLink/Filetoobig" VARNAME="_XLAT_"/>
+													<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+												</THEN>
+												<ELSE>
+								
+													<SETVAR NAME="new:name" VALUE="Variables.TheFile_file"/>
+													<SETVAR NAME="new:flextemplateid" VALUE="lCurrentSubtype.id"/>
+													<SETVAR NAME="new:Publist" VALUE="Variables.primarypubid"/>
+													<SETVAR NAME="new:status" VALUE="RF"/>
+									
+									
+													<SETVAR NAME="fieldList" VALUE="Variables.empty"/>
+														
+													<IF COND="IsList.lClientFields=true">
+													<THEN>
+														<IF COND="lClientFields.#numRows!=0">
+														<THEN>
+															<!-- This is a subroutine that calculates the missing required fields based on the configuration.
+																Note that it is quite aware of the variable context in which it operates, so be careful when
+																changing variable, object, and list names above, lest you break the calculating within -->
+															<CALLELEMENT NAME="OpenMarket/CSClient/Util/CalculateMissingFields"/>
+									
+															<!-- if workflow starts with an ask step then we need to ask for assignees and deadlines -->
+															<!-- start menu workflow, have name of start menu item -->
+															<STARTMENU.LOAD NAME="lStartItems.name" ITEMTYPE="CSDocLink" OBJVARNAME="si"/>
+															<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+															<PROCESSLIST.GETALL NAME="currentProc" VARNAME="process"/>
+															<if COND="Variables.process!=Variables.empty">
+															<then>
+																<!-- The workflow tags may stream status information, which the client won't like.  For now
+																	I'll wrap a comment around any status info -->
+																<!-- For an ask start step, we need to display a list of roles and users -->
+																<IGNORETHIS>
+																	<!-- KDW: This element repeats itself in many wasteful and confusing ways, one of them being that
+																		'canstartworkflow' is called already, and is found to indicate that going ahead is just fine -->
+																	<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.process" SITE="Variables.primarypubid" VARNAME="canstartworkflow"/>
+																	<if COND="Variables.canstartworkflow=true">
+																	<then>
+																		<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+																		<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+																		<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+																		<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+																		<if COND="Variables.steptype=ask">
+																		<then>
+																			<!-- This whole thing seems to be a rather bizarre way of finding out whether we've asked already for assignees -->
+																			<WORKFLOWENGINE.GETSTARTWORKFLOWCANDIDATEASSIGNEES SITE="SessionVariables.pubid" ID="Variables.process" OBJECT="workflowasset" OBJVARNAME="partsobj"/>
+																			<Participants.GetAllRoles NAME="partsobj" VARNAME="assigneeroles" />
+																			<stringlist NAME="roleslist" STR="Variables.assigneeroles" DELIM="," />
+																			<SETVAR NAME="errno" VALUE="0"/>
+																			<ICS.RESOLVEVARIABLES NAME="$(Variables.new:ask:$(roleslist.ITEM):SET)" OUTPUT="currentVal" DELIMITED="true"/>
+																			<IF COND="Variables.errno!=0">
+																			<THEN>
+																				<SETVAR NAME="NeedToAsk" VALUE="true"/>
+																				<SETVAR NAME="errno" VALUE="0"/>
+																			</THEN>
+																			</IF>
+																		</then>
+																		</if>
+																	</then>
+																	</if>
+																</IGNORETHIS>
+															</then>
+															</if>
+
+															<IF COND="lMissingFields.#numRows!=0">
+															<THEN>
+																<SETVAR NAME="NeedToAsk" VALUE="true"/>
+															</THEN>
+															</IF>
+
+															<IF COND="Variables.NeedToAsk=true">
+															<THEN>
+																<ERROR CODE="7" DESCRIPTION="More information required" SEVERITY="1">
+																	<IF COND="Variables.OKToSave=true">
+																	<THEN>
+																		<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/MoreInformationRequired" VARNAME="_XLAT_"/>
+																	</THEN>
+																	<ELSE>
+																		<SETVAR NAME="_XLAT_" VALUE="Variables.OKToSave"/>
+																	</ELSE>
+																	</IF>
+																	<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+																		<if COND="Variables.steptype=ask">
+																		<then>
+																			<WORKFLOWENGINE.GETPROCESSID ID="Variables.process" OBJVARNAME="workflow"/>
+																			<WORKFLOWPROCESS.GETPROCESSNAME NAME="workflow" VARNAME="workflowname" />
+																			<WORKFLOWENGINE.GETSTARTWORKFLOWCANDIDATEASSIGNEES SITE="SessionVariables.pubid" ID="Variables.process" OBJECT="workflowasset" OBJVARNAME="partsobj"/>
+										    
+																			<callelement NAME="OpenMarket/CSClient/AskForAssignees"/>
+																		</then>
+																		</if>
+																		<LOOP LIST="lMissingFields">
+																			<STRING.ENCODE LIST="lMissingFields" COLUMN="name" VARNAME="currentField"/>
+																			<IF COND="lMissingFields.clienttype=List">
+																			<THEN>
+																				<INSPECTDATA.GETTYPESTRING SITE="Variables.primarypubid" ASSETTYPE="Variables.AssetType" SUBTYPE="lLegalSubtypes.subtype" ATTRIBUTE="lMissingFields.name" VARNAME="typeString"/>
+																				<INSPECTOR.PARSETYPESTRING VALUE="Variables.typeString" ATTRIBUTE="lMissingFields.name" LISTVARNAME="lTypeInfo"/>
+																				<STRING.ENCODE LIST="lTypeInfo" COLUMN="description" VARNAME="packedDesc"/>
+																				<IF COND="lTypeInfo.refsubtype!=Variables.empty">
+																				<THEN>
+																					<SETVAR NAME="searchfor:Publist_op" VALUE="="/>
+																					<SETVAR NAME="searchfor:Publist:Total" VALUE="1"/>
+																					<SETVAR NAME="searchfor:Publist:0" VALUE="Variables.primarypubid"/>
+																					<ASSET.SEARCH TYPE="lTypeInfo.reftype" SUBTYPE="lTypeInfo.refsubtype" PREFIX="searchfor" ORDER="name" LIST="lCurrentOptions" FIELDLIST="LocalFields"/>
+																				</THEN>
+																				<ELSE>
+																					<ASSET.LIST TYPE="lTypeInfo.reftype" LIST="lCurrentOptions" EXCLUEDVOIDED="true" PUBID="Variables.primarypubid"/>
+																				</ELSE>
+																				</IF>
+																				<IF COND="lTypeInfo.multiple=true">
+																				<THEN>
+																					<SETVAR NAME="clienttype" VALUE="mslist"/>
+																				</THEN>
+																				<ELSE>
+																					<SETVAR NAME="clienttype" VALUE="list"/>
+																				</ELSE>
+																				</IF>
+																				<IF COND="lTypeInfo.enumvals!=Variables.empty">
+																				<THEN>
+																					<STRINGLIST NAME="lEnumVals" STR="lTypeInfo.enumvals" DELIM=","/>
+																					<IF COND="lTypeInfo.enumdisplay!=Variables.empty">
+																					<THEN>
+																						<STRINGLIST NAME="lEnumDisplay" STR="lTypeInfo.enumdisplay" DELIM=","/>
+																						<REQUIREDVALUE NAME="Variables.currentField" DISPLAYNAME="Variables.packedDesc" DataType="Variables.clienttype" READONLY="lTypeInfo.readonly" REQUIRED="lTypeInfo.required" REPLACEALL="Variables.currentField,Variables.clienttype,lTypeInfo.readonly,lTypeInfo.required,Variables.packedDesc">
+																							<OPTIONS>
+																								<SETROW LIST="lEnumDisplay" ACTION="FIRST"/>
+																								<LOOP LIST="lEnumVals">
+																									<STRING.ENCODE LIST="lEnumDisplay" COLUMN="ITEM" VARNAME="currentDisplay"/>
+																									<STRING.ENCODE LIST="lEnumVals" COLUMN="ITEM" VARNAME="currentEnum"/>
+																									<OPTION VALUE="Variables.currentEnum" SELECTED="false" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.currentDisplay,Variables.currentEnum"/>
+																									<SETROW LIST="lEnumDisplay" ACTION="NEXT"/>
+																								</LOOP>
+																							</OPTIONS>
+																						</REQUIREDVALUE>
+																					</THEN>
+																					<ELSE>
+																						<REQUIREDVALUE NAME="Variables.currentField" DISPLAYNAME="Variables.packedDesc" DataType="Variables.clienttype" READONLY="lTypeInfo.readonly" REQUIRED="lTypeInfo.required" REPLACEALL="Variables.currentField,Variables.clienttype,lTypeInfo.readonly,lTypeInfo.required,Variables.packedDesc">
+																							<OPTIONS>
+																								<LOOP LIST="lEnumVals">
+																									<STRING.ENCODE LIST="lEnumVals" COLUMN="ITEM" VARNAME="currentDisplay"/>
+																									<OPTION VALUE="Variables.currentDisplay" SELECTED="false" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.currentDisplay"/>
+																								</LOOP>
+																							</OPTIONS>
+																						</REQUIREDVALUE>
+																					</ELSE>
+																					</IF>
+																				</THEN>
+																				<ELSE>
+																					<REQUIREDVALUE NAME="Variables.currentField" DISPLAYNAME="Variables.packedDesc" DATATYPE="Variables.clienttype" DISPLAYVALUES="Variables.displayOptions" REQUIRED="lMissingFields.required" REPLACEALL="Variables.currentField,Variables.packedDesc,lMissingFields.clienttype,Variables.currentOptions,lMissingFields.required,Variables.displayOptions,Variables.clienttype">
+																						<OPTIONS>
+																							<LOOP LIST="lCurrentOptions">
+																								<STRING.ENCODE LIST="lCurrentOptions" COLUMN="name" VARNAME="currentDisplay"/>
+																								<OPTION VALUE="lCurrentOptions.id" SELECTED="false" DISPLAYVALUE="Variables.currentDisplay" REPLACEALL="Variables.currentDisplay,lCurrentOptions.id"/>
+																							</LOOP>
+																						</OPTIONS>
+																					</REQUIREDVALUE>
+																				</ELSE>
+																				</IF>
+																			</THEN>
+																			<ELSE>
+																				<STRING.ENCODE LIST="lMissingFields" COLUMN="description" VARNAME="packedDesc"/>
+																				<REQUIREDVALUE NAME="Variables.currentField" DISPLAYNAME="Variables.packedDesc" DATATYPE="lMissingFields.clienttype" REQUIRED="lMissingFields.required" REPLACEALL="Variables.currentField,Variables.packedDesc,lMissingFields.clienttype,lMissingFields.required"/>
+																			</ELSE>
+																			</IF>
+																		</LOOP>
+																	</REQUIREDINFORMATION>
+																</ERROR>
+									
+															</THEN>
+															<ELSE>
+																<SETVAR NAME="uploadedfilename" VALUE="Variables.new:name"/> 
+																<!-- good, no asset with the new name -->
+																<ASSET.LOAD NAME="sourceinst" TYPE="Variables.AssetType" FIELD="id" VALUE="Variables.SourceID" EDITABLE="false"/>
+																<ASSET.SCATTER NAME="sourceinst" PREFIX="new"/>
+
+																<ASSET.CREATE NAME="ainst" TYPE="Variables.AssetType"/>
+																<SUBSTRING STR="lClientFields.property" OUTSTR="realDocFieldName" INDEX="10"/>
+																<!-- set the dimension to this asset -->
+																<CALLELEMENT NAME="OpenMarket/CSClient/setDimension">
+																	<ARGUMENT NAME="dimparentid" VALUE="Variables.SourceID"/>
+																	<ARGUMENT NAME="assetprefix" VALUE="new"/>
+																</CALLELEMENT>
+																<LOGMSG STR="Variables.fieldList Variables.SourceID Variables.new:name" />
+																<ASSET.LIST TYPE="lFlexFamily.attributetype" FIELD1="name" VALUE1="Variables.realDocFieldName" LIST="lCurrentDocField"/>
+																<ASSET.GATHER NAME="ainst" PREFIX="new" FIELDLIST="name,flextemplateid,status,Dimension,Dimension-parent,Variables.fieldList"/>
+
+																<ASSET.SET NAME="ainst" FIELD="status" VALUE="PL"/>
+																<ASSET.SET NAME="ainst" FIELD="name" VALUE="Variables.uploadedfilename"/> 
+																<IF COND="Variables.DroppedOn!=Variables.Node2">
+																<THEN>
+																	<FLEXASSET.ADDPARENT NAME="ainst" ID="Variables.DroppedOn"/>
+																</THEN>
+																</IF>
+																<FLEXASSET.SETSINGLEATTRIBUTE NAME="ainst" ID="lCurrentDocField.id" VALUE="Variables.TheFile_file" CGI="TheFile"/>
+
+																<SETVAR NAME="ISBLOBVALID" VALUE="true"/>
+																		
+																<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+																	<ARGUMENT NAME="cs_InstanceName" VALUE="ainst"/>
+																	<ARGUMENT NAME="cs_FieldName" VALUE="lClientFields.property"/>
+																	<ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+																</CALLELEMENT>
+																<!---------------------------------------->
+																<IF COND="Variables.ISBLOBVALID=false">
+																<THEN>
+																	<XLAT.LOOKUP KEY="dvin/CSDocLink/MissingBlobAttr" VARNAME="_XLAT_"/>
+																	<ERROR CODE="5" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+																</THEN>
+																<ELSE>
+																	<ASSET.SAVE NAME="ainst"/>
+																	<IF COND="Variables.errno=0">
+																	<THEN>
+																		<ASSET.GET NAME="ainst" FIELD="id" OUTPUT="id"/>
+																		<AFFECTEDNODES>
+																			<NODE PARENTID="Variables.parentid" REPLACEALL="Variables.parentid"/>
+																		</AFFECTEDNODES>
+																		
+																		<!-- start menu workflow, have name of start menu item -->
+																		<STARTMENU.LOAD NAME="lStartItems.name" ITEMTYPE="CSDocLink" OBJVARNAME="si"/>
+																		<STARTMENUITEM.GETPROCESSES NAME="si" OBJVARNAME="currentProc"/>
+																		<PROCESSLIST.GETALL NAME="currentProc" VARNAME="process"/>
+																		<if COND="Variables.process!=Variables.empty">
+																		<then>
+																			<!-- The worflow tags may stream status information, which the client won't like.  For now
+																				I'll wrap a comment around any status info -->
+																			<!-- For an ask start step, we need to display a list of roles and users -->
+																			<IGNORETHIS>
+																				<WORKFLOWENGINE.CANSTARTWORKFLOW ID="Variables.process" SITE="Variables.primarypubid" VARNAME="canstartworkflow"/>
+																				<if COND="Variables.canstartworkflow=true">
+																				<then>
+																					<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+																					<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+																					<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+																					<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+																					<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+																					<STARTMENUITEM.GETPARTICIPANTS NAME="si" OBJVARNAME="currentParts"/>
+																					<PARTICIPANTLIST.GETREQUIRED NAME="currentParts" OBJVARNAME="partsList"/>
+																					<PARTICIPANTS.GETALLROLES NAME="partsList" VARNAME="allRoles"/>
+																					<IF COND="Variables.allRoles!=Variables.empty">
+																					<THEN>
+																						<WORKFLOWENGINE.NEWPARTICIPANTS  OBJVARNAME="myParts"/>
+																						<STRINGLIST STR="Variables.allRoles" NAME="rlist" DELIM=","/>
+																						<LOOP LIST="rlist">
+																							<PARTICIPANTS.GETPARTICIPANTSFORROLE NAME="partsList" ROLE="rlist.ITEM" LISTVARNAME="users"/>
+																							<LOOP LIST="users">
+																								<PARTICIPANTS.ADDPARTICIPANT NAME="myParts" ROLE="rlist.ITEM" USER="users.ITEM"/>
+																							</LOOP>
+																						</LOOP>
+																					</THEN>
+																					<ELSE>
+																						<WORKFLOWENGINE.GETPOTENTIALPARTICIPANTS OBJVARNAME="myParts" SITE="Variables.primarypubid" PROCESS="Variables.process" OBJECT="workflowasset"/>
+																					</ELSE>
+																					</IF>
+																					<WORKFLOWENGINE.SETOBJECTPARTICIPANTS OBJECT="workflowasset" PARTICIPANTS="myParts"/>
+
+																					<if COND="Variables.steptype=ask">
+																					<then>
+																						<!-- set assignees from requiredinfo vars -->
+																						<WORKFLOWENGINE.NEWPARTICIPANTS OBJVARNAME="partobj"/> 
+																						<PARTICIPANTS.CLEAR NAME="partobj"/>
+											
+																						<LOOP LIST="roleslist">
+																							<SETVAR NAME="users" VALUE="Variables.new:ask:roleslist.ITEM"/>
+																							<STRINGLIST STR="Variables.users" NAME="userList" DELIM=","/>
+																							<LOOP LIST="userList">
+																								<SUBSTITUTE STR="userList.ITEM" WHAT=";" WITH="," OUTSTR="currentUser"/>
+																								<PARTICIPANTS.ADDPARTICIPANT NAME="partobj" ROLE="roleslist.ITEM" USER="Variables.currentUser"/>
+																							</LOOP>
+																						</LOOP>
+																						<WORKFLOWENGINE.STARTOBJECTWORKFLOWPROCESS OBJECT="workflowasset" ID="Variables.process" SITE="Variables.primarypubid" ASSIGNMENTLIST="partobj" PARTICIPANTS="myParts"/>
+																					</then>
+																					<else>
+																						<WORKFLOWENGINE.STARTOBJECTWORKFLOWPROCESS SITE="Variables.primarypubid"
+																							OBJECT="workflowasset" 
+																							ID="Variables.process"
+																							PARTICIPANTS="myParts"/>
+																					</else>
+																					</if>
+										
+																				</then>
+																				<else>
+																					<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+																					<WorkflowProcess.GetProcessName NAME="workflow" VARNAME="workflowname" />
+																					<setvar NAME="doproceed" VALUE="NoStartWorkflowPriv"/>
+																				</else>
+																				</if>
+																			</IGNORETHIS>
+																		</then>
+																		</if>
+																	</THEN>
+																	<ELSE>
+																		<XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+																		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+																	</ELSE>
+																	</IF>
+																</ELSE>
+																</IF>
+																<!---------------------------------------->
+															</ELSE>
+															</IF>
+														</THEN>
+														</IF>
+													</THEN>
+													<ELSE>
+													</ELSE>
+													</IF>
+												</ELSE>
+												</IF>
+											</THEN>
+											<ELSE>
+												<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ConfigurationModified" VARNAME="_XLAT_"/>
+												<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+											</ELSE>
+											</IF>
+										</THEN>
+										</IF>
+									</ELSE>
+									</IF>
+								</THEN>
+								<ELSE>
+									<!-- more than 1 possible subtype -->
+									<!-- try to match from doctype -->
+									<STRINGLIST NAME="lFileExtension" STR="Variables.TheFile_file" DELIM="."/>
+									<SETROW LIST="lFileExtension" ACTION="LAST"/>
+									<LISTOBJECT.CREATE NAME="SubtypeList" COLUMNS="name"/>
+										
+									<LOOP LIST="lLegalSubtypes">
+										<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lDropField" SUBTYPE="lLegalSubtypes.subtype" ACTION="acceptdocs" NOTVALUE="No"/>
+										<IF COND="IsList.lDropField=true">
+										<THEN>
+											<IF COND="lDropField.#numRows!=0">
+											<THEN>
+												<IF COND="lDropField.value=*.*">
+												<THEN>
+													<LISTOBJECT.ADDROW NAME="SubtypeList" name="lLegalSubtypes.subtype"/>
+												</THEN>
+												<ELSE>
+													<SETVAR NAME="errno" VALUE="0"/>
+													<TOLOWER STR="lFileExtension.ITEM" OUTSTR="currentExtension"/>
+													<TOLOWER STR="lDropField.value" OUTSTR="validExtensions"/>
+													<ISINLIST ITEM="Variables.currentExtension" STR="Variables.validExtensions"/>
+													<IF COND="Variables.errno=1">
+													<THEN>
+														<LISTOBJECT.ADDROW NAME="SubtypeList" name="lLegalSubtypes.subtype"/>
+													</THEN>
+													</IF>
+												</ELSE>
+												</IF>
+											</THEN>
+											</IF>
+											<FLUSH LIST="lDropField"/>
+										</THEN>
+										</IF>
+									</LOOP>
+									<LISTOBJECT.TOLIST NAME="SubtypeList" LISTVARNAME="lSubtypeList"/>
+									<IF COND="lSubtypeList.#numRows=1">
+									<THEN>
+										<!-- Only one subtype possible; just re-call this same element, making as if the subtype was sent -->
+										<SETVAR NAME="new:Subtype" VALUE="lSubtypeList.name"/>
+										<CALLELEMENT NAME="OpenMarket/CSClient/TranslateUsingUpload"/>
+									</THEN>
+									<ELSE>
+										<IF COND="lSubtypeList.#numRows=0">
+										<THEN>
+											<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ConfigurationModified" VARNAME="_XLAT_"/>
+											<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_"/>
+										</THEN>
+										<ELSE>
+											<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/MoreInformationRequired" VARNAME="_XLAT_"/>
+											<ERROR CODE="7" DESCRIPTION="Variables._XLAT_" SEVERITY="1" REPLACEALL="Variables._XLAT_">
+												<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ChooseASubtype" VARNAME="_XLAT_"/>
+												<REQUIREDINFORMATION TITLE="Variables._XLAT_" REPLACEALL="Variables._XLAT_">
+													<XLAT.LOOKUP KEY="dvin/Common/Subtype" VARNAME="_XLAT_"/>
+													<REQUIREDVALUE NAME="Subtype" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+														<OPTIONS>
+															<LOOP LIST="lSubtypeList">
+																<STRING.ENCODE LIST="lSubtypeList" COLUMN="name" VARNAME="currentSubtype"/>
+																<OPTION VALUE="Variables.currentSubtype" SELECTED="false" DISPLAYVALUE="Variables.currentSubtype" REPLACEALL="Variables.currentSubtype"/>
+															</LOOP>
+														</OPTIONS>
+													</REQUIREDVALUE>
+													<IF COND="Variables.startMenuPrompt=yes">
+													<THEN>
+														<XLAT.LOOKUP KEY="dvin/UI/Admin/StartMenu" VARNAME="_XLAT_"/>
+														<REQUIREDVALUE NAME="StartMenu" DISPLAYNAME="Variables._XLAT_" DATATYPE="List" REQUIRED="true" REPLACEALL="Variables._XLAT_">
+															<OPTIONS>
+																<LOOP LIST="lStartItems">
+																	<STRING.ENCODE LIST="lStartItems" COLUMN="name" VARNAME="currentSubtype"/>
+																	<OPTION VALUE="Variables.currentSubtype" SELECTED="false" DISPLAYVALUE="Variables.currentSubtype" REPLACEALL="Variables.currentSubtype"/>
+																
+																</LOOP>
+															</OPTIONS>
+														</REQUIREDVALUE>
+													</THEN>
+													</IF>
+												</REQUIREDINFORMATION>
+											</ERROR>
+										</ELSE>
+										</IF>
+									</ELSE>
+									</IF>
+										
+								</ELSE>
+								</IF>
+							</THEN>
+							<ELSE>
+								<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ConfigurationModified" VARNAME="_XLAT_"/>
+								<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+							</ELSE>
+							</IF>
+						</THEN>
+						<ELSE>
+							<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ConfigurationModified" VARNAME="_XLAT_"/>
+							<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+						</ELSE>
+						</IF>
+					</THEN>
+					</IF>
+				</THEN>
+				<ELSE>
+					<XLAT.LOOKUP KEY="dvin/CSDocLink/Nostartmenuitems" VARNAME="_XLAT_"/>
+					<ERROR CODE="5" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+				</ELSE>
+				</IF>
+			</THEN>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="Variables.op=edit">
+			<THEN>
+				<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.new:Decision" OBJVARNAME="workflowasset" />
+				<WORKFLOWENGINE.ISFUNCTIONLEGAL OBJECT="workflowasset" FUNCTIONNAME="edit" SITE="Variables.primarypubid" VARNAME="editLegal" MUSTBEASSIGNED="true"/>
+
+				<IF COND="Variables.editLegal=true">
+				<THEN>
+
+					<EXTERNALCLIENTSMANAGER.LOADFROMFIELDS SITE="Variables.primarypubid" OBJVARNAME="oClient" ASSETTYPE="Variables.AssetType" CLIENTAPP="CSDocLink"/>
+					<EXTERNALCLIENTSITEM.GETID NAME="oClient" VARNAME="clientid"/>
+					<ASSET.LIST TYPE="lFlexFamily.templatetype" FIELD1="name" VALUE1="lLegalSubtypes.subtype" LIST="lCurrentSubtype"/>
+					      
+					<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lClientFields" SUBTYPE="lCurrentSubtype.name" ACTION="acceptdocs" NOTVALUE="No"/>
+					<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST CLIENTID="Variables.clientid" LISTVARNAME="lMaxSize" SUBTYPE="lCurrentSubtype.name" ACTION="maxfilesize" NOTVALUE="No"/>
+			 
+					<!-- check file size -->
+					<SETVAR NAME="tooBig" VALUE="0"/>
+					<IF COND="lMaxSize.value!=unlimited">
+					<THEN>
+						<CALCULATOR.GO VALUE="Variables.TheFile_size lMaxSize.value GT" VARNAME="tooBig"/>
+					</THEN>
+					</IF>
+			 
+					<IF COND="Variables.tooBig=1">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/CSDocLink/Filetoobig" VARNAME="_XLAT_"/>
+						<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+					</THEN>
+					<ELSE>
+						<ASSET.LOAD NAME="ainst" FIELD="id" VALUE="Variables.new:Decision" TYPE="Variables.AssetType" EDITABLE="true"/>
+						<ASSET.GET NAME="ainst" FIELD="id" OUTPUT="id"/>
+						<IF COND="Variables.errno=0">
+						<THEN>
+							<!-- may need to checkout if rev tracked -->
+							<CALLELEMENT NAME="OpenMarket/CSClient/CheckOut">
+								<ARGUMENT NAME="Function" VALUE="edit"/>
+							</CALLELEMENT>
+							<IF COND="Variables.doproceed=true">
+							<THEN>
+								<ASSET.SET NAME="ainst" FIELD="status" VALUE="ED"/>
+								<SUBSTRING STR="lClientFields.property" OUTSTR="realDocFieldName" INDEX="10"/>
+								<ASSET.LIST TYPE="lFlexFamily.attributetype" FIELD1="name" VALUE1="Variables.realDocFieldName" LIST="lCurrentDocField"/>
+								<FLEXASSET.SETSINGLEATTRIBUTE NAME="ainst" ID="lCurrentDocField.id" VALUE="Variables.TheFile_file" CGI="TheFile"/>
+				     
+								<SETVAR NAME="ISBLOBVALID" VALUE="true"/>
+
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/SetBLOBFolder">
+									<ARGUMENT NAME="cs_InstanceName" VALUE="ainst"/>
+									<ARGUMENT NAME="cs_FieldName" VALUE="lClientFields.property"/>
+									<ARGUMENT NAME="cs_IsMultiple" VALUE="false"/>
+								</CALLELEMENT>
+								<!--------------------------------->
+								<IF COND="Variables.ISBLOBVALID=false">
+								<THEN>
+									<XLAT.LOOKUP KEY="dvin/CSDocLink/MissingBlobAttr" VARNAME="_XLAT_"/>
+									<ERROR CODE="5" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+								</THEN>
+								<ELSE>
+									<ASSET.SAVE NAME="ainst"/>
+									<IF COND="Variables.errno=0">
+									<THEN>
+										<AFFECTEDNODES>
+											<NODE NODEID="Variables.id" PARENTID="Variables.DroppedOn" REPLACEALL="Variables.id,Variables.DroppedOn"/>
+										</AFFECTEDNODES>
+										<if COND="Variables.trackingenabled=true">
+										<then>
+											<!-- See if implicitly checked out -->
+											<IMPLICITCHECKOUT.ISCHECKEDOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id" VARNAME="checkVar"/>
+											<IF COND="IsVariable.checkVar=true">
+											<THEN>
+												<IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.AssetType" ASSETID="Variables.id"/>
+												<ASSET.UNDOCHECKOUT NAME="ainst" REVERT="false" FLUSH="true"/>
+											</THEN>
+											</IF>
+										</then>
+										</if>
+									</THEN>
+									<ELSE>
+										<XLAT.LOOKUP KEY="dvin/CSDocLink/Savefailed" VARNAME="_XLAT_" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1"/>
+										<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+									</ELSE>
+									</IF>
+								</ELSE>
+								</IF>
+								<!----------------------------------->
+							</THEN>
+							<ELSE>
+								<XLAT.LOOKUP KEY="dvin/CSDocLink/Variables.doproceed" EVALALL="false" errno="Variables.errno" errdetail1="Variables.errdetail1" VARNAME="_XLAT_"/>
+								<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+							</ELSE>
+							</IF>
+						</THEN>
+						</IF>
+					</ELSE>
+					</IF>
+				</THEN>
+				<ELSE>
+					<XLAT.LOOKUP KEY="dvin/CSDocLink/IllegalTransition" VARNAME="_XLAT_"/>
+					<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" SEVERITY="2" REPLACEALL="Variables._XLAT_"/>
+				</ELSE>
+				</IF> <!-- editLegal --> 
+			</THEN>
+			</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+		<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/ParentCouldNotBeAccessed" VARNAME="_XLAT_"/>
+		<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+	</ELSE>
+	</IF>
+	<REMOVESSVAR NAME="pubid"/>
+</THEN>
+<ELSE>
+	<XLAT.LOOKUP KEY="dvin/CSDocLink/V1/FileNotTransferred" VARNAME="_XLAT_"/>
+	<ERROR CODE="4" DESCRIPTION="Variables._XLAT_" REPLACEALL="Variables._XLAT_" SEVERITY="2"/>
+</ELSE>
+</IF>
+
+</FTCS> 

@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/UIFramework/form/ShowAnalyticsKPI
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- start Analytics Performance Indiacator-->
+<PROPERTY.GET INIFILE="futuretense_xcel.ini" PARAM="analytics.enabled" VARNAME="AnalyticsInst"/>
+<IF COND="Variables.AnalyticsInst=true">
+<THEN>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<tr>
+<td class="form-label-text">
+	<XLAT.STREAM KEY="dvin/Common/AnalyticsKPI"/>:
+</td>
+<td>
+	<BR/>
+</td>
+<td>
+	<USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="u"/>
+	<CCUSER.GETSITEROLES NAME="u" SITE="Variables.pubid" OBJVARNAME="srl"/>
+	<ROLELIST.HASROLE NAME="srl" ROLE="Analytics" VARNAME="hasit"/>
+
+	<IF COND="Variables.hasit=true">   			
+	<THEN>
+		<span class="Variables.spanClass" REPLACEALL="Variables.spanClass">
+
+			<PUBLICATION.LOAD NAME="publication" OBJECTID="SessionVariables.pubid"/>
+			<PUBLICATION.GET NAME="publication" FIELD="name" />		
+			<CALLELEMENT NAME="Analytics/AddPerformanceIndicatorGraph">
+				<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+				<ARGUMENT NAME="AssetId" VALUE="Variables.id"/>
+				<ARGUMENT NAME="sitename" VALUE="Variables.name"/>									
+			</CALLELEMENT>
+		</span>						
+	</THEN>
+	</IF>
+</td>	
+</tr>
+</THEN>
+</IF>
+<!-- end Analytics Performance Indiacator-->
+</ftcs>

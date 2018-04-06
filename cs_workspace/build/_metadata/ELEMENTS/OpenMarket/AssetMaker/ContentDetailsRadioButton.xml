@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 11 $ 
+$Modtime: 7/02/04 4:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ContentDetailsRadioButton.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<setvar NAME="radiosourcetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sourcetype"/>
+<STRINGLIST NAME="fieldvaluelist" STR="Variables.fieldvalue" DELIM=";"/>
+<SETVAR NAME="spacer" VALUE="Variables.empty"/>
+<if COND="Variables.radiosourcetype=TABLE">
+<then>
+	<setvar NAME="tablename" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/tablename"/>
+	<setvar NAME="errno" VALUE="0"/>
+	<setvar NAME="rbvaluekey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/rbvaluekey"/>
+	<setvar NAME="rbdesckey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/rbdesckey"/>
+	<loop LIST="fieldvaluelist">
+		 <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="fieldvaluelist.ITEM"/>
+			<ARGUMENT NAME="type" VALUE="String"/>		 
+		 </callelement>
+		 <if cond="Variables.validatedstatus=true">
+		 <then>
+		<STRING.STREAM VALUE="Variables.spacer"/>
+		 <setvar NAME="fieldstoragetype" VALUE="Variables.assetmaker/property/Variables.fieldname/storage/type"/>
+		 <ISINLIST ITEM="Variables.fieldstoragetype" STR="VARCHAR,LONGVARCHAR,CHAR"/>
+		 <if COND="Variables.errno=1">
+		 <then>
+			<setvar NAME="errno" VALUE="0"/>
+			<EXECSQL LIST="DetailsRadioButton" SQL="SELECT Variables.rbdesckey FROM Variables.tablename 
+					WHERE Variables.rbvaluekey='fieldvaluelist.ITEM'"/>
+   	 </then>
+   	 <else>
+			<setvar NAME="errno" VALUE="0"/>
+			<EXECSQL LIST="DetailsRadioButton" SQL="SELECT Variables.rbdesckey FROM Variables.tablename 
+					WHERE Variables.rbvaluekey=fieldvaluelist.ITEM"/>
+		 </else>
+		 </if>  	 
+		<if COND="Variables.errno=0">
+		<then>
+			<STRING.STREAM LIST="DetailsRadioButton" COLUMN="Variables.rbdesckey"/>
+		</then>
+		</if>
+		<setvar NAME="spacer" VALUE=", "/>
+		</then>
+		</if>
+	</loop>
+</then>
+</if>
+
+<if COND="Variables.radiosourcetype=STRING">
+<then>
+	<setvar NAME="rbvalues" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/rbvalues"/>
+	<setvar NAME="rbdescriptions" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/rbdescriptions"/>
+	<stringlist NAME="rbvlist" STR="Variables.rbvalues" DELIM=","/>
+	<stringlist NAME="rbdesclist" STR="Variables.rbdescriptions" DELIM=","/>
+
+	<loop LIST="fieldvaluelist">
+		<STRING.STREAM VALUE="Variables.spacer"/>
+		<setrow LIST="rbvlist" ACTION="FIRST"/>
+		<setrow LIST="rbdesclist" ACTION="FIRST"/>
+		<loop LIST="rbvlist">
+			<if COND="rbvlist.ITEM=fieldvaluelist.ITEM">
+			<then>
+				<STRING.STREAM VALUE="rbdesclist.ITEM"/>
+			</then>
+			</if>
+			<setrow LIST="rbdesclist" ACTION="NEXT"/>
+		</loop>
+		<setvar NAME="spacer" VALUE=", "/>
+	</loop>
+</then>
+</if>
+</FTCS> 

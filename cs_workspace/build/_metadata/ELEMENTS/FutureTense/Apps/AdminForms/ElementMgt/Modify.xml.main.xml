@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">FutureTense/Apps/AdminForms/ElementMgt/Modify</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>FutureTense/Apps/AdminForms/ElementMgt/Modify</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>FutureTense/Apps/AdminForms/ElementMgt/Modify.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/FutureTense/Apps/AdminForms/ElementMgt/Modify.xml|null|_storable_type\=%2FELEMENTS%2FFutureTense%2FApps%2FAdminForms%2FElementMgt%2FModify.xml
+@hashval=-1624484386
+key=@ELEMENTCATALOG-FutureTense/Apps/AdminForms/ElementMgt/Modify
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

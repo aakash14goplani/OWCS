@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<PROPERTY.GET PARAM="xcelerate.charset" INIFILE="futuretense_xcel.ini" VARNAME="charset"/>
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=Variables.charset"/>
+
+<!-- OpenMarket/Xcelerate/UIFramework/TreeLoad
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<SETVAR NAME='_IS_TREE_ELEMENT_' VALUE='true'/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<HTML>
+	 <HEAD>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/findBrowser" />
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/LoadDojo"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/SetStylesheet"/>
+
+	 </HEAD>
+
+	 <BODY BGCOLOR="#ffffff" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+		<SETVAR NAME="errno" VALUE="0"/>
+		<!-- The _enableForms property enables/disables following assettypes from the advanced ui.
+		•	All Flex assets and their parent assets
+		•	All basic assets
+		•	Engage assets like Recommendation, Segment and Promotion
+		•	Special assets like Query and Collection
+		-->
+		<PROPERTY.GET PARAM="advancedUI.enableAssetForms" INIFILE="futuretense_xcel.ini" VARNAME="_enableForms"/>
+		<IF COND="Variables._enableForms=true">
+		<THEN>
+			<TTM.GETORDEREDTABS LISTVARNAME="tabs"  PUBID="SessionVariables.pubid"/>
+		</THEN>
+		<ELSE>
+			<TTM.GETAllFILTEREDTABS LISTVARNAME="tabs"  PUBID="SessionVariables.pubid"/>
+		</ELSE>
+		</IF>
+		
+		<IF COND="tabs.#numRows=0">
+		<THEN>
+			<div class="form-label-inset">
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+					<argument NAME="elem" VALUE="NoTreeTabs"/>
+					<argument NAME="severity" VALUE="warning"/>
+				</callelement>	
+			</div>
+			<SETVAR NAME="errno" VALUE="0"/>
+			<USERISMEMBER GROUP="xceladmin"/>
+			<IF COND="Variables.errno=1">
+			<THEN>
+				<SETVAR NAME="errno" VALUE="0"/>
+				<STRINGLIST STR="SessionVariables.currentpubACLs" NAME="cACLs" DELIM=","/>
+				<ISINLIST ITEM="GeneralAdmin" LIST="cACLs"/>
+				<IF COND="Variables.errno=1">
+				<THEN>
+					<div class="form-inset">
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AdminMenuFront" outstring="AdminURL">
+						</SATELLITE.LINK>
+						<XLAT.LOOKUP KEY="dvin/UI/AdministrationToolsMOV" ESCAPE="true" VARNAME="_XLAT_MOV"/>
+						<XLAT.LOOKUP KEY="dvin/UI/AdministrationToolsALT" VARNAME="_XLAT_ALT"/>
+						<A HREF="Variables.AdminURL" TARGET="XcelAction" onMouseOver="window.status='Variables._XLAT_MOV';return true;" onMouseOut="window.status='';return true;" REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.AdminURL,Variables._XLAT_MOV" >
+							<STRING.STREAM VARIABLE="_XLAT_ALT"/>
+						</A>
+					</div>
+				</THEN>
+				</IF>
+			</THEN>
+			</IF>
+		</THEN>
+		<ELSE>
+		<IF COND="IsList.tabs=false">
+			<THEN>
+				 <SCRIPT LANGUAGE="JavaScript">
+						alert("<XLAT.STREAM KEY="dvin/UI/Error/rolesassignedsitenotaccesstreecontact" ENCODE="false"/>");
+				 </SCRIPT>
+			</THEN>
+			</IF>
+			<IF COND="tabs.#numRows=0">
+			<THEN>
+				 <SCRIPT LANGUAGE="JavaScript">
+						alert("<XLAT.STREAM KEY="dvin/UI/Error/rolesassignedsitenotaccesstreecontact" ENCODE="false"/>");
+				 </SCRIPT>
+			</THEN>
+			</IF>
+			<if COND="Variables.Browser=MSIE">
+            <then>
+			<OBJECT classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" WIDTH = "100%" HEIGHT = "100%" NAME = "TreeApplet">
+                <PARAM NAME = "CODE" VALUE = "com.openmarket.tree.TreeApplet.class" />
+                <PARAM NAME = "CODEBASE" VALUE = "Variables.cs_imagedir/OMTree/" REPLACEALL="Variables.cs_imagedir"/>
+                <PARAM NAME = "ARCHIVE" VALUE = "tree.jar" />
+                <PARAM NAME = "NAME" VALUE = "TreeAppletLeader" />
+                <PARAM NAME = "MAYSCRIPT" VALUE = "" />
+                <PARAM NAME="type" VALUE="application/x-java-applet;version=1.6.0"/>
+                <PARAM NAME="scriptable" VALUE="true"/>
+				<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeAppletParams"/>
+        	</OBJECT>
+			</then>
+			<else>
+                <APPLET NAME="TreeApplet" CODE="com.openmarket.tree.TreeApplet.class" CODEBASE="Variables.cs_imagedir/OMTree/." ARCHIVE="tree.jar" WIDTH="100%" HEIGHT="100%" MAYSCRIPT="" REPLACEALL="Variables.cs_imagedir">
+                    <CALLELEMENT NAME="OpenMarket/Gator/UIFramework/TreeAppletParams"/>
+                </APPLET>
+			</else>
+			</if>
+	</ELSE>
+	</IF>
+	 </BODY>
+</HTML>
+
+<REMOVEVAR NAME='_IS_TREE_ELEMENT_'/>
+</FTCS>

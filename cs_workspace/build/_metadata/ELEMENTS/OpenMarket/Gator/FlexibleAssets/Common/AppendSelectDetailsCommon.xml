@@ -1,0 +1,410 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/FlexibleAssets/Common/AppendSelectDetailsCommon.xml $ 
+$Revision: 21 $ 
+$Modtime: 7/08/02 4:48p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- AppendSelectDetails.xml
+-
+- DESCRIPTION
+-	 The basic idea: start with a minimum, default
+-    query. Then append additional criteria depending
+-    on fields that have been selected in the search
+-    form
+-
+- HISTORY 
+-    5/31/2000 - Geoff Meek
+-        Major overhaul reflecting the new Xcelerate 3.0 search paradigm. 
+-        No more checkboxes and fancier filter string and query syntax.
+
+- October 16 2007 - Sathish Paul Leo
+	Added start date and end date attributes as part of the query
+-->
+
+ 
+<!-- add condition if updateddate is before date given -->
+<if COND="IsVariable.UpdatedBefore=true"><then>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.UpdatedBefore"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+   <SETVAR NAME="queryend" VALUE="Variables.queryend AND Variables.AssetType.updateddate &#060; Variables.UpdatedBefore"/>
+    </then>
+   </if>
+  </then>
+ </if>
+
+<!-- add condition if updateddate is after date given -->
+<if COND="IsVariable.UpdatedAfter=true"><then>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.UpdatedAfter"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+    <SETVAR NAME="queryend" VALUE="Variables.queryend AND Variables.UpdatedAfter &#060; Variables.AssetType.updateddate"/>
+    </then>
+   </if>
+ </then></if>
+
+
+<if COND="IsVariable.UpdatedBy=true"><then>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.UpdatedBy"/>
+	  <ARGUMENT NAME="type" VALUE="String"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+		<ARGUMENT NAME="columnvalue" VALUE="Variables.UpdatedBy"/>
+		<ARGUMENT NAME="type" VALUE="Nospace"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="LIKE" STR="Variables.UpdatedBy" COLNAME="Variables.AssetType.updatedby"/>
+			<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.queryappend)"/>
+		</THEN>
+		</IF>
+	</then>
+   </if>
+ </then>
+</if>
+
+<!-- Add the start date to the query -->
+<IF COND="IsVariable.StartDateBefore=true">
+<THEN>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.StartDateBefore"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+	<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.AssetType.startdate &#060; Variables.StartDateBefore OR Variables.AssetType.startdate IS NULL)"/>
+    </then>
+   </if>
+</THEN>
+</IF>
+
+<IF COND="IsVariable.StartDateAfter=true">
+<THEN>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.StartDateAfter"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+	<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.StartDateAfter &#060; Variables.AssetType.startdate OR Variables.AssetType.startdate IS NULL)"/>
+    </then>
+   </if>
+</THEN>
+</IF>
+
+<!-- Add the end date to the query -->
+<IF COND="IsVariable.EndDateBefore=true">
+<THEN>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.EndDateBefore"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+	<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.AssetType.enddate &#060; Variables.EndDateBefore OR Variables.AssetType.enddate is NULL)"/>
+    </then>
+   </if>
+</THEN>
+</IF>
+
+<IF COND="IsVariable.EndDateAfter=true">
+<THEN>
+   <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+	  <ARGUMENT NAME="columnvalue" VALUE="Variables.EndDateAfter"/>
+	  <ARGUMENT NAME="type" VALUE="Date"/>
+   </callelement>
+   <if cond="Variables.validatedstatus=true">
+   <then>
+	<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.EndDateAfter &#060; Variables.AssetType.enddate OR Variables.AssetType.enddate is NULL)"/>
+    </then>
+   </if>
+</THEN>
+</IF>
+
+
+<if COND="IsVariable.Status=true">
+    <then>
+		<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<argument NAME="columnvalue" VALUE="Variables.Status"/>
+			<argument NAME="type" VALUE="String"/>
+		</callelement>
+		<if cond="Variables.validatedstatus=true">
+		<then>
+			<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<argument NAME="columnvalue" VALUE="Variables.Status"/>
+			<argument NAME="type" VALUE="Length"/>
+			<argument NAME="wordcounts" VALUE="2"/>
+			</callelement>
+			<if cond="Variables.validatedstatus=true">
+			<then>
+				<SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="LIKE" STR="Variables.Status" COLNAME="Variables.AssetType.status"/>
+				<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.queryappend)"/>
+			</then>
+			</if>
+		</then>
+		</if>
+	</then>
+</if>	
+<!--
+<if COND="IsVariable.Status=true"><then>
+   <SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="LIKE" STR="Variables.Status" COLNAME="Variables.AssetType.status"/>
+   <SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.queryappend)"/>
+    </then></if>
+-->
+<IF COND="IsVariable.dimensionssearch=true">
+<THEN>
+<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<argument NAME="columnvalue" VALUE="Variables.dimensionssearch"/>
+			<argument NAME="type" VALUE="String"/>
+		</callelement>
+		<if cond="Variables.validatedstatus=true">
+		<then>
+    		<SETVAR NAME="queryend" VALUE="Variables.queryend AND Variables.AssetType.id IN (select Variables.AssetType_Dim.cs_ownerid from Variables.AssetType_Dim where Variables.AssetType_Dim.cs_dimensionid=Variables.dimensionssearch)"/>
+		</then>
+		</if>
+</THEN>
+</IF>
+ <!--  build the filter string for the above form variables -->
+ <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/BuildFilterString"/>
+
+
+<!-- Geoff Meek, 5/30/00 
+   Loop through a syncronized set of lists to build the query string and
+   filter display string for all of the attribute columns. srchFlds should be filled by the caller
+   with 4 columns: formname, columnname, guiname, operator.
+   formname is the name of the input field in SearchForm
+   columnname is the database columnname in the table named <Variables.AssetType>
+   guiname is the user-friendly display name
+   operator is the SQL verb to use in the SQLEXP statement
+-->
+<IF COND="IsList.srchFlds=true"><THEN>
+
+<LOOP LIST="srchFlds">
+   <!-- check to see if we have a value for this variable, only continue if we do -->
+   <if COND="IsVariable.srchFlds.formname=true"><then>
+       <!-- build the sql expression, LIKE seems to be the only working operator... = would be better -->
+   			   <if COND="srchFlds.columnname=attributetype">
+			   <then>
+			   		<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 <ARGUMENT NAME="columnvalue" VALUE="Variables.AssetType"/>
+							 <ARGUMENT NAME="type" VALUE="String"/>
+						</callelement>
+						<if cond="Variables.validatedstatus=true">
+						<then>
+                    		<setvar  NAME="tablename"  VALUE="Variables.AssetType"/>
+                    		<SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="srchFlds.operator" STR="Variables.srchFlds.formname" COLNAME="srchFlds.columnname"/>
+                			                  			   
+               				<ASSET.LIST TYPE="AttrTypes" LIST="AttrTypesList" FIELD1="id" VALUE1="Variables.AttrTypes"/>
+	   			  			<XLAT.LOOKUP KEY="dvin/UI/Search/srchFldsis" VARNAME="_XLAT_"/>
+
+                    		<IF COND="IsError.Variables.errno!=true">
+                    		<THEN>
+    	     					<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'AttrTypesList.name'"/>
+    	     				</THEN>
+    	     				<ELSE>
+    	     					<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'Variables.srchFlds.formname'"/>
+    						</ELSE>
+    						</IF>
+    					</then>
+    					</if>	
+				</then>
+                <else>
+                <SETVAR NAME="filterVal" VALUE="Variables.srchFlds.formname"/>
+                    <if COND="srchFlds.columnname=id">
+                    <then>
+						<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 <ARGUMENT NAME="columnvalue" VALUE="Variables.filterVal"/>
+							 <ARGUMENT NAME="type" VALUE="Long"/>
+						</callelement>
+						<if cond="Variables.validatedstatus=true">
+						<then>
+						 <SETVAR NAME="queryappend" VALUE="Variables.AssetType.id=Variables.srchFlds.formname"/>
+						</then>
+						 </if>
+					</then>
+                    <else>
+                        <if COND="srchFlds.columnname=flextemplateid">
+                        <then>
+						  <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 <ARGUMENT NAME="columnvalue" VALUE="Variables.flextemplateid"/>
+							 <ARGUMENT NAME="type" VALUE="Long"/>
+						  </callelement>
+						   <if cond="Variables.validatedstatus=true">
+						   <then>
+						    <SETVAR NAME="queryappend" VALUE="Variables.AssetType.flextemplateid=Variables.srchFlds.formname"/>
+			   				<fatm.gettemplatetype ASSETTYPE="Variables.AssetType" VARNAME="templatetype"/>
+                            <ASSET.LIST LIST="lCurrentSubtype" TYPE="Variables.templatetype" FIELD1="id" VALUE1="Variables.flextemplateid"/>
+                            <IF COND="IsError.Variables.errno!=true">
+                            <THEN>
+		                        <SETVAR NAME="filterVal" VALUE="lCurrentSubtype.name"/>
+		                    </THEN>
+		                    </IF>
+						   </then>
+						   </if>
+                        </then>
+                        <else>
+                            <if COND="srchFlds.columnname=flexgrouptemplateid">
+                            <then>
+							 <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 <ARGUMENT NAME="columnvalue" VALUE="Variables.flexgrouptemplateid"/>
+							 <ARGUMENT NAME="type" VALUE="Long"/>
+						     </callelement>
+						      <if cond="Variables.validatedstatus=true">
+						      <then>
+		                        <SETVAR NAME="queryappend" VALUE="Variables.AssetType.flexgrouptemplateid=Variables.srchFlds.formname"/>
+                                <fgtm.gettemplatetype  ASSETTYPE="Variables.AssetType"  VARNAME="templatetype"/>
+            					<ASSET.LIST LIST="lCurrentSubtype" TYPE="Variables.templatetype" FIELD1="id" VALUE1="Variables.flexgrouptemplateid"/>
+	                            <IF COND="IsError.Variables.errno!=true">
+    	                        <THEN>
+			                        <SETVAR NAME="filterVal" VALUE="lCurrentSubtype.name"/>
+			                    </THEN>
+			                    </IF>
+						      </then>
+						       </if>
+                            </then>
+                            <else>
+                                 <!--SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="srchFlds.operator" STR="Variables.srchFlds.formname" COLNAME="Variables.AssetType.srchFlds.columnname"/-->
+                                <setvar NAME="namevar"  VALUE="Variables.srchFlds.formname"/>
+                                <IF COND="srchFlds.formname=Name">
+                                <THEN>
+                                <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 			<ARGUMENT NAME="columnvalue" VALUE="Variables.Name"/>
+							 			<ARGUMENT NAME="type" VALUE="String"/>
+						     			</callelement>
+						      			<if cond="Variables.validatedstatus=true">
+						      			<then>
+                                    		<TOLOWER OUTSTR="literal" STR="Variables.namevar"/>
+                                    		<ics.sqlexp output="queryappend" type="OR" verb="LIKE"   table="Variables.AssetType"
+                                    		string="Variables.literal" column="Variables.AssetType.srchFlds.columnname" expression="lower(Variables.AssetType.srchFlds.columnname)"/>
+                                 		</then>
+                                 		</if>
+                                 </THEN>
+                                <ELSE>
+                                    <IF COND="srchFlds.formname=Description">
+                                    <THEN>
+                                    <callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+							 			<ARGUMENT NAME="columnvalue" VALUE="Variables.Description"/>
+							 			<ARGUMENT NAME="type" VALUE="String"/>
+						     			</callelement>
+						      			<if cond="Variables.validatedstatus=true">
+						      			<then>
+                                         <TOLOWER OUTSTR="literal" STR="Variables.namevar"/>
+                                         <ics.sqlexp output="queryappend" type="OR" verb="LIKE"   table="Variables.AssetType"
+                                         string="Variables.literal" column="Variables.AssetType.srchFlds.columnname" expression="lower(Variables.AssetType.srchFlds.columnname)"/>
+                                     	 </then>
+                                     	 </if>
+                                     </THEN>
+                                    <ELSE>
+										<IF COND="srchFlds.formname=Template">
+										<THEN>
+											<TOLOWER OUTSTR="literal" STR="Variables.namevar"/>
+                                         <ics.sqlexp output="queryappend" type="OR" verb="srchFlds.operator"   table="Variables.AssetType"
+                                         string="Variables.literal" column="Variables.AssetType.srchFlds.columnname" expression="lower(Variables.AssetType.srchFlds.columnname)"/>
+										</THEN>
+										<ELSE>
+											<IF COND="srchFlds.formname=uId">
+												<THEN>
+												 	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+														<ARGUMENT NAME="columnvalue" VALUE="Variables.uId"/>
+														<ARGUMENT NAME="type" VALUE="String"/>
+													</CALLELEMENT>
+													<IF COND="Variables.validatedstatus=true">
+													<THEN>
+														<SETVAR NAME="queryappend" VALUE="Variables.AssetType.fw_uid='Variables.srchFlds.formname'"/>
+													</THEN>
+													</IF>
+												</THEN>
+											<ELSE>
+												  <SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="srchFlds.operator" 
+													 STR="Variables.namevar" COLNAME="Variables.AssetType.srchFlds.columnname"/>
+											</ELSE>
+											</IF>
+										</ELSE>
+										</IF>
+                                    </ELSE>
+                                    </IF>
+                                </ELSE>
+                                </IF>
+                              </else>
+                              </if>
+                         </else>
+                         </if>
+    				 </else>
+					 </if>
+					 
+					 
+                   <!-- build the user-friendly query description -->
+			      <IF COND="srchFlds.operator=LIKE"><THEN>
+			         <XLAT.LOOKUP KEY="dvin/UI/Search/srchFldscontains" VARNAME="_XLAT_"/>
+			         <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'Variables.filterVal'"/>
+			       </THEN><ELSE>
+			         <XLAT.LOOKUP KEY="dvin/UI/Search/srchFldsis" VARNAME="_XLAT_"/>
+			         <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'Variables.filterVal'"/>
+			      </ELSE></IF> 
+      
+		      </else>
+              </if>
+		<IF COND="IsVariable.queryappend=true">
+		<THEN>
+			<SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.queryappend)"/>
+		</THEN>
+		</IF>
+ 
+   </then></if>
+</LOOP>
+       
+</THEN></IF>
+
+<IF COND="IsList.srchExtnFlds=true"><THEN>
+
+<LOOP LIST="srchExtnFlds">
+
+   <!-- check to see if we have a value for this variable, only continue if we do -->
+   <if COND="IsVariable.srchExtnFlds.formname=true">
+   <then>
+      <!-- build the sql expression, LIKE seems to be the only working operator... = would be better -->
+       <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Variables.srchExtnFlds.formname"/>
+			<ARGUMENT NAME="type" VALUE="String"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+			<THEN>
+     			<SQLEXP OUTSTR="queryappend" TYPE="AND" VERB="LIKE" STR="Variables.srchExtnFlds.formname" COLNAME="Variables.AssetType_Extension.srchExtnFlds.columnname"/>
+      		    <SETVAR NAME="queryend" VALUE="Variables.queryend AND (Variables.queryappend)"/>
+      			<!-- build the user-friendly query description -->
+      			<IF COND="srchExtnFlds.operator=LIKE">
+      			<THEN>
+         			<XLAT.LOOKUP KEY="dvin/UI/Search/srchExtnFldscontains" VARNAME="_XLAT_"/>
+         			<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'Variables.srchExtnFlds.formname'"/>
+      			</THEN>
+      			<ELSE>
+         			<XLAT.LOOKUP KEY="dvin/UI/Search/srchExtnFldsis" VARNAME="_XLAT_"/>
+         			<SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_ 'Variables.srchExtnFlds.formname'"/>
+      			</ELSE>
+      			</IF>
+      		</THEN>
+      	</IF>
+    </then>
+    </if>
+</LOOP>
+
+</THEN></IF><!-- end srchExtnFlds condition -->
+
+
+</FTCS>

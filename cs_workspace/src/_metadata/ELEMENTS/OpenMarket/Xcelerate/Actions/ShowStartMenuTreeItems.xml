@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ShowStartMenuTreeItems
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td class="title-text"><XLAT.STREAM KEY="dvin/Common/New"/></td>
+</tr>
+<tr>
+	<td><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<!--	<tr>
+	<td class="dark-line-color"><img height="2" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr> -->
+<tr>
+	<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+	<td><span class="table-header-text"><XLAT.STREAM KEY="dvin/UI/Pleaseselectwhatyouwishtocreate"/></span><BR/>&nbsp;</td>
+</tr>
+<tr>
+	<td>
+	<!-- Table header -->
+
+  <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+  <tr>
+	<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+<tr>
+<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+<td >
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="6" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+	<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+		<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+		<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+	</tr>
+<tr><td colspan="6" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+	<!-- Loop over all search results. -->
+	<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+	<SETVAR NAME="separatorLine" VALUE="0"/>
+
+	
+	<LOOP LIST="startOptions">
+		<IF COND="Variables.separatorLine=1">
+		<THEN>
+				<tr>
+				<!--<td colspan="6" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+				</tr>
+			</THEN>
+		</IF>
+
+		<SETVAR NAME="separatorLine" VALUE="1"/>
+		<SETVAR NAME="currentAT" VALUE="startOptions.assettype"/>
+		<assettype.list LIST="ThisAsset" FIELD1="assettype" VALUE1="Variables.currentAT"/>
+		<SETVAR NAME="currentName" VALUE="startOptions.name"/>
+		<SETVAR NAME="currentStartID" VALUE="startOptions.startid"/>
+		
+         <IF COND="Variables.startmenutype=child">
+		<THEN>
+			<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="NewAssetURL">
+             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+           <satellite.argument name="AssetType" value="Variables.currentAT"/>
+          <satellite.argument name="StartItem" value="Variables.currentStartID"/>
+          <satellite.argument name="Arg:subtype" value="startOptions.subtype"/>
+          <satellite.argument name="Arg:Group_Variables.cs_ParentDef" value="Variables.ID"/>
+          <satellite.argument name="Arg:Group_Variables.cs_ParentDef:0" value="Variables.ID"/>
+          <satellite.argument name="Arg:Group_Variables.cs_ParentDef:Total" value="1"/>
+		  <satellite.argument name="TemplateChosen" value="startOptions.templateChosen"/>
+		  <satellite.argument name="ID" value="Variables.ID"/>
+		  <satellite.argument name="_parentAssetName" value="Variables._parentAssetName"/>
+          <satellite.argument name="_assetsubtype" value="Variables._assetsubtype"/>
+           </SATELLITE.LINK>
+		</THEN>
+        <ELSE>
+            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/NewContentFront" outstring="NewAssetURL">
+             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+           <satellite.argument name="AssetType" value="Variables.currentAT"/>
+          <satellite.argument name="StartItem" value="Variables.currentStartID"/>
+          <satellite.argument name="Arg:subtype" value="startOptions.subtype"/>
+           </SATELLITE.LINK>
+        </ELSE>
+		</IF>
+		<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+				<td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				  <DIV class="small-text-inset">
+			<STRING.STREAM VALUE="ThisAsset.description"/>
+			</DIV>
+			</td>
+		<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+			<DIV class="small-text-inset">
+            <a href="Variables.NewAssetURL" REPLACEALL="Variables.NewAssetURL"><STRING.STREAM VALUE="Variables.currentName (startOptions.subtype)"/></a></DIV>
+			</td>
+			<td><BR /></td></tr>
+			<IF COND="Variables.rowStyle=tile-row-normal">
+			<THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+			</THEN>
+			<ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+			</ELSE>
+			</IF>
+		</LOOP>
+	</table>
+</td>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	</tr>
+<tr>
+<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+</table>
+
+	</td>
+</tr>
+	<!-- Display the page footer. -->
+<!--
+	<tr>
+		<td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+	<tr>
+		<td class="dark-line-color"><img height="2" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr> -->
+</table>
+
+</FTCS> 

@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/StepActions/ApproveForPublish
+-
+- INPUT
+-     Variables.ObjectTotal - number of loaded workflowasset objects
+-  	Object[n] - loaded workflowasset objects, where n = 0 - Variables.ObjectTotal 
+-		targets - one or more comma separated names of PubTargets for which to approve the asset
+-  
+- OUTPUT
+-
+-->
+
+<!-- This is an action element called by step actions ApproveForPublish-->
+<XLAT.LOOKUP KEY="dvin/UI/Wf/stepactionelementapproveassetpublish" VARNAME="displayMsg" />
+<SETVAR NAME="msgSev" VALUE="info" />
+<!-- create an IList with column name "assetid" and 
+     "assettype" and build the asset IList -->
+<LISTOBJECT.CREATE NAME="listobject" COLUMNS="assetid,assettype" />
+
+<!-- get the id and assettype of the asset(s) to approve -->
+<SETCOUNTER NAME="count" VALUE="0"/>
+<LOOP COUNT="Variables.ObjectTotal">
+
+	<WORKFLOWASSET.GETASSETTYPE OBJECT="ObjectCounters.count" VARNAME="assettype"/>
+	<WORKFLOWASSET.GETASSETID OBJECT="ObjectCounters.count" VARNAME="assetid"/>
+	
+    <LISTOBJECT.ADDROW NAME="listobject"
+        assetid="Variables.assetid"
+        assettype="Variables.assettype" />
+	<INCCOUNTER NAME="count" VALUE="1"/>
+</LOOP>
+
+<LISTOBJECT.TOLIST NAME="listobject" LISTVARNAME="assetlist" />
+
+<!-- approve for each destination -->
+<STRINGLIST NAME="publishTargets" STR="Variables.targets" DELIM=","/>
+		
+<if COND="IsList.publishTargets=true">
+<then>
+	<LOOP LIST="publishTargets">
+		<PUBTARGETMANAGER.LOAD NAME="publishTargets.ITEM" OBJVARNAME="pubtgt"/>
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/UI/Wf/ApprovingforpublishtopublishTargetsITEM" VARNAME="approvingOK" />
+			<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.approvingOK" />
+			<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt:"/>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/ApproveAssets">
+			     <argument NAME="list" VALUE="assetlist"/>
+			     <argument NAME="recursive" VALUE="false"/>
+			     <argument NAME="force" VALUE="false"/>
+			     <argument NAME="target" VALUE="Variables.pubtgt:id"/>
+			</callelement>
+		</then>
+		<else>
+			<XLAT.LOOKUP KEY="dvin/UI/Error/notapprovepublishdestpublishTargetsITEM" errno="Variables.errno" target="publishTargets.ITEM" EVALALL="false" VARNAME="_XLAT" />
+			<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables._XLAT" />
+			<SETVAR NAME="msgSev" VALUE="error" />
+		</else>
+		</if>
+	</LOOP>
+	<REMOVEVAR NAME="approvingOK" />
+	<REMOVEVAR NAME="_XLAT" />
+</then>
+<else>
+	<XLAT.LOOKUP KEY="dvin/UI/Wf/notapprovepublishrequirestargetsargumentnames" VARNAME="approveNotOK" />
+	<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.approveNotOK" />
+	<REMOVEVAR NAME="approveNotOK" />
+</else>
+</if>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<ARGUMENT NAME="severity" VALUE="Variables.msgSev"/>
+		<ARGUMENT NAME="msgtext" VALUE="Variables.displayMsg"/>
+</CALLELEMENT>
+</FTCS> 

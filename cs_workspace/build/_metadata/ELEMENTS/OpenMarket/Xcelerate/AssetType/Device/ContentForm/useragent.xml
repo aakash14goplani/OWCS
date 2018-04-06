@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/AssetType/Device/ContentForm/useragent
+-
+- INPUT
+-
+- OUTPUT
+-
+-->		
+<div style="margin-bottom: 5px;">
+<textarea NAME="Variables.AssetType:Variables.fieldname" style="resize:none; width:450px; height:57px" REPLACEALL="Variables.fieldvalue,Variables.AssetType,Variables.fieldname">
+	<STRING.STREAM VARIABLE="fieldvalue"/>
+</textarea>	
+</div>
+<XLAT.LOOKUP KEY="dvin/AdminForms/TestUserAgent" VARNAME="testua" />
+<REPLACE STR="Variables.testua" >
+	<div  dojoType='fw.ui.dijit.Button' title="Variables.testua" label= "Variables.testua" onClick="testUserAgent(document.forms[0])" ></div>
+</REPLACE>
+<DIV id="msgDivId" style="display:none;margin-top: 15px;"></DIV>
+</ftcs>

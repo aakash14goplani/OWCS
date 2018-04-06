@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/WorkflowProcessList.xml $ 
+$Revision: 4 $ 
+$Modtime: 5/07/04 4:36p $ 
+-->
+<!--
+ OpenMarket/Xcelerate/Admin/WorkflowProcessList
+ Confidential and Proprietary Information of FatWire Corp. 
+                         All Rights Reserved.
+
+ DESCRIPTION
+	List all current workflow processes in Admin screens
+
+ INPUT
+	action : variable set by the SiteCatalog entry OpenMarket/Xcelerate/Admin/WorkflowProcessListFront	
+
+ OUTPUT
+	list of workflow processes, linked to the Inspect screen of each process
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<IF COND="Variables.action=list">
+<THEN>
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/WorkflowProcesses"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<!-- display the workflow processes for all sites -->
+<IF COND="IsVariable.pubid=true">
+<THEN>
+	<WORKFLOWENGINE.GETALLPROCESSES NAME="processes" PREFIX="wfq:" PUBID="Variables.pubid"/>
+</THEN>
+<ELSE>
+	<WORKFLOWENGINE.GETALLPROCESSES NAME="processes" PREFIX="wfq:"/>
+</ELSE>
+</IF>
+<SETCOUNTER NAME="NPROCESSES" VALUE="0"/>
+<IF COND="IsVariable.wfq:Total=true">
+<THEN>
+	<IF COND="Variables.wfq:Total!=0">
+	<THEN>
+   		<table border="0" cellspacing="0" cellpadding="0" class="width-outer-50">
+			<tr>
+				<td></td><td class="tile-dark" HEIGHT="1"><img width="1" height="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+			</tr>
+			<tr>
+				<td class="tile-dark" valign="top" width="1"><br /></td>
+				<td >
+					<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="7" class="tile-highlight"><img width="1" height="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+					<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+					<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><div class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></div></td>
+					<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					</tr>
+					<tr>
+						<td colspan="7" class="tile-dark"><img width="1" height="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<!-- Loop over all search results. -->
+		   			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					<SETVAR NAME="separatorLine" VALUE="0"/>
+
+					<LOOP FROM="0" COUNT="Variables.wfq:Total">
+						<WORKFLOWPROCESS.GETPROCESSNAME NAME="wfq:Counters.NPROCESSES" VARNAME="apname"/>
+						<WORKFLOWPROCESS.GETPROCESSDESCRIPTION NAME="wfq:Counters.NPROCESSES" VARNAME="apdescription"/>
+						<WORKFLOWPROCESS.GETID NAME="wfq:Counters.NPROCESSES" VARNAME="apid"/>
+						
+						<ICS.ENCODE BASE="ContentServer" OUTPUT="inspecturl" SESSION="true">
+						    <ICS.ARGUMENT NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowFront"/>
+						    <ICS.ARGUMENT NAME="action" VALUE="details"/>
+						    <ICS.ARGUMENT NAME="processid" VALUE="Variables.apid"/>
+						</ICS.ENCODE>
+
+						<IF COND="Variables.separatorLine=1">
+						<THEN>
+							<tr>
+								<!--<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+							</tr>
+						</THEN>
+						</IF>
+						<SETVAR NAME="separatorLine" VALUE="1"/>
+			
+						<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+							<td><br /></td>
+							<td valign="top" nowrap="nowrap" align="left">
+								<XLAT.LOOKUP KEY="dvin/Common/Inspect" VARNAME="_XLAT_" ESCAPE="true"/><XLAT.LOOKUP KEY="dvin/UI/Admin/InspectThisProcess" VARNAME="_alt_"/>
+								<A HREF="Variables.inspecturl" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.inspecturl,Variables._XLAT_"><img height="14" width="14" hspace="2" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif"  border="0" alt="Variables._alt_" title="Variables._alt_"  REPLACEALL="Variables.cs_imagedir,Variables._alt_"/></A>
+							</td>
+					        <td><BR /></td>
+					        <td valign="top" nowrap="nowrap" align="left">
+								<div class="small-text-inset">
+									<A HREF="Variables.inspecturl" REPLACEALL="Variables.inspecturl"><STRING.STREAM VALUE="Variables.apname"/></A>
+								</div>
+							</td>
+							<td><br /></td>
+							<td valign="top" align="left">
+								<div class="small-text-inset">
+									<STRING.STREAM VALUE="Variables.apdescription"/><br />
+								</div>
+							</td>
+							<td><br /></td>
+						</tr>
+						<IF COND="Variables.rowStyle=tile-row-normal">
+						<THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+						</THEN>
+						<ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+						</ELSE>
+						</IF>
+
+						<INCCOUNTER NAME="NPROCESSES" VALUE="1"/>
+
+					</LOOP>
+					</table>
+					</td>
+					<td class="tile-dark" valign="top" width="1"><br /></td>
+				</tr>
+				<tr>
+					<td colspan="3" class="tile-dark" valign="top" height="1"><img width="1" height="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><img width="1" height="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+			</table> 
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+
+<ICS.ENCODE BASE="ContentServer" OUTPUT="newprocurl" SESSION="true">
+    <ICS.ARGUMENT NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/WorkflowFront"/>
+    <ICS.ARGUMENT NAME="action" VALUE="new"/>
+</ICS.ENCODE>
+<div class="width-outer-70">
+<a href="Variables.newprocurl" REPLACEALL="Variables.newprocurl"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddNewWorkflowProcess"/></CALLELEMENT></a>
+</div>
+</THEN>
+</IF>
+
+</ftcs>

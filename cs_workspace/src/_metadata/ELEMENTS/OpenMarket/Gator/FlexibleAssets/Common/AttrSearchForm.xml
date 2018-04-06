@@ -1,0 +1,601 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/AttrSearchForm
+- INPUT
+- OUTPUT
+-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Scripts/FormatDate"/> 
+<SCRIPT LANGUAGE="JavaScript">
+	<![CDATA[
+	function trim(str){
+	return str.replace(/^\s+|\s+$/g, '') ;
+    }
+
+	function stopRKey(evt)
+	{
+		var evt = (evt) ? evt : ((event) ? event : null);
+		var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+		if ((evt.keyCode == 13) && (node.type=="text"))
+			return validateSearchFields();
+	}
+
+	document.onkeypress = stopRKey;
+
+	<!-- This method validates the int, money, float, and date type fields -->
+	function  validateSearchFields()
+	{
+		var form = document.forms[0];
+		for (var i=0; i<form.elements.length; i++) {
+			var obj=form.elements[i];
+			if (obj && (obj.type) && (obj.type=='hidden'))
+			{
+				var objName=obj.name;
+				if (objName.indexOf("**")>=0)
+				{
+					var objNameParts = objName.split('**');
+					var names=objNameParts[0];
+					var types=objNameParts[1];
+					var message=objNameParts[2];
+					//var value=form.elements[names].value;
+					var value ="";
+                    var inputs=document.getElementsByTagName('input');
+                    var textBoxId;
+                    for (j=0; j<inputs.length;j++) {
+                        if (inputs[j].getAttribute('type')=='text' && inputs[j].getAttribute('name')==names)
+                        {
+                            textBoxId= inputs[j];
+                            value = textBoxId.value ;                            
+                        }
+                     }
+
+					if (types=="int")
+					{
+						if (!IsInt(value))
+						{
+							]]>
+							var replacestr=/\bVariables.AttrName\b/   ;
+							var xlatstr= '<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/SpecifyInteger" ENCODE="false" ESCAPE="true"/>' ;
+							var newstr=xlatstr.replace(replacestr, message) ;
+							alert(newstr);
+							<![CDATA[
+							form.elements[names].focus();
+							return false;  
+						}
+					}
+					else if (types=="float")
+					{
+						if (!IsNumber(value))
+						{
+							]]>
+							var replacestr=/\bVariables.AttrName\b/   ;
+							var xlatstr= '<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/SpecifyFloat" ENCODE="false" ESCAPE="true"/>' ;
+							var newstr=xlatstr.replace(replacestr, message) ;
+							alert(newstr);
+							<![CDATA[
+							form.elements[names].focus();
+							return false;  
+						}
+					}
+					else if (types=="money")
+					{
+						if (!IsMoney(value))
+						{
+							]]>
+							var replacestr=/\bVariables.AttrName\b/   ;
+							var xlatstr= '<XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/SpecifyMoney" ENCODE="false" ESCAPE="true"/>' ;
+							var newstr=xlatstr.replace(replacestr, message) ;
+							alert(newstr);
+							<![CDATA[
+							form.elements[names].focus();
+							return false;  
+						}
+						else
+						{
+						    var newValue = textBoxId.value;
+                            textBoxId.value = newValue.replace(",","");
+						}
+					}
+					else if (types == 'date')
+					{
+						value = trim(value);
+						if (checkDate(value) < 0)
+						{
+							var replacestr = /\bVariables\.datestr\b/;
+							]]>
+							var xlatstr = '<XLAT.STREAM KEY="dvin/AT/Common/ThedateisnotvalidFormatthedate" ENCODE="false" ESCAPE="true"/>';
+							<![CDATA[
+							xlatstr = xlatstr.replace(replacestr, value);
+							alert(xlatstr);
+							//form.elements[names].focus();
+							if(form.elements[names])
+								form.elements[names].focus();
+							else if(textBoxId)
+								textBoxId.focus();
+
+							return false;
+						}
+						padDate(form.elements[names]);
+					}
+				}
+			
+			}
+		} // end for
+		return true;
+	}
+
+	<!-- to check if the string is belong to the 'Integer'!-->
+	function IsInt(str) {
+	/* strip leading zeroes to prevent false negative! */
+
+        while (str.charAt(0) == '0' && str.length > 1) str = str.substr(1);
+        var i = parseInt(str);
+        if (isNaN(i))
+            return false;
+        i = i.toString();
+        if (i != str)
+            return false;
+        return true;
+    }
+	/*function IsInt(StrVar)
+	{
+		for (i=StrVar.length-1; i>=0; i--)
+		{ 	 
+			var Flag=false;
+			if (i==0)
+			{ 
+				if (StrVar.charAt(0)=="-" && StrVar.length>1)
+				{
+					Flag=true;
+				}
+				else
+				{
+					for (j=9;j>=0; j--)
+					{
+						if (StrVar.charAt(0)==j)
+						{
+							Flag=true;
+							break;
+						}
+					}	
+				}
+			}
+			else
+			{
+				for (j=9;j>=0; j--)
+				{
+					if (StrVar.charAt(i)==j)
+					{
+						Flag=true;
+						break;
+					}
+				}
+			}
+			
+			if (!Flag)
+			{
+				return false;
+			}
+		}
+		return true;
+	} */
+
+	<!-- to check if the string is the 'Integer'!-->
+	function IsInteger(StrVar)
+	{
+		var StrNum=parseInt(StrVar);
+		if (IsInt(StrVar))
+		{
+			if (StrNum >= -9999999999 && 9999999999 >= StrNum)
+				return true;
+			else 
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	<!-- to check if the string is the 'Float'!-->
+    function IsNumber(str)
+    {
+        return /^[-+]?\d*((\.\d+)([eE][-+]?\d+)?)?$/.test(str);
+    }
+
+	/*function IsNumber(StrVar)
+	{
+		var loopEnd = 0;
+        if (StrVar.charAt(0) == "-")
+            loopEnd = 1;
+
+        var countDecimalPoint = 0;
+        var countE = 0;
+        var Test="T";
+        for(i=StrVar.length-1; i>=loopEnd; i--)
+            {
+                var Flag="F";
+                if(StrVar.charAt(i)==".")
+                {
+                    countDecimalPoint++;
+                    Flag="T";
+                    continue;
+                }
+                if(StrVar.charAt(i)=="E" || StrVar.charAt(i)=="e")
+                {
+                    countE++;
+                    Flag="T";
+                    continue;
+                }
+                for(j=9;j>=0; j--)
+                {
+                    if(StrVar.charAt(i)==j)
+                    {
+                     Flag="T";
+                     break;
+                    }
+                }
+                if(Flag=="F" || countDecimalPoint > 1 || countE > 1)
+                    {
+                    Test="F"; break;
+                    }
+            }
+         if(Test=="F") return false;
+         else return true;
+	}*/
+
+	<!-- to check if the string is the 'Money'!-->
+	function IsMoney(StrVar)
+    {
+        return /^[0-9]+(,[0-9]{3})*(\.[0-9]{1,3})?$/.test(StrVar);
+    }
+	/*function IsMoney(StrVar)
+	{
+		var flag=StrVar.length-1;
+		for (var i=StrVar.length-1; i>=0; i--)
+		{
+			var acc=false;
+			if (StrVar.charAt(i)=="." && flag>0)
+			{
+				flag=i;	
+				if (StrVar.length-i>4)
+					return false;
+			}
+			else if (StrVar.charAt(i)=="," && flag>0)
+			{
+				for (var j=10; j>=0; j--)
+				{ 
+					if ((flag-i)/4==j)  
+						acc=true;
+				}
+				if (!acc)
+					return false;
+			}
+			
+			else if (!IsInt(StrVar.charAt(i)))
+				return false;
+		}
+		return true;
+	}   */
+	]]>
+</SCRIPT>
+<STRING.ENCODE VARIABLE="SearchNextStep" VARNAME="SearchNextStep"/>
+<INPUT TYPE="HIDDEN"  NAME="SearchNextStep"  VALUE="Variables.SearchNextStep"/>
+<INPUT TYPE="HIDDEN"  NAME="AttrValueBasedSch"  VALUE="true"/>
+<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/ManageSearchVars"/>  
+<setvar NAME="TemplateType" VALUE="group"/>
+<ATM.GETASSETS FILTER="com.openmarket.gator.flexgroups.FlexGroupManager" LISTVARNAME="out"/>
+<LOOP LIST="out">
+	<IF COND="Variables.AssetType=out.assettype">
+	<THEN>
+		<setvar  NAME="tagtype"  VALUE="flexgrouptemplates"/>
+  </THEN>
+	</IF>
+</LOOP>
+<if COND="IsVariable.tagtype=true">
+<then>
+		<!-- it is a flex group -->
+   <fgtm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+</then>
+<else>
+    <!-- it is a flexasset -->
+    <fatm.getattributetype  ASSETTYPE="Variables.AssetType"  VARNAME="attributetype"/> 
+</else>
+</if>
+
+  		
+
+<if COND="IsVariable.sMyTmplAttributes=true">
+<then>
+    <setvar NAME="SelectedAttrs"     VALUE="Variables.empty"/>
+		<setvar NAME="foundany" VALUE="false"/>
+		
+  	<STRINGLIST NAME="alist" STR="Variables.sMyTmplAttributes" DELIM=";"/>
+		<if COND="IsList.alist=true">
+			<then>
+				<loop  LIST="alist">
+					<if COND="Variables.foundany=false">
+					<then>
+						<setvar NAME="foundany" VALUE="true"/>
+						<setvar NAME="SelectedAttrs" VALUE="alist.ITEM"/>
+					</then>
+					<else>
+						<setvar NAME="SelectedAttrs" VALUE="Variables.SelectedAttrs,alist.ITEM"/>
+					</else>
+					</if>
+				</loop>
+			</then>
+		</if>
+		<STRING.ENCODE VARIABLE="SelectedAttrs" VARNAME="SelectedAttrs"/>
+		<INPUT TYPE="HIDDEN"  NAME="SelectedAttrs"  VALUE="Variables.SelectedAttrs"   REPLACEALL="Variables.SelectedAttrs"/>
+  		<setvar NAME="tablename"  VALUE="Variables.attributetype"/>
+		<SETVAR NAME="validatedstatus" VALUE="true" />
+		<STRINGLIST NAME="stringSelectedAttrs" STR="Variables.SelectedAttrs" DELIM=","/>
+		<LOOP LIST="stringSelectedAttrs">
+			<IF COND="Variables.validatedstatus=true" >
+			<THEN>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<ARGUMENT NAME="columnvalue" VALUE="stringSelectedAttrs.ITEM"/>
+					<ARGUMENT NAME="type" VALUE="Long"/>
+				</CALLELEMENT>
+			</THEN>
+			</IF>
+		</LOOP>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<EXECSQL SQL="SELECT Variables.attributetype_Extension.ownerid as assetid, Variables.attributetype.name as name, 
+				Variables.attributetype_Extension.type as type, Variables.attributetype_Extension.enginename as enginename
+				FROM Variables.attributetype, Variables.attributetype_Extension, 
+				AssetPublication AssetPublication WHERE
+				Variables.attributetype.id = Variables.attributetype_Extension.ownerid AND
+				AssetPublication.assetid = Variables.attributetype_Extension.ownerid AND
+				(AssetPublication.pubid = SessionVariables.pubid OR AssetPublication.pubid=0) AND
+				Variables.attributetype_Extension.ownerid IN (Variables.SelectedAttrs)
+				ORDER BY 2 ASC"  LIST="attrlist" TABLE="Variables.attributetype,Variables.attributetype_Extension,AssetPublication"/>
+		</THEN>
+		</IF>
+</then>
+<else>
+
+		<setvar NAME="tablename"  VALUE="Variables.attributetype"/>
+		<EXECSQL SQL="SELECT Variables.attributetype_Extension.ownerid as assetid, Variables.attributetype.name as name, 
+		Variables.attributetype_Extension.type as type, Variables.attributetype_Extension.enginename as enginename
+ 		FROM Variables.attributetype , Variables.attributetype_Extension, 
+		AssetPublication AssetPublication WHERE
+				Variables.attributetype.id = Variables.attributetype_Extension.ownerid AND
+				AssetPublication.assetid = Variables.attributetype_Extension.ownerid AND
+				(AssetPublication.pubid = SessionVariables.pubid OR AssetPublication.pubid=0)	 
+ 				ORDER BY 2 ASC"  LIST="attrlist" TABLE="Variables.attributetype,Variables.attributetype_Extension,AssetPublication"/>
+</else>
+</if>
+
+<!--
+SELECT t1.ownerid as assetid, t2.name as name, t1.type as type, t1.enginename as enginename
+	FROM Variables.attributetype t2, Variables.attributetype_Extension t1, AssetPublication t3 WHERE
+		t2.id = t1.ownerid AND
+		t3.assetid = t1.ownerid AND
+		t3.pubid = <mysite> AND
+		t1.ownerid IN (...)
+		ORDER BY 2 ASC;
+		-->
+
+<!--
+<atm.locate TYPE="Variables.attributetype" VARNAME="myFieldMgr"/>
+<if COND="IsVariable.sMyTmplAttributes=true">
+<then>
+  		<STRINGLIST NAME="attrlist" STR="Variables.sMyTmplAttributes" DELIM=";"/>
+		<setvar NAME="useITEM"  VALUE="true"/>
+</then>
+<else>
+		<complexassets.getallassets SITE="SessionVariables.pubid" NAME="myFieldMgr" LISTVARNAME="attrlist"/>
+		<setvar NAME="searchableAttrs" VALUE="false"/>
+</else>
+</if>
+-->
+<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/CheckAttributeDisplayStyle"/>
+ <table border="0" cellpadding="0" cellspacing="0">
+<IF COND="IsList.attrlist=true">
+<THEN>
+  <IF COND="attrlist.#numRows!=0">
+  <THEN>
+	<loop LIST="attrlist">
+		<setvar NAME="include" VALUE="true"/>
+		
+		<IF COND="attrlist.type=text">
+		<THEN>
+			<IF COND="attrlist.enginename=Variables.empty">
+			<THEN>
+				<setvar NAME="include" VALUE="false"/>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+
+        <ASSET.LOAD NAME="attrinst" TYPE="Variables.attributetype" OBJECTID="attrlist.assetid"/>
+        <if COND="Variables.errno=0">
+        <then>
+            <SETVAR NAME="attrname" VALUE="attrlist.name"/>
+            <IF COND="Variables.attrDisplayStyle=description">
+            <THEN>
+                <ASSET.GET NAME="attrinst" FIELD="description" OUTPUT="AttrDesc"/>
+                <IF COND="Variables.AttrDesc!=Variables.empty">
+                <THEN>
+                    <SETVAR NAME="attrname" VALUE="Variables.AttrDesc"/>
+                </THEN>
+                </IF>
+            </THEN>
+            </IF>
+
+            <IF COND="Variables.include=true">
+            <THEN>
+                <setvar NAME="searchableAttrs" VALUE="true"/>
+                <setvar NAME="errno"  VALUE="0"/>
+                <TR>
+                    <TD class="form-label-text">
+                        <STRING.STREAM VARIABLE="attrname"/>&nbsp;<XLAT.STREAM KEY="dvin/FlexibleAssets/Common/IsCol"/>
+                    </TD>
+                    <TD></TD>
+                    <if COND="attrlist.type=asset">
+                    <then>
+                        <ATTRIBUTE.GETASSETTYPE NAME="attrinst" VARNAME="attrassettype"/>
+                        <if COND="Variables.errno=0">
+                        <then>
+                            <IF COND="Variables.attrassettype!=Variables.empty">
+                            <THEN>
+								<TD class="form-inset">
+									<REPLACE STR="attrlist.assetid">
+									<![CDATA[
+										<script type="text/javascript">
+											var selectDnDAttrsearch = function(args){
+												var obj = document.forms[0],						
+													arr = args._getValueAttr();
+												var self_source = args._source;
+												
+												args._source.getAllNodes().forEach(function(node){
+													var data = fw.ui.dnd.util.getNormalizedData(self_source, node);												
+														obj.elements['attrlist.assetid'].value = data.id;															
+												});	
+											};										
+										</script>
+									]]>	
+									</REPLACE>
+									<div class='fw'>
+										<IF COND="Variables.showSiteTree=true">
+										<THEN>
+											<span>										
+												<a href="javascript:void(0)" onclick="return SelectFromTreeAssocTypeAhead('typeAheadAttrsearch','Variables.attrassettype' , 'single')"  replaceall="Variables.attrassettype">
+												<callelement name="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><argument name="buttonkey" value="UI/Forms/AddSelectedItems"/></callelement></a>						
+											</span>
+											<span>
+												<img border="0" src="Variables.cs_imagedir/graphics/common/icon/help_new.png" alt="Select From Tree" title="Select From Tree" replaceall="Variables.cs_imagedir"/>
+											</span>
+										</THEN>
+										</IF>	
+										<div name='typeAheadAttrsearch'></div><br/><br/>
+										<REPLACE STR="Variables.attrname">Variables.attrname</REPLACE>
+										<div class="light-line-color"><img width="1" height="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" alt="" replaceall="Variables.cs_imagedir"/></div>
+									</div>
+									<IF COND="Variables.showSiteTree=true">
+									<THEN>
+										<SETVAR NAME="displaySearchInputbox" VALUE="false" />
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="displaySearchInputbox" VALUE="true" />
+									</ELSE>
+									</IF>
+									<SETVAR NAME="parentType" VALUE="['Variables.attrassettype']" />
+									<callelement name='OpenMarket/Gator/FlexibleAssets/Common/TypeAheadWidget'> 
+										<argument name="parentType" value='Variables.parentType'/>
+										<argument name="subTypesForWidget" value='*'/>
+										<argument name="subTypesForSearch" value=''/>
+										<argument name="multipleVal" value="false"/>
+										<argument name="widgetValue" value=""/>	
+										<argument name="funcToRun" value='selectDnDAttrsearch'/>
+										<argument name="widgetNode" value='typeAheadAttrsearch'/>
+										<argument name="typesForSearch" value='Variables.attrassettype'/>
+										<argument name="displaySearchbox" value='Variables.displaySearchInputbox'/>	
+										<argument name="multiOrderedAttr" value='false'/>
+									</callelement>
+									<INPUT TYPE="HIDDEN" NAME="attrlist.assetid" VALUE="" REPLACEALL="attrlist.assetid"/>
+                                </TD>
+                            </THEN>
+                            </IF> <!--end attrassettype!=empty-->
+                        </then>
+                        </if> <!-- end errno=0 after ATTRIBUTE.GETASSETTYPE -->
+                    </then>
+                    <else>
+                        <TD>
+                          <if COND="IsVariable.attrlist.assetid=true">
+                          <then>
+                           <setvar NAME="tempval"  VALUE="Variables.attrlist.assetid"/>
+						    <STRING.ENCODE VARIABLE="tempval" VARNAME="tempval"/>
+                            <INPUT SIZE="32" TYPE="hidden" NAME="attrlist.assetid**attrlist.type**attrlist.name" VALUE="Variables.tempval"  REPLACEALL="attrlist.assetid,attrlist.type,Variables.tempval,attrlist.name"/>
+                            <INPUT SIZE="32" TYPE="text" NAME="attrlist.assetid" VALUE="Variables.tempval" REPLACEALL="attrlist.assetid,Variables.tempval"/>
+                          </then>
+                          <else>
+                            <INPUT SIZE="32" TYPE="hidden" NAME="attrlist.assetid**attrlist.type**attrlist.name" REPLACEALL="attrlist.assetid,attrlist.type,attrlist.name"/>
+                            <INPUT SIZE="32" TYPE="text" NAME="attrlist.assetid" REPLACEALL="attrlist.assetid"/>
+                          </else>
+                          </if>
+                            <IF COND="attrlist.enginename!=Variables.empty"><THEN><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/AttrListIndexed"/> </THEN></IF>
+                        </TD>
+                    </else>
+                    </if> <!--end attrlist.type=asset -->
+                </TR>
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            </THEN>
+            <ELSE>
+                 <TR>
+                   <td colspan="3"><span class="alert-color"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/CannotSerachAttr"/> </span></td>
+                 </TR>
+                   <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            </ELSE>
+            </IF> <!--end include=true -->
+        </then>
+        <else>
+            <TR>
+                <TD colspan="3"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/LoadAttrFailed"/>    <br/>  </TD>
+            </TR>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+        </else>
+        </if> <!--end if errno=0 after ASSET.LOAD -->
+     </loop>
+   </THEN>
+   </IF>
+</THEN>
+</IF>
+ 
+<IF COND="Variables.searchableAttrs=false">
+<THEN>
+	<tr><td colspan="3"><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/NoAttrBeSerached"/> </td></tr>
+</THEN>
+</IF>
+
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<XLAT.LOOKUP KEY="dvin/Util/FlexAssets/SimpleSerachAssetDes" VARNAME="SimpleSerachAssetDes" ESCAPE="true"/>
+		<tr>
+			<td></td>
+			<td></td>
+			<td>
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td>
+							<XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="XLAT_Search"/>
+							<XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="ESC_Search" ESCAPE="true"/>
+							<STRING.ENCODE VARIABLE="OrderByDesc" VARNAME="OrderByDesc"/>
+							<INPUT TYPE="HIDDEN"  NAME="OrderByDesc"  VALUE="Variables.OrderByDesc" REPLACEALL="Variables.OrderByDesc"/>
+							<IF COND="ContentCat.usesearchindex!=1">
+							<THEN>
+								<A HREF="javascript:void(0)" onmouseover="window.status='Variables.ESC_Search'" onmouseout="window.status=''" onclick="if(validateSearchFields()) document.forms[0].submit();"  REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.XLAT_Search,Variables.ESC_Search"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>
+							</THEN>
+							<ELSE>
+								<A HREF="javascript:void(0)" onmouseover="window.status='Variables.ESC_Search'" onmouseout="window.status=''" onclick="if(validateSearchFields()) document.forms[0].submit();"  REPLACEALL="Variables.cs_imagedir,SessionVariables.locale,Variables.XLAT_Search,Variables.ESC_Search"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Search"/></CALLELEMENT></A>
+							</ELSE>
+							</IF>
+						</td>
+ 	 					<td align="right">
+                          <IF COND="Variables.cs_environment!=portal">
+                          <THEN>
+							<IF COND="IsVariable.cs_StartID=false">
+						    <THEN>
+							<SETVAR NAME="cs_StartID" VALUE="Variables.empty" />
+						    </THEN>
+							</IF>
+                            <SATELLITE.LINK ASSEMBLER="query" PAGENAME="OpenMarket/Xcelerate/Actions/SimpleSearchFront" OUTSTRING="urlSimpleSearch">
+                                <SATELLITE.ARGUMENT NAME="cs_environment" VALUE="Variables.cs_environment"/>
+                                <SATELLITE.ARGUMENT NAME="cs_formmode" VALUE="Variables.cs_formmode"/>
+                                <SATELLITE.ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+                                <SATELLITE.ARGUMENT NAME="cs_StartID" VALUE="Variables.cs_StartID"/>
+                            </SATELLITE.LINK>
+     	 					<a href="Variables.urlSimpleSearch" target="_self" onmouseover="window.status='Variables.SimpleSerachAssetDes';return true" onmouseout="window.status='';return true" REPLACEALL="Variables.urlSimpleSearch,Variables.SimpleSerachAssetDes"><span class="small-text"><XLAT.STREAM KEY="dvin/UI/simplesearch"/> </span></a>
+                          </THEN>
+                          </IF>
+                        </td>
+ 					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+
+</FTCS> 

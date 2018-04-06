@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Errors/ExternalDocAsset
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="at"/>
+
+<XLAT.STREAM KEY="dvin/UI/Error/ExternalDocAssetCannotModify"/>
+<ics.literal  table="MimeType" column="mimetype" string="Variables.assetMimeType" output="literal"/>
+<SETVAR NAME="tablename" VALUE="MimeType"/>
+<EXECSQL SQL="SELECT description FROM MimeType WHERE mimetype=Variables.literal" LIST="mimeList"/>
+
+
+<!-- unknown error -->
+<!--<p>This <CSVAR NAME="Variables.at:description"/> can only be edited through <CSVAR NAME="mimeList.description"/> enabled with the <A href="Variables.cs_imagedir/DownloadPage.html" REPLACEALL="Variables.cs_imagedir">Content Server Desktop</A>. 
+</p>-->
+
+
+ <XLAT.STREAM KEY="dvin/UI/Error/ExternalDocAssetDownloadPage" ESCAPE="false" ENCODE="false"/>
+ 
+<IF COND="IsVariable.delinkOption=true">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/UI/Error/ExternalDocAssetDelinkOpt" ESCAPE="false" ENCODE="false"/>
+		</THEN>
+</IF> 
+ 
+
+
+</FTCS> 

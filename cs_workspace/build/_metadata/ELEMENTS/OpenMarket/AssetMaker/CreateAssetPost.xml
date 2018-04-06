@@ -1,0 +1,148 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+	What happens on CreateAssetTable:
+	-Add the entry for the asset type to the AssetType table.
+-->
+
+<!-- check to see if there is
+     already an asset with the
+     given name. If so, exit
+     with error. Else, create
+     an entry in the AssetType
+     table with all the supplied
+     information. Then parse
+     and register the asset
+ -->
+
+
+<setvar NAME="errno" VALUE="0"/>
+<STRING.ENCODE VARIABLE="assettype" VARNAME="assettype"/>
+<SETVAR NAME="assettype" VALUE="Variables.assettype"/>
+<SELECTTO LIST="AD" FROM="AssetType" WHAT="assettype" WHERE="assettype"/>
+<if COND="Variables.errno=0">
+<then>
+	<XLAT.LOOKUP KEY="dvin/Assetmaker/AssetTypeExists" VARNAME="_XLAT_"/>
+	<div class="width-outer-70">
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	    <argument NAME="severity" VALUE="error"/>
+	    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+	</callelement> 
+	</div>
+   <setvar NAME="errno" VALUE="-107"/>
+</then>
+<else>
+
+	<setvar NAME="errno" VALUE="0"/>
+	<!--
+		now add the new assettype to the AssetType table
+		assettype and urldescriptor should already be setup
+	-->
+	<ASSETTYPE.CREATE NAME="theAssetType"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="description" VALUE="Variables.assettype"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="plural" VALUE="Variables.assettypes"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="logic" VALUE="com.openmarket.assetmaker.asset.AMAsset"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="assettype" VALUE="Variables.assettype"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="canbechild" VALUE="T"/>
+	<ASSETTYPE.SET NAME="theAssetType" FIELD="usesearchindex" VALUE="0"/>
+	<ASSETTYPE.GATHER NAME="theAssetType" FIELDLIST="urldescriptor,urldescriptor_file"/>
+	<ASSETTYPE.SAVE NAME="theAssetType"/>
+	  
+	<if COND="IsError.Variables.errno=true">
+	<then>
+		<XLAT.LOOKUP KEY="dvin/Assetmaker/AssetTypeSaveFailed" errno="Variables.errno" VARNAME="_XLAT_" EVALALL="false"/>
+		<div class="width-outer-70">
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		    <argument NAME="severity" VALUE="error"/>
+		    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+		</callelement>   
+		</div>	
+	</then>
+	</if>
+
+	<if COND="IsError.Variables.errno=false">
+	<then>
+		<!-- process the asset descriptor file and create the asset table -->
+		<setvar NAME="errno" VALUE="0"/>
+		<CALLJAVA CLASS="com.openmarket.assetmaker.asset.AssetMaker">
+		    <ARGUMENT NAME="command" VALUE="parseasset"/>
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+		</CALLJAVA>
+		<SETVAR NAME="errno" VALUE="Variables.assetmakererrno"/>
+		<if COND="IsError.Variables.errno=true">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/AssetMakerError" VARNAME="_XLAT_"/>
+			<div class="width-outer-70">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			    <argument NAME="severity" VALUE="error"/>
+			    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+			</callelement>        
+			</div>	
+			<!-- remove entry from the AssetType table -->
+			<ASSETTYPE.DELETE NAME="theAssetType"/>
+			<SETVAR NAME="errno" VALUE="Variables.assetmakererrno"/>
+		</then>
+		<else>
+			<SETVAR NAME="formassettype" VALUE="Variables.assettype"/>
+			<SETVAR NAME="assettype" VALUE="Variables.assetmaker/assettags/assettype"/>
+			<if COND="Variables.assettype!=Variables.formassettype">
+			<then>
+				<XLAT.LOOKUP KEY="dvin/Assetmaker/NameDoesNotMatch" VARNAME="_XLAT_"/>
+				<div class="width-outer-70">
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				    <argument NAME="severity" VALUE="error"/>
+				    <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+				</callelement>  
+				</div>	
+				<ASSETTYPE.DELETE NAME="theAssetType"/>
+				<SETVAR NAME="errno" VALUE="-2007"/>
+			</then>
+			</if>
+		</else>
+		</if>
+	</then>
+	</if>
+	
+	<if COND="IsError.Variables.errno=false">
+	<then>
+		<!-- update the AssetType with values from the asset descriptor file -->
+		<if COND="IsVariable.assetmaker/assettags/plural=true">
+		<then>
+			<ASSETTYPE.SET NAME="theAssetType" FIELD="plural" VALUE="Variables.assetmaker/assettags/plural"/>
+		</then>
+		</if>
+		<ASSETTYPE.SET NAME="theAssetType" FIELD="description" VALUE="Variables.assetmaker/assettags/description"/>
+		<ASSETTYPE.SAVE NAME="theAssetType"/>
+		
+	</then>
+	</if>	
+</else>
+</if>
+
+		
+<if COND="IsError.Variables.errno=false">
+<then>
+	<callelement NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+		<argument NAME="action" VALUE="details"/>
+		<argument NAME="assettype" VALUE="Variables.assettype"/>
+	</callelement>
+	
+	<PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+	<if COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+			<argument NAME="__TreeRefreshKeys__" VALUE="Self:AssetTypes;Self:AssetMaker"/>
+		</callelement>		
+	</then>
+	</if>
+</then>
+<else>
+	<callelement NAME="OpenMarket/AssetMaker/CreateAssetFront">
+		<argument NAME="assettype" VALUE="Variables.assettype"/>
+	</callelement>
+</else>
+</if>
+
+
+</FTCS> 

@@ -1,0 +1,447 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/AbstainFromVotingFront
+-
+- INPUT
+-
+- OUTPUT
+-
+
+Input:	AssetType and asset id.
+
+
+
+Comments:
+		This screen paints the Abstain from voting screen. It displays asset information 
+		such as asset name, asset desc, workflow process name, state description, 
+		list of users and roles to whom this asset is currently assigned to.
+		
+		It then provides the list of roles of the current user to whom the asset is 
+		assigned to. He can pick one of the roles to abstain from voting.
+		If the user has already finished the assignment for one of the roles, we simply 
+		display a message next to that role (message is given by the system locale string
+		dvin/UI/Youhavevotedforthisassignment)
+		
+		This page is called from StatusDetails.xml
+		
+		-Sathish Paul Leo for the Alloy UI project( August 2006)
+
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+
+function AbstainFromVote()
+{
+   var obj = document.forms[0].elements[0];
+   cnt = obj.form.elements['assignmentid'].length;
+   selectcount = 0;
+   for (i=0; (i<cnt); i++)
+   {
+       if (obj.form.elements['assignmentid'][i].checked)
+       selectcount++;
+   }
+
+   if (selectcount==0) {
+     ]]>
+     alert("<XLAT.STREAM KEY="dvin/UI/Error/YouMustPickARoleToAbstainFromVoting" ESCAPE="true" ENCODE="false"/>");
+     <![CDATA[
+     return false;
+   }
+   if (selectcount>1) {
+   	]]>
+     alert("<XLAT.STREAM KEY="dvin/UI/Error/Youmaychooseonlyonerole" ESCAPE="true" ENCODE="false"/>");
+     <![CDATA[
+     return false;
+   }
+
+   return true;
+}
+
+]]>
+</SCRIPT>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+<ASSET.GETASSETTYPE NAME="theAsset" OUTNAME="type"/>
+<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="atDescription"/>
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+<WorkflowEngine.isFunctionLegal OBJECT="workflowasset" SITE="SessionVariables.pubid" FUNCTIONNAME="abstainfromvoting" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="false"/>
+<if COND="Variables.isLegal=false">
+<then>
+     <setvar NAME="AbortFlag" VALUE="true"/>
+     <setvar NAME="ErrorName" VALUE="IllegalTransition"/>
+     <setvar NAME="severity" VALUE="info"/>
+     <XLAT.LOOKUP KEY="dvin/UI/AbstainFromVoting" VARNAME="functionname"/>
+</then>
+</if>
+
+<!-- if the asset is checked out by himself, abort -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    </callelement>
+    <if COND="Variables.trackingenabled=true">
+    <then>
+        <history TABLE="Variables.AssetType" ASSET="Variables.id" LOCKER="SessionVariables.username" LIST="ItsHistory"/>
+        <if COND="ItsHistory.#numRows!=0">
+        <then>
+            <if COND="ItsHistory.lockedby!=Variables.empty">
+            <then>
+                <SETVAR NAME="AbortFlag" VALUE="true"/>
+                <SETVAR NAME="ErrorName" VALUE="CantAbstainLocked"/>
+                <SETVAR NAME="lockedby" VALUE="SessionVariables.username" />
+                <SETVAR NAME="severity" VALUE="info"/>
+            </then>
+            </if>
+        </then>
+        </if>
+    </then>
+    </if>
+</then>
+</if>
+
+<!-- check to see if there is a current active assignment -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+     <USERMANAGER.GETLOGINUSER VARNAME="loginUser"/>
+     <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+     <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.loginUser" />
+     <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+     <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active,queued" PREFIX="assignment" EXCLUDECOMMENTS="true"/>
+	<!-- If not, it may be the case of assigned to nobody -->
+	<if COND="Variables.assignmentTotal=0">
+	<then>
+		<removevar NAME="assignmentTotal"/>
+		<LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+		<LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.empty" />
+		<LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+		<WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active" PREFIX="assignment" EXCLUDECOMMENTS="true"/>
+	</then>
+	</if>
+     <if COND="Variables.assignmentTotal=0">
+     <then>
+          <setvar NAME="AbortFlag" VALUE="true"/>
+          <setvar NAME="ErrorName" VALUE="NeedsAssignment"/>
+          <setvar NAME="severity" VALUE="info"/>
+     </then>
+     </if>     
+</then>
+</if>
+
+<!-- check to see if the asset is assigned to other users -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+     <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" STATUS="active,queued" PREFIX="allassigns" EXCLUDECOMMENTS="true"/>
+     <if COND="Variables.allassignsTotal=1">
+     <then>
+          <setvar NAME="AbortFlag" VALUE="true"/>
+          <setvar NAME="ErrorName" VALUE="NoOtherAssignees"/>
+          <setvar NAME="severity" VALUE="info"/>
+     </then>
+     </if>     
+</then>
+</if>          
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+    <if COND="Variables.assignmentTotal=1">
+    <then>
+        <WorkflowAssignment.GetStatus NAME="assignment0" VARNAME="status" />
+        <if COND="Variables.status=queued">
+        <then>
+            <XLAT.LOOKUP KEY="dvin/UI/VotedForAssignment" VARNAME="_XLAT_"/>
+			<div class="width-outer-70">
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+                <argument NAME="severity" VALUE="info"/>
+            </callelement>  
+			</div>
+        </then>
+        </if>
+    </then>
+    </if>
+    
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/UI/AbstainfromvotingAssetTypeassetname"/></span>
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+	
+    <table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <tr>
+            <td class="form-label-text">
+                <XLAT.STREAM KEY="dvin/UI/VariablesAssetTypeName"/>:
+            </td>
+            <td class="form-inset">
+                <STRING.STREAM VARIABLE="assetname" />
+                <!-- Code for Alloy UI -->
+                	<SETVAR NAME="assetName_for_AlloyUI" VALUE="Variables.assetname" />
+                <!-- Code for Alloy UI -->
+            </td>
+        </tr>
+        
+        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+        <tr>
+            <td class="form-label-text">
+                <XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+            </td>
+            <td class="form-inset">
+                <STRING.STREAM VARIABLE="assetdesc" />
+                <!-- Code for Alloy UI -->
+                	<SETVAR NAME="assetDesc_for_AlloyUI" VALUE="Variables.assetdesc" />
+                <!-- Code for Alloy UI -->
+            </td>
+        </tr>
+        
+        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+        <tr>
+            <td class="form-label-text">
+                <XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+            </td>
+            <td class="form-inset">
+                <WorkflowEngine.GetObjectWorkflowProcess OBJECT="workflowasset" VARNAME="workflowid" />
+                <WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflowobj" />
+                <WorkflowProcess.GetProcessName NAME="workflowobj" VARNAME="workflowname" />
+                <WorkflowAssignment.GetStateID NAME="assignment0" VARNAME="workflow_stateid" />
+                <WorkflowEngine.GetStateID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+                <WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="statedesc" />
+                
+                <STRING.STREAM VARIABLE="workflowname" /> - <STRING.STREAM VARIABLE="statedesc" />       
+				<!-- Code for Alloy UI -->
+              	<SETVAR NAME="workflowProcessName_for_AlloyUI" VALUE="Variables.workflowname" />
+              	<SETVAR NAME="workflowStateDesc_for_AlloyUI" VALUE="Variables.statedesc" />
+                 <!-- Code for Alloy UI -->
+            </td>
+        </tr>
+    
+        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+        <tr>
+            <td class="form-label-text">
+                <XLAT.STREAM KEY="dvin/UI/CurrentlyAssignedto"/>:
+            </td>
+            <td class="form-inset">
+                 <table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+                 <tr>
+                     <td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+                 </tr>
+                 <tr>
+                     <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+                     <td >
+                     <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="6" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+                     <tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                         <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Role"/></DIV></td>
+                         <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/User"/></DIV></td>
+                         <td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+                     </tr>
+                     <tr><td colspan="6" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+                         <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+                         <SETVAR NAME="separatorLine" VALUE="0"/>
+                         <setcounter NAME="count" VALUE="0"/>
+                         <!-- Code for Alloy UI -->
+                         	<LISTOBJECT.CREATE NAME="Roles_And_UserNames" COLUMNS="rolename,username" />
+                         <!-- Code for Alloy UI -->
+                         
+             			<loop FROM="0" COUNT="Variables.allassignsTotal">
+             			    <WorkflowAssignment.GetAssignedUserID NAME="allassignsCounters.count" VARNAME="userid" />
+             			    <USERMANAGER.GETDISPLAYABLEUSERNAME USER="Variables.userid" VARNAME="username"/>
+             			    <WorkflowAssignment.GetAssignedUserRole NAME="allassignsCounters.count" VARNAME="rolename"/>
+                        
+                             <IF COND="Variables.separatorLine=1">
+                             <THEN>
+                                 <tr>
+                                     <!--<td colspan="6" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+                                 </tr>
+                             </THEN>
+                             </IF>
+                             <SETVAR NAME="separatorLine" VALUE="1"/>
+                             <tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+                             <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                                 <DIV class="small-text-inset">
+                                 <STRING.STREAM VARIABLE="rolename"/>
+                                 </DIV>
+                             </td>
+                             <td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+                                 <DIV class="small-text-inset">
+                                     <STRING.STREAM VARIABLE="username"/>
+                                 </DIV>
+                             </td>
+                             <td><BR /></td>
+                             </tr>
+                             <!-- Code For Alloy UI , create a list for storing the rolename and user name to whom the current asset is assigned to-->
+                             	<LISTOBJECT.ADDROW NAME="Roles_And_UserNames" rolename="Variables.rolename" username="Variables.username" />
+                             <!-- Code For Alloy UI -->
+                             <IF COND="Variables.rowStyle=tile-row-normal">
+                             <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+                             </THEN>
+                             <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+                             </ELSE>
+                             </IF>
+                             <inccounter NAME="count" VALUE="1"/>
+                         </loop>
+                          <!-- Code for Alloy UI -->
+                          	<LISTOBJECT.TOLIST NAME="Roles_And_UserNames" LISTVARNAME="roleUserList_for_AlloyUI" />
+                          <!-- Code for Alloy UI -->
+                     </table>
+                     </td>
+                     <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+                 </tr>
+                 <tr>
+                 <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+                 </tr>
+                 <tr>
+                 <td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+                 </tr>
+                 </table> 
+                </td>
+            </tr>
+            
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            <tr>
+                <td class="form-label-text">
+	                 <if COND="Variables.assignmentTotal=1">
+	                 <then>
+	                     <XLAT.STREAM KEY="dvin/UI/AssignedUserRole"/>:
+	                 </then>
+	                 <else>
+	                     <span class="alert-color">*</span>
+	                     <XLAT.STREAM KEY="dvin/UI/PickaUserRole"/>:
+	                 </else>
+	                 </if>
+                </td>
+                <td class="form-inset">
+                    <!-- Code for Alloy UI , create a list to store the rolename(s) of the current user to abstain from voting -->
+                    	<LISTOBJECT.CREATE NAME="list_of_roles_for_abstain_from_voting" COLUMNS="rolename,alreadyVoted,assignmentID" />
+                    <!-- Code for Alloy UI -->
+                    <if COND="Variables.assignmentTotal=1">
+                    <then>
+                        <WorkflowAssignment.GetID NAME="assignment0" VARNAME="assignmentid"/>
+                        <INPUT TYPE="HIDDEN" NAME="assignmentid" VALUE="Variables.assignmentid" REPLACEALL="Variables.assignmentid"/>
+                        <WorkflowAssignment.GetAssignedUserRole NAME="assignment0" VARNAME="assignrole"/>
+                        <STRING.STREAM VARIABLE="assignrole"/>
+                        
+                        <!-- Code for Alloy UI -->
+                        		<LISTOBJECT.ADDROW NAME="list_of_roles_for_abstain_from_voting" rolename="Variables.assignrole" alreadyVoted="false" assignmentID="Variables.assignmentid"/>
+                        <!-- Code for Alloy UI -->
+                    </then>
+                    <else>
+                        <XLAT.STREAM KEY="dvin/UI/assignmentTotalassigmentsAssetTypelistedbelow"/><br/>
+                        <XLAT.STREAM KEY="dvin/UI/Pleasepickroleabstainvoting"/><br/>  
+                        <setcounter NAME="assCounter" VALUE="0"/>
+
+                			     <!-- Code for alloy UI -->
+                			    		<SETVAR NAME="voted_for_assignment" VALUE="false" />
+							<!-- Code for alloy UI -->
+                        
+                        
+		                <loop COUNT="Variables.assignmentTotal">
+                			<WorkflowAssignment.GetID NAME="assignmentCounters.assCounter" VARNAME="assignmentid"/>
+                			<WorkflowAssignment.GetAssignedUserRole NAME="assignmentCounters.assCounter" VARNAME="assignrole"/>
+                			<WorkflowAssignment.GetStatus NAME="assignmentCounters.assCounter" VARNAME="status" />
+
+                            <if COND="Counters.assCount=0">
+                			<then>
+                			      	<INPUT TYPE="RADIO" NAME="assignmentid" VALUE="Variables.assignmentid" CHECKED="true" REPLACEALL="Variables.assignmentid" />
+                			</then>
+                			<else>
+                			      	<INPUT TYPE="RADIO" NAME="assignmentid" VALUE="Variables.assignmentid" REPLACEALL="Variables.assignmentid" />
+                			</else>
+                			</if>
+                			<STRING.STREAM VARIABLE="assignrole"/>
+                            <if COND="Variables.status=queued">
+                            <then>
+                			    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<XLAT.STREAM KEY="dvin/UI/Youhavevotedforthisassignment"/>)  
+                			    <!-- Code for alloy UI -->
+								<XLAT.LOOKUP KEY="dvin/UI/Youhavevotedforthisassignment" VARNAME="voted_for_assignment" />                			    
+                			    		<SETVAR NAME="voted_for_assignment" VALUE="Variables.voted_for_assignment" />
+                			    	<!-- Code for alloy UI -->
+                            </then>
+                            </if>
+                            <br/>
+							<!-- Code for Alloy UI -->
+                        				<LISTOBJECT.ADDROW NAME="list_of_roles_for_abstain_from_voting" rolename="Variables.assignrole" alreadyVoted="Variables.voted_for_assignment" assignmentID="Variables.assignmentid"/>
+                        				<SETVAR NAME="voted_for_assignment" VALUE="false" />
+                        			<!-- Code for Alloy UI -->
+
+                            <inccounter NAME="assCounter" VALUE="1"/>
+                		</loop>
+                		
+	                </else>
+                    </if>
+                   	<!-- Code for Alloy UI -->
+                   		<LISTOBJECT.TOLIST NAME="list_of_roles_for_abstain_from_voting" LISTVARNAME="rolesForAbstainFromVoting_for_AlloyUI" />
+                   	<!-- Code for Alloy UI -->
+                </td>
+            </tr>
+
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+            <tr>
+                <td class="form-label-text">
+                    <XLAT.STREAM KEY="dvin/Common/ActionTaken"/>:
+                </td>
+                <td class="form-inset">
+                   	<TEXTAREA NAME="abstaincomment" ROWS="8" COLS="60" WRAP="VIRTUAL"></TEXTAREA>
+                </td>
+            </tr>
+    <STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>        
+	<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage"  REPLACEALL="Variables.PostPage"/>
+	<INPUT type="hidden" name="AssetType" VALUE="Variables.AssetType"  REPLACEALL="Variables.AssetType"/>
+    <INPUT type="hidden" name="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+ 	
+    <XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover" ESCAPE="true"/>
+    <XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+		<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+		<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+		<ARGUMENT NAME="varname" VALUE="urlShowStatus"/>
+		<ARGUMENT NAME="function" VALUE="status"/>
+	</CALLELEMENT>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr><td></td><td>
+	<STRING.ENCODE VARIABLE="urlShowStatus" VARNAME="urlShowStatus"/>		
+    <A HREF="Variables.urlShowStatus" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;"  REPLACEALL="Variables.urlShowStatus,Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+    
+    <XLAT.LOOKUP KEY="dvin/UI/AbstainFromVoting" VARNAME="mouseover" ESCAPE="true"/>
+    <XLAT.LOOKUP KEY="dvin/UI/AbstainFromVoting" VARNAME="_XLAT_"/>
+    <if COND="Variables.assignmentTotal=1">
+    <then>        
+        <A HREF="javascript:void(0);" OnClick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AbstainFromVoting"/></CALLELEMENT></A>
+    </then>
+    <else>            
+        <A HREF="javascript:void(0);" OnClick="if(AbstainFromVote()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AbstainFromVoting"/></CALLELEMENT></A>
+    </else>
+    </if>
+    </td></tr>
+			
+			
+			</table>
+        
+
+</then>
+<else>
+	<div class="width-outer-70">
+     <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="elem" VALUE="Variables.ErrorName"/>
+        <argument NAME="severity" VALUE="Variables.severity"/>
+     </callelement>
+	</div> 
+     <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        <argument NAME="id"        VALUE="Variables.id"/>
+     </callelement>
+     <br/>       
+</else>
+</if>
+
+</FTCS> 

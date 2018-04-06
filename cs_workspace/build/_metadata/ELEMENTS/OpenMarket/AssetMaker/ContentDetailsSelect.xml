@@ -1,0 +1,128 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 11 $ 
+$Modtime: 7/02/04 4:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ContentDetailsSelect.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<setvar NAME="selectsourcetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sourcetype"/>
+<stringlist NAME="fieldvaluelist" STR="Variables.fieldvalue" DELIM=";"/>
+<setvar NAME="spacer" VALUE="Variables.empty"/>
+<if COND="Variables.selectsourcetype=TABLE">
+<then>
+	<!-- get the LHS and RHS by running a query against the specified table -->
+	<setvar NAME="tablename" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/tablename"/>
+	<setvar NAME="errno" VALUE="0"/>
+	<setvar NAME="lhskey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optionvaluekey"/>
+	<setvar NAME="rhskey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optiondesckey"/>
+	<loop LIST="fieldvaluelist">
+		<STRING.STREAM VALUE="Variables.spacer"/>
+		<if cond="IsVariable.assetmaker/property/Variables.fieldname/inspectpage/sql=true">
+		<then>
+			<!-- Found a SQL statement; evaluate that instead of the canned sql we'd otherwise use -->
+			<!-- These are the values I expect to see used in the query -->
+			<setvar NAME="currentvalue" VALUE="fieldvaluelist.ITEM"/>
+			<setvar NAME="returncolumn" VALUE="Variables.rhskey"/>
+			<setvar NAME="matchcolumn" VALUE="Variables.lhskey"/>
+			<setvar NAME="sqlexpr" VALUE="Variables.assetmaker/property/Variables.fieldname/inspectpage/sql"/>
+			<setvar NAME="errno" VALUE="0"/>
+			<execsql LIST="DetailsSelect" SQL="Variables.sqlexpr"/>
+		</then>
+		<else>
+			<!-- Default treatment -->
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="fieldvaluelist.ITEM"/>
+				<ARGUMENT NAME="type" VALUE="String"/>
+			</CALLELEMENT>
+			<IF COND="Variables.validatedstatus=true">
+			<THEN>
+			<setvar NAME="fieldstoragetype" VALUE="Variables.assetmaker/property/Variables.fieldname/storage/type"/>
+			<ISINLIST ITEM="Variables.fieldstoragetype" STR="VARCHAR,LONGVARCHAR,CHAR"/>
+			<if COND="Variables.errno=1">
+			<then>
+				<setvar NAME="errno" VALUE="0"/>
+				<execsql LIST="DetailsSelect" SQL="SELECT Variables.rhskey FROM Variables.tablename
+					WHERE Variables.lhskey='fieldvaluelist.ITEM'"/>
+			</then>
+			<else>
+				<setvar NAME="errno" VALUE="0"/>
+				<execsql LIST="DetailsSelect" SQL="SELECT Variables.rhskey FROM Variables.tablename
+					WHERE Variables.lhskey=fieldvaluelist.ITEM"/>
+			</else>
+			</if>
+			</THEN>
+			</IF>
+		</else>
+		</if>
+		<if COND="Variables.errno=0">
+		<then>
+			<STRING.STREAM LIST="DetailsSelect" COLUMN="Variables.rhskey"/>
+		</then>
+		<ELSE>
+		<!-- Lets try if value has come from custom SQL i.e. is not from the table but from the custom sql query. -->
+		 <IF COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/sql=true">
+		   <THEN>
+			<SETVAR NAME="sqlexpr" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sql"/>
+			<SETVAR NAME="errno" VALUE="0"/>
+			<execsql LIST="DetailsSelect" SQL="Variables.sqlexpr"/>			
+			<IF COND="IsList.DetailsSelect=true">
+			<THEN>
+            <LOOP LIST="DetailsSelect">	
+			<IF COND="DetailsSelect.Variables.lhskey=Variables.fieldvalue">
+			<THEN>
+			<SETVAR NAME="detailVal" VALUE="DetailsSelect.Variables.rhskey"/>
+            </THEN>
+            </IF>
+            </LOOP>
+			</THEN>
+			</IF>
+		   </THEN>
+		  </IF>
+		  <IF COND="IsVariable.detailVal=true" >
+			<THEN>
+			<STRING.STREAM VALUE="Variables.detailVal" />
+			</THEN>
+			</IF>
+		<!-- END -->
+		</ELSE>
+		</if>
+		<setvar NAME="spacer" VALUE=", "/>
+	</loop>
+</then>
+</if>
+
+<if COND="Variables.selectsourcetype=STRING">
+<then>
+	<setvar NAME="lhs" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optionvalues"/>
+	<setvar NAME="rhs" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/optiondescriptions"/>
+	<stringlist NAME="lhslist" STR="Variables.lhs" DELIM=","/>
+	<stringlist NAME="rhslist" STR="Variables.rhs" DELIM=","/>
+	<loop LIST="fieldvaluelist">
+		<STRING.STREAM VALUE="Variables.spacer"/>
+		<setrow LIST="lhslist" ACTION="FIRST"/>
+		<setrow LIST="rhslist" ACTION="FIRST"/>
+		<loop LIST="lhslist">
+			<if COND="lhslist.ITEM=fieldvaluelist.ITEM">
+			<then>
+				<STRING.STREAM VALUE="rhslist.ITEM"/>
+			</then>
+			</if>
+			<setrow LIST="rhslist" ACTION="NEXT"/>
+		</loop>
+		<setvar NAME="spacer" VALUE=", "/>
+	</loop>
+</then>
+</if>
+
+</FTCS> 

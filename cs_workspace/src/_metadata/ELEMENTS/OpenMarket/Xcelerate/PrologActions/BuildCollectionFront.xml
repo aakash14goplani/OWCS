@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/BuildCollectionFront.xml $ 
+$Revision: 37 $ 
+$Modtime: 6/28/04 1:10p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildColletionFront.xml
+-
+- DESCRIPTION
+-	Prolog for Build Collection
+-
+- HISTORY 
+-->
+<setvar NAME="doproceed" VALUE="true"/>
+<IF COND="IsVariable.id=true">
+<THEN>
+	<SETVAR NAME="Collection" VALUE="Variables.id"/>
+</THEN>
+</IF>
+<ASSET.LOAD TYPE="Collection" OBJECTID="Variables.Collection" NAME="theCollection"/>
+<if COND="IsError.Variables.errno=true">
+    <then>        
+        <setvar NAME="doproceed" VALUE="InvalidContentId"/>
+    </then>
+</if>
+<SETVAR NAME="id" VALUE="Variables.Collection"/>
+
+<if COND="Variables.doproceed=true">
+<then>
+	<ASSET.SCATTER NAME="theCollection" PREFIX="Collection"/>
+	<!-- check whether we can perform this function on this asset -->
+   <setvar NAME="AssetType" VALUE="Collection"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/AccessCheck">
+		<ARGUMENT NAME="assetObjectName" VALUE="theCollection"/>
+		<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+		<ARGUMENT NAME="pubid" VALUE="SessionVariables.pubid"/>
+		<ARGUMENT NAME="id" VALUE="Variables.id"/>
+		<ARGUMENT NAME="Function" VALUE="build"/>
+	</CALLELEMENT>
+	<IF COND="Variables.error!=Variables.empty">
+	<THEN>
+	 	<!-- -12069 means allow edit but display warning, any other error means prohibit edit -->
+	 	<if COND="Variables.errno=-12069">
+	 	<then>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<argument NAME="elem" VALUE="EditNotAllowed"/>
+				<argument NAME="severity" VALUE="info"/>
+				<argument NAME="assettype" VALUE="Variables.AssetType"/>
+				<argument NAME="id" VALUE="Variables.id"/>
+			</callelement>
+		</then>
+		<else>
+	     <setvar NAME="doproceed" VALUE="Variables.error"/>
+	   </else>
+	   </if>
+	</THEN>
+	</IF>
+</then>
+</if>
+
+<if COND="Variables.doproceed=true">
+<then>
+	<ASSET.CHILDREN NAME="theCollection" LIST="theQueries" OBJECTTYPE="Query" ORDER="ncode"/>
+	
+	<IF COND="Variables.Collection:subtype!=Variables.empty">
+	<THEN>
+		<ASSETTYPE.LOAD NAME="theAssetType" FIELD="assettype" VALUE="Variables.Collection:subtype"/>
+		<ASSETTYPE.GET NAME="theAssetType" FIELD="plural" OUTPUT="atplural"/>
+	</THEN>
+	</IF>
+</then>
+</if>
+
+<if COND="Variables.doproceed=true">
+<then>
+<!-- check to see if an override has been supplied -->
+	<PROPERTY.GET PARAM="xcelelem.checkprivs" INIFILE="futuretense_xcel.ini" VARNAME="propcheckprivs"/>
+	<if COND="Variables.propcheckprivs!=Variables.empty">
+	<then>
+	    <!-- use customized element -->
+	    <callelement NAME="Variables.propcheckprivs">
+	    	<argument NAME="AssetType" VALUE="Collection"/>
+	   	<argument NAME="id" VALUE="Variables.id"/>
+	    	<argument NAME="Function" VALUE="build"/>
+		</callelement>
+	</then>
+	</if>	
+	<if COND="Variables.PrivsFailed=true">
+	<then>
+	   <setvar NAME="doproceed" VALUE="Variables.PrivsFailedReason"/>
+	</then>
+	<else>
+		<!-- check to see if the table is tracked
+	     if so, then the current record must
+	     be locked by the current user -->
+		<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+		    <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		</callelement>
+		<if COND="Variables.trackingenabled=true">
+		<then>
+        	<history TABLE="Variables.AssetType" ASSET="Variables.id" LIST="ItsHistory"/>
+     		<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/LockIfNeeded">
+	            <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	            <argument NAME="id" VALUE="Variables.id"/>
+	        </callelement>
+	        <INPUT TYPE="HIDDEN" NAME="alreadylocked" VALUE="Variables.alreadylocked" REPLACEALL="Variables.alreadylocked"/>
+			
+			<!-- Add entry in CheckOutInfo for an implicit check out -->
+			<if COND="Variables.checkoutmethod=implicit">
+			<then>
+			  <usermanager.getloginuser VARNAME="userID"/>
+			  <implicitcheckout.logimplicitcheckout ASSETTYPE="Variables.AssetType"
+				ASSETID="Variables.id" USER="Variables.userID"
+				FUNCTION="Build"/>
+
+				<if COND="IsError.Variables.errno=false">
+				<then>
+					<!-- put out informational message: -->
+					<!-- Variables.atdescription has been checked out for Variables.function. -->
+					<ASSETTYPE.LOAD NAME="at" TYPE="Variables.AssetType"/>
+					<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="atdescription"/>
+					<XLAT.LOOKUP KEY="dvin/Common/BuildCollection" VARNAME="function"/>
+					<XLAT.LOOKUP KEY="dvin/UI/AssetImplicitlyCheckout" VARNAME="msgtext"/>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="severity" VALUE="info"/>
+					</CALLELEMENT>
+				</then>
+				</if>	
+			</then>
+			</if>
+	    </then>
+		</if>
+	</else>
+	</if>
+</then>
+</if>
+
+</FTCS>

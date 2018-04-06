@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Export/ExportRender
+-
+- INPUT
+- page - the page name to call
+- args - the encoded arguments
+-
+- OUTPUT
+-
+-->
+<RENDER.INSERTPAGE PAGENAME="Variables.page" ARGS="Variables.args"/>
+</FTCS> 

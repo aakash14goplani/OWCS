@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateB/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Search/ResyncPost.xml $ 
+$Revision: 15 $ 
+$Modtime: 10/28/02 2:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- Admin/Search/ResyncPost.xml
+-
+- DESCRIPTION
+-	Resync command confirmed, rebuild search engine index from database.
+-
+- HISTORY 
+-->
+
+
+
+<!-- Load the search engine specific strings -->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+
+<!-- Load the asset type -->
+
+<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/RebuildingSearchEngineIndexfor"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<P/>
+
+<!-- 
+    Index identified.  Now destroy it.
+-->
+
+<SETVAR NAME="errno" VALUE="0"/>
+<INDEXDESTROY INDEX="Variables.AssetTypeObj:indexfile"/>
+<IF COND="Variables.errno!=0">
+  <THEN>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+       <ARGUMENT NAME="error" VALUE="CantDestroySeIndex"/>
+       <ARGUMENT NAME="oldErrno" VALUE="Variables.errno"/>
+    </CALLELEMENT>
+  </THEN>
+  <ELSE>
+	<!-- Index destroyed.  Now recreate it.	-->
+
+	<SETVAR NAME="errno" VALUE="0"/>
+	<IF COND="CS.Property.cs.searchengine=AV">
+	  <THEN>
+	    <INDEXCREATE INDEX="Variables.AssetTypeObj:indexfile"/>
+	  </THEN>
+	  <ELSE>
+	    <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/IndexCreateCS.Property.cs.searchengine">
+	      <ARGUMENT NAME="seindex" VALUE="Variables.AssetTypeObj:indexfile"/>
+	    </CALLELEMENT>
+	  </ELSE>
+	</IF>
+
+	<IF COND="Variables.errno!=0">
+	  <THEN>
+	    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	       <ARGUMENT NAME="error" VALUE="CantRecreateSeIndex"/>
+	       <ARGUMENT NAME="oldErrno" VALUE="Variables.errno"/>
+	    </CALLELEMENT>
+	  </THEN>
+		<ELSE>
+			<!-- Index recreated empty.  Now repopulate it. -->
+
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Search/Populate">
+			  <ARGUMENT NAME="seindex" VALUE="Variables.AssetTypeObj:indexfile"/>
+			</CALLELEMENT>
+
+			<p><XLAT.STREAM KEY="dvin/UI/Admin/indexrebuiltinsyncwithdatabase"/></p>
+		</ELSE>
+		</IF>
+
+  </ELSE>
+</IF>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Search/List">
+	<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+</CALLELEMENT>
+
+</FTCS>

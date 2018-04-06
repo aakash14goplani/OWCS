@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/Request
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<SETVAR NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceleditor"/>
+<IF COND="Variables.errno=0">
+<THEN>-3</THEN>
+<ELSE>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/ControlPanel/Variables.request"/>
+</ELSE>
+</IF>
+</ftcs>

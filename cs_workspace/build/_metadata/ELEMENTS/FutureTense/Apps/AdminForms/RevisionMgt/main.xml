@@ -1,0 +1,173 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+
+<!-- ####################################################################### -->
+<!-- RevisionMgt/main                                                        -->
+<!-- FutureTense, Inc.                                                       -->
+<!-- ####################################################################### -->
+
+<IF COND="IsSessionVariable.assetkey=false">
+     <THEN>
+          <SETSSVAR NAME="assetkey" VALUE="Variables.empty"/>
+     </THEN>
+</IF>
+<IF COND="IsSessionVariable.tablekey=false">
+     <THEN>
+          <SETSSVAR NAME="tablekey" VALUE="Variables.empty"/>
+     </THEN>
+</IF>
+<SATELLITE.FORM ASSEMBLER="query" METHOD="POST">
+	<STRING.ENCODE VARIABLE="charset" VARNAME="OutputQString"/>
+	<INPUT TYPE="HIDDEN" NAME="_charset_" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_environment" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_environment" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="OutputQString"/>
+	<INPUT TYPE="hidden"  NAME="cs_formmode" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="UI/Forms/RevisionTracking"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+    
+<TABLE class="width-outer-30" BORDER="0" CELLPADDING="2" CELLSPACING="1">
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+		<TD class="form-label-text" VALIGN="BASELINE" NOWRAP="true">
+			<B><XLAT.STREAM KEY="dvin/AdminForms/EnterCatalogName"/></B>
+		</TD>
+		<TD class="form-inset" >
+            <IF COND="IsSessionVariable.tablekey=false">
+                 <THEN>
+        			<INPUT TYPE="text" SIZE="32" NAME="table" VALUE=""/>
+                 </THEN>
+                 <ELSE>
+        		    <REPLACE STR="SessionVariables.tablekey">
+            			<INPUT TYPE="text" SIZE="32" NAME="table" VALUE="SessionVariables.tablekey"/>
+            		</REPLACE>
+        		</ELSE>
+            </IF>
+		</TD>
+	</TR>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+		<TD class="form-label-text" VALIGN="BASELINE" NOWRAP="true">
+			<B><XLAT.STREAM KEY="dvin/AdminForms/EnterValueForKey"/></B>
+		</TD>
+		<TD class="form-inset" NOWRAP="true">
+            <IF COND="IsSessionVariable.assetkey=false">
+                 <THEN>
+        			<INPUT TYPE="text" SIZE="32" NAME="asset" VALUE=""/>
+                 </THEN>
+                 <ELSE>
+        		    <REPLACE STR="SessionVariables.assetkey">
+            			<INPUT TYPE="text" SIZE="32" NAME="asset" VALUE="SessionVariables.assetkey"/>
+            		</REPLACE>
+        		</ELSE>
+            </IF>
+		</TD>
+	</TR>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<TR>
+		<TD class="form-label-text" VALIGN="BASELINE">
+			<XLAT.STREAM KEY="dvin/AdminForms/SelectOperation"/>
+		</TD>
+		
+		<TD class="form-inset">
+			<table width="100%">
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="LockList" CHECKED="true"/>
+					</td>
+					<td align="left" valign="TOP" class="form-inset">
+						<XLAT.STREAM KEY="dvin/AdminForms/Lock"/> 
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left" valign="TOP">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="CommitList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/Commit"/>
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left" valign="TOP">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="ReleaseList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/Release"/>
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="RollbackList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/Common/Rollback"/> 
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="HistoryList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/Common/History"/> 
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="TrackList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/TrackCatalogs"/>
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="UnTrackList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/UnTrackCatalogs"/> 
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="SetVersionsList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/SetCatalogRevisions"/> 
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="DeleteList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/DeleteRevisions"/>
+					</td>
+				</tr>
+				<tr>
+					<td class="form-inset" align="left">
+						<INPUT TYPE="radio" style="margin-left:0px" NAME="form" VALUE="UnlockList"/>
+					</td>
+					<td class="form-inset" align="left" valign="TOP">
+						<XLAT.STREAM KEY="dvin/AdminForms/UnlockRows"/> 
+					</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>	
+	<TR>
+		<TD class="form-label-text"></TD><TD class="form-inset">
+			<INPUT TYPE="hidden" NAME="pagename" VALUE="FutureTense/Apps/AdminForms/AdminForm"/>
+			<INPUT TYPE="hidden" NAME="tool" VALUE="RevisionMgt"/>
+			<XLAT.LOOKUP KEY="dvin/AT/Common/OK" VARNAME="_XLAT_"/>
+			<A onClick="areKeysEntered(document.forms[0]); document.forms[0].submit();" HREF="#" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="dvin/AT/Common/OK"/></CALLELEMENT></A>
+		</TD>
+	</TR>
+</TABLE>
+</SATELLITE.FORM>
+</FTCS>

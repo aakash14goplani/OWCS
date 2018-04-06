@@ -1,0 +1,289 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/Publish/BulkApprovePost
+-
+- INPUT
+-	Variables.target
+-  Variables.Assettypes
+-  Variables.query
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="Assettypes" VARNAME="Assettypes"/>
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<XLAT.STREAM KEY="dvin/Common/Error"/> = <CSVAR NAME="Variables.errno"/><br/>
+   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="NoPublishDest"/>
+  	</callelement>
+  	<setvar NAME="upcommand" value="cancel"/>
+</then>
+</if>
+<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt:"/>
+    
+<if COND="IsError.Variables.errno=false">
+<then>
+     <DELIVERYTYPE.LOAD NAME="pubdt" OBJECTID="Variables.pubtgt:type"/>
+     <DELIVERYTYPE.GET NAME="pubdt" FIELD="path" OUTPUT="pubdt:path"/>
+     <if COND="IsError.Variables.errno=true">
+     <then>
+			<XLAT.STREAM KEY="dvin/Common/Error"/> = <CSVAR NAME="Variables.errno"/><br/>
+	      <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	         <argument NAME="error" VALUE="NoPublishDest"/>
+	     	</callelement>
+  			<setvar NAME="upcommand" value="cancel"/>
+     </then>
+     <else>
+			<IF COND="Variables.chunksize=Variables.empty">
+			<THEN>
+				<setvar NAME="chunksize" VALUE="500"/>
+			</THEN>
+			</IF>
+          <ENDS STR="Variables.pubdt:path" WHAT="Export"/>
+          <if COND="Variables.errno=1">
+          <then>
+          		<!-- Export -->
+          		<setvar NAME="targettype" VALUE="export"/>
+	  		</then>
+          <else>
+          		<!-- Mirror -->
+         		<setvar NAME="targettype" VALUE="mirror"/>
+          </else>
+	  		</if>
+          <setvar NAME="errno" VALUE="0" />
+     </else>
+     </if>
+</then>
+</if> 
+
+<!-- Report number of assets approved before the bulk approval -->
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ApproveMultipleAssetsforpubtgtname"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<!-- To prevent the timeout mentioned in bug 16446231 , we prevent the timeout here by pinging the server once every minute from UI-->
+<script>
+	function preventTimeOut() {
+		dojo.xhrGet({
+	        		url: 'ContentServer',
+	        		sync: false,
+	        		preventCache: true,
+	        		content: {
+						pagename: 'fatwire/wem/ui/Ping'
+	        		},
+	        		
+	        		load: function(response, ioargs) {
+	        		},
+	        		
+	        		error: function(error, ioargs) { 
+	        		}
+	        	});	
+	}
+	var preventTimeoutEventID = setInterval(function() {preventTimeOut();},10000);
+	dojo.addOnLoad( function() { clearInterval(preventTimeoutEventID);});
+</script>
+<P/>
+<SETVAR NAME="theQuery" VALUE="Variables.query"/>
+
+<SETCOUNTER NAME="querynum" VALUE="1"/>
+<IF COND="IsVariable.Assettypes=true">
+<THEN>
+	<setvar NAME="force" VALUE="Variables.force"/>
+	<STRINGLIST NAME="AssetTypes" STR="Variables.Assettypes" DELIM=";"/>
+	<!-- it will be faster to do Template, Page, Query, Collection before other assets -->
+	<ISINLIST ITEM="Template" LIST="AssetTypes"/>
+	<if COND="Variables.errno=1">
+	<then>
+		<!-- check to see if we have had a session timeout -->
+		<setvar NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<if COND="Variables.errno=1">
+		<then> 
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/ApproveChunk">
+				<ARGUMENT NAME="chunksize" VALUE="Variables.chunksize"/>
+				<ARGUMENT NAME="query" VALUE="Variables.theQuery"/>
+				<ARGUMENT NAME="assettypes" VALUE="Template"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+		   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		      <argument NAME="error" VALUE="AdminTimeoutError"/>
+		  	</callelement>
+		  	<throwexception/>
+		</else>
+		</if>
+	</then>
+	</if>
+	<!-- it will be faster to do Template, Page, Query, Collection before other assets -->
+	<ISINLIST ITEM="Page" LIST="AssetTypes"/>
+	<if COND="Variables.errno=1">
+	<then>
+		<!-- check to see if we have had a session timeout -->
+		<setvar NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<if COND="Variables.errno=1">
+		<then> 
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/ApproveChunk">
+				<ARGUMENT NAME="chunksize" VALUE="Variables.chunksize"/>
+				<ARGUMENT NAME="query" VALUE="Variables.theQuery"/>
+				<ARGUMENT NAME="assettypes" VALUE="Page"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+		   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		      <argument NAME="error" VALUE="AdminTimeoutError"/>
+		  	</callelement>
+		  	<throwexception/>
+		</else>
+		</if>
+	</then>
+	</if>
+	<!-- it will be faster to do Template, Page, Query, Collection before other assets -->
+	<ISINLIST ITEM="Query" LIST="AssetTypes"/>
+	<if COND="Variables.errno=1">
+	<then>
+		<!-- check to see if we have had a session timeout -->
+		<setvar NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<if COND="Variables.errno=1">
+		<then> 
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/ApproveChunk">
+				<ARGUMENT NAME="chunksize" VALUE="Variables.chunksize"/>
+				<ARGUMENT NAME="query" VALUE="Variables.theQuery"/>
+				<ARGUMENT NAME="assettypes" VALUE="Query"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+		   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		      <argument NAME="error" VALUE="AdminTimeoutError"/>
+		  	</callelement>
+		  	<throwexception/>
+		</else>
+		</if>
+	</then>
+	</if>
+	<!-- it will be faster to do Template, Page, Query, Collection before other assets -->
+	<ISINLIST ITEM="Collection" LIST="AssetTypes"/>
+	<if COND="Variables.errno=1">
+	<then>
+		<!-- check to see if we have had a session timeout -->
+		<setvar NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<if COND="Variables.errno=1">
+		<then> 
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/ApproveChunk">
+				<ARGUMENT NAME="chunksize" VALUE="Variables.chunksize"/>
+				<ARGUMENT NAME="query" VALUE="Variables.theQuery"/>
+				<ARGUMENT NAME="assettypes" VALUE="Collection"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+		   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		      <argument NAME="error" VALUE="AdminTimeoutError"/>
+		  	</callelement>
+		  	<throwexception/>
+		</else>
+		</if>
+	</then>
+	</if>	
+	
+	<!-- remove the asset types we have already done -->
+	<SETVAR NAME="YetToDo" VALUE="Variables.empty"/>
+	<LOOP LIST="AssetTypes">
+		<SETVAR NAME="errno" VALUE="0"/>
+		<ISINLIST ITEM="AssetTypes.ITEM" STR="Template,Page,Query,Collection"/>
+		<IF COND="Variables.errno!=1">
+		<THEN>
+			<IF COND="Variables.YetToDo=Variables.empty">
+			<THEN>
+				<SETVAR NAME="YetToDo" VALUE="AssetTypes.ITEM"/>
+			</THEN>
+			<ELSE>
+				<SETVAR NAME="YetToDo" VALUE="Variables.YetToDo;AssetTypes.ITEM"/>
+			</ELSE>
+			</IF>
+		</THEN>
+		</IF>
+	</LOOP>
+	
+	<IF COND="Variables.YetToDo!=Variables.empty">
+	<THEN>
+		<!-- check to see if we have had a session timeout -->
+		<setvar NAME="errno" VALUE="0"/>
+		<USERISMEMBER GROUP="xceladmin"/>
+		<if COND="Variables.errno=1">
+		<then> 
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/ApproveChunk">
+				<ARGUMENT NAME="chunksize" VALUE="Variables.chunksize"/>
+				<ARGUMENT NAME="query" VALUE="Variables.theQuery"/>
+				<ARGUMENT NAME="assettypes" VALUE="Variables.YetToDo"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+		   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		      <argument NAME="error" VALUE="AdminTimeoutError"/>
+		  	</callelement>
+		  	<throwexception/>
+		</else>
+		</if>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<XLAT.STREAM KEY="dvin/UI/Admin/NoAssetTypes"/>
+</ELSE>
+</IF>
+
+<!-- check to see if we have had a session timeout -->
+<setvar NAME="errno" VALUE="0"/>
+<USERISMEMBER GROUP="xceladmin"/>
+<if COND="Variables.errno=1">
+<then> 
+	<!-- Report number of assets approved before the bulk approval -->
+	<h3><XLAT.STREAM KEY="dvin/UI/Admin/AssetsCurrentlyApprovedforpubtgtname"/>: <BR/></h3>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Publish/HeldPublishableAssets">
+		<ARGUMENT NAME="target" VALUE="Variables.target"/>
+		<ARGUMENT NAME="targettype" VALUE="Variables.targettype"/>
+		<ARGUMENT NAME="allowLinks" VALUE="true"/>
+	</CALLELEMENT>
+	<if COND="Variables.targettype=export">
+	<then>
+	  <if COND="Variables.refsTotal=0">
+	  <then>
+	      <P><XLAT.STREAM KEY="dvin/UI/Error/Nopublishstartingpointsdefinedexportdest"/></P>
+	  </then>
+	  </if>
+	</then>
+	</if>
+</then>
+<else>
+   <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="AdminTimeoutError"/>
+  	</callelement>
+ </else>
+</if>
+<div class="width-outer-70">
+<XLAT.LOOKUP KEY="dvin/UI/Admin/ApproveMultipleAssetsDone" VARNAME="msgtext"/>
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+	<ARGUMENT NAME="severity" VALUE="info"/>
+</CALLELEMENT>
+</div>
+<P/>
+<if cond="Variables.cs_environment=portal">
+<then>
+    <a href="javascript:void(0);" onclick="window.close();"><XLAT.STREAM KEY="dvin/Common/Done"/></a>
+</then>
+<else>
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/Publish/DestEdit">
+    	<ARGUMENT NAME="action" VALUE="details"/>
+    	<ARGUMENT NAME="id" VALUE="Variables.target"/>
+    </CALLELEMENT>
+</else>
+</if>
+</FTCS> 

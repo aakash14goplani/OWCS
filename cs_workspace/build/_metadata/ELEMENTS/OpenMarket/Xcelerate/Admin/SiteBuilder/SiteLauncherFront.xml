@@ -1,0 +1,597 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Admin/SiteBuilder/SiteLauncherFront
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/SiteBuilder/SiteLauncherFront.xml $
+$Revision: 3 $
+$Modtime: 7/21/04 10:31a $
+-
+- DESCRIPTION - Replicates a source site. Creates a new site (Publication).
+-		Uses specifications in the SitePrototype tables to determine 
+-		whether to share or copy each asset type. Shares all 
+-		start menu items, workflows, tree tabs, asset subtypes between source
+-		and new site. Copies all client configuration info from source site
+-		to new site. 
+-		User can specify which publish destinations to enable and whether 
+-		to initialize them.
+- INPUT
+-		Variables.pubid	- publication id of the source site
+- 		Variables.ThisPage:  SiteLauncherFront
+-		Variables.PostPage:  SiteLauncherPost
+- OUTPUT
+-
+-->
+
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+// Check that the required fields have been set ok --> 
+function checkfields() 
+{
+	var obj = document.forms[0].elements[0];
+
+	//Check for something wrong in the name
+	if (typeof(obj.form.elements['Publication:name'])!='undefined')
+	{
+		if ( ( obj.form.elements['Publication:name'].value.search(/[/\\<>&'"?;:]/) != -1 ) ||
+			( obj.form.elements['Publication:name'].value.length == 0 ) ||
+			( obj.form.elements['Publication:name'].value.search(/\s/) != -1 ) )
+		{
+			//Here means something is wrong, let us figure out what
+			if ( ( obj.form.elements['Publication:name'].value.search(/[/\\<>&'"?;:]/) != -1 ) )
+			{
+				var replacestr=/\bVariables.name\b/   ;
+				var xlatstr= ']]><XLAT.STREAM KEY="dvin/UI/Admin/Error/InvalidcharacterPublicationname" ESCAPE="true" ENCODE="false"/><![CDATA[' ;
+				var newstr=xlatstr.replace(replacestr, obj.form.elements['Publication:name'].value) ;
+				alert(newstr);
+			}
+
+			if ( obj.form.elements['Publication:name'].value.search(/\s/) != -1 )
+			{
+]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/Admin/Error/notusespaceinnamesite" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[
+			}
+
+			if (obj.form.elements['Publication:name'].value.length == 0)
+			{
+]]>
+				alert("<XLAT.STREAM KEY="dvin/UI/Admin/Error/mustspecifynamesite" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[
+			}
+			
+			return false;
+		}
+		// Check that a description exists	
+		if (obj.form.elements['Publication:description'].value=="")
+		{
+]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Admin/Error/mustspecifydescriptionsite" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[
+			return false;
+		}			
+		if (obj.form.elements['Publication:cs_prefix'].value.length == 0)
+		{
+]]>
+			alert("<XLAT.STREAM KEY="dvin/CSSiteBuilder/SpecifyPrefix" ESCAPE="true" ENCODE="false"/>");
+<![CDATA[
+		}
+		if ( ( obj.form.elements['Publication:cs_prefix'].value.search(/['"?;:]/) != -1 ) )
+		{
+			var replacestr=/\bVariables.name\b/   ;
+			var xlatstr= ']]><XLAT.STREAM KEY="dvin/AT/Common/Invalidcharacterinname" ESCAPE="true" ENCODE="false"/><![CDATA[' ;
+			var newstr=xlatstr.replace(replacestr, obj.form.elements['Publication:name'].value) ;
+			alert(newstr);
+		}
+	}
+	return true;
+}
+
+function pubtargetCheck(field, nth)
+{
+	var obj = document.forms[0].elements[0];
+	if ( field.checked==false )
+	{
+		if (obj.form.elements['startpoint'][nth].type=='checkbox')
+			obj.form.elements['startpoint'][nth].checked=false;
+		if (obj.form.elements['initmirror'][nth].type=='checkbox')
+			obj.form.elements['initmirror'][nth].checked=false;
+		if (obj.form.elements['mirrorsite'][nth].type=='checkbox')
+			obj.form.elements['mirrorsite'][nth].checked=false;
+	}
+	else
+	{
+		if (obj.form.elements['startpoint'][nth].type=='checkbox')
+			obj.form.elements['startpoint'][nth].checked=true;
+	}		
+}
+
+function initializeCheck(field,nth)
+{
+	var obj = document.forms[0].elements[0];
+	if ( field.checked==true)
+	{
+		obj.form.elements['pubtarget'][nth].checked=true;
+	}	
+}
+
+function setdefaultDescription()
+{
+	var obj = document.forms[0].elements[0];
+	if ( obj.form.elements['Publication:description'].value.length==0 )
+	{
+		obj.form.elements['Publication:description'].value = obj.form.elements['Publication:name'].value;
+	}	
+}
+
+
+]]>
+</SCRIPT>
+<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<input type="HIDDEN" name="pagename" value="OpenMarket/Xcelerate/Admin/SiteBuilder/SiteLauncherPost"/>
+<input type="HIDDEN" name="srcpubid" value="Variables.pubid" REPLACEALL="Variables.pubid"/>
+
+<!-- get the name and description of the source site -->
+<PUBLICATION.LOAD NAME="sourcepub" OBJECTID="Variables.pubid"/>
+<PUBLICATION.SCATTER NAME="sourcepub" PREFIX="src" />
+<SETVAR NAME="srcpubdescription" VALUE="Variables.src:name (Variables.src:description)"/>
+
+
+<table border="0" cellpadding="0" cellspacing="0">
+
+	<tr><td colspan="2"><span class="title-text"><XLAT.STREAM KEY="dvin/CSSiteBuilder/WizardName:"/>&nbsp;<XLAT.STREAM KEY="dvin/CSSiteBuilder/NewSite"/></span></td></tr>
+	
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	
+	<tr>
+		<td>	
+
+			<table border="0" cellpadding="0" cellspacing="0">  
+
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+				<tr>		
+					<td valign="top" class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/AT/Common/Name:"/></td>
+					<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td class="form-inset"><span class="default-text"><INPUT TYPE="TEXT" NAME="Publication:name" VALUE="" SIZE="32" MAXLENGTH="255" REPLACEALL="" onchange="setdefaultDescription()"/></span></td>			
+				</tr>
+
+				<tr>
+					<td></td>
+					<td colspan="2"></td>	
+				</tr>
+				
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	
+				<tr>
+					<td valign="top" class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/AT/Common/Description:"/></td>
+					<td></td>
+					<td class="form-inset">
+						<INPUT TYPE="TEXT" NAME="Publication:description" VALUE="" SIZE="32" MAXLENGTH="64" REPLACEALL="" />
+					</td>
+				</tr>
+	
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	
+				<tr>
+					<td valign="top" class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/CSSiteBuilder/SitePrefix"/>:</td>
+					<td></td>
+					<td class="form-inset">
+						<span class="default-text"><INPUT TYPE="TEXT" NAME="Publication:cs_prefix" VALUE="" SIZE="32" MAXLENGTH="64" REPLACEALL="" /></span>
+					</td>
+				</tr>
+				
+				<tr>
+					<td></td>
+					<td colspan="2"><span class="small-text-inset"><XLAT.STREAM KEY="dvin/CSSiteBuilder/Copiedassetswillberenamed"/></span></td>	
+				</tr>	
+
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+	
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+					<ARGUMENT NAME="upcommand" VALUE="ListEnabledAssetTypes"/>
+					<ARGUMENT NAME="list" VALUE="EnabledAssetTypes"/>
+					<ARGUMENT NAME="pubid" VALUE="Variables.pubid"/>
+				</CALLELEMENT>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text">
+						<XLAT.STREAM KEY="dvin/UI/Admin/EnabledAssetTypes"/>:
+					</td>
+					<td></td>
+					<td class="form-inset">
+						<IF COND="IsList.EnabledAssetTypes=true">
+						<THEN>
+							<table BORDER="0" CELLSPACING="0" CELLPADDING="0" style="margin-left : 2px;margin-right : 10px">
+								<tr>
+									<td></td>
+									<td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td>
+										<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+											<tr>
+												<td colspan="11" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+											</tr>
+											<tr>
+												<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/AssetType"/></DIV></td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/NoData"/></DIV></td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Copy"/></DIV></td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Share"/>&nbsp;</DIV></td>
+												<!--<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+													<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>-->
+											</tr>
+											<tr>
+												<td colspan="11" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+											</tr>
+
+											<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+											<SETVAR NAME="separatorLine" VALUE="0"/>
+											<SETVAR NAME="FilterAssetTypeList"  VALUE="CS.Empty"/>
+											<LOOP LIST="EnabledAssetTypes">
+												<SETVAR NAME="errno"  VALUE="0"/>
+												<ISINLIST ITEM="EnabledAssetTypes.assettype" STR="Variables.FilterAseetTypeList" />
+												<IF COND="Variables.separatorLine=1">
+												<THEN>
+													<tr>
+														<!--<td colspan="11" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+													</tr>
+												</THEN>
+												</IF>
+												<IF COND="Variables.errno!=1">
+												<THEN>
+												<SETVAR NAME="separatorLine" VALUE="1"/>
+					
+												<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+													<td><BR /></td>
+													<REMOVEVAR NAME="sbasset:0:copymode"/>
+													<PUBLICATION.SCATTERREPLICATESPEC NAME="sourcepub" SPECOBJECT="EnabledAssetTypes.assettype" PREFIX="sbasset:"/>
+													<td></td>
+													<td> <STRING.STREAM VALUE="EnabledAssetTypes.description"/> </td>
+													<td></td>
+													<td> <STRING.STREAM VALUE="EnabledAssetTypes.assettype"/> </td>
+													<td></td>
+													
+													<SETVAR NAME="directive" VALUE="Variables.sbasset:0:copymode"/>
+													<IF COND="Variables.directive!=N">
+													<THEN>
+														<IF COND="Variables.directive!=C">
+														<THEN>
+															<!-- Page assets cannot be shared -->
+															<IF COND="EnabledAssetTypes.assettype=Page">
+															<THEN>
+																<SETVAR NAME="directive" VALUE="C"/>
+															</THEN>
+															<ELSE>
+																<SETVAR NAME="directive" VALUE="S"/>
+															</ELSE>
+															</IF>
+														</THEN>
+														</IF>
+													</THEN>
+													</IF>
+													<STRING.ENCODE LIST="EnabledAssetTypes" COLUMN="assettype" VARNAME="EATassettype"/>
+													<td align="center">
+														<IF COND="Variables.directive=N">
+														<THEN>
+															<XLAT.LOOKUP KEY="dvin/CSSiteBuilder/nodataassets" VARNAME="_XLAT_"/>
+															<IMG src="Variables.cs_imagedir/graphics/common/icon/check.gif" ALT="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+															<input type="hidden" name="nodataassettypes" value="Variables.EATassettype" REPLACEALL="Variables.EATassettype"/>
+														</THEN>
+														</IF>
+													</td>
+													<td></td>
+													<td align="center">
+														<IF COND="Variables.directive=C">
+														<THEN>
+															<XLAT.LOOKUP KEY="dvin/CSSiteBuilder/copyassets" VARNAME="_XLAT_"/>
+															<IMG src="Variables.cs_imagedir/graphics/common/icon/check.gif" ALT="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+															<input type="hidden" name="copyassettypes" value="Variables.EATassettype" REPLACEALL="Variables.EATassettype"/>
+														</THEN>
+														</IF>
+													</td>
+													<td></td>
+													<td align="center">
+														<IF COND="Variables.directive=S">
+														<THEN>
+															<XLAT.LOOKUP KEY="dvin/CSSiteBuilder/shareassets" VARNAME="_XLAT_"/>
+															<IMG src="Variables.cs_imagedir/graphics/common/icon/check.gif" ALT="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+															<input type="hidden" name="shareassettypes" value="Variables.EATassettype" REPLACEALL="Variables.EATassettype"/>
+														</THEN>
+														</IF>
+													</td>
+
+													<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+													</IF>
+												</tr>
+												</THEN>
+												</IF>
+											</LOOP>					
+										</table>
+									</td>
+									
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td></td>
+									<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+							</table> 
+						</THEN>
+						<ELSE>
+							<XLAT.STREAM KEY="dvin/UI/Admin/Noassettypesenabledforthissite"/>
+						</ELSE>
+						</IF>
+					</td>
+				</tr>
+
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+
+				<!-- workflows -->
+				<WORKFLOWENGINE.GETALLPROCESSES  PREFIX="wf:" PUBID="Variables.pubid" />
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text">
+						<XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+					</td>
+					<td></td>
+					<td class="form-inset">
+						<IF COND="Variables.wf:Total!=0">
+						<THEN>
+							<table BORDER="0" CELLSPACING="0" CELLPADDING="0" style="margin-left : 2px;margin-right : 10px">
+								<tr>
+									<td></td>
+									<td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td >				
+										<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+											<tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+											<tr>
+												<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Workflow"/></DIV></td>
+												<!--   <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+													<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>-->
+											</tr>
+											<tr><td colspan="5" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+											
+											<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+											<SETVAR NAME="separatorLine" VALUE="0"/>
+											<SETCOUNTER NAME="nth" VALUE="0"/>
+											
+											<LOOP COUNT="Variables.wf:Total">
+											
+												<IF COND="Variables.separatorLine=1">
+												<THEN>
+													<tr>
+														<!--<td colspan="5" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+													</tr>
+												</THEN>
+												</IF>
+												<SETVAR NAME="separatorLine" VALUE="1"/>
+
+												<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+													<td><BR /></td>
+													<WORKFLOWPROCESS.GETPROCESSNAME NAME="wf:Counters.nth" VARNAME="wfname"/>
+													<WORKFLOWPROCESS.GETID NAME="wf:Counters.nth" VARNAME="wfid"/>
+													<td></td>
+													<td> <STRING.STREAM VARIABLE="wfname"/> </td>
+													<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+													</IF>
+												</tr>
+
+												<INCCOUNTER NAME="nth" VALUE="1"/>
+											</LOOP>					
+										</table>
+									</td>
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td></td>
+									<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+							</table> 
+						</THEN>
+						<ELSE>
+							<XLAT.STREAM KEY="dvin/CSSiteBuilder/NoWorkflowProcesses"/>
+						</ELSE>
+						</IF>
+					</td>
+				</tr>
+				
+				<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+
+				<!-- publish destinations -->
+				<PUBTARGETMANAGER.FIND PREFIX="pbt" />
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text">
+						<XLAT.STREAM KEY="dvin/UI/Admin/PublishDestinations"/>:
+					</td>
+					<td></td>
+					<td class="form-inset">
+						<IF COND="Variables.pbtTotal!=0">
+						<THEN>
+							<table BORDER="0" CELLSPACING="0" CELLPADDING="0" style="margin-left : 2px;margin-right : 10px">
+								<tr>
+									<td></td>
+									<td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+								<tr>
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td >				
+										<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+											<tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+											<tr>
+												<td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/EnableQ"/></DIV></td>
+												<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/CSSiteBuilder/initialize"/></DIV></td>
+												<!--   <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+													<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>-->
+											</tr>
+											<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+											<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+											<SETVAR NAME="separatorLine" VALUE="0"/>
+											<SETCOUNTER NAME="nth" VALUE="0"/>
+											<LOOP COUNT="Variables.pbtTotal">
+												<IF COND="Variables.separatorLine=1">
+												<THEN>
+													<tr>
+														<!--<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+													</tr>
+												</THEN>
+												</IF>
+												<SETVAR NAME="separatorLine" VALUE="1"/>
+						
+												<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+													<td><BR /></td>
+													<td></td>
+													<PUBTARGET.SCATTER NAME="pbtCounters.nth" PREFIX="pubtgt:"/>
+													<td>
+														<input type="checkbox" name="pubtarget" value="Variables.pubtgt:id" onclick="pubtargetCheck(this, Counters.nth);" REPLACEALL="Variables.pubtgt:id,Counters.nth"/>
+														<STRING.STREAM VARIABLE="pubtgt:name"/>
+													</td>
+													<td></td>
+													<!-- if a mirror destination, ask if we should mirror site configuration -->
+													<DELIVERYTYPE.LOAD NAME="pubdt" OBJECTID="Variables.pubtgt:type"/>
+													<DELIVERYTYPE.GET NAME="pubdt" FIELD="dtype" OUTPUT="pubdt:dtype"/>
+													<IF COND="Variables.pubdt:dtype=mirror">
+													<THEN>
+														<SETVAR NAME="MIRROR_OR_REALTIME" VALUE="true"/>
+													</THEN>
+													<ELSE>
+														<IF COND="Variables.pubdt:dtype=realtime">
+														<THEN>
+															<SETVAR NAME="MIRROR_OR_REALTIME" VALUE="true"/>
+														</THEN>
+														<ELSE>
+															<SETVAR NAME="MIRROR_OR_REALTIME" VALUE="false"/>
+														</ELSE>
+														</IF>
+													</ELSE>
+													</IF>
+													<IF COND="Variables.MIRROR_OR_REALTIME=true">
+													<THEN>
+														<td>
+															<input type="checkbox" name="initmirror" value="Variables.pubtgt:id" onclick="initializeCheck(this,Counters.nth)" REPLACEALL="Variables.pubtgt:id,Counters.nth"/> 
+															<XLAT.STREAM KEY="dvin/CSSiteBuilder/DestinationIsProductionSite"/><br/>
+															<input type="checkbox" name="mirrorsite" value="Variables.pubtgt:id" onclick="initializeCheck(this,Counters.nth)" REPLACEALL="Variables.pubtgt:id,Counters.nth"/> 
+															<XLAT.STREAM KEY="dvin/CSSiteBuilder/DestinationIsManagementSite"/>
+														</td>
+														<input type="hidden" name="startpoint" value=""/>
+													</THEN>
+													<ELSE>
+														<!-- if this is a static delivery type, set a publish point -->
+														<IF COND="Variables.pubdt:dtype=static">
+														<THEN>
+															<SITEPLAN.ROOT LIST="PubRoot" OBJECTID="Variables.pubid"/>
+															<SITEPLAN.LOAD NAME="root" NODEID="PubRoot.nid"/>
+															<SITEPLAN.CHILDREN NAME="root" LIST="PlacedPages" OBJECTTYPE="Page" CODE="Placed" ORDER="nrank"/>
+															<td>
+																<input type="checkbox" name="startpoint" value="Variables.pubtgt:id" onclick="initializeCheck(this, Counters.nth);" REPLACEALL="Variables.pubtgt:id,Counters.nth"/>
+																<SETVAR NAME="name" VALUE="PlacedPages.name"/>
+																<XLAT.STREAM KEY="dvin/CSSiteBuilder/SetPublishPoint"/>
+															</td>
+														</THEN>
+														<ELSE>
+															<!-- neither export, nor mirror - no initialization options -->
+															<input type="hidden" name="startpoint" value=""/>
+															<input type="hidden" name="initmirror" value=""/>
+															<input type="hidden" name="mirrorsite" value=""/>
+														</ELSE>
+														</IF>
+														<input type="hidden" name="initmirror" value=""/>
+														<input type="hidden" name="mirrorsite" value=""/>
+													</ELSE>
+													</IF>
+
+													<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+													</IF>
+												</tr>
+												<INCCOUNTER NAME="nth" VALUE="1"/>
+											</LOOP>					
+										</table>
+									</td>
+									<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								</tr>
+								<tr>
+									<td></td>
+									<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+									<td></td>
+								</tr>
+							</table> 
+						</THEN>
+						<ELSE>
+							<XLAT.STREAM KEY="dvin/CSSiteBuilder/NoPublishDestinations"/>
+						</ELSE>
+						</IF>	
+					</td>
+				</tr>
+				<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="AdminSiteFrontURL">
+					<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+					<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+					<satellite.argument name="action" value="details"/>
+					<satellite.argument name="pubid" value="Variables.pubid"/>
+				</SATELLITE.LINK>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+				<tr><td><br/></td><td><br/></td><td>
+					<A HREF="Variables.AdminSiteFrontURL" REPLACEALL="Variables.AdminSiteFrontURL"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/AddNewSite" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript:void(0);" onClick="if(checkfields()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddSite"/></CALLELEMENT></A>
+					</td></tr>
+			</table>
+			
+			
+		</td>
+	</tr>
+</table>
+</ftcs>

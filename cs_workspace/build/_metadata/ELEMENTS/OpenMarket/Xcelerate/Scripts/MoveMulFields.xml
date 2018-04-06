@@ -1,0 +1,337 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+
+<if COND="Variables.isMoveMulFieldsLoaded!=true">
+<then>
+
+<SCRIPT LANGUAGE="JavaScript">
+var msgSaveReOrderingFirst = '<XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/msgSaveReOrderingFirst"/>';
+var msgSaveDeletefirst = '<XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/msgSaveDeletefirst"/>';
+<![CDATA[
+
+function disallowDeleteAndReorder(obj)
+{
+ if(obj.checked)
+ {
+	 var field = obj.name;
+	 var upos = field.lastIndexOf( "_" );
+	 var num = field.substring( upos+1 );
+	 var name = field.substring(0,upos).replace('_DEL_Attribute','cs') +'_ordinal_';
+	  
+	  var elements = document.getElementsByTagName('input');
+	  for (var i=0; i<elements.length; i++) 
+		{
+			if (elements[i].name.indexOf(name) != -1)
+			{
+				 var currentObjectName = elements[i].name;
+				 var index = currentObjectName.lastIndexOf( "_" );
+	 			 var value = currentObjectName.substring( index+1 );
+	 			 if(!isNaN(value))
+	 			 {
+	 			 	if(value != elements[i].value )
+	 			 	{
+	 			 		alert(msgSaveReOrderingFirst);
+	 			 		obj.checked = false;
+	 			 		return;
+	 			 	}
+	 			 }
+				 
+			}		
+		}
+	
+  }
+}
+function move_textfield( field, dir)
+{
+   var index1 = -1, index2 = -1;
+	var form = document.forms[0];
+	var upos = field.lastIndexOf( "_" );
+	var num = field.substring( upos+1 );
+	var value;
+	var dnfield;
+	num = num - dir;
+
+   dnfield = field.substring( 0, upos+1 ) + num;
+	for (var i=0; i<form.elements.length; i++) 
+	{
+		if (form.elements[i].name == field) 
+		{
+			index1 = i;
+		}
+		if (form.elements[i].name == dnfield) 
+		{
+		   index2 = i;
+		}
+	}
+	if ( index1 > 0 && index2 > 0 )
+	{
+	   value = form.elements[index1].value;
+	   form.elements[index1].value=form.elements[index2].value;
+	   form.elements[index2].value=value;
+   }
+}   
+
+function move_ewebeditprofield( field, dir)
+{
+   var index1 = -1, index2 = -1;
+	var form = document.forms[0];
+	var upos = field.lastIndexOf( "_" );
+	var num = field.substring( upos+1 );
+	var value;
+	var dnfield;
+	num = num - dir;
+   dnfield = field.substring( 0, upos+1 ) + num;
+	for (var i=0; i<form.elements.length; i++) 
+	{
+		if (form.elements[i].name == field) 
+		{
+			index1 = i;
+		}
+		if (form.elements[i].name == dnfield) 
+		{
+		   index2 = i;
+		}
+	}
+	if ( index1 > 0 && index2 > 0 )
+	{  
+	   eWebEditPro.instances[field].save();
+	   eWebEditPro.instances[dnfield].save();
+	   value = form.elements[index1].value;
+	   eWebEditPro.instances[field].load( form.elements[index2].value );
+	   eWebEditPro.instances[dnfield].load( value );
+   }  
+
+} 
+
+function move_erealobjectprofield( field, dir)
+{
+ 
+    var index1 = -1, index2 = -1;
+	var form = document.forms[0];
+	var upos = field.lastIndexOf( "_" );
+	var num = field.substring( upos+1 );
+	var value;
+	var dnfield;
+	num = num - dir;
+   	dnfield = field.substring( 0, upos+1 ) + num;
+   	
+	for (var i=0; i<form.elements.length; i++) 
+	{
+		if (form.elements[i].name == field) 
+		{
+			index1 = i;
+		}
+		if (form.elements[i].name == dnfield) 
+		{
+		   index2 = i;
+		}
+	}
+	if ( index1 > 0 && index2 > 0 )
+	{  
+			
+			    eop	 =document.getElementById('myId'+field);
+			    dneop =document.getElementById('myId'+dnfield);
+			    customField = eop.getCustomField();
+			    customFielddn = dneop.getCustomField();
+			    var valuedn =eop.getHTMLData();
+			    var value = dneop.getHTMLData();
+				form.elements[index2].value=	value;
+			     form.elements[index1].value= valuedn;
+			     eop.setHTMLData(value);
+			     dneop.setHTMLData(valuedn);
+
+   }  
+   
+} 
+function move_urlfield( field, dir)
+{
+   var index1 = -1, index2 = -1;
+	var form = document.forms[0];
+	var upos = field.lastIndexOf( "_" );
+	var num = field.substring( upos+1 );
+	var value;
+	var dnfield;
+	num = num - dir;
+   
+   dnfield = field.substring( 0, upos+1 ) + num;
+   
+	for (var i=0; i<form.elements.length; i++) 
+	{
+	
+		if (form.elements[i].name == field) 
+		{
+			index1 = i;
+		}
+		if (form.elements[i].name == dnfield) 
+		{
+		   index2 = i;
+		}
+	}
+	if ( index1 > 0 && index2 > 0 )
+	{
+		
+	   value = form.elements[index1].value;
+	   form.elements[index1].value=form.elements[index2].value;
+	   form.elements[index2].value=value;	   
+   }  
+    
+}
+   
+
+function move_blobfield( attr,dir,fromIndex)
+{
+    var checkDeleteAttribute = '_DEL_Attribute_' + attr +'_';
+    //prevent swapping of fields when DEL is checked.
+    var form = document.forms[0];
+    for(var i=0; i<form.elements.length; i++)
+    {
+    	if(form.elements[i].name.indexOf(checkDeleteAttribute) != -1 )
+    	{
+    		if( form.elements[i].checked == true )
+    		{
+    	      //if any one of the multivalued item is checked for deletion
+    	      // then this function should produce a message.
+    		  alert(msgSaveDeletefirst);
+    		  return;
+    		}
+    	}	
+    }
+    ///////////////////////////////////////////////////////////////////
+    var toIndex = fromIndex - dir;
+   
+   var fromOrdinalObj = inPosition(fromIndex,attr);
+    var toOrdinalObj = inPosition(toIndex,attr);
+    
+    if(fromOrdinalObj == undefined || toOrdinalObj == undefined)
+    {
+      return;
+    }
+    fromOrdinalObj.value = toIndex;
+    toOrdinalObj.value = fromIndex;
+    
+    var fromUpperDIV = 'id_'+attr+'_'+fromIndex;
+    var toUpperDIV = 'id_'+attr+'_'+toIndex;
+    
+    swapInnerHTML(fromUpperDIV,toUpperDIV);
+    
+  
+}
+
+function inPosition(k,attr)
+{
+   var els = document.forms[0].elements;
+   var prefix = 'cs_'+attr+'_ordinal_';
+   for (var i=0; i<els.length; i++) 
+	{
+		if (els[i].name.indexOf(prefix) != -1 ) 
+		{
+			if(parseInt(els[i].value) == k )
+			{
+			  return els[i];
+			 }
+		}
+	}
+}
+
+function swapInnerHTML(fromid,toid)
+{
+ 	var from = document.getElementById(fromid);
+    var to = document.getElementById(toid);
+    var temp = from.innerHTML;
+    from.innerHTML = to.innerHTML;
+    to.innerHTML = temp;
+}   
+//******************************************************************************************
+//  Modified: May 20
+//  Reason :  Migrated to CKEditor and Moves Source Data instead of HTML
+//            TO give the impression we have moved the MultiField CKeditor Up and/or down
+//******************************************************************************************
+
+function move_fckeditorfield(sourceFieldName, direction) {                                                   
+    var indexLastUnderscore = sourceFieldName.lastIndexOf( "_" );
+    var index = sourceFieldName.substring( indexLastUnderscore + 1 );                        
+    index = index - direction;
+    targetFieldName = sourceFieldName.substring(0, indexLastUnderscore + 1) + index;
+
+    // Get the Attribute's Source and Target running CKEditor Instance Handle
+	sourceEditor  = CKEDITOR.instances[sourceFieldName];
+    targetEditor  = CKEDITOR.instances[targetFieldName];
+    if ( sourceEditor &&  targetEditor )
+    {
+       var tmpValue = targetEditor.getData();
+       targetEditor.setData(sourceEditor.getData());
+       sourceEditor.setData(tmpValue);
+    }
+}
+
+function move_oiefield(sourceFieldName, direction, prefix) {
+    var indexLastUnderscore = sourceFieldName.lastIndexOf( "_" );
+    
+    var index = sourceFieldName.substring( indexLastUnderscore + 1 );                        
+    index = index - direction;
+    targetFieldName = sourceFieldName.substring(0, indexLastUnderscore + 1) + index;                        
+    
+    var sourceEditor = document.getElementById(prefix + sourceFieldName);                        
+    var targetEditor = document.getElementById(prefix + targetFieldName);                        
+  	var sourceDivName='div_jscontainer_'+sourceFieldName;
+    var targetDivName='div_jscontainer_'+targetFieldName;
+    
+    var sourceDiv=document.getElementById(sourceDivName);
+    var targetDiv=document.getElementById(targetDivName);
+    if (targetEditor) {    	
+    	//interchanging fileNames
+    	var temp=document.getElementById(sourceFieldName+"_file").value;
+    	document.getElementById(sourceFieldName+"_file").value=document.getElementById(targetFieldName+"_file").value;
+    	document.getElementById(targetFieldName+"_file").value=temp;
+
+		  //interchanging deleted state
+    	temp=document.getElementById('_DEL_'+sourceFieldName).value;
+    	document.getElementById('_DEL_'+sourceFieldName).value=document.getElementById('_DEL_'+targetFieldName).value;
+    	document.getElementById('_DEL_'+targetFieldName).value=temp;
+    	
+      //interchanging editors physical position
+		  swap(sourceDiv,targetDiv);
+    	
+    	//interchanging ids
+    	sourceEditor.id=prefix + targetFieldName;
+    	targetEditor.id=prefix + sourceFieldName;
+    	sourceEditor.name=prefix + targetFieldName;
+    	targetEditor.name=prefix + sourceFieldName;
+
+	  	sourceDiv.id=targetDivName;
+		  targetDiv.id=sourceDivName;
+    }
+}
+     function getAbsX(elt) { return (elt.x) ? elt.x : getAbsPos(elt,"Left"); }
+     
+     function getAbsY(elt) { return (elt.y) ? elt.y : getAbsPos(elt,"Top"); }
+
+     function getAbsPos(elt, which) {
+         iPos = 0;
+         while (elt != null) {
+             iPos += elt["offset" + which];
+             elt = elt.offsetParent;
+         }
+         return iPos;
+     }
+
+     function swap(record1, record2) {
+        var y1 = getAbsY(record1);
+        var y2 = getAbsY(record2);
+				var dpx=record1.style.top;
+				dpx=dpx.substring(0,dpx.indexOf('px'));
+				record1.style.top = ((y2 - y1)+parseInt(dpx)) + 'px';
+				
+				dpx=record2.style.top;
+				dpx=dpx.substring(0,dpx.indexOf('px'));
+				record2.style.top = ((y1 - y2)+parseInt(dpx)) + 'px';
+     }
+
+]]>
+</SCRIPT>
+
+<setvar name="isMoveMulFieldsLoaded" value="true" />
+</then>
+</if>
+</ftcs>

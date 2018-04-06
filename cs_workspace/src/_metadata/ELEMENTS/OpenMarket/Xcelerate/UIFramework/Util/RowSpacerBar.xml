@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar.xml $ 
+$Revision: 6 $ 
+$Modtime: 2/27/04 2:46p $ 
+--> 
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- RowSpacerBar
+-
+- DESCRIPTION
+-	UI utility to display a standard spacer gif followed by a light gray bar
+-	between table cells
+-	For example, this is used in asset Edit and Details pages
+-
+- Arguments
+-	None
+-
+- HISTORY
+-	 
+-->
+			<tr>
+				<td colspan="3"><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+			</tr>
+</FTCS>

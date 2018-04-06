@@ -1,0 +1,383 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.0">
+<HASH.CREATE NAME="errList"/>
+<IF COND="IsVariable.errdetail=true">
+	<THEN>
+        <XLAT.LOOKUP KEY="dvin/AdminForms/Errorcode" VARNAME="errorcode"/> 
+		<HASH.ADD NAME="errList" VALUE="Variables.errorcode%3cb%3eVariables.errdetail%3c/b%3e"/>
+		<IF COND="Variables.errdetail=0">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/NoErrors" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=1">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/ExceptionThrown" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=10">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedConnect" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=11">
+				<THEN>
+				    <XLAT.LOOKUP KEY=">dvin/AdminForms/NouserLogin" VARNAME="ERROR_MSG"/> 
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=20">
+		     	<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreateRevFindtable" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=21">
+				<THEN>
+				  <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreateRevRev" VARNAME="ERROR_MSG"/> 
+				     
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=22">
+				<THEN>
+				   <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreatenotfind" VARNAME="ERROR_MSG"/>  
+				     
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=23">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreatenotReadCol" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=24">
+				<THEN>
+				   <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreateCouldnotRead" VARNAME="ERROR_MSG"/> 
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=25">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreateRevMissingTrack" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=26">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCreateRev" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=30">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestorefindError" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=31">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreLocate" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=32">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreReReadCol" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=33">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreReRead" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=34">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreReCol" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=35">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreReTrack" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=36">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRestoreRe" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=40">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedDeleteRecored" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=41">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedDeleteRev" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=50">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedlockError" VARNAME="FailedLockError"/> 
+					<HASH.ADD NAME="errList" VALUE="Variables.FailedLockError"/>
+				
+				    <IF COND="Variables.errdetail2=3">
+				        <THEN>
+				          <XLAT.LOOKUP KEY="dvin/AdminForms/Record" VARNAME="ERROR_MSG"/>   
+				        </THEN>
+    		        <ELSE><IF COND="Variables.errdetail2=4">
+			            <THEN>
+			                <XLAT.LOOKUP KEY="dvin/AdminForms/Hasrecord" VARNAME="ERROR_MSG"/> 
+			            </THEN>
+				    <ELSE><IF COND="Variables.errdetail2=5">
+				        <THEN>
+				            <XLAT.LOOKUP KEY="dvin/AdminForms/WriteAccess" VARNAME="ERROR_MSG"/> 
+				        </THEN>
+				    </IF></ELSE>
+				    </IF></ELSE>
+				    </IF>
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=51">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedlockUpdate" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=60">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedunlockRevUpdate" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=70">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCommitError" VARNAME="FailedCommitError"/>  
+					<HASH.ADD NAME="errList" VALUE="Variables.FailedCommitError"/>
+				    <IF COND="Variables.errdetail2=2">
+				        <THEN>
+				            <XLAT.LOOKUP KEY="dvin/AdminForms/RecordNolocked"  VARNAME="ERROR_MSG" /> 
+				        </THEN>
+    		        <ELSE><IF COND="Variables.errdetail2=3">
+			            <THEN>
+			                <XLAT.LOOKUP KEY="dvin/AdminForms/Record"  VARNAME="ERROR_MSG"/> 
+			            </THEN>
+				    <ELSE><IF COND="Variables.errdetail2=5">
+				        <THEN>
+				            <XLAT.LOOKUP KEY="dvin/AdminForms/WriteAccess"  VARNAME="ERROR_MSG"/> 
+				        </THEN>
+				    </IF></ELSE>
+				    </IF></ELSE>
+				    </IF>
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=71">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedCommit"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=72">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/CommitSucc"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=80">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedReleaseError" VARNAME="FailedReleaseError"/>
+					<HASH.ADD NAME="errList" VALUE="Variables.FailedReleaseError"/>
+				
+				    <IF COND="Variables.errdetail2=2">
+				        <THEN>
+				           <XLAT.LOOKUP KEY="dvin/AdminForms/RecordNolocked" VARNAME="ERROR_MSG"/>  
+				        </THEN>
+    		        <ELSE><IF COND="Variables.errdetail2=3">
+			            <THEN>
+			               <XLAT.LOOKUP KEY="dvin/AdminForms/Record" VARNAME="ERROR_MSG"/>  
+			            </THEN>
+				    <ELSE><IF COND="Variables.errdetail2=5">
+				        <THEN>
+				            <XLAT.LOOKUP KEY="dvin/AdminForms/WriteAccess" VARNAME="ERROR_MSG"/> 
+				        </THEN>
+				    </IF></ELSE>
+				    </IF></ELSE>
+				    </IF>
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=81">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRelease" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=90">
+				<THEN>
+				   <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRollbackConnect" VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=91">
+				<THEN>
+				   <XLAT.LOOKUP KEY="dvin/AdminForms/FailedRollback" VARNAME="FailedRollback"/>
+				   <HASH.ADD NAME="errList" VALUE="Variables.FailedRollback"/>
+			
+				    <IF COND="Variables.errdetail2=2">
+				        <THEN>
+				           <XLAT.LOOKUP KEY="dvin/AdminForms/RecordNolocked" VARNAME="ERROR_MSG"/>  
+				        </THEN>
+    		        <ELSE><IF COND="Variables.errdetail2=3">
+			            <THEN>
+			                <XLAT.LOOKUP KEY="dvin/AdminForms/Record" VARNAME="ERROR_MSG"/> 
+			            </THEN>
+				    <ELSE><IF COND="Variables.errdetail2=5">
+				        <THEN>
+				            <XLAT.LOOKUP KEY="dvin/AdminForms/WriteAccess"  VARNAME="ERROR_MSG"/> 
+				        </THEN>
+				    </IF></ELSE>
+				    </IF></ELSE>
+				    </IF>
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=92">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedrollbackFind"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=93">
+				<THEN>
+				   <XLAT.LOOKUP KEY="dvin/AdminForms/Failedlcrollback"  VARNAME="ERROR_MSG"/>
+				     
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=100">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedHistoryTable"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=101">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedHistoryRead"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=102">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedHistory"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=110">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtracktableTableTracked"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=111">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtracktableTable"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=112">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtracktableCreate"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=113">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/Failedtracktable"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=120">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtountracktableTable"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=121">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtountracktableTracker"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=122">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtountracktableDelete"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=123">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtountracktableNortadmin"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=130">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtounlockrecordNortadmin"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=131">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/Failedtounlockrecord"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=140">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtoDeleteVersionNortadmin"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=150">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtoSetVersionNortadmin"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=151">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtoSetVersionTable"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE><IF COND="Variables.errdetail=152">
+				<THEN>
+				    <XLAT.LOOKUP KEY="dvin/AdminForms/FailedtoSetVersion"  VARNAME="ERROR_MSG"/>
+				      
+				</THEN>
+			<ELSE>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE></IF>
+			</ELSE>
+		</IF>
+		<HASH.ADD NAME="errList" VALUE="Variables.ERROR_MSG"/>
+		<HASH.TOSTRING NAME="errList" VARNAME="errlist" DELIM="%3cbr/%3e%3cbr/%3e"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables.errlist"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+	</THEN>
+	<ELSE>
+	    <XLAT.LOOKUP KEY="dvin/AdminForms/ErrorNo" VARNAME="ErrorNo"/> 
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables.ErrorNo"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+	</ELSE>
+</IF>
+</FTCS>

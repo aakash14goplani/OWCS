@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<SETVAR NAME="cs.contenttype" VALUE="text/html; charset=UTF-8"/>
+
+<!-- OpenMarket/Gator/UIFramework/Admin/LoadAssetMaker
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicEnvironment"/>
+
+<!-- This element handles all children of the AssetMaker root node -->
+<!-- All we need to do is 'Add New' and any AssetMaker Assets -->
+
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+	<ARGUMENT NAME="AdHoc" VALUE="ProxyAssetMaker:New"/>
+	<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+</CALLELEMENT>
+
+<REMOVEVAR NAME="LoadURL"/>
+<REMOVEVAR NAME="OKActions"/>
+<XLAT.LOOKUP KEY="dvin/TreeApplet/AddNew" ENCODE="false" VARNAME="_XLAT_"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/ProxyAssetMakerFront" outstring="ExecuteURL">
+	<satellite.argument name="action" value="new"/>
+</SATELLITE.LINK>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+<XLAT.LOOKUP KEY="dvin/Assetmaker/AddNewProxyAssetMakerAssetType" ENCODE="false" VARNAME="addNewDesc"/> 
+<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+	<ARGUMENT NAME="Label" VALUE="Variables._XLAT_"/>
+	<ARGUMENT NAME="Description" VALUE="Variables.addNewDesc"/> 
+	<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+	<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+	<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+	<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/plus.png"/>
+</CALLELEMENT>
+<!-- Attempt to get a list of all Proxy Asset types -->
+
+<ASSETTYPE.LIST LIST="ProxyAssetType" FIELD1="logic" VALUE1="com.openmarket.xcelerate.asset.ProxyAssetType" ORDER="description"/>
+<IF COND="IsError.Variables.errno=true">
+<THEN>
+	<IF COND="Variables.errno!=-101">
+	<THEN>
+		<LOGMSG STR="Xcelerate error Variables.errno on attempt to load AssetMaker asset types"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<IF COND="IsList.ProxyAssetType=true">
+<THEN>
+	<LOOP LIST="ProxyAssetType">
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+			<ARGUMENT NAME="AdHoc" VALUE="AssetMaker:Existing:ProxyAssetType.assettype"/>
+			<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+		</CALLELEMENT>
+		
+		<REMOVEVAR NAME="LoadURL"/>
+		<REMOVEVAR NAME="OKActions"/>
+        
+        <XLAT.LOOKUP KEY="dvin/TreeApplet/ShowDescriptor" ENCODE="false" VARNAME="_XLAT_"/>
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="ExecuteURL">
+			<satellite.argument name="assettype" value="ProxyAssetType.assettype"/>
+			<satellite.argument name="action" value="details"/>
+		</SATELLITE.LINK>
+
+		<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/TreeOpURL" outstring="OpURL"/>
+
+		<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+			<ARGUMENT NAME="Label" VALUE="ProxyAssetType.assettype"/>
+			<ARGUMENT NAME="Description" VALUE="ProxyAssetType.description"/>
+			<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+			<ARGUMENT NAME="OpURL" VALUE="Variables.OpURL"/>
+			<ARGUMENT NAME="ExecuteURL" VALUE="Variables.ExecuteURL"/>
+			<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/AssetTypes/ProxyAssetType.assettype.png"/>
+		</CALLELEMENT>
+	</LOOP>
+</THEN>
+</IF>
+
+
+
+</FTCS> 

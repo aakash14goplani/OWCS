@@ -1,0 +1,168 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/AssetSubtypePost
+
+ INPUT
+	Variables.assettype
+ Variables.action
+ OUTPUT
+
+-->
+
+
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeCommon"/>
+	
+<IF COND="Variables.action=delete">
+<THEN>
+		<SUBSTITUTE STR="Variables.deletesubtype" WHAT=";" WITH="," OUTSTR="ids"/>
+	<SubTypes.Delete IDS="Variables.ids"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeFront">
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+			<ARGUMENT NAME="action" VALUE="list"/>
+			<ARGUMENT NAME="showheader" VALUE="true"/>
+		</CALLELEMENT>
+</THEN>
+</IF>
+<IF COND="Variables.action=edit">
+<THEN>
+		<!-- delete the previous subtypes -->
+		<IF COND="IsVariable.subtype=false">
+		<THEN>
+			<setvar NAME="subtype" VALUE="Variables.empty"/>
+		</THEN>
+		</IF>
+		<SUBSTITUTE STR="Variables.deletesubtype" WHAT=";" WITH="," OUTSTR="ids"/>
+		<SubTypes.Delete IDS="Variables.ids"/>
+		<STRINGLIST NAME="pubids" STR="Variables.sites" DELIM=";"/>
+		<LOOP LIST="pubids">
+			<if COND="Variables.abort!=true">
+			<then>
+				<SUBTYPES.ADD ASSETTYPE="Variables.assettype" PUBID="pubids.ITEM" SUBTYPE="Variables.subtype"/>
+				<if COND="IsError.Variables.errno=true">
+				<then>
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+						<ARGUMENT NAME="error" VALUE="UpdateFailed"/>
+					</CALLELEMENT>
+					<setvar NAME="abort" VALUE="true"/>
+				</then>
+				</if>
+			</then>
+			</if>
+		</LOOP>
+	
+
+		<if COND="IsVariable.abort=false">
+		<then>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeFront">
+				<ARGUMENT NAME="subtype" VALUE="Variables.subtype"/>
+				<ARGUMENT NAME="action" VALUE="details"/>
+				<ARGUMENT NAME="showheader" VALUE="true"/>
+			</CALLELEMENT>
+		</then>
+		<else>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeFront">
+				<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+				<ARGUMENT NAME="action" VALUE="list"/>
+				<ARGUMENT NAME="showheader" VALUE="true"/>
+			</CALLELEMENT>
+		</else>
+		</if>	
+		
+</THEN>
+</IF>
+<IF COND="Variables.action=new">
+<THEN>
+	<IF COND="IsVariable.subtype=false">
+	<THEN>
+		<setvar NAME="subtype" VALUE="Variables.empty"/>
+	</THEN>
+	</IF>
+	<STRINGLIST NAME="pubids" STR="Variables.sites" DELIM=";"/>
+	<LOOP LIST="pubids">
+		<if COND="Variables.abort!=true">
+		<then>
+              <IF COND="Variables.assettype=Dimension">
+              <THEN>
+                  <SETVAR NAME="isLocaleGiven" Value="false"/> 
+                  <IF COND="Variables.subtype=locale">
+                    <THEN>
+                      <SETVAR NAME="isLocaleGiven" Value="true"/>
+                    </THEN>
+                  </IF>
+                  <IF COND="Variables.subtype=Locale">
+                    <THEN>
+                      <SETVAR NAME="isLocaleGiven" Value="true"/>
+                    </THEN>
+                  </IF>
+                
+                  <IF COND="Variables.isLocaleGiven=true">
+                  <THEN>
+                    <SETVAR NAME="subtype" VALUE="Locale"/>
+                    <!-- Get the site name of the Locale subtypes-->
+                    <SUBTYPES.GETSUBTYPE LISTVARNAME="sites" ASSETTYPE="Variables.assettype" SUBTYPE="Variables.subtype"/>
+                    <LOOP LIST="sites">
+                      <PUBLICATION.LOAD NAME="pub" OBJECTID="sites.pubid"/>
+                      <if COND="IsError.Variables.errno=false">
+                        <then>
+                          <PUBLICATION.GET NAME="pub" FIELD="id"/>
+                            <!-- If Locale subtype is already enabled for selected sites-->
+                            <IF COND="Variables.id=pubids.ITEM"> 
+                            <THEN>
+                              <SETVAR NAME="IsLocaleExist" VALUE="true"/>
+                            </THEN>
+                          </IF>
+                        </then>
+                      </if>
+                    </LOOP>
+                </THEN>
+                </IF>
+              </THEN>
+              </IF>
+              <IF COND="Variables.IsLocaleExist=true">
+                <THEN>
+                  <LOGMSG STR="Entered value of subtype [Variables.subtype] already exists."/>
+                  <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <ARGUMENT NAME="error" VALUE="UpdateFailed"/>
+                  </CALLELEMENT>
+                  <setvar NAME="abort" VALUE="true"/>
+                </THEN>
+                <ELSE>
+                  <SUBTYPES.ADD ASSETTYPE="Variables.assettype" PUBID="pubids.ITEM" SUBTYPE="Variables.subtype"/>
+                  <IF COND="IsError.Variables.errno=true">
+                    <THEN>
+                      <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <ARGUMENT NAME="error" VALUE="UpdateFailed"/>
+                      </CALLELEMENT>
+                      <setvar NAME="abort" VALUE="true"/>
+                    </THEN>
+                  </IF>
+                </ELSE>
+              </IF>
+		</then>
+		</if>
+	</LOOP>
+
+	<if COND="IsVariable.abort=false">
+	<then>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeFront">
+			<ARGUMENT NAME="subtype" VALUE="Variables.subtype"/>
+			<ARGUMENT NAME="action" VALUE="details"/>
+			<ARGUMENT NAME="showheader" VALUE="true"/>
+		</CALLELEMENT>
+	</then>
+	<else>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetSubtypeFront">
+			<ARGUMENT NAME="assettype" VALUE="Variables.assettype"/>
+			<ARGUMENT NAME="action" VALUE="list"/>
+			<ARGUMENT NAME="showheader" VALUE="true"/>
+		</CALLELEMENT>
+	</else>
+	</if>	
+</THEN>
+</IF>
+
+
+
+</FTCS> 

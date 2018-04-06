@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SetWorkflowParticipantsPost.xml $ 
+$Revision: 41 $ 
+$Modtime: 5/12/04 9:53a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- SetWorkflowParticipantsPost.xml
+-
+- DESCRIPTION
+-   Define the workflow participants
+-   associated with this asset and
+-   workflow
+-
+- HISTORY 
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+
+<WorkflowEngine.GetObjectWorkflowProcess OBJECT="workflowasset" VARNAME="workflowid" />	  
+<WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflow"/>
+<WorkflowProcess.GetProcessName NAME="workflow" VARNAME="workflowname" />
+<WorkflowProcess.GetProcessDescription NAME="workflow" VARNAME="workflowdesc" />
+<!-- workflowroles comes from Front page and is a list of all workflow roles in the process -->
+<stringlist NAME="TheRoles" STR="Variables.workflowroles" DELIM=","/>
+
+<setvar NAME="errno" VALUE="0"/>
+<loop LIST="TheRoles" UNTIL="Variables.AbortFlag=true">
+    <if COND="IsVariable.TheRoles.ITEM!=true">
+    <then>
+        <setvar NAME="AbortFlag" VALUE="true"/>
+        <setvar NAME="ErrorName" VALUE="SelectForAllRoles"/>
+        <setvar NAME="severity" VALUE="warning"/>
+    </then>
+    </if>
+</loop>
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+	<!--
+	<WORKFLOWENGINE.GETOBJECTPARTICIPANTS OBJECT="workflowasset" OBJVARNAME="myParts"/> 
+	<PARTICIPANTS.CLEAR NAME="myParts"/>
+	-->
+	<WORKFLOWENGINE.NEWPARTICIPANTS  OBJVARNAME="myParts"/>
+	<LOOP LIST="TheRoles">
+		<SETVAR NAME="users" VALUE="Variables.TheRoles.ITEM"/>
+		<STRINGLIST STR="Variables.users" NAME="userList" DELIM=";"/>
+		<LOOP LIST="userList">
+			<PARTICIPANTS.ADDPARTICIPANT NAME="myParts" ROLE="TheRoles.ITEM" USER="userList.ITEM"/>
+		</LOOP>
+	</LOOP>
+	<WORKFLOWENGINE.SETOBJECTPARTICIPANTS OBJECT="workflowasset" PARTICIPANTS="myParts"/>
+	<if COND="Variables.errno!=0">
+	<then>
+		<setvar NAME="AbortFlag" VALUE="true"/>
+		<setvar NAME="ErrorName" VALUE="SetParticipantFailed"/>
+		<setvar NAME="severity" VALUE="info"/>
+	</then>
+	</if>
+</then>
+</if>
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+	 <ASSETTYPE.LIST LIST="at" FIELD1="assettype" VALUE1="Variables.AssetType"/>
+	 <SETVAR NAME="atDescription" VALUE="at.description"/>
+    <XLAT.LOOKUP KEY="dvin/UI/WfparticipantsAssetTypesuccessfullychanged" VARNAME="_XLAT_"/>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+        <argument NAME="severity" VALUE="info"/>	
+    </callelement>
+</then>
+<else>
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+       	<argument NAME="elem" VALUE="Variables.ErrorName"/>
+       	<argument NAME="severity" VALUE="Variables.severity"/>
+    </callelement>
+</else>
+</if>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	<argument NAME="id"        VALUE="Variables.id"/>
+</callelement>
+</FTCS>

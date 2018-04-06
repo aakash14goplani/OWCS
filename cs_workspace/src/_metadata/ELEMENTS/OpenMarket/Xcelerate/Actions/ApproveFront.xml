@@ -1,0 +1,285 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ApproveFront
+-
+- INPUT
+-
+-      Variables.id -- asset id
+-      Variables.AssetType -- asset type
+-		 Variables.atdescription - the AssetType description 
+-      Variables.asset:*	- asset fields scattter with 'asset' prefix
+-      Variables.doproceed	- true if no error has been detected
+-->
+<!--
+ [2007-10-09 KG]
+ * XSS: changed csvars to STRING.STREAM
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+//shows the element with the given id directly below parent
+function showhide(id) {
+	var elem = document.getElementById(id);
+	if (!elem)
+		return false;
+	if (elem.style['position'] != 'absolute') {
+		//make element 'hover' separate from page flow
+		elem.style['position'] = 'absolute';
+	}
+	if (elem.style['display'] == 'none')
+		elem.style['display'] = '';
+	else
+		elem.style['display'] = 'none';
+}
+
+function SetCancelFlag () {
+	var obj = document.forms[0].elements[0];
+
+	obj.form.elements['upcommand'].value="cancel";
+	obj.form.submit();
+	return false;
+}
+function checkfields()
+{
+	var obj = document.forms[0].elements[0];
+	var isChecked = obj.form.elements['targetid'].length > 1 ? false : true;
+	for ( i = 0 ; i < obj.form.elements['targetid'].length ; i++ )
+	{
+		if ( obj.form.elements['targetid'][i].checked==true ) {
+			isChecked = true;
+			break;
+		}
+	}
+   if (isChecked==false)
+	{
+      ]]>
+      alert("<XLAT.STREAM KEY="dvin/UI/Error/YouMustChooseAPublishingDestination" ESCAPE="true" ENCODE="false"/>");
+      <![CDATA[
+		obj.form.elements['targetid'][0].focus();
+		return false;
+	}
+	else
+	{
+		obj.form.submit();
+		return false;
+	}
+}
+]]>
+</SCRIPT>
+<callelement NAME="OpenMarket/Xcelerate/Scripts/GotoPreview"/>
+<STRING.ENCODE VARIABLE="doproceed" VARNAME="doproceed"/>
+<SETVAR NAME="buttonSrc" VALUE="Approve"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<INPUT type="hidden" name="id0" value="Variables.id" REPLACEALL="Variables.id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<INPUT type="hidden" name="type0" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+<INPUT type="hidden" name="assetTotal" value="1" />
+<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+<INPUT TYPE="hidden" NAME="pagename" VALUE="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+<INPUT TYPE="hidden" NAME="upcommand" VALUE="submit"/>
+
+
+<if COND="Variables.doproceed=true">
+<then>
+		<!-- 
+			Check if the current asset's start and end dates are valid
+			and show a warning message if they are not.
+		-->	
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/WarnAssetApproval">
+			<ARGUMENT NAME="id" VALUE="Variables.id" />
+			<ARGUMENT NAME="AssetType" VALUE="Variables.AssetType" />		
+		</CALLELEMENT>
+	<!-- Action bar -->	
+	<if COND="Variables.AssetType=WebRoot">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">		
+			<argument NAME="NoBookMark" VALUE="true"/>
+			<argument NAME="NoPreview" VALUE="true"/>
+			<argument NAME="NoShare" VALUE="true"/>
+			<argument NAME="NoAccessPermissions" VALUE="true"/>	
+			<argument NAME="NoStatus" VALUE="true"/>
+			<argument NAME="NoEditFunctions" VALUE="true"/>				
+		</callelement>		
+	</then>
+	<else>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ActionsBar">			
+		</callelement>	
+	</else>
+	</if>
+		
+   <table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+ 	<tr>
+		<td><span class="title-text"><STRING.STREAM VARIABLE="atDescription"/>: </span><span class="title-value-text"><STRING.STREAM VARIABLE="name"/></span></td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar" />
+		
+	<tr>
+		<td>
+		<table border="0" cellpadding="0" cellspacing="0">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Name"/>:</td>
+				<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+				<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				<td class="form-inset"><STRING.STREAM VARIABLE="name"/></td>
+			</tr>
+		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Description"/>:</td>
+				<td></td>
+				<td><STRING.STREAM VARIABLE="description"/></td>
+			</tr>
+		
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Status"/>:</td>
+				<td></td>
+				<td class="form-inset">
+				<XLAT.LOOKUP KEY="dvin/UI/ShowStatus" VARNAME="_XLAT_"/>
+				<XLAT.LOOKUP KEY="dvin/AT/Common/ShowStatus" VARNAME="_ShowStatus_"/>
+				<XLAT.LOOKUP KEY="dvin/AT/Common/ShowStatus" VARNAME="mouseover" ESCAPE="true"/>
+				<XLAT.LOOKUP KEY="dvin/AT/Common/StatusCode-Variables.statuscode" VARNAME="_statuscodedescription_" ENCODE="false"/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+					<ARGUMENT NAME="assettype" VALUE="Variables.AssetType"/>
+					<ARGUMENT NAME="assetid" VALUE="Variables.id"/>
+					<ARGUMENT NAME="varname" VALUE="urlShowStatus"/>
+					<ARGUMENT NAME="function" VALUE="status"/>
+				</CALLELEMENT>
+				<STRING.ENCODE VARIABLE="urlShowStatus" VARNAME="urlShowStatus"/>
+				<A HREF="Variables.urlShowStatus" TITLE="Variables._ShowStatus_" ONMOUSEOVER="window.status='Variables.mouseover';return true;" ONMOUSEOUT="window.status='';return true" REPLACEALL="Variables.urlShowStatus,Variables._XLAT_,Variables._ShowStatus_,Variables.mouseover"><STRING.STREAM VARIABLE="_statuscodedescription_"/></A>
+				</td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/ID"/>:</td>
+				<td></td>
+				<td class="form-inset"><STRING.STREAM VARIABLE="id"/></td>
+			</tr>
+			<!-- Analyics Performance indicator -->
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/form/ShowAnalyticsKPI"/>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Created"/>:</td>
+				<td></td>
+				<td class="form-inset">
+					<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.createddate" VALUETYPE="jdbcdate"  VARNAME="createddate"/>
+					<XLAT.STREAM KEY="dvin/UI/createddatebycreatedby"/>
+				</td>
+			</tr>
+			
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text"><XLAT.STREAM KEY="dvin/AT/Common/Modified"/>:</td>
+				<td></td>
+				<td class="form-inset"><DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.updateddate" VALUETYPE="jdbcdate"  VARNAME="updateddate"/>
+					<XLAT.STREAM KEY="dvin/UI/updateddatebyupdatedby"/></td>
+			</tr>
+			 <!-- build target selection list -->
+        	<setvar NAME="errno" VALUE="0"/>
+        	<SETCOUNTER NAME="nthTarget" VALUE="0"/>
+			<PUBTARGETMANAGER.FIND PREFIX="pbt" PUBID="SessionVariables.pubid" FILTERFORAPPROVAL="true"/>
+         <if COND="IsError.Variables.errno=false">
+         <then>
+         	<if COND="Variables.pbtTotal!=0">
+         	<then>
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>				  
+				  <tr>
+						<td class="form-label-text"><XLAT.STREAM KEY="dvin/UI/Common/ApproveforDestination"/>:</td>
+				   	<td></td>
+				   	<td class="form-inset">
+			             <loop COUNT="Variables.pbtTotal">
+			             	<PUBTARGET.SCATTER NAME="pbtCounters.nthTarget" PREFIX="pubtgt:"/>
+			             	<DELIVERYTYPE.LOAD NAME="dtype" OBJECTID="Variables.pubtgt:type"/>
+			               <DELIVERYTYPE.GET NAME="dtype" FIELD="name" OUTPUT="dtype:name"/>
+			               <if COND="Variables.pbtTotal=1">
+			               <then>
+			               	<SETVAR NAME="targetid" VALUE="Variables.pubtgt:id"/>
+			               </then>
+			               </if>
+			               <if COND="Variables.targetid=Variables.pubtgt:id">
+			               <then>
+				              	<INPUT style="margin-left:0px" TYPE="RADIO" NAME="targetid" VALUE="Variables.pubtgt:id" REPLACEALL="Variables.pubtgt:id" CHECKED="true"/>
+			              	</then>
+			              	<else> 
+			              		<INPUT style="margin-left:0px" TYPE="RADIO" NAME="targetid" VALUE="Variables.pubtgt:id" REPLACEALL="Variables.pubtgt:id"/>
+			            	</else>
+			            	</if>
+							<ICS.QUERYEVENTS LIST="publishevent" NAME="PublishEvent_Variables.pubtgt:id%"/>
+							<if COND="IsError.Variables.errno=true">
+							<then><!-- show string with no tooltip -->
+								<XLAT.STREAM KEY="dvin/UI/Publish/pubtgtnameLPusingpubdtnameRP"/><br/>
+							</then>
+							<else><!-- show string with tooltip -->
+								<setvar NAME="existEvent" VALUE="true"/>
+								<span onmouseover="showhide('etip_Variables.pubtgt:id');" onmouseout="showhide('etip_Variables.pubtgt:id');" REPLACEALL="Variables.pubtgt:id">
+								<XLAT.STREAM KEY="dvin/UI/Publish/pubtgtnameLPusingpubdtnameRP"/></span><br/>
+								<div id="etip_Variables.pubtgt:id" class="eventtip" style="display: none" REPLACEALL="Variables.pubtgt:id">
+								<if COND="publishevent.enabled=false">
+								<then>
+									<xlat.stream KEY="dvin/UI/Admin/Publisheventdisabled" ENCODE="false"/>
+								</then>
+								<else>
+									<callelement NAME="OpenMarket/Xcelerate/Admin/Util/EventDetailTable">
+										<argument NAME="eventtime" VALUE="publishevent.time"/>
+									</callelement>
+								</else>
+								</if>
+								</div>
+							</else>
+							</if>
+			            	<INCCOUNTER NAME="nthTarget" VALUE="1"/>
+			            </loop>
+				      </td>
+				   </tr>
+				</then>
+				</if>
+        </then>
+        <else>
+        		<setvar NAME="doproceed" VALUE="NoPublishDest"/>
+        </else>
+        </if>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+		<tr>
+			<XLAT.LOOKUP KEY="dvin/UI/CancelApproval" VARNAME="_XLAT_" ESCAPE="true"/>
+			<td></td><td></td><td>
+			
+			<A HREF="javascript:void(0)" onclick="return SetCancelFlag()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A><XLAT.LOOKUP KEY="dvin/UI/ApproveforPublish" VARNAME="_XLAT_" ESCAPE="true"/>
+			
+				<if COND="Variables.pbtTotal!=0">
+				<then>
+					<A HREF="javascript:void(0)" onclick="return checkfields();" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.buttonSrc"/></CALLELEMENT></A>
+				</then>
+				</if>
+			
+			</td>
+		</tr>
+
+		
+		</table>
+	</td>
+
+	
+	</tr>
+	</table>
+</then>
+</if>
+
+
+
+<if COND="Variables.doproceed!=true">
+<then>
+  <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+      <argument NAME="error" VALUE="Variables.doproceed"/>
+  </callelement>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/ContentDetailsFront">
+		<argument NAME="assettype" VALUE="Variables.AssetType"/>
+		<argument NAME="id" VALUE="Variables.id"/>
+    </callelement>
+</then>
+</if>
+
+</FTCS> 

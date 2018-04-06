@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/AttributeTypes/TEXTAREA</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/AttributeTypes/TEXTAREA</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/AttributeTypes/TEXTAREA.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/AttributeTypes/TEXTAREA.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FAttributeTypes%2FTEXTAREA.xml
+@hashval=-1341729210
+key=@ELEMENTCATALOG-OpenMarket/Gator/AttributeTypes/TEXTAREA
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

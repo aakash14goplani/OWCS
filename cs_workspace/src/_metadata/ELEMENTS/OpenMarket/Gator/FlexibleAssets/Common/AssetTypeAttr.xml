@@ -1,0 +1,144 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+
+<!-- 														
+$Logfile: /VerticalApps/XcelerateD/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/FlexibleAssets/Common/AssetTypeAttr.xml $ 
+$Revision: 24 $ 
+$Modtime: 8/18/04 3:31p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+-AssocAttr.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->  
+
+<!--Gator/FlexibleAssets/Common/AssetTypeAttr.xml-->
+
+<!-- Find the list of candidate assets -->
+<!-- First, get all the candidate assets -->
+<setvar NAME="errno"  VALUE="0"/>
+<setvar NAME="tablename" VALUE="Variables.attrassettype"/>
+<EXECSQL SQL="SELECT Variables.tablename.id AS assetid,Variables.tablename.name AS name FROM Variables.tablename,AssetPublication WHERE Variables.tablename.status &#60;&#62; 'VO' AND (AssetPublication.pubid=SessionVariables.pubid OR AssetPublication.pubid=0) AND AssetPublication.assetid=Variables.tablename.id ORDER BY name" LIST="assettypelist" TABLE="Variables.tablename,AssetPublication"/>
+<!-- Now, if we are supposed to, filter out the ones that have the wrong subtypes -->
+<IF COND="IsList.attrassetsubtypes=true">
+<THEN>
+	<IF COND="attrassetsubtypes.#numRows!=0">
+	<THEN>
+		<!-- Note well: The only 'correct' way to get an asset's subtype is through the ASSET.GETSUBTYPE tag.  This, however, requires that the
+			asset be loaded.  Since we've got a whole chunk of assets to display, we load them all in bulk, for performance, at the risk that the
+			memory consumption will be too big.  However, if anyone is displaying assets in a pulldown, heaven help them anyhow...
+		-->
+		<LISTOBJECT.CREATE NAME="mylistobj" COLUMNS="assetid,name"/>
+		<ASSET.LOADALL TYPE="Variables.attrassettype" LIST="assettypelist" IDFIELD="assetid" PREFIX="assetstofilter:"/>
+		<IF COND="IsError.Variables.errno=false">
+		<THEN>
+			<!-- Build a hash of the subtypes we're allowed to take -->
+			<HASH.CREATE NAME="subtypehash" LIST="attrassetsubtypes" COLUMN="subtype"/>
+			
+			<!-- Now, go through the list of assets and find the subtype of each one.  Include it in the output list only if it has a 'legal' subtype -->
+			<IF COND="Variables.assetstofilter:Total!=0">
+			<THEN>
+				<SETCOUNTER NAME="acounter" VALUE="0"/>
+				<LOOP COUNT="Variables.assetstofilter:Total">
+					<SETVAR NAME="aobjname" VALUE="assetstofilter:Counters.acounter"/>
+					<ASSET.GETSUBTYPE NAME="Variables.aobjname" OUTPUT="thesubtype"/>
+					<HASH.CONTAINS NAME="subtypehash" VALUE="Variables.thesubtype" VARNAME="flag"/>
+					<IF COND="Variables.flag=true">
+					<THEN>
+						<ASSET.GET NAME="Variables.aobjname" FIELD="id" OUTPUT="subtaid"/>
+						<ASSET.GET NAME="Variables.aobjname" FIELD="name" OUTPUT="subtaname"/>
+						<LISTOBJECT.ADDROW NAME="mylistobj" assetid="Variables.subtaid" name="Variables.subtaname"/>
+					</THEN>
+					</IF>
+					<INCCOUNTER NAME="acounter" VALUE="1"/>
+				</LOOP>
+			</THEN>
+			</IF>
+		</THEN>
+		</IF>
+		<LISTOBJECT.TOLIST NAME="mylistobj" LISTVARNAME="assettypelist"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<tr>
+	<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName"/>
+	<td></td>
+	<td> 
+	<if COND="Variables.EditingStyle=single">
+	<then>
+		<if COND="Variables.RequiredAttr=true">
+		<then>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqTrue*Variables.type*select-one!"/>
+		</then>
+		<else>
+			<setvar NAME="RequireInfo" VALUE="*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqFalse*Variables.type*select-one!"/>
+		</else>
+		</if> 
+		<SELECT NAME="Variables.cs_CurrentInputName" REPLACEALL="Variables.cs_CurrentInputName">
+			<if COND="Variables.RequiredAttr!=true">
+			<then>
+				<OPTION VALUE="Variables.empty" REPLACEALL="Variables.empty"/><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/SelectAsset"/> 
+			</then>
+			</if>
+			<if COND="assettypelist.#numRows!=0">
+			<then>
+				<loop LIST="assettypelist">
+					<if COND="assettypelist.assetid=Variables.MyAttrVal">
+					<then>
+						<OPTION VALUE="assettypelist.assetid"  SELECTED="" REPLACEALL="assettypelist.assetid"/><STRING.STREAM LIST="assettypelist" COLUMN="name"/>
+					</then>
+					<else>
+						<OPTION VALUE="assettypelist.assetid"  REPLACEALL="assettypelist.assetid"/><STRING.STREAM LIST="assettypelist" COLUMN="name"/>
+					</else>
+					</if>                            
+				</loop>
+			</then>
+			</if>
+		</SELECT>
+		</then>
+		<else>
+			<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/GetInputName">
+				<ARGUMENT NAME="cs_AttrName" VALUE="Variables.AttrName"/>
+				<ARGUMENT NAME="cs_IsMultiple" VALUE="true"/>
+				<ARGUMENT NAME="cs_ValueNum" VALUE="Counters.TCounter"/>
+				<ARGUMENT NAME="cs_IsMultiSelect" VALUE="false"/>
+				<ARGUMENT NAME="cs_Varname" VALUE="cs_CurrentInputName"/>
+			</CALLELEMENT>
+			<if COND="Variables.RequiredAttr=true">
+			<then>
+				<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqTrue*Variables.type*select-one!"/>
+			</then>
+			<else>
+				<setvar NAME="RequireInfo" VALUE="Variables.RequireInfo*Variables.cs_CurrentInputName*Variables.currentAttrName*ReqFalse*Variables.type*select-one!"/>
+			</else>
+			</if>
+			<SELECT NAME="Variables.cs_CurrentInputName" REPLACEALL="Variables.cs_CurrentInputName">
+				<OPTION VALUE="Variables.empty" REPLACEALL="Variables.empty"/><XLAT.STREAM KEY="dvin/FlexibleAssets/Common/SelectAsset"/> 
+				<loop LIST="assettypelist">
+					<if COND="assettypelist.assetid=Variables.tempval">
+					<then>
+						<OPTION VALUE="assettypelist.assetid"  SELECTED="" REPLACEALL="assettypelist.assetid"/><STRING.STREAM LIST="assettypelist" COLUMN="name"/>
+					</then>
+					<else>
+						<OPTION VALUE="assettypelist.assetid"  REPLACEALL="assettypelist.assetid"/><STRING.STREAM LIST="assettypelist" COLUMN="name"/>
+					</else>
+					</if>                            
+				</loop>   
+			</SELECT>
+            <CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/Common/HandleOrdinalInput"/>
+		</else>
+		</if>
+	</td>
+</tr> 
+</FTCS>

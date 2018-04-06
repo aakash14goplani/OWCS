@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/PreviewApprovedAssets
+-
+- INPUT
+-	Variables.target - target id
+-	Variables.targetname - target name
+- OUTPUT
+-
+-->
+<ApprovedAssets.GetAssetsToPublish TARGET="Variables.target" PREFIX="tileMixedAssets" />
+    <SETVAR NAME="numAssets" VALUE="Variables.tileMixedAssetsTotal" />
+    <if COND="Variables.numAssets!=0">
+        <then>
+			<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ITileMixedAssets">
+                <argument NAME="targetname" VALUE="Variables.targetname" />
+                <argument NAME="target" VALUE="Variables.target" />
+				<argument NAME="tileMixedAssetsTotal" VALUE="Variables.numAssets" />
+            </callelement>
+        </then>
+    </if>
+</FTCS> 

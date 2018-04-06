@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/DeleteGroupFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<setvar NAME="doProceed" VALUE="true"/>
+
+			<SETVAR NAME="errno" VALUE="0"/>
+
+			<WORKFLOWENGINE.GETGROUPID OBJVARNAME="newgroup" ID="Variables.id"/>
+<IF COND="IsError.Variables.errno!=true">
+<THEN>
+			<WORKFLOWGROUP.SCATTER PREFIX="wfg:" NAME="newgroup"/>
+			
+<WORKFLOWENGINE.CANDELETEGROUP SITE="SessionVariables.pubid" ID="Variables.id" VARNAME="canedit"/>
+<IF COND="Variables.canedit=true">
+<THEN>
+	<WORKFLOWENGINE.GETGROUPMEMBERS GROUPID="Variables.id" PREFIX="GroupItems"/>
+	<IF COND="Variables.GroupItemsTotal!=0">
+	<THEN>
+		<SETVAR NAME="doProceed" VALUE="GroupNotEmpty"/>
+	</THEN>
+	</IF>
+</THEN>
+<ELSE>
+	<SETVAR NAME="doProceed" VALUE="NoDeleteGroupRole"/>
+</ELSE>
+</IF>
+</THEN>
+<ELSE>
+	<SETVAR NAME="doProceed" VALUE="CantLoadGroup"/>
+</ELSE>
+</IF>
+</FTCS> 

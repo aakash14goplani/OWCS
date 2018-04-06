@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+
+<SETVAR NAME="publishedAssetString" VALUE="Variables.assettype Variables.assetid%0a"/>
+<ASSET.LOAD NAME="anAsset" TYPE="Variables.assettype" OBJECTID="Variables.assetid" EDITABLE="true"/>
+<if COND="IsError.Variables.errno=false">
+<then> 
+	<ASSET.SCATTER NAME="anAsset" PREFIX="exp" EXCLUDE="true"/>
+	<SETVAR NAME="assetdate" VALUE="Variables.exp:updateddate"/>
+	<ASSET.EXPORT NAME="anAsset" PREFIX="exp" FILE="Variables.outdir/Variables.assettype/Variables.assetid.xml"/>
+	<if COND="IsError.Variables.errno=false">
+	<then>
+		#exporting <STRING.STREAM VALUE="Variables.publishedAssetString"/>
+	</then>
+	<else>
+		#error <STRING.STREAM VALUE="Variables.errno"/> exporting <STRING.STREAM VALUE="Variables.publishedAssetString"/>
+	</else>
+	</if>
+</then>
+<else>
+	#error <STRING.STREAM VALUE="Variables.errno"/> loading <STRING.STREAM VALUE="Variables.publishedAssetString"/>
+</else>
+</if>
+<SETVAR NAME="exporterror" VALUE="Variables.errno"/>
+
+</FTCS> 

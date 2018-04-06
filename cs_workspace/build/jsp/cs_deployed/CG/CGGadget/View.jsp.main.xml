@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">CG/CGGadget/View</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>CG/CGGadget/View</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>CG\CGGadget\View.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/CG/CGGadget/View.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FCG%2FCGGadget%2FView.jsp
+@hashval=-1324569689
+key=@ELEMENTCATALOG-CG/CGGadget/View
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

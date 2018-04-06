@@ -1,0 +1,203 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Util/GenerateSortArrowLink
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+  <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/SearchPost" outstring="urlSortBy">
+                <if cond="Variables.columnName=Variables.colName">
+                <then>
+                    <if cond="Variables.imgName=down_arrow.gif">
+                    <then>
+                         <satellite.argument name="imgName" value="down_arrow.gif"/>
+                    </then>
+                    <else>
+                         <satellite.argument name="imgName" value="up_arrow.gif"/>
+                    </else>
+                    </if>
+                </then>
+                <else>
+                     <satellite.argument name="imgName" value="down_arrow.gif"/>
+                </else>
+                </if>
+                <satellite.argument name="columnName" value="Variables.colName"/>
+                    <satellite.argument name="AssetType" value="Variables.AssetType"/>
+                    <satellite.argument name="ResultLimit" value="Variables.ResultLimit"/>
+                    <satellite.argument name="TotalResultLimit" value="Variables.TotalResultLimit"/>
+                    <satellite.argument name="frontpage" value="Variables.frontpage"/>
+                <if cond="IsVariable.Name=true">
+                <then>
+                    <satellite.argument name="Name" value="Variables.Name"/>
+                </then>
+                </if>
+                <if cond="IsVariable.Description=true">
+                <then>
+                    <satellite.argument name="Description" value="Variables.Description"/>
+                </then>
+                </if>
+                <if cond="IsVariable.flextemplateid=true">
+                <then>
+                    <satellite.argument name="flextemplateid" value="Variables.flextemplateid"/>
+                </then>
+                </if>
+                <if cond="IsVariable.Status=true">
+                <then>
+                    <satellite.argument name="Status" value="Variables.Status"/>
+                </then>
+                </if>
+                <if cond="IsVariable.dimensionssearch=true">
+                <then>
+                    <satellite.argument name="dimensionssearch" value="Variables.dimensionssearch"/>
+                </then>
+                </if>
+                <if cond="IsVariable.selectedDim=true">
+                <then>
+                    <satellite.argument name="selectedDim" value="Variables.selectedDim"/>
+                </then>
+                </if>
+                <if cond="IsVariable.StartDateBeforeText=true">
+                <then>
+                    <satellite.argument name="StartDateBeforeText" value="Variables.StartDateBeforeText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.StartDateAfterText=true">
+                <then>
+                    <satellite.argument name="StartDateAfterText" value="Variables.StartDateAfterText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.EndDateBeforeText=true">
+                <then>
+                    <satellite.argument name="EndDateBeforeText" value="Variables.EndDateBeforeText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.EndDateAfterText=true">
+                <then>
+                    <satellite.argument name="EndDateAfterText" value="Variables.EndDateAfterText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.Id=true">
+                <then>
+                    <satellite.argument name="Id" value="Variables.Id"/>
+                </then>
+                </if>
+                <if cond="IsVariable.UpdatedAfterText=true">
+                <then>
+                    <satellite.argument name="UpdatedAfterText" value="Variables.UpdatedAfterText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.UpdatedBeforeText=true">
+                <then>
+                    <satellite.argument name="UpdatedBeforeText" value="Variables.UpdatedBeforeText"/>
+                </then>
+                </if>
+                <if cond="IsVariable.UpdatedBy=true">
+                <then>
+                    <satellite.argument name="UpdatedBy" value="Variables.UpdatedBy"/>
+                </then>
+                </if>
+               <!--additional field for attributes-->
+                <if cond="IsVariable.Type=true">
+                <then>
+                    <satellite.argument name="Type" value="Variables.Type"/>
+                </then>
+                </if>
+                <if cond="IsVariable.AssetTypes=true">
+                <then>
+                    <satellite.argument name="AssetTypes" value="Variables.AssetTypes"/>
+                </then>
+                </if>
+                <if cond="IsVariable.ValueStyle=true">
+                <then>
+                    <satellite.argument name="ValueStyle" value="Variables.ValueStyle"/>
+                </then>
+                </if>
+                <if cond="IsVariable.AttrTypes=true">
+                <then>
+                    <satellite.argument name="AttrTypes" value="Variables.AttrTypes"/>
+                </then>
+                </if>
+                <if cond="IsVariable.Editing=true">
+                <then>
+                    <satellite.argument name="Editing" value="Variables.Editing"/>
+                </then>
+                </if>
+                <if cond="IsVariable.Storage=true">
+                <then>
+                    <satellite.argument name="Storage" value="Variables.Editing"/>
+                </then>
+                </if>
+                <if cond="IsVariable.ExternalId=true">
+                <then>
+                    <satellite.argument name="ExternalId" value="Variables.ExternalId"/>
+                </then>
+                </if>
+                <if cond="IsVariable.ExternalTable=true">
+                <then>
+                    <satellite.argument name="ExternalTable" value="Variables.ExternalTable"/>
+                </then>
+                </if>
+                <if cond="IsVariable.ExternalColumn=true">
+                <then>
+                    <satellite.argument name="ExternalColumn" value="Variables.ExternalColumn"/>
+                </then>
+                </if>
+                <!--additional field for parent-->
+                <if cond="IsVariable.flexgrouptemplateid=true">
+                <then>
+                    <satellite.argument name="flexgrouptemplateid" value="Variables.flexgrouptemplateid"/>
+                </then>
+                </if>
+                  <!--additional field for recommendations (AdvCols), collections-->
+                <if cond="IsVariable.template=true">
+                <then>
+                    <satellite.argument name="template" value="Variables.template"/>
+                </then>
+                </if>
+				  <!--additional field for collections-->
+				<if cond="IsVariable.Category=true">
+                <then>
+                  <satellite.argument name="Category" value="Variables.Category"/>
+                </then>
+                </if>
+				<if cond="IsVariable.Keyword=true">
+                <then>
+                  <satellite.argument name="Keyword" value="Variables.Keyword"/>
+                </then>
+                </if>
+				<!--additional field for cselements. siteentry-->
+				<if cond="IsVariable.Rootelement=true">
+                <then>
+                  <satellite.argument name="Rootelement" value="Variables.Rootelement"/>
+                </then>
+                </if>
+				<!--additional field for dimensions-->
+				<if cond="IsVariable.Subtype=true">
+				<then>
+					<satellite.argument name="Subtype" value="Variables.Subtype"/>
+				</then>
+				</if>
+				<!--additional field for siteentry-->
+				<if cond="IsVariable.Pagename=true">
+                <then>
+                  <satellite.argument name="Pagename" value="Variables.Pagename"/>
+                </then>
+                </if>
+				<!--additional field for templates-->
+                <if cond="IsVariable.Source=true">
+                <then>
+                    <satellite.argument name="Source" value="Variables.Source"/>
+                </then>
+                </if>	
+				<if cond="IsVariable.ttype=true">
+                <then>
+                    <satellite.argument name="ttype" value="Variables.ttype"/>
+                </then>
+                </if>
+                </SATELLITE.LINK>
+</ftcs>

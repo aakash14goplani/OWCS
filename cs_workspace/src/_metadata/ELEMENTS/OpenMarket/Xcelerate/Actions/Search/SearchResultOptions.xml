@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Search/SearchResultOptions
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<XLAT.STREAM KEY="dvin/Common/ShowUpTo"/> &nbsp;
+					<SELECT Name="ResultLimit">
+                        <if COND="IsVariable.ResultLimit=true">
+                        <then>
+                            <IF COND="Variables.ResultLimit=10">
+                            <THEN>
+                         	    <OPTION VALUE="10" SELECTED=""/>10
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="10"/>10
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=20">
+                            <THEN>
+                         	    <OPTION VALUE="20" SELECTED=""/>20
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="20"/>20
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=30">
+                            <THEN>
+                         	    <OPTION VALUE="30" SELECTED=""/>30
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="30"/>30
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=50">
+                            <THEN>
+                         	    <OPTION VALUE="50" SELECTED=""/>50
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="50"/>50
+                            </ELSE>
+                            </IF>
+                             <IF COND="Variables.ResultLimit=100">
+                            <THEN>
+                         	    <OPTION VALUE="100" SELECTED=""/>100
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="100"/>100
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=200">
+                            <THEN>
+                         	    <OPTION VALUE="200" SELECTED=""/>200
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="200"/>200
+                            </ELSE>
+                            </IF>
+                            <IF COND="Variables.ResultLimit=300">
+                            <THEN>
+                         	    <OPTION VALUE="300" SELECTED=""/>300
+                            </THEN>
+                            <ELSE>
+                         	    <OPTION VALUE="300"/>300
+                            </ELSE>
+                            </IF>
+                        </then>
+                        <else>
+							<OPTION VALUE="10"/>10
+							<OPTION VALUE="20" SELECTED="SELECTED"/>20
+							<OPTION VALUE="30"/>30
+							<OPTION VALUE="50"/>50
+							<OPTION VALUE="100"/>100
+							<OPTION VALUE="200"/>200
+							<OPTION VALUE="300"/>300
+                        </else>
+                        </if>
+					</SELECT>
+					
+</FTCS> 

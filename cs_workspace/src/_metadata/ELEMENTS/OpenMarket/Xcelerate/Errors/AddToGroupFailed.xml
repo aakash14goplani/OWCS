@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+	<!-- OpenMarket/Xcelerate/Errors/AddToGroupFailed
+	-
+	- INPUT
+	-		 errorassetname (optional)
+			 AssetType
+			 errno
+			 errdetail1
+			 
+	- OUTPUT
+	-
+	-->
+
+
+<H3>
+<ASSETTYPE.LOAD NAME="at" FIELD="assettype" VALUE="Variables.AssetType"/>
+<ASSETTYPE.GET NAME="at" FIELD="description"/>
+<IF COND="IsVariable.errorassetname=true">
+	<THEN>
+		<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailed2" ESCAPE="false" ENCODE="false"/>	
+	</THEN>
+	<ELSE>
+		<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailed1" ESCAPE="false" ENCODE="false"/>	
+	</ELSE>
+</IF>
+</H3>
+
+<P>
+	<IF COND="IsVariable.errorassetname=true">
+		<THEN>
+			<IF COND="Variables.errno=-12031">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailedGrpNotInInitState2" ESCAPE="false" ENCODE="false"/>
+				</THEN>
+				<ELSE>
+					<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailedConfigProb2" ESCAPE="false" ENCODE="false"/>
+				</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<IF COND="Variables.errno=-12031">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailedGrpNotInInitState1" ESCAPE="false" ENCODE="false"/>
+				</THEN>
+				<ELSE>
+					<XLAT.STREAM KEY="dvin/UI/Error/AddToGroupFailedConfigProb1" ESCAPE="false" ENCODE="false"/>
+				</ELSE>
+			</IF>
+		</ELSE>
+	</IF>
+</P>
+
+</FTCS>

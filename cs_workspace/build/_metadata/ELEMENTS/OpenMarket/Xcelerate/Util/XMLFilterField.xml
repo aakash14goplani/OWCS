@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/Util/XMLFilterField.xml $ 
+$Revision: 15 $ 
+$Modtime: 3/15/01 12:49p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- XMLFilterField.xml
+-
+- DESCRIPTION
+-	Filter the text
+-
+- HISTORY 
+-->
+
+
+<!-- Using predefined storage and naming
+     conventions, filter something -->
+<PROPERTY.GET PARAM="xcelerate.xmlfilters" INIFILE="futuretense_xcel.ini" VARNAME="xml_filter_file"/>
+<setvar NAME="xml_filter_file" VALUE="Variables.xml_filter_file/Variables.AssetType/Variables.field.xml"/>
+<setvar NAME="errno" VALUE="0"/>
+<setvar NAME="XML_Variables.AssetType_Variables.field_error" VALUE="0"/>
+<xmlfilter STR="Variables.field_content" VERIFY="false" FILTERFILE="Variables.xml_filter_file" RUN="Variables.run"/>
+<if COND="Variables.run=false">
+    <then>
+        <if COND="Variables.errno=0">
+            <then>
+                <setvar NAME="XML_Variables.AssetType_Variables.field" VALUE="Variables.XMLFilteredString"/>
+            </then>
+        </if>
+    </then>
+</if>
+<if COND="Variables.errno!=0">
+    <then>
+        <setvar NAME="XML_Variables.AssetType_Variables.field_error" VALUE="Variables.errno"/>
+        <setvar NAME="XML_Variables.AssetType_Variables.field_errorstring" VALUE="Variables.XMLError"/>
+    </then>
+</if>
+
+</FTCS>

@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/Mirror1/PubCleanupElement
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- If the user wants it, cause the assets to be invalidated -->
+<setvar NAME="errno" VALUE="0"/>
+<PROPERTY.GET PARAM="xcelerate.publishinvalidate" INIFILE="futuretense_xcel.ini" VARNAME="value"/>
+<setvar NAME="errno" VALUE="0"/>
+<IF COND="Variables.value=true">
+<THEN>
+	<ASSETPUBLISHLIST.NOTIFYPUBLISHCHANGE PUBSESSION="Variables.session"/>
+</THEN>
+</IF>
+
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Error marking assets 'changed': Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+<!-- now, check in the changed assets -->
+<ASSETPUBLISHLIST.CHECKINASSETS PUBSESSION="Variables.session"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Variables.result Error checking in assets: Variables.errno (Variables.errdetail1)"/>
+	<logmsg STR="Error # Variables.errno (Variables.errdetail1) checking in assets!"/>
+</then>
+</if>
+
+<!-- refresh the cahce with the newly published assets -->
+<ASSETPUBLISHLIST.POSTPUBLISH PUBSESSION="Variables.session"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Variables.result Error in post-publish: Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+<!-- delete the AssetPublishList entries -->
+<ASSETPUBLISHLIST.DeleteSessionAssets PUBSESSION="Variables.session"/>
+<if COND="IsError.Variables.errno=true">
+<then>
+	<setvar NAME="result" VALUE="Variables.result Error in session cleanup: Variables.errno (Variables.errdetail1)"/>
+</then>
+</if>
+
+
+</FTCS> 

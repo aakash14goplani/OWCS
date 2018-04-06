@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/Publish/ExportXML/PreviewApprovedAssets
+-
+- INPUT
+-	Variables.target - target id
+-	Variables.targetname - target name
+- OUTPUT
+-
+-->
+
+<!-- report on assets that will be published -->
+<ApprovedAssets.GetAssetsToPublish TARGET="Variables.target" PREFIX="publishableAssets" />
+<SETVAR NAME="numAssets" VALUE="Variables.publishableAssetsTotal"/>
+<if COND="Variables.numAssets=1">
+<then>
+ <XLAT.STREAM KEY="dvin/UI/Publish/numAssetsAssettobepublished"/>:<br/>
+</then>
+<else>
+ <XLAT.STREAM KEY="dvin/UI/Publish/numAssetsAssetstobepublished"/>:<br/>
+</else>
+</if>
+
+
+<if COND="Variables.numAssets!=0">
+<then>
+
+	<!-- create an IList with column name "assetid" and 
+	     "assettype" and build the asset IList -->
+	<LISTOBJECT.CREATE NAME="listobject" COLUMNS="assetid,assettype" />
+	<setcounter NAME="count" VALUE="0"/>
+	<loop COUNT="Variables.numAssets">
+		<MIRRORKEY.GETTYPE NAME="publishableAssetsCounters.count" VARNAME="assettype"/>
+		<MIRRORKEY.GETID NAME="publishableAssetsCounters.count" VARNAME="assetid"/>
+		 
+	    <LISTOBJECT.ADDROW NAME="listobject"
+	        assetid="Variables.assetid"
+	        assettype="Variables.assettype" />
+	    <inccounter NAME="count" VALUE="1"/>
+	</loop>
+	<LISTOBJECT.TOLIST NAME="listobject" LISTVARNAME="assetlist" />
+	
+	<callelement NAME="OpenMarket/Xcelerate/Actions/AssetMgt/TileMixedAssets">
+		<argument NAME="list" VALUE="assetlist"/>
+		<argument NAME="targetname" VALUE="Variables.targetname"/>
+		<argument NAME="target" VALUE="Variables.target"/>
+	</callelement>
+</then>
+</if>
+
+
+</FTCS> 

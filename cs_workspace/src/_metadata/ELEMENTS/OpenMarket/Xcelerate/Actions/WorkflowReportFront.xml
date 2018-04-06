@@ -1,0 +1,1073 @@
+<?xml version="1.0"?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+	<!-- 
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/WorkflowReportFront.xml $ 
+$Revision: 24 $ 
+$Modtime: 8/06/04 4:53p $ 
+-->
+	<!-- OpenMarket/Xcelerate/Actions/WorkflowReportFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/> 
+
+	<!-- Set up a bunch of hidden variables required for Saving a Workflow Report -->
+	<!--INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/-->
+	<INPUT type="hidden" name="AssetType" value="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+	<!-- for now hardcode the frontpage and postpage as the frontpage=WorkflowReportFront and 
+    postpage=WorkflowReportpost -->
+	<INPUT type="hidden" name="frontpage" VALUE="WorkflowReportFront"/>
+	<INPUT type="hidden" name="postpage" VALUE="WorkflowReportPost"/>
+	<!--
+<if COND="IsVariable.frompage!=true">
+<then>
+    <INPUT type="hidden" name="frontpage" VALUE="Variables.ThisPage" REPLACEALL="Variables.ThisPage"/>
+    <INPUT type="hidden" name="postpage" VALUE="Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+</then>
+<else>
+    <INPUT type="hidden" name="frontpage" VALUE="Variables.frontpage" REPLACEALL="Variables.frontpage"/>
+    <INPUT type="hidden" name="postpage" VALUE="Variables.postpage" REPLACEALL="Variables.postpage"/>
+</else>
+</if>
+-->
+	<!-- right now,  the the variables with ';' is not being parsed appropriately,
+   hence saving a bunch of hidden variables as LISTS-->
+   
+	<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+		<tr><td>
+		
+		<IF COND="Variables.actionTitle=Edit">
+		<THEN>  
+		    <span class="title-text"><XLAT.STREAM KEY="dvin/UI/EditWorkflowReport"/></span>
+		</THEN>
+		<ELSE>
+			<span class="title-text"><XLAT.STREAM KEY="dvin/UI/CreateWorkflowReport"/></span>
+		</ELSE>
+		</IF>
+			
+		</td></tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</table>
+
+	<!-- Table header -->
+	<table  class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+		<tr><td>
+				<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text" VALIGN="TOP">
+							<XLAT.STREAM KEY="dvin/UI/AssetType"/>:
+						</td>
+						<td class="form-inset" VALIGN="TOP">
+								<IF COND="IsVariable.assettypes=true">
+									<THEN>
+										<IF COND="Variables.report_assets=all">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="all" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/UI/AllAssetTypes"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="some" onClick="assettypes.selectedIndex==-1 ? assettypes.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingTypes"/>:<BR/>
+											</THEN>
+											<ELSE>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="all"/>
+												<XLAT.STREAM KEY="dvin/UI/AllAssetTypes"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="some" checked="checked" onClick="assettypes.selectedIndex==-1 ? assettypes.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingTypes"/>:<BR/>
+											</ELSE>
+										</IF>
+										<!--stringlist NAME="selectedassets" STR="Variables.assettypes" DELIM=","/-->
+										<SELECT NAME="assettypes" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assets'][1].checked=true">
+											<LOOP LIST="EnabledAssetTypes">
+												<SETVAR NAME="errno" VALUE="0"/>
+												<ISINLIST ITEM="EnabledAssetTypes.assettype" STR="Variables.assettypes"/>
+												<IF COND="Variables.errno=1">
+													<THEN>
+														<OPTION VALUE="EnabledAssetTypes.assettype" SELECTED="" REPLACEALL="EnabledAssetTypes.assettype"/>
+														<STRING.STREAM VALUE="EnabledAssetTypes.description"/>
+													</THEN>
+													<ELSE>
+														<OPTION VALUE="EnabledAssetTypes.assettype" REPLACEALL="EnabledAssetTypes.assettype"/>
+														<STRING.STREAM VALUE="EnabledAssetTypes.description"/>
+													</ELSE>
+												</IF>
+											</LOOP>
+										</SELECT>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="all" checked="checked"/>
+										<XLAT.STREAM KEY="dvin/UI/AllAssetTypes"/>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assets" VALUE="some" onClick="assettypes.selectedIndex==-1 ? assettypes.options[0].selected=true : void(0)"/>
+										<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingTypes"/>:<BR/>
+										<SELECT NAME="assettypes" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assets'][1].checked=true">
+											<LOOP LIST="EnabledAssetTypes">
+												<OPTION VALUE="EnabledAssetTypes.assettype" REPLACEALL="EnabledAssetTypes.assettype"/>
+												<STRING.STREAM VALUE="EnabledAssetTypes.description"/>
+											</LOOP>
+										</SELECT>
+									</ELSE>
+								</IF>
+						</td>
+					</tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text" VALIGN="TOP">
+							<XLAT.STREAM KEY="dvin/UI/WorkflowState"/>:
+						</td>
+						<td class="form-inset" VALIGN="TOP">
+								<IF COND="IsVariable.wfstates=true">
+									<THEN>
+										<IF COND="Variables.report_state=all">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="all" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/UI/AllWorkflowStates"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="some" onClick="wfstates.selectedIndex==-1 ? wfstates.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingWorkflowStates"/>:<BR/>
+											</THEN>
+											<ELSE>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="all"/>
+												<XLAT.STREAM KEY="dvin/UI/AllWorkflowStates"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="some" checked="checked" onClick="wfstates.selectedIndex==-1 ? wfstates.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingWorkflowStates"/>:<BR/>
+											</ELSE>
+										</IF>
+										<SELECT NAME="wfstates" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_state'][1].checked=true">
+											<IF COND="IsList.WflStatusCode=true">
+												<THEN>
+													<LOOP LIST="WflStatusCode">
+														<SETVAR NAME="errno" VALUE="0"/>
+														<ISINLIST ITEM="WflStatusCode.id" STR="Variables.wfstates"/>
+														<IF COND="Variables.errno=1">
+															<THEN>
+																<OPTION VALUE="WflStatusCode.id" SELECTED="" REPLACEALL="WflStatusCode.id"/>
+																<STRING.STREAM VALUE="WflStatusCode.description"/>
+															</THEN>
+															<ELSE>
+																<OPTION VALUE="WflStatusCode.id" REPLACEALL="WflStatusCode.id"/>
+																<STRING.STREAM VALUE="WflStatusCode.description"/>
+															</ELSE>
+														</IF>
+													</LOOP>
+												</THEN>
+											</IF>
+										</SELECT>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="all" checked="checked"/>
+										<XLAT.STREAM KEY="dvin/UI/AllWorkflowStates"/>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_state" VALUE="some" onClick="wfstates.selectedIndex==-1 ? wfstates.options[0].selected=true : void(0)"/>
+										<XLAT.STREAM KEY="dvin/UI/OnlyAssetsFollowingWorkflowStates"/>:<BR/>
+										<SELECT NAME="wfstates" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_state'][1].checked=true">
+											<IF COND="IsList.WflStatusCode=true">
+												<THEN>
+													<LOOP LIST="WflStatusCode">
+														<OPTION VALUE="WflStatusCode.id" REPLACEALL="WflStatusCode.id"/>
+														<STRING.STREAM VALUE="WflStatusCode.description"/>
+													</LOOP>
+												</THEN>
+											</IF>
+										</SELECT>
+									</ELSE>
+								</IF>
+						</td>
+					</tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text" VALIGN="TOP">
+							<XLAT.STREAM KEY="dvin/Common/AssignedtoCapital"/>:
+						</td>
+						<td class="form-inset">
+								<IF COND="IsVariable.report_assignto=true">
+									<THEN>
+										<IF COND="Variables.report_assignto=any">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="any" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/Common/AnyUser"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="user" onClick="users.selectedIndex==-1 ? users.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/Common/AnyFollowingUsers"/>:<BR/>
+											</THEN>
+											<ELSE>
+												<IF COND="Variables.report_assignto=user">
+													<THEN>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyUser"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="user" checked="checked" onClick="users.selectedIndex==-1 ? users.options[0].selected=true : void(0)"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyFollowingUsers"/>:<BR/>
+													</THEN>
+													<ELSE>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyUser"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="user" onClick="users.selectedIndex==-1 ? users.options[0].selected=true : void(0)"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyFollowingUsers"/>:<BR/>
+													</ELSE>
+												</IF>
+											</ELSE>
+										</IF>
+										<IF COND="Variables.report_assignto=user">
+											 <THEN>
+												<SELECT NAME="users" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][1].checked=true">
+													<LOOP LIST="pubuserlist">
+														<UserManager.GetDisplayableUserName USER="pubuserlist.username" VARNAME="uname"/>
+
+														<SETVAR NAME="errno" VALUE="0"/>
+														<ISINLIST ITEM="Variables.uname" STR="Variables.users"/>
+														<IF COND="Variables.errno=1">
+														     <THEN>
+																<OPTION VALUE="pubuserlist.username" REPLACEALL="pubuserlist.username" SELECTED="SELECTED"/>
+																<STRING.STREAM VALUE="Variables.uname"/>
+															</THEN>
+															<ELSE>
+																<OPTION VALUE="pubuserlist.username" REPLACEALL="pubuserlist.username"/>
+																<STRING.STREAM VALUE="Variables.uname"/>
+															</ELSE>
+															
+														</IF>
+													</LOOP> 
+												</SELECT>
+											</THEN>
+											<ELSE>
+												<SELECT NAME="users" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][1].checked=true">
+													<LOOP LIST="pubuserlist">
+														<UserManager.GetDisplayableUserName USER="pubuserlist.username" VARNAME="uname"/>
+														<OPTION VALUE="pubuserlist.username" REPLACEALL="pubuserlist.username"/>
+														<STRING.STREAM VALUE="Variables.uname"/>
+													</LOOP>
+												</SELECT>
+											</ELSE>
+										</IF>
+										<BR/>
+										<IF COND="Variables.report_assignto=role">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" checked="checked" VALUE="role" onClick="roles.selectedIndex==-1 ? roles.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/Common/AllUsersFollowingRoles"/>:<BR/>
+												<SELECT NAME="roles" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][2].checked=true">
+													<LOOP LIST="ActiveACL">
+														<SETVAR NAME="errno" VALUE="0"/>
+														<ISINLIST ITEM="ActiveACL.acl" STR="Variables.roles"/>
+														<IF COND="Variables.errno=1">
+															<THEN>
+																<OPTION VALUE="ActiveACL.acl" SELECTED="" REPLACEALL="ActiveACL.acl"/>
+																<STRING.STREAM VALUE="ActiveACL.acl"/>
+															</THEN>
+															<ELSE>
+																<OPTION VALUE="ActiveACL.acl" REPLACEALL="ActiveACL.acl"/>
+																<STRING.STREAM VALUE="ActiveACL.acl"/>
+															</ELSE>
+														</IF>
+													</LOOP>
+												</SELECT>
+											</THEN>
+											<ELSE>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="role" onClick="roles.selectedIndex==-1 ? roles.options[0].selected=true : void(0)"/>
+												<XLAT.STREAM KEY="dvin/Common/AllUsersFollowingRoles"/>:<BR/>
+												<SELECT NAME="roles" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][2].checked=true">
+													<LOOP LIST="ActiveACL">
+														<OPTION VALUE="ActiveACL.acl" REPLACEALL="ActiveACL.acl"/>
+														<STRING.STREAM VALUE="ActiveACL.acl"/>
+													</LOOP>
+												</SELECT>
+											</ELSE>
+										</IF>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="any" checked="checked"/>
+										<XLAT.STREAM KEY="dvin/Common/AnyUser"/>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="user" onClick="users.selectedIndex==-1 ? users.options[0].selected=true : void(0)"/>
+										<XLAT.STREAM KEY="dvin/Common/AnyFollowingUsers"/>:<BR/>
+										<SELECT NAME="users" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][1].checked=true">
+											<LOOP LIST="pubuserlist">
+	               					            <UserManager.GetDisplayableUserName USER="pubuserlist.username" VARNAME="uname"/>												
+												<OPTION VALUE="pubuserlist.username" REPLACEALL="pubuserlist.username"/>
+												<STRING.STREAM VALUE="Variables.uname"/>
+											</LOOP>
+										</SELECT>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_assignto" VALUE="role" onClick="roles.selectedIndex==-1 ? roles.options[0].selected=true : void(0)"/>
+										<XLAT.STREAM KEY="dvin/Common/AllUsersFollowingRoles"/>:<BR/>
+										<SELECT NAME="roles" MULTIPLE="yes" SIZE="6" onChange="this.form.elements['report_assignto'][2].checked=true">
+											<LOOP LIST="ActiveACL">
+												<OPTION VALUE="ActiveACL.acl" REPLACEALL="ActiveACL.acl"/>
+												<STRING.STREAM VALUE="ActiveACL.acl"/>
+											</LOOP>
+										</SELECT>
+									</ELSE>
+								</IF>
+						</td>
+					</tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text" VALIGN="TOP">
+							<XLAT.STREAM KEY="dvin/Common/DueDate"/>:
+						</td>
+						<td class="form-inset">
+								<IF COND="IsVariable.duetime=true">
+									<THEN>
+										<IF COND="Variables.report_due=any">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="any" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="due"/>
+												<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                          </THEN>
+											<ELSE>
+												<IF COND="Variables.report_due=due">
+													<THEN>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="due" checked="checked"/>
+														<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                              </THEN>
+													<ELSE>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="due"/>
+														<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                               </ELSE>
+												</IF>
+											</ELSE>
+										</IF>
+										<SELECT NAME="duetime" onChange="this.form.elements['report_due'][1].checked=true">
+											<IF COND="Variables.duetime=20">
+												<THEN>
+													<OPTION VALUE="20" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="20"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=60">
+												<THEN>
+													<OPTION VALUE="60" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="60"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=240">
+												<THEN>
+													<OPTION VALUE="240" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="240"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=480">
+												<THEN>
+													<OPTION VALUE="480" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="480"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=720">
+												<THEN>
+													<OPTION VALUE="720" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="720"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=1440">
+												<THEN>
+													<OPTION VALUE="1440" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="1440"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=2880">
+												<THEN>
+													<OPTION VALUE="2880" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="2880"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.duetime=4320">
+												<THEN>
+													<OPTION VALUE="4320" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="4320"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</ELSE>
+											</IF>
+										</SELECT>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="any" checked="checked"/>
+										<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="due"/>
+										<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+        						<SELECT NAME="duetime" onChange="this.form.elements['report_due'][1].checked=true">
+											<OPTION VALUE="20" SELECTED="SELECTED"/>
+											<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+											<OPTION VALUE="60"/>
+											<XLAT.STREAM KEY="dvin/Common/1hour"/>
+											<OPTION VALUE="240"/>
+											<XLAT.STREAM KEY="dvin/Common/4hours"/>
+											<OPTION VALUE="480"/>
+											<XLAT.STREAM KEY="dvin/Common/8hours"/>
+											<OPTION VALUE="720"/>
+											<XLAT.STREAM KEY="dvin/Common/12hours"/>
+											<OPTION VALUE="1440"/>
+											<XLAT.STREAM KEY="dvin/Common/1day"/>
+											<OPTION VALUE="2880"/>
+											<XLAT.STREAM KEY="dvin/Common/2days"/>
+											<OPTION VALUE="4320"/>
+											<XLAT.STREAM KEY="dvin/Common/3days"/>
+										</SELECT>
+									</ELSE>
+								</IF>
+								<BR/>
+								<if COND="IsVariable.pastduetime=true">
+									<then>
+										<IF COND="Variables.report_due=past">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="past" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+                                </THEN>
+											<ELSE>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="past"/>
+												<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+                                </ELSE>
+										</IF>
+										<SELECT NAME="pastduetime" onChange="this.form.elements['report_due'][2].checked=true">
+											<IF COND="Variables.pastduetime=0">
+												<THEN>
+													<OPTION VALUE="0" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="0"/>
+													<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=20">
+												<THEN>
+													<OPTION VALUE="20" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="20"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=60">
+												<THEN>
+													<OPTION VALUE="60" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="60"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=240">
+												<THEN>
+													<OPTION VALUE="240" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="240"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=480">
+												<THEN>
+													<OPTION VALUE="480" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="480"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=720">
+												<THEN>
+													<OPTION VALUE="720" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="720"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=1440">
+												<THEN>
+													<OPTION VALUE="1440" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="1440"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=2880">
+												<THEN>
+													<OPTION VALUE="2880" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="2880"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastduetime=4320">
+												<THEN>
+													<OPTION VALUE="4320" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="4320"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</ELSE>
+											</IF>
+										</SELECT>
+									</then>
+									<else>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_due" VALUE="past"/>
+										<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+        						<SELECT NAME="pastduetime" onChange="this.form.elements['report_due'][2].checked=true">
+											<OPTION VALUE="0"/>
+											<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+											<OPTION VALUE="20" SELECTED="SELECTED"/>
+											<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+											<OPTION VALUE="60"/>
+											<XLAT.STREAM KEY="dvin/Common/1hour"/>
+											<OPTION VALUE="240"/>
+											<XLAT.STREAM KEY="dvin/Common/4hours"/>
+											<OPTION VALUE="480"/>
+											<XLAT.STREAM KEY="dvin/Common/8hours"/>
+											<OPTION VALUE="720"/>
+											<XLAT.STREAM KEY="dvin/Common/12hours"/>
+											<OPTION VALUE="1440"/>
+											<XLAT.STREAM KEY="dvin/Common/1day"/>
+											<OPTION VALUE="2880"/>
+											<XLAT.STREAM KEY="dvin/Common/2days"/>
+											<OPTION VALUE="4320"/>
+											<XLAT.STREAM KEY="dvin/Common/3days"/>
+										</SELECT>
+									</else>
+								</if>
+								<BR/>
+						</td>
+					</tr>
+                 	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+                  	<tr>
+						<td class="form-label-text" VALIGN="TOP">
+							<XLAT.STREAM KEY="dvin/Common/ProcessDueDate"/>:
+						</td>
+						<td class="form-inset">
+								<IF COND="IsVariable.processduetime=true">
+									<THEN>
+										<IF COND="Variables.report_processdue=any">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="any" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+												<BR/>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="due"/>
+												<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                                            </THEN>
+											<ELSE>
+												<IF COND="Variables.report_processdue=due">
+													<THEN>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="due" checked="checked"/>
+														<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                                                    </THEN>
+													<ELSE>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="any"/>
+														<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+														<BR/>
+														<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="due"/>
+														<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+                                                    </ELSE>
+												</IF>
+											</ELSE>
+										</IF>
+										<SELECT NAME="processduetime" onChange="this.form.elements['report_processdue'][1].checked=true">
+											<IF COND="Variables.processduetime=20">
+												<THEN>
+													<OPTION VALUE="20" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="20"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=60">
+												<THEN>
+													<OPTION VALUE="60" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="60"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=240">
+												<THEN>
+													<OPTION VALUE="240" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="240"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=480">
+												<THEN>
+													<OPTION VALUE="480" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="480"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=720">
+												<THEN>
+													<OPTION VALUE="720" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="720"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=1440">
+												<THEN>
+													<OPTION VALUE="1440" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="1440"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=2880">
+												<THEN>
+													<OPTION VALUE="2880" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="2880"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.processduetime=4320">
+												<THEN>
+													<OPTION VALUE="4320" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="4320"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</ELSE>
+											</IF>
+                                            <IF COND="Variables.processduetime=14400">
+												<THEN>
+													<OPTION VALUE="14400" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/10days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="14400"/>
+													<XLAT.STREAM KEY="dvin/Common/10days"/>
+												</ELSE>
+											</IF>
+                      						<IF COND="Variables.processduetime=43200">
+												<THEN>
+													<OPTION VALUE="43200" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/30days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="43200"/>
+													<XLAT.STREAM KEY="dvin/Common/30days"/>
+												</ELSE>
+											</IF>
+										</SELECT>
+									</THEN>
+									<ELSE>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="any" checked="checked"/>
+										<XLAT.STREAM KEY="dvin/Common/AnyDueDate"/>
+										<BR/>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="due"/>
+										<XLAT.STREAM KEY="dvin/Common/DueWithin"/>:
+        						        <SELECT NAME="processduetime" onChange="this.form.elements['report_processdue'][1].checked=true">
+											<OPTION VALUE="20" SELECTED="SELECTED"/>
+											<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+											<OPTION VALUE="60"/>
+											<XLAT.STREAM KEY="dvin/Common/1hour"/>
+											<OPTION VALUE="240"/>
+											<XLAT.STREAM KEY="dvin/Common/4hours"/>
+											<OPTION VALUE="480"/>
+											<XLAT.STREAM KEY="dvin/Common/8hours"/>
+											<OPTION VALUE="720"/>
+											<XLAT.STREAM KEY="dvin/Common/12hours"/>
+											<OPTION VALUE="1440"/>
+											<XLAT.STREAM KEY="dvin/Common/1day"/>
+											<OPTION VALUE="2880"/>
+											<XLAT.STREAM KEY="dvin/Common/2days"/>
+											<OPTION VALUE="4320"/>
+											<XLAT.STREAM KEY="dvin/Common/3days"/>
+                                            <OPTION VALUE="14400"/>
+                                            <XLAT.STREAM KEY="dvin/Common/10days"/>
+                                            <OPTION VALUE="43200"/>
+                                            <XLAT.STREAM KEY="dvin/Common/30days"/>                                            
+										</SELECT>
+									</ELSE>
+								</IF>
+								<BR/>
+								<if COND="IsVariable.pastprocessduetime=true">
+									<then>
+										<IF COND="Variables.report_processdue=past">
+											<THEN>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="past" checked="checked"/>
+												<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+                                            </THEN>
+											<ELSE>
+												<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="past"/>
+												<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+                                            </ELSE>
+										</IF>
+										<SELECT NAME="pastprocessduetime" onChange="this.form.elements['report_processdue'][2].checked=true">
+											<IF COND="Variables.pastprocessduetime=0">
+												<THEN>
+													<OPTION VALUE="0" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="0"/>
+													<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=20">
+												<THEN>
+													<OPTION VALUE="20" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="20"/>
+													<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=60">
+												<THEN>
+													<OPTION VALUE="60" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="60"/>
+													<XLAT.STREAM KEY="dvin/Common/1hour"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=240">
+												<THEN>
+													<OPTION VALUE="240" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="240"/>
+													<XLAT.STREAM KEY="dvin/Common/4hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=480">
+												<THEN>
+													<OPTION VALUE="480" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="480"/>
+													<XLAT.STREAM KEY="dvin/Common/8hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=720">
+												<THEN>
+													<OPTION VALUE="720" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="720"/>
+													<XLAT.STREAM KEY="dvin/Common/12hours"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=1440">
+												<THEN>
+													<OPTION VALUE="1440" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="1440"/>
+													<XLAT.STREAM KEY="dvin/Common/1day"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=2880">
+												<THEN>
+													<OPTION VALUE="2880" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="2880"/>
+													<XLAT.STREAM KEY="dvin/Common/2days"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.pastprocessduetime=4320">
+												<THEN>
+													<OPTION VALUE="4320" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="4320"/>
+													<XLAT.STREAM KEY="dvin/Common/3days"/>
+												</ELSE>
+											</IF>
+                                            <IF COND="Variables.pastprocessduetime=14400">
+												<THEN>
+													<OPTION VALUE="14400" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/10days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="14400"/>
+													<XLAT.STREAM KEY="dvin/Common/10days"/>
+												</ELSE>
+											</IF>
+                      						<IF COND="Variables.pastprocessduetime=43200">
+												<THEN>
+													<OPTION VALUE="43200" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/30days"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="43200"/>
+													<XLAT.STREAM KEY="dvin/Common/30days"/>
+												</ELSE>
+											</IF>
+										</SELECT>
+									</then>
+									<else>
+										<INPUT TYPE="radio" style="margin-left:0px" NAME="report_processdue" VALUE="past"/>
+										<XLAT.STREAM KEY="dvin/Common/PastDueMoreThan"/>:
+        						<SELECT NAME="pastprocessduetime" onChange="this.form.elements['report_processdue'][2].checked=true">
+											<OPTION VALUE="0"/>
+											<XLAT.STREAM KEY="dvin/Common/AnyTime"/>
+											<OPTION VALUE="20" SELECTED="SELECTED"/>
+											<XLAT.STREAM KEY="dvin/Common/20Minutes"/>
+											<OPTION VALUE="60"/>
+											<XLAT.STREAM KEY="dvin/Common/1hour"/>
+											<OPTION VALUE="240"/>
+											<XLAT.STREAM KEY="dvin/Common/4hours"/>
+											<OPTION VALUE="480"/>
+											<XLAT.STREAM KEY="dvin/Common/8hours"/>
+											<OPTION VALUE="720"/>
+											<XLAT.STREAM KEY="dvin/Common/12hours"/>
+											<OPTION VALUE="1440"/>
+											<XLAT.STREAM KEY="dvin/Common/1day"/>
+											<OPTION VALUE="2880"/>
+											<XLAT.STREAM KEY="dvin/Common/2days"/>
+											<OPTION VALUE="4320"/>
+											<XLAT.STREAM KEY="dvin/Common/3days"/>
+                                            <OPTION VALUE="14400"/>
+                                            <XLAT.STREAM KEY="dvin/Common/10days"/>
+                                            <OPTION VALUE="43200"/>
+                                            <XLAT.STREAM KEY="dvin/Common/30days"/>
+										</SELECT>
+									</else>
+								</if>
+								<BR/>
+						</td>
+					</tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+					<tr>
+						<td class="form-label-text">
+							<XLAT.STREAM KEY="dvin/Common/ReportOptions"/>:
+						</td>
+						<td class="form-inset">
+								<XLAT.STREAM KEY="dvin/Common/ShowUpTo"/>
+								<SELECT Name="ResultLimit">
+									<if COND="IsVariable.ResultLimit=true">
+										<then>
+											<IF COND="Variables.ResultLimit=2">
+												<THEN>
+													<OPTION VALUE="2" SELECTED=""/>2
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="2"/>2
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=10">
+												<THEN>
+													<OPTION VALUE="10" SELECTED=""/>10
+                         </THEN>
+												<ELSE>
+													<OPTION VALUE="10"/>10
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=20">
+												<THEN>
+													<OPTION VALUE="20" SELECTED=""/>20
+                         </THEN>
+												<ELSE>
+													<OPTION VALUE="20"/>20
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=30">
+												<THEN>
+													<OPTION VALUE="30" SELECTED=""/>30
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="30"/>30
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=50">
+												<THEN>
+													<OPTION VALUE="50" SELECTED="SELECTED"/>50
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="50"/>50
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=100">
+												<THEN>
+													<OPTION VALUE="100" SELECTED="SELECTED"/>100
+                                
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="100"/>100
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=200">
+												<THEN>
+													<OPTION VALUE="200" SELECTED="SELECTED"/>200
+                          
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="200"/>200
+                        </ELSE>
+											</IF>
+											<IF COND="Variables.ResultLimit=300">
+												<THEN>
+													<OPTION VALUE="300" SELECTED="SELECTED"/>300
+                                
+                        </THEN>
+												<ELSE>
+													<OPTION VALUE="300"/>300
+                        </ELSE>
+											</IF>
+										</then>
+										<else>
+											<OPTION VALUE="2"/>2
+						<OPTION VALUE="10"/>10
+						<OPTION VALUE="20"/>20
+						<OPTION VALUE="30"/>30
+						<OPTION VALUE="50" SELECTED="SELECTED"/>50
+						<OPTION VALUE="100"/>100
+						<OPTION VALUE="200"/>200
+						<OPTION VALUE="300"/>300
+                       </else>
+									</if>
+								</SELECT>
+								<XLAT.STREAM KEY="dvin/Common/ItemsWithShowCombo"/>
+								<P/>
+								<XLAT.STREAM KEY="dvin/Common/SortResultsBy"/>
+								<SELECT NAME="OrderBy">
+									<IF COND="IsVariable.OrderBy=true">
+										<THEN>
+											<IF COND="Variables.OrderBy=assignedto">
+												<THEN>
+													<OPTION VALUE="assignedto" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/assignedto"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="assignedto"/>
+													<XLAT.STREAM KEY="dvin/Common/assignedto"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.OrderBy=workflow_state">
+												<THEN>
+													<OPTION VALUE="workflow_state" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/workflowstate"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="workflow_state"/>
+													<XLAT.STREAM KEY="dvin/Common/workflowstate"/>
+												</ELSE>
+											</IF>
+											<IF COND="Variables.OrderBy=assigneddate">
+												<THEN>
+													<OPTION VALUE="assigneddate" SELECTED="SELECTED"/>
+													<XLAT.STREAM KEY="dvin/Common/DateAssigned"/>
+												</THEN>
+												<ELSE>
+													<OPTION VALUE="assigneddate"/>
+													<XLAT.STREAM KEY="dvin/Common/DateAssigned"/>
+												</ELSE>
+											</IF>
+										</THEN>
+										<ELSE>
+											<OPTION VALUE="assignedto"/>
+											<XLAT.STREAM KEY="dvin/Common/assignedto"/>
+											<OPTION VALUE="workflow_state"/>
+											<XLAT.STREAM KEY="dvin/Common/workflowstate"/>
+											<OPTION VALUE="assigneddate" SELECTED="SELECTED"/>
+											<XLAT.STREAM KEY="dvin/Common/DateAssigned"/>
+										</ELSE>
+									</IF>
+								</SELECT>
+						</td>
+					</tr>
+						<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<tr><td></td><td>
+			    <STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/> 
+				<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>
+				<XLAT.LOOKUP KEY="dvin/UI/ReportAssetsInWorkflow" VARNAME="_XLAT_" ESCAPE="true"/>
+				<STRING.ENCODE VARIABLE="WorkflowFrontURL" VARNAME="WorkflowFrontURL"/> 
+				<A HREF="Variables.WorkflowFrontURL" REPLACEALL="Variables.WorkflowFrontURL">
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+				</A>
+				<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+					<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Report"/></CALLELEMENT>
+				</A>
+			</td></tr>
+				</table>
+			</td><td/>
+		</tr>
+	</table>
+
+	<P/>
+</FTCS>

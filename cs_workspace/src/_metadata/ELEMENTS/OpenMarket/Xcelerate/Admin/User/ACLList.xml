@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/User/ACLList
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+  
+<IF COND="IsVariable.selectList=false">
+<THEN>
+    <SETVAR NAME="selectList" VALUE="Variables.empty"/>
+</THEN>
+</IF>
+ 
+
+ 
+<IF COND="IsList.ACLs=true">
+<THEN>
+    <STRINGLIST NAME="myList" STR="Variables.selectList" DELIM=","/>
+    <HASH.CREATE NAME="myHash" LIST="myList" COLUMN="ITEM"/>
+    <SELECT NAME="ACLList" MULTIPLE="yes" style="width:200px" size="10" class="selectbox">
+        <LOOP LIST="ACLs">
+		<HASH.CONTAINS NAME="myHash" VALUE="ACLs.aclname" VARNAME="boolean"/>           
+                <IF COND="Variables.boolean=true">
+                    <THEN>
+                        <OPTION VALUE="ACLs.aclname" SELECTED="true" REPLACEALL="ACLs.aclname"/><STRING.STREAM VALUE="ACLs.aclname"/> 
+                    </THEN>
+                    <ELSE>
+                        <OPTION VALUE="ACLs.aclname" REPLACEALL="ACLs.aclname"/><STRING.STREAM VALUE="ACLs.aclname"/> 
+                    </ELSE>
+                </IF>
+       </LOOP>
+   </SELECT>
+</THEN>
+</IF>
+ 
+
+
+</FTCS> 

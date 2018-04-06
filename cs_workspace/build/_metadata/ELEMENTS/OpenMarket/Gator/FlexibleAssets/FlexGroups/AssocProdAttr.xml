@@ -1,0 +1,186 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+
+<!-- 														
+$Logfile: /VerticalApps/XcelerateC/install/Gator/Populate/ElementCatalog/OpenMarket/Gator/FlexibleAssets/FlexGroups/AssocProdAttr.xml $ 
+$Revision: 22 $ 
+$Modtime: 2/27/04 2:46p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+-AssocAttr.xml
+-
+- DESCRIPTION
+-	
+-
+- HISTORY 
+-->																		  
+
+
+<!--ContentCategory\productgroups\AssocProdProdAttrs.xml-->
+
+<!--  Inputs required
+	1.  myassettype  
+	2.  flextemplateid 
+	3. templatetype
+-->
+
+
+<!--  Product stuff -->
+<setvar NAME="errno"  VALUE="0"/>
+
+ 
+<setvar NAME="errno"  VALUE="0"/>
+<fatm.getattributetype  ASSETTYPE="Variables.myassettype"  VARNAME="attributetype"/> 
+
+  
+<setvar NAME="errno"  VALUE="0"/>
+
+<!--templatetype in ASsocProdAttrs: <csvar NAME="Variables.templatetype"/><br/>-->
+<!--flextemplateid:  <csvar NAME="Variables.flextemplateid"/><br/> -->
+<!--  Assumptions about a ProductSet
+  1.  all use the same template
+	2.  all attributes are "Required"  attributes only
+	3.  Both the productTemplate and ProductGroup has  an attribute called "GAProductSet"
+-->
+
+<ASSET.LOAD TYPE="Variables.templatetype" NAME="ProdTmplinst"  OBJECTID="Variables.flextemplateid"/>
+<if COND="Variables.errno=0">
+<then>
+ 	<setvar NAME="MyAttrVal"  VALUE="Variables.empty"/>
+	<setvar NAME="errno"  VALUE="0"/>
+	<flexTemplate.getallattributes NAME="ProdTmplinst" LISTVARNAME="tmplattrlist"/>
+ 	<if COND="Variables.errno=0">  
+	<then>
+  					<IF COND="Variables.tableheaderdone=false">
+						<THEN>
+							<setvar NAME="tableheaderdone" VALUE="true"/>
+							<!--
+    				    <flexTemplate.checkrequiredattribute NAME="ProdTmplinst"  ID="tmplattrlist.assetid" VARNAME="RequiredAttr"/>
+								<if COND="Variables.RequiredAttr=true">
+								<then>
+								-->
+							  <tr>
+								  
+										<td valign="bottom"><span class="table-header-small-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/FlexAssets/ProductName"/> </span></td>
+								<td valign="bottom"><img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										<loop LIST="tmplattrlist">
+											<ASSET.LIST LIST="attrAsset" TYPE="Variables.attributetype" FIELD1="id" VALUE1="tmplattrlist.assetid"/>
+											<td valign="bottom"><span class="table-header-small-text"><STRING.STREAM VALUE="attrAsset.name"/></span></td>
+											<td valign="bottom"><img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										</loop>
+								 </tr>
+								 <tr>
+										<td colspan="11"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+								 </tr>
+							<!--  removed the check for required attrs  :  PR OMIma28420  
+								</then>
+								</if>
+								-->
+ 						</THEN>
+						</IF>
+                        <tr>
+							<td valign="bottom"><span class="table-header-small-text"><STRING.STREAM VALUE="Variables.ProductName"/></span></td>
+							<td valign="bottom"><img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+
+                            <if COND="IsList.tmplattrlist=true">     
+                            <then>
+                                <if COND="tmplattrlist.#numRows!=0">
+                                <then>
+        						 <loop LIST="tmplattrlist">
+        						   <!--	 removed  this for PR OMIma28420 
+								<flexTemplate.checkrequiredattribute NAME="ProdTmplinst"  ID="tmplattrlist.assetid" VARNAME="RequiredAttr"/>
+								<if COND="Variables.RequiredAttr=true">
+								<then>
+								-->
+ 									<ASSET.LOAD TYPE="Variables.attributetype" NAME="attrinst" OBJECTID="tmplattrlist.assetid"/>
+									<setvar NAME="errno"  VALUE="0"/>
+									<ASSET.GET NAME="attrinst"  FIELD="name" OUTPUT="namevar"/>
+									<ATTRIBUTE.GETTYPE NAME="attrinst" VARNAME="type"/>
+									<if COND="Variables.errno=0">
+									<then>
+									   		<FlexAsset.getattribute NAME="Prodinst" ID="tmplattrlist.assetid" LISTVARNAME="AttrValueList"/>
+												<setvar NAME="MyAttrVal"  VALUE="Variables.empty"/>
+												<setvar NAME="firsttime"  VALUE="true"/>
+												<if COND="IsList.AttrValueList=true">
+												<then>
+													 <loop LIST="AttrValueList">
+														<IF COND="Variables.type=money">
+														<THEN>
+															<setvar NAME="mydecimal" VALUE="Variables.empty"/>
+															<IF COND="AttrValueList.value!=Variables.empty">
+															<THEN>
+																<decimal.create NAME="decinst"/>
+																<decimal.setminplaces NAME="decinst" PLACES="2"/>
+																<decimal.getdecimal NAME="decinst" VALUE="AttrValueList.value" VARNAME="mydecimal"/>
+															</THEN>
+															</IF>
+															<if COND="Variables.firsttime=true">
+															<then>
+																<setvar NAME="firsttime" VALUE="false"/>
+																<setvar NAME="MyAttrVal" VALUE="Variables.mydecimal"/>
+															</then>
+															<else>
+																<setvar NAME="MyAttrVal" VALUE="Variables.MyAttrVal , Variables.mydecimal"/>
+															</else>
+															</if>
+														</THEN>
+														<ELSE>
+															<IF COND="Variables.type=url">
+															<THEN>
+																<setvar NAME="MyAttrVal" VALUE="AttrValueList.urlvalue"/>
+															</THEN>
+															<ELSE>
+																<if COND="Variables.firsttime=true">
+																<then>
+																	<setvar NAME="firsttime" VALUE="false"/>
+																	<setvar NAME="MyAttrVal" VALUE="AttrValueList.value"/>
+																</then>
+																<else>
+																	<setvar NAME="MyAttrVal" VALUE="Variables.MyAttrVal , AttrValueList.value"/>
+																</else>
+																</if>
+															</ELSE>
+															</IF>
+														</ELSE>
+														</IF>
+													</loop>
+												</then>
+												<else>
+													<setvar NAME="MyAttrVal" VALUE="&nbsp;"/>
+												</else>
+												</if>
+									</then>
+									<else>
+												<setvar NAME="MyAttrVal" VALUE="&nbsp;"/>
+									</else>
+									</if>
+									<td valign="bottom"><span class="table-header-small-text"><STRING.STREAM VALUE="Variables.MyAttrVal"/></span></td>
+									<td valign="bottom"><img height="1" width="10" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+							<!-- PR OMIma28420 
+							</then>
+							</if>
+							-->
+					  </loop>
+
+                    </then>
+                        </if>
+                    </then>
+                    </if>
+             </tr>
+             <tr>
+                    <td colspan="11"><img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+             </tr>
+	</then>
+	</if>
+</then>
+</if>
+ </FTCS>
+
+ 
+

@@ -1,0 +1,184 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/ClearAssignmentPost.xml $ 
+$Revision: 36 $ 
+$Modtime: 4/27/04 3:13p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ClearAssignmentPost
+-
+- DESCRIPTION
+-	Clear a previous assignment
+-
+- HISTORY 
+-       August 11, 1999, BP
+-	Introduced serialClear concept.  This helps the UI code to support
+-	batch clearing of assignments.  If serialClear comes in "false", then  
+-	this is known to be a single clear step; only one assignment will be
+-	cleared.  ClearAssignmentFront will set this to false.  This is the
+-	basic mode of behavior.  Batch clearing was added later so the
+-	administrator can clear multiple assignments and have the UI look
+-	halfway to reasonable.  When serialClear is a counting number (1, 2,
+-	3, ...) then batching clearing is in effect.  Batching clearing adds
+-	a new column (asset ID).  Workflow merge status appears as the
+-	second HTML table row of each pair of HTML rows for an assignment.
+-	It is up to the batch mode caller to end the table with </TABLE>.
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+<WorkflowAsset.GetObjectName OBJECT="workflowasset" VARNAME="objectname" />
+
+<!-- Assume we are doing rows 2 onward so we don't emit a table header -->
+<setvar NAME="standardHeaders" VALUE="false"/>
+
+<!-- If we are doing only one assignment, start the table with no extra columns -->
+<if COND="Variables.serialClear=false">
+<then>
+<![CDATA[
+<TABLE Border="0">
+    <TR>
+]]>
+    <setvar NAME="standardHeaders" VALUE="true"/>
+</then>
+</if>
+
+<!-- If we are at the first row of a batch clear, start the table with an extra column. -->
+<if COND="Variables.serialClear=1">
+<then>
+<![CDATA[
+<TABLE Border="0">
+    <TR>
+      <TD ALIGN="LEFT" BGCOLOR="#336699">
+      <FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#FFFFFF">
+	&nbsp; <XLAT.STREAM KEY="dvin/AT/Common/ID"/>
+	</FONT>
+	</TD>
+]]>
+    <setvar NAME="standardHeaders" VALUE="true"/>
+</then>
+</if>
+
+<!-- If we just started the table, then emit the standard column headers -->
+<if COND="Variables.standardHeaders=true">
+<then>
+        <TD ALIGN="LEFT" BGCOLOR="#336699">
+        <FONT FACE="Arial, Helvetica" SIZE="2" COLOR="#FFFFFF">
+		<span class="title-text">
+	        &nbsp; <XLAT.STREAM KEY="dvin/Common/CancelStatus"/>
+ 	       </span>
+	  </FONT>
+        </TD>        
+
+        <if COND="IsVariable.donotify=true">
+        <then>
+        <TD ALIGN="LEFT">
+		<span class="title-text">
+		        &nbsp; <XLAT.STREAM KEY="dvin/UI/NotificationStatus"/>
+	        </span>
+        </TD>
+        </then>
+        </if>
+    <![CDATA[
+    </TR>
+    ]]>
+</then>
+</if>
+
+    <TR>
+    <if COND="IsVariable.clearcomment=false">
+        <then>
+            <setvar NAME="clearcomment" VALUE=""/>
+        </then>
+	<else>
+	    <!-- Make unsafe characters safe again (late fix) -->
+	    <substitute STR="Variables.clearcomment" WHAT="%26" WITH=" AND " OUTSTR="clearcomment"/>
+	    <substitute STR="Variables.clearcomment" WHAT="'" WITH=" " OUTSTR="clearcomment"/>
+	    <substitute STR="Variables.clearcomment" WHAT="%22" WITH=" " OUTSTR="clearcomment"/>
+	</else>
+    </if>
+
+    <WorkflowEngine.GetAssignmentID OBJECT="workflowasset" ID="Variables.assignmentid" OBJVARNAME="assignment" />
+    <WorkflowAssignment.GetAssignerUserID NAME="assignment" VARNAME="userid" />
+    <UserManager.GetDisplayableUserName USER="Variables.userid" VARNAME="assignedby" />
+
+    <!-- If we are in batch mode, emit the ID in its own column -->
+    <!--if COND="Variables.serialClear!=false">
+    <then>
+	<TD ALIGN="LEFT">
+	&nbsp; <STRING.STREAM VALUE="IsAssigned.contentid"/>
+	</TD>
+    </then>
+    </if-->
+    <WorkflowEngine.CancelAssignment OBJECT="workflowasset" ID="Variables.assignmentid" COMMENT="Variables.clearcomment" SITE="SessionVariables.pubid" />
+    <if COND="Variables.errno!=0">
+    <then>
+        <TD ALIGN="LEFT">
+	   <span class="alert-color">
+           <if COND="Variables.errno=-12027">
+           <then>
+	        &nbsp;<XLAT.STREAM KEY="dvin/UI/Cantcancelassignmentnootherassignees"/>
+           </then>
+           <else>   
+	         &nbsp;<STRING.STREAM VALUE="Variables.errdetail1" />
+           </else>
+           </if>
+ 	   </span>
+        </TD>
+        <if COND="IsVariable.donotify=true">
+        <then>
+        <TD ALIGN="LEFT">
+            &nbsp;<XLAT.STREAM KEY="dvin/UI/Assigneenotnotified"/>
+        </TD>
+        </then>
+        </if>
+        </then>
+        <else>
+            <TD ALIGN="LEFT">
+                &nbsp;<XLAT.STREAM KEY="dvin/Common/Success"/>
+            </TD>
+            <!-- if we've asked for notification, then notify the person
+                who made the original assignment -->
+        </else>
+    </if>
+
+    </TR>
+
+<!-- Begin the second row of the clear pair, for the merge result -->
+<TR>
+<!-- When doing batch mode, indent the merge result -->
+<if COND="Variables.serialClear!=false">
+<then>
+    <TD></TD>
+</then>
+</if>
+<TD COLSPAN="99">
+<!-- There used to be action code here to clear the assignment -->
+</TD>
+</TR>
+
+<!-- In single  mode end the table.  
+-    Batch clear caller must do their own /TABLE
+-->
+<if COND="Variables.serialClear=false">
+<then>
+<![CDATA[
+</TABLE>
+]]>
+	<br/>
+	<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+		<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+		<argument NAME="id"        VALUE="Variables.id"/>
+	 </callelement>
+</then>
+</if>
+
+</FTCS>

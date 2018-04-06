@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Flame/DocumentManagement/SelectFolderPopup</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Flame/DocumentManagement/SelectFolderPopup</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Flame/DocumentManagement/SelectFolderPopup.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/OpenMarket/Flame/DocumentManagement/SelectFolderPopup.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FOpenMarket%2FFlame%2FDocumentManagement%2FSelectFolderPopup.jsp
+@hashval=2068029801
+key=@ELEMENTCATALOG-OpenMarket/Flame/DocumentManagement/SelectFolderPopup
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">CG/SearchAction</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>CG/SearchAction</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>CG\SearchAction.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/CG/SearchAction.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FCG%2FSearchAction.jsp
+@hashval=231724389
+key=@ELEMENTCATALOG-CG/SearchAction
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

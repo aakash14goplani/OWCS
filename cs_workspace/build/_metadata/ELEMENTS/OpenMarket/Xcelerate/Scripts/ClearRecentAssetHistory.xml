@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory.xml $ 
+$Revision: 2 $ 
+$Modtime: 3/02/01 5:52p $ 
+-->
+
+<!-- OpenMarket/Xcelerate/Scripts/ClearRecentAssetHistory
+--   Confidential and Proprietary Information of Open Market, Inc.
+-- 	 				All Rights Reserved.
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+function clearcurrCookie(name) {
+	var dc = document.cookie;
+	var prefix = "__" + name + "__" + "=";
+	var begin = dc.indexOf("; " + prefix);
+	if (begin == -1) {
+		begin = dc.indexOf(prefix);
+		if (begin != 0) { return "";}
+	} else
+	return "1";
+}
+					
+function clearCookies(cat) {
+	var currCookie;
+	currCookie = clearcurrCookie(cat);
+	var curCookie = "__" + cat + "__=" + "";
+	if (currCookie != "") document.cookie = curCookie;
+	}
+					
+]]>
+<setvar NAME="tablename" VALUE="AssetType"/>
+<setvar NAME="errno" VALUE="0"/>
+<SELECTTO LIST="AssetTypes" WHAT="assettype" FROM="AssetType"/>
+<IF COND="IsError.Variables.errno=false">
+<THEN>
+	<LOOP LIST="AssetTypes">
+		clearCookies("<STRING.STREAM VALUE="AssetTypes.assettype"/>");
+	</LOOP>
+	</THEN>
+	</IF>
+</SCRIPT>
+
+</FTCS> 

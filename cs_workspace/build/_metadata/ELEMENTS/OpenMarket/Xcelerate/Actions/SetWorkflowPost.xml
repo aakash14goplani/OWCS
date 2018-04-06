@@ -1,0 +1,386 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/SetWorkflowPost.xml $ 
+$Revision: 51 $ 
+$Modtime: 8/25/04 11:46a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType" />
+<if COND="IsVariable.useDefaultDeadline!=true">
+<then>
+	<setvar NAME="useDefaultDeadline" VALUE="true"/>
+</then>
+</if>
+<setvar NAME="tmp" VALUE="Variables.pdeadline"/>
+<setvar NAME="errno" VALUE="0"/>
+<begins STR="Variables.tmp" WHAT="Variables"/>
+<if COND="Variables.errno=1">
+<then>
+   <setvar NAME="pdeadline" VALUE="0"/>
+</then>
+</if>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<WorkflowEngine.GetProcessID ID="Variables.process" OBJVARNAME="workflow"/>
+<WorkflowProcess.GetInitialStepID NAME="workflow" VARNAME="inistepid"/>
+<WorkflowProcess.GetStep NAME="workflow" VALUE="Variables.inistepid" OBJVARNAME="stepobj"/>
+<WorkflowStep.GetStepType NAME="stepobj" VARNAME="steptype" />
+
+<setvar NAME="needsetassignees" VALUE="true" />
+
+<if COND="Variables.steptype!=ask">
+<then>
+     <setvar NAME="needsetassignees" VALUE="false" />
+</then>
+<else>
+    <if COND="IsVariable.assigneeroles=true">
+    <then>
+         <setvar NAME="needsetassignees" VALUE="false" />
+    </then>
+    </if>
+</else>
+</if>
+
+<if COND="Variables.needsetassignees!=true">
+<then>
+    <setvar NAME="AbortFlag" VALUE="false"/>
+    <setvar NAME="needUnlock" VALUE="false" />
+
+     <WorkflowProcess.GetProcessName NAME="workflow" VARNAME="workflowname" />
+     <WorkflowProcess.GetProcessDescription NAME="workflow" VARNAME="workflowdesc" />
+     <!-- allRoles comes from Front page and is a list of all workflow roles in the process -->
+     <if COND="IsVariable.allRoles=true">
+     <then>
+     	<IF COND="IsVariable.isAllRolesForAlloyUIAvailable!=true">
+     	<THEN>
+         		<stringlist NAME="TheRoles" STR="Variables.allRoles" DELIM=","/>
+         		<setvar NAME="errno" VALUE="0"/>
+        	
+	         <WORKFLOWENGINE.NEWPARTICIPANTS OBJVARNAME="myParts"/> 
+     		<!--PARTICIPANTS.CLEAR NAME="myParts"/-->
+     		<LOOP LIST="TheRoles">
+     			<SETVAR NAME="users" VALUE="Variables.TheRoles.ITEM"/>
+     			<STRINGLIST STR="Variables.users" NAME="userList" DELIM=";"/>
+     			<LOOP LIST="userList">
+     		    		<PARTICIPANTS.ADDPARTICIPANT NAME="myParts" ROLE="TheRoles.ITEM" USER="userList.ITEM"/>
+     			</LOOP>
+     		</LOOP>
+     	</THEN>
+     	<ELSE>
+     			<SETVAR NAME="roleName" VALUE="" />
+		  		<SETVAR NAME="userID" VALUE="" />
+				<WORKFLOWENGINE.NEWPARTICIPANTS OBJVARNAME="myParts"/> 
+		  		<LOOP LIST="rolesAndUserListForSetParticipants">
+			  		<ICS.LISTGET LISTNAME="rolesAndUserListForSetParticipants" FIELDNAME="rolename" OUTPUT="roleName" />
+			  		<ICS.LISTGET LISTNAME="rolesAndUserListForSetParticipants" FIELDNAME="userid" OUTPUT="userID" />
+			  		<PARTICIPANTS.ADDPARTICIPANT NAME="myParts" ROLE="Variables.roleName" USER="Variables.userID" />
+			  		<!-- Clear the temp variables for the next iteration -->
+					<SETVAR NAME="roleName" VALUE="" />
+			  		<SETVAR NAME="userID" VALUE="" />
+			  	</LOOP>	
+     	</ELSE>
+     	</IF>
+     </then>
+     <else>
+
+        <WORKFLOWENGINE.GETPOTENTIALPARTICIPANTS OBJVARNAME="myParts" SITE="SessionVariables.pubid" PROCESS="Variables.process" OBJECT="workflowasset"/>
+				<PARTICIPANTS.GETALLROLES NAME="myParts" VARNAME="roles" />
+
+				<!-- make sure there exists at least one user per workflow role -->
+<!--
+        <WORKFLOWPROCESS.GETROLES NAME="workflow" OBJVARNAME="rolesobj" />
+        <RoleList.GetAll NAME="rolesobj" VARNAME="roles" />
+-->
+        <stringlist NAME="roleslist" STR="Variables.roles" DELIM="," />
+        <loop LIST="roleslist" UNTIL="Variables.AbortFlag=true">
+            <PARTICIPANTS.GetParticipantsForRole NAME="myParts" ROLE="roleslist.ITEM" LISTVARNAME="ulist" />
+            <if COND="ulist.#numRows=0">
+            <then>
+                <setvar NAME="AbortFlag" VALUE="true"/>
+                <setvar NAME="ErrorName" VALUE="SetParticipantFailed"/>
+                <setvar NAME="severity" VALUE="warning"/>
+            </then>
+            </if>            
+        </loop>    
+     </else>
+     </if>
+
+    <!-- check to see if workflow process is already started by checking if asset has been assigned. -->
+    <WORKFLOWENGINE.ISOBJECTASSIGNED OBJECT="workflowasset" VARNAME="isAssigned" />
+    <if COND="Variables.isAssigned!=false">
+        <then>
+            <setvar NAME="AbortFlag" VALUE="true"/>
+            <setvar NAME="ErrorName" VALUE="WorkflowActive"/>
+            <setvar NAME="severity" VALUE="info"/>
+        </then>
+    </if>
+
+    <if COND="Variables.AbortFlag!=true">
+    <then>
+    		
+ 	    <WORKFLOWENGINE.SETOBJECTPARTICIPANTS OBJECT="workflowasset" PARTICIPANTS="myParts"/>
+        <if COND="Variables.errno!=0">
+     	<then>
+     		<setvar NAME="AbortFlag" VALUE="true"/>
+     		<setvar NAME="ErrorName" VALUE="SetParticipantFailed"/>
+     		<setvar NAME="severity" VALUE="warning"/>
+     	</then>
+     	</if>
+    </then>
+    </if>    
+    
+    <if COND="Variables.AbortFlag!=true">
+    <then>
+        <if COND="IsVariable.comment!=true">
+        <then>
+             <setvar NAME="comment" VALUE=""/>
+        </then>
+        </if>
+         
+        <if COND="IsVariable.assigneeroles=true">
+        <then>
+            <!-- from set assignees for ask step screen -->
+
+
+            <WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+            <WORKFLOWENGINE.NEWPARTICIPANTS OBJVARNAME="partobj"/> 
+            <PARTICIPANTS.CLEAR NAME="partobj"/>
+
+            <!-- CODE MODIFICATION FOR ALLOY UI -->
+            <IF COND="IsVariable.setAssigneesForAlloyUI!=true">
+            <THEN>
+
+            	<!-- set participants for asset in Content Server upto version 6.3, for Alloy UI, we use the Else part -->
+            	<stringlist NAME="AssigneeRoles" STR="Variables.assigneeroles" DELIM=","/>
+            	<LOOP LIST="AssigneeRoles">
+               	<SETVAR NAME="users" VALUE="Variables.ask:AssigneeRoles.ITEM"/>
+                	<STRINGLIST STR="Variables.users" NAME="userList" DELIM=";"/>
+                	<LOOP LIST="userList">
+                    	<PARTICIPANTS.ADDPARTICIPANT NAME="partobj" ROLE="AssigneeRoles.ITEM" USER="userList.ITEM"/>
+                	</LOOP>
+            	</LOOP>
+		  </THEN>
+		  <ELSE>
+		  	<!-- Handle the participants setting for Alloy UI. We have a list of the form <rolename, username> 
+		  		Use that list and do exactly the same thing as above(<then> case) - set the participants object before starting workflow
+		  	-->
+
+		  	<SETVAR NAME="roleName" VALUE="" />
+		  	<SETVAR NAME="userID" VALUE="" />
+		  	<LOOP LIST="rolesAndUserListForSetParticipants">
+		  		<ICS.LISTGET LISTNAME="rolesAndUserListForSetParticipants" FIELDNAME="rolename" OUTPUT="roleName" />
+		  		<ICS.LISTGET LISTNAME="rolesAndUserListForSetParticipants" FIELDNAME="userid" OUTPUT="userID" />
+		  		<PARTICIPANTS.ADDPARTICIPANT NAME="partobj" ROLE="Variables.roleName" USER="Variables.userID" />
+
+		  		<!-- Clear the temp variables for the next iteration -->
+				<SETVAR NAME="roleName" VALUE="" />
+		  		<SETVAR NAME="userID" VALUE="" />
+		  	</LOOP>	
+		  	<REMOVEVAR NAME="setAssigneesForAlloyUI" />
+		  </ELSE>
+		  </IF>
+		  <!-- END OF CODE MODIFICATION FOR ALLOY UI -->
+
+            <if COND="Variables.useDefaultDeadline=true">
+            <then>
+
+        		<if COND="IsVariable.pdeadline!=true">
+        		<then>
+        			<WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" ASSIGNMENTLIST="partobj" PARTICIPANTS="myParts"/>
+        		</then>
+        		<else>
+        			<WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" ASSIGNMENTLIST="partobj" ABSDEADLINE="Variables.pdeadline" PARTICIPANTS="myParts"/>
+        		</else>
+        		</if>
+            </then>
+            <else>
+        		<if COND="IsVariable.sdeadline=true">
+        		<then>
+        			<if COND="IsVariable.pdeadline!=true">
+        			<then>
+        				<WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" ASSIGNMENTLIST="partobj" DEADLINE="Variables.sdeadline" PARTICIPANTS="myParts"/>
+        			</then>
+        			<else>
+        				<WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" ASSIGNMENTLIST="partobj" DEADLINE="Variables.sdeadline" ABSDEADLINE="Variables.pdeadline" PARTICIPANTS="myParts"/>
+        			</else>
+        			</if>
+        		</then>
+        		</if>
+            </else>
+            </if>
+        </then>
+        <else>
+            <if COND="Variables.useDefaultDeadline=true">
+            <then>
+                <if COND="IsVariable.pdeadline!=true">
+                <then>
+                    <WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" PARTICIPANTS="myParts" />
+                </then>
+                <else>
+                    <WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" ABSDEADLINE="Variables.pdeadline" PARTICIPANTS="myParts"/>
+                </else>
+                </if>
+            </then>
+            <else>
+                <if COND="IsVariable.pdeadline!=true">
+                <then>
+                    <WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" DEADLINE="Variables.sdeadline" PARTICIPANTS="myParts"/>
+                </then>
+                <else>
+                    <WorkflowEngine.StartObjectWorkflowProcess OBJECT="workflowasset" ID="Variables.process" SITE="SessionVariables.pubid" COMMENT="Variables.comment" DEADLINE="Variables.sdeadline" ABSDEADLINE="Variables.pdeadline" PARTICIPANTS="myParts"/>
+                </else>
+                </if>
+            </else>
+            </if>
+        </else>
+        </if>
+         
+        <if COND="Variables.errno!=0">
+        <then>
+            <if COND="Variables.errno=-12030">
+            <then>
+                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <argument NAME="error" VALUE="SetWorkflowFailedInsuffPriv"/>
+                </callelement>
+            </then>
+            <else>
+                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <argument NAME="error" VALUE="SetWorkflowFailed"/>
+                </callelement>
+            </else>
+            </if>
+        </then>
+        <else>
+            <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+            <ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+            <XLAT.LOOKUP KEY="dvin/UI/WorkflowDefinitionSetTo" VARNAME="_XLAT_"/>
+            <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+                <argument NAME="msgtext" VALUE="Variables._XLAT_"/>
+            <argument NAME="severity" VALUE="info"/>	
+            </callelement>
+			<if COND="Variables.cs_environment=ucform">
+			<then>
+				<SCRIPT TYPE="text/javascript">
+					dojo.addOnLoad(function(){
+						SitesApp.notifyModelUpdate('workflowStatus');
+					});
+				</SCRIPT>
+			</then>
+			</if>
+        </else>	 
+        </if>
+    
+    </then>
+    <else>
+        <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+           	<argument NAME="elem" VALUE="Variables.ErrorName"/>
+           	<argument NAME="severity" VALUE="Variables.severity"/>
+        </callelement>
+    </else>
+    </if>
+    
+    
+    <if COND="Variables.needUnlock=true">
+    <then>
+        <ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="Release-Asset"/>
+        <ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+    </then>
+    </if>
+    
+
+    <if COND="Variables.cs_environment=standard">
+    <then>
+        <if COND="Variables.cs_FromCreate!=true">
+        <then>
+            <p/>
+            <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+            	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+            	<argument NAME="id"        VALUE="Variables.id"/>
+            </callelement>
+        </then>
+        </if>
+	</then>
+	<else>
+	<!-- UC1
+	if the cs_environment is uc form then also it should call StatusDetailsFront		
+	-->	
+		<if COND="Variables.cs_environment=ucform">
+		<then>
+			<if COND="Variables.cs_FromCreate!=true">
+			<then>
+				<p/>
+				<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+					<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+					<argument NAME="id"        VALUE="Variables.id"/>
+				</callelement>
+			</then>
+			</if>
+		</then>
+		<else>
+			 <if COND="Variables.cs_environment=portal">
+			<then>
+				<callelement NAME="OpenMarket/Flame/Common/Script/RefreshPortal"/>
+			</then>
+			</if>
+		</else>
+	  </if>
+ 
+    </else>
+    </if>
+
+</then>
+<else>
+    <if COND="IsVariable.comment=true">
+    <then>
+        <![CDATA[<INPUT TYPE="hidden" NAME="comment" VALUE="]]><STRING.STREAM VALUE="Variables.comment"/><![CDATA["/>]]>
+    </then>
+    </if>
+    <STRING.ENCODE VARIABLE="process" VARNAME="process"/>
+    <INPUT TYPE="hidden" NAME="process" VALUE="Variables.process" REPLACEALL="Variables.process"/>
+    <if COND="IsVariable.allRoles=true">
+    <then>
+		<STRING.ENCODE VARIABLE="allRoles" VARNAME="allRoles"/>
+        <INPUT TYPE="hidden" NAME="allRoles" VALUE="Variables.allRoles" REPLACEALL="Variables.allRoles"/>
+        <stringlist NAME="TheRoles" STR="Variables.allRoles" DELIM=","/>
+        <LOOP LIST="TheRoles">
+            <SETVAR NAME="role" VALUE="TheRoles.ITEM"/>
+            <SETVAR NAME="users" VALUE="Variables.TheRoles.ITEM"/>
+            <INPUT TYPE="hidden" NAME="Variables.role" VALUE="Variables.users" REPLACEALL="Variables.role,Variables.users"/>
+        </LOOP>
+    </then>
+    </if>
+	<STRING.ENCODE VARIABLE="useDefaultDeadline" VARNAME="useDefaultDeadline"/>
+    <INPUT TYPE="hidden" NAME="useDefaultDeadline" VALUE="Variables.useDefaultDeadline" REPLACEALL="Variables.useDefaultDeadline"/>
+    <if COND="Variables.useDefaultDeadline!=true" >
+    <then>
+		<STRING.ENCODE VARIABLE="sdeadline" VARNAME="sdeadline"/>
+        <INPUT TYPE="hidden" NAME="sdeadline" VALUE="Variables.sdeadline" REPLACEALL="Variables.sdeadline"/>
+    </then>
+    </if>
+    
+    <INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/SetWorkflowPost" />
+    <INPUT TYPE="hidden" NAME="id" VALUE="Variables.id" REPLACEALL="Variables.id"/>
+	<INPUT TYPE="hidden" NAME="AssetType" VALUE="Variables.AssetType" REPLACEALL="Variables.AssetType"/>
+	<STRING.ENCODE VARIABLE="pdeadline" VARNAME="pdeadline"/>
+    <INPUT TYPE="hidden" NAME="pdeadline" value="Variables.pdeadline" REPLACEALL="Variables.pdeadline"/>
+
+    <callelement NAME="OpenMarket/Xcelerate/Actions/SetAssigneesForAskStep">
+    	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    	<argument NAME="id"        VALUE="Variables.id"/>
+        <argument NAME="AskStep"   VALUE="Variables.inistepid"/>
+        <argument NAME="workflowid"   VALUE="Variables.process"/>
+    </callelement>
+
+</else>
+</if>
+
+</FTCS>

@@ -1,0 +1,254 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/Rules/GeneratePromoDiscRuleset
+--
+-- INPUT
+--
+--
+--
+-- OUTPUT
+--
+-->
+
+<SETVAR NAME="promotionassetid" VALUE="$(this?:x)"/>
+
+<!-- Variables coming in are presumed to be: hintstring, assetid, targetxml -->
+<!-- First, build the empty ruleset to contain the results -->
+<RULESETDEF.CREATE NAME="myruleset"/>
+<RULESETDEF.SETNAME NAME="myruleset" RULESETNAME="Discount_Variables.promotionassetid"/>
+<RULESETDEF.APPENDIMPORT NAME="myruleset" VALUE="com.openmarket.gator.ruleobjects.*"/>
+
+<!-- Unpack hint string -->
+<NVOBJECT.CREATE NAME="myhintobject"/>
+<NVOBJECT.FROMSTRING NAME="myhintobject" VALUE="Variables.hintstring"/>
+<!-- Need error check!! -->
+
+<!-- Build a rule -->
+<RULEDEF.CREATE NAME="myrule"/>
+<RULEDEF.SETNAME NAME="myrule" RULENAME="Global_Variables.promotionassetid"/>
+<RULEDEF.ADDEXISTS NAME="myrule"
+    ID="EffectivePromotions" CLASS="EffectivePromotions" VARIABLE="ep"/>
+<SUBSTRING.CREATE NAME="mysubstring"/>
+<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='ep.member("'/>
+<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="this?:x"/>
+<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='")'/>
+<RULEDEF.APPENDCONDITION NAME="myrule"
+    SUBSTRING="mysubstring"/>
+
+<!-- Loop through all the global conditions -->
+<SETCOUNTER NAME="globcounter" VALUE="0"/>
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="NUMCONDITIONS" VARNAME="NumConditions"/>
+<LOOP UNTIL="Counters.globcounter=Variables.NumConditions">
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="CONDITIONCounters.globcounter"
+		VARNAME="thiscondition"/>
+	<IF COND="IsVariable.thiscondition=true">
+	<THEN>
+		<!-- Insert condition based on 'thiscondition' -->		
+		<CALLELEMENT NAME="OpenMarket/Gator/Rules/GeneratePromotionCondition">
+		    <ARGUMENT NAME="conditionhint" VALUE="Variables.thiscondition"/>
+		    <ARGUMENT NAME="ruleobject" VALUE="myrule"/>
+		    <ARGUMENT NAME="myruleset" VALUE="myruleset"/>
+		</CALLELEMENT>
+	</THEN>
+   </IF>
+   <INCCOUNTER NAME="globcounter" VALUE="1"/>
+</LOOP>
+<RULEDEF.ADDASSERT NAME="myrule"
+    CLASS="Signal" KEY="gcond_Variables.promotionassetid"/>
+<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+<!-- Loop through all the discounts -->
+<SETCOUNTER NAME="disccounter" VALUE="0"/>
+<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="NUMDISCOUNTS" VARNAME="NumDiscounts"/>
+<LOOP UNTIL="Counters.disccounter=Variables.NumDiscounts">
+	<NVOBJECT.GETVALUE NAME="myhintobject" VALUENAME="DISCOUNTCounters.disccounter"
+		VARNAME="thisdiscount"/>
+	<IF COND="IsVariable.thisdiscount=true">
+	<THEN>
+		<!-- Unpack the discount -->
+		<NVOBJECT.CREATE NAME="dischintobject"/>
+		<NVOBJECT.FROMSTRING NAME="dischintobject" VALUE="Variables.thisdiscount"/>
+		<!-- Need error check!! -->
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="DISCOUNTTYPE"
+			VARNAME="discounttype"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="DISCOUNTDESC"
+			VARNAME="discountdesc"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="DISCOUNTSTYLE"
+			VARNAME="discountstyle"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="DISCOUNTAMT"
+			VARNAME="discountamt"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="BUCKET"
+			VARNAME="bucket"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="STOREID"
+			VARNAME="storeid"/>
+
+		<!-- Create a new rule -->
+		<SETVAR NAME="discPortion" VALUE="DiscCounters.disccounter_"/>
+
+		<RULEDEF.CREATE NAME="myrule"/>
+		<RULEDEF.SETNAME NAME="myrule" RULENAME="DiscCounters.disccounter_Variables.promotionassetid"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+		    ID="Signal:gcond_Variables.promotionassetid"/>
+		<!-- Loop through special conditions -->
+		<SETCOUNTER NAME="globcounter" VALUE="0"/>
+		<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="NUMCONDITIONS" VARNAME="NumConditions"/>
+		<LOOP UNTIL="Counters.globcounter=Variables.NumConditions">
+			<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="CONDITIONCounters.globcounter"
+				VARNAME="thiscondition"/>
+			<IF COND="IsVariable.thiscondition=true">
+			<THEN>
+				<!-- Insert condition based on 'thiscondition' -->		
+				<CALLELEMENT NAME="OpenMarket/Gator/Rules/GeneratePromotionCondition">
+				    <ARGUMENT NAME="conditionhint" VALUE="Variables.thiscondition"/>
+				    <ARGUMENT NAME="ruleobject" VALUE="myrule"/>
+				</CALLELEMENT>
+         </THEN>
+         </IF>
+         <INCCOUNTER NAME="globcounter" VALUE="1"/>
+		</LOOP>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+		    ID="CartDiscounts" CLASS="CartDiscounts" VARIABLE="a"/>
+		<RULEDEF.ADDEXISTS NAME="myrule"
+		    ID="Cart" CLASS="Cart" VARIABLE="b"/>
+
+		<!-- Insert actions, depending on discount style etc. -->
+
+		<IF COND="Variables.discounttype=shipping">
+		<THEN>
+			<SUBSTRING.CREATE NAME="mysubstring"/>
+			<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='a.addCartDiscount("Variables.discPortion'/>
+			<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="this?:x"/>
+			<SUBSTRING.ADDSTRING NAME="mysubstring"
+				VALUE='","Variables.bucket","Variables.storeid","Variables.discountdesc",'/>
+
+			<IF COND="Variables.discountstyle=fixed">
+			<THEN>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='Math.min(b.getShippingTotal("Variables.storeid"),Variables.discountamt))'/>
+			</THEN>
+			<ELSE>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='b.getShippingTotal("Variables.storeid") * Util.parseDouble("Variables.discountamt") / 100.0)'/>
+			</ELSE>
+			</IF>
+			<RULEDEF.APPENDACTION NAME="myrule" SUBSTRING="mysubstring"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.discounttype=item">
+		<THEN>
+			<SUBSTRING.CREATE NAME="mysubstring"/>
+			<IF COND="Variables.discountstyle=fixed">
+			<THEN>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='a.applyItemDiscountFixed("Variables.discPortion'/>
+				<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="this?:x"/>
+				<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='",'/>
+				<SETVAR NAME="remainder" VALUE=',"Variables.bucket","Variables.discountdesc",Variables.discountamt,Variables.maxqty)'/>
+			</THEN>
+			<ELSE>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='a.applyItemDiscountPercentage("Variables.discPortion'/>
+				<SUBSTRING.ADDVAR NAME="mysubstring"
+				    VALUE="this?:x"/>
+				<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='",'/>
+				<SETVAR NAME="remainder" VALUE=',"Variables.bucket","Variables.discountdesc",Util.parseDouble("Variables.discountamt") / 100.0,Variables.maxqty)'/>
+			</ELSE>
+			</IF>
+
+			<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="MAX" VARNAME="maxqty"/>
+			<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="PRODUCTSELECT" VARNAME="productselect"/>
+			<IF COND="Variables.productselect=all">
+			<THEN>
+				<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='null'/>
+			</THEN>
+			<ELSE>
+				<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='Util.makeList("assettype,assetid","'/>
+
+				<SETCOUNTER NAME="ascounter" VALUE="0"/>
+				<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="NUMASSETS" VARNAME="NumAssets"/>
+				<LOOP UNTIL="Counters.ascounter=Variables.NumAssets">
+					<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="ASSETTYPECounters.ascounter"
+						VARNAME="thisassettype"/>
+					<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="ASSETIDCounters.ascounter"
+						VARNAME="thisassetid"/>
+					<NVOBJECT.GETVALUE NAME="dischintobject" VALUENAME="ASSETKEYCounters.ascounter"
+						VARNAME="thisassetkey"/>
+
+					<IF COND="IsVariable.thisassetkey=true">
+					<THEN>
+						<RULESETDEF.ADDDEPENDENCY NAME="myruleset" TYPE="$(Variables.thisassetkey?x:)"
+						    ID="$(Variables.thisassetkey?:x)"/>
+						<IF COND="Counters.ascounter!=0">
+						<THEN>
+							<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE=","/>
+						</THEN>
+						</IF>
+						<SUBSTRING.ADDVAR NAME="mysubstring" VALUE='Variables.thisassetkey?x:'/>
+						<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE=","/>
+						<SUBSTRING.ADDVAR NAME="mysubstring" VALUE='Variables.thisassetkey?:x'/>
+				 	</THEN>
+				 	</IF>
+
+					<IF COND="IsVariable.thisassettype=true">
+					<THEN>
+						<RULESETDEF.ADDDEPENDENCY NAME="myruleset" TYPE="Variables.thisassettype"
+						    ID="Variables.thisassetid"/>
+						<IF COND="Counters.ascounter!=0">
+						<THEN>
+							<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE=","/>
+						</THEN>
+						</IF>
+						<SUBSTRING.ADDVAR NAME="mysubstring" VALUE='Variables.thisassettype,Variables.thisassetid'/>
+				 	</THEN>
+				 	</IF>
+
+				 <INCCOUNTER NAME="ascounter" VALUE="1"/>
+				</LOOP>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"	VALUE='")'/>
+			</ELSE>
+			</IF>
+			<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE="Variables.remainder"/>
+			<RULEDEF.APPENDACTION NAME="myrule" SUBSTRING="mysubstring"/>
+		</THEN>
+		</IF>
+
+		<IF COND="Variables.discounttype=total">
+		<THEN>
+			<SUBSTRING.CREATE NAME="mysubstring"/>
+			<SUBSTRING.ADDSTRING NAME="mysubstring"
+			    VALUE='a.addCartDiscount("'/>
+			<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="this?:x"/>
+			<SUBSTRING.ADDSTRING NAME="mysubstring"
+			    VALUE='","Variables.bucket","Variables.storeid","Variables.discountdesc",'/>
+			<IF COND="Variables.discountstyle=fixed">
+			<THEN>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='Math.min(b.getItemTotal("Variables.storeid"),Variables.discountamt))'/>
+			</THEN>
+			<ELSE>
+				<SUBSTRING.ADDSTRING NAME="mysubstring"
+				    VALUE='b.getItemTotal("Variables.storeid") * Util.parseDouble("Variables.discountamt") / 100.0)'/>
+			</ELSE>
+			</IF>
+			<RULEDEF.APPENDACTION NAME="myrule" SUBSTRING="mysubstring"/>
+		</THEN>
+		</IF>
+
+		<SUBSTRING.CREATE NAME="mysubstring"/>
+		<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='a.removeDiscount("Variables.discPortion'/>
+		<SUBSTRING.ADDVAR NAME="mysubstring" VALUE="this?:x"/>
+		<SUBSTRING.ADDSTRING NAME="mysubstring" VALUE='")'/>
+		<RULEDEF.APPENDUNDOACTION NAME="myrule"
+		    SUBSTRING="mysubstring"/>
+		<RULESETDEF.ADDRULE NAME="myruleset" RULENAME="myrule"/>
+
+   </THEN>
+   </IF>
+   <INCCOUNTER NAME="disccounter" VALUE="1"/>
+</LOOP>
+
+<RULESETDEF.SETENCODING NAME="myruleset" VALUE="Variables.hintstring"/>
+<RULESETDEF.TOXML NAME="myruleset" VARNAME="Variables.targetxml"/>
+</FTCS>

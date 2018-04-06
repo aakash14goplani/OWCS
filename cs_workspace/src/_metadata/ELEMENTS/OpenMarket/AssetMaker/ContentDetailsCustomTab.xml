@@ -1,0 +1,350 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/AssetMaker/ContentDetailsCustomTab
+-
+    This element can be used to create the custom tabs in case of basic asset type. If a field of type 'ELEMENT' has no value, it still calls the corresponding element so that
+    the element gets chance to show a customized message for null value.	
+
+-INPUT --  It accepts the comma separated list of the fields to display under a custom tab. The input fields must be part of the ADF.
+
+---OUTPUT   it displays the Fields on  basic asset DETAIL/INSPECT screen in a new tab.
+-
+-->
+
+<SCRIPT LANGUAGE="JavaScript">
+
+	function viewRevisionBlob(blobURL ,AssetType,target)
+	{
+          
+          viewWindow = window.open(blobURL, "ViewContent", "width=700,height=480,scrollbars=yes,toolbar=no,location=0,status=yes,menubar=no,resizable=yes,directories=no"); 
+ 
+          viewWindow.focus();
+    } 
+    
+</SCRIPT>
+
+
+
+<IF COND="Variables.RenderUsingTemplate=true">
+<THEN>
+	<!-- if there is no template field in the asset descriptor file, put it out here -->
+	<IF COND="IsVariable.assetmaker/property/template/storage/type!=true">
+	<THEN>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowTemplateDetailsIfAny">
+			<argument NAME="template" VALUE="Variables.ContentDetails:template"/>
+		</callelement>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<DEBABBLE VALUE="false"/>
+<if COND="IsVariable.contentdetailspropertylist=true">
+<then>
+    <stringlist NAME="Proplist" STR="Variables.contentdetailspropertylist" DELIM=","/>
+</then>
+<else>
+	<if COND="IsVariable.assetmaker/propertylist=true">
+	<then>
+	    <stringlist NAME="Proplist" STR="Variables.assetmaker/propertylist" DELIM=","/>
+	</then>
+	</if>
+</else>
+</if>
+
+<if COND="IsList.Proplist=true">
+<then>
+	<SETCOUNTER NAME="_count" VALUE="0"/>
+	<loop LIST="Proplist">
+	    <setvar NAME="ishidden" VALUE="Variables.assetmaker/property/Proplist.ITEM/inputform/hidden"/>
+	    <if COND="Variables.ishidden!=YES">
+	    <then>
+		<INCCOUNTER NAME="_count" VALUE="1"/>
+		<!-- There is already a spacer above this code so skip this one -->
+		<!--  Removing below code which does not show field if field list had only one value. -->
+		<!--if cond="Counters._count!=1">
+		<then-->
+			
+		
+		<setvar NAME="formfieldtype" VALUE="Variables.assetmaker/property/Proplist.ITEM/inputform/type"/>
+		<setvar NAME="fielddesc" VALUE="Variables.assetmaker/property/Proplist.ITEM/description"/>
+		<xlat.lookup KEY="Variables.fielddesc" VARNAME="formfielddescription"/>
+		<IF COND="Variables._missingkey_=-1">
+		<THEN>
+			<setvar NAME="formfielddescription" VALUE="Variables.fielddesc"/>
+			<removevar NAME="_missingkey_"/>
+		</THEN>
+		</IF>
+		<removevar NAME="fielddesc"/>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+			<td class="form-label-text"><STRING.STREAM VARIABLE="formfielddescription"/>:</td>
+			<td></td>
+			<td class="form-inset">
+			<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+			<if COND="Variables.storagetype=BINARY">
+				<then>
+					<ics.getvar name="ContentDetails:Proplist.ITEM" encoding="default" output="fieldvalue"/>
+				</then>
+				<else>
+					<setvar NAME="fieldvalue" VALUE="Variables.ContentDetails:Proplist.ITEM"/>
+				</else>
+			</if>
+			<STRING.LENGTH VALUE="Variables.fieldvalue" VARNAME="valueLength"/> 
+			<IF COND="Variables.valueLength=0">
+			<THEN>
+			<!-- If element type is element, call element even if field value is null so that element gets chance to show customized message for null value.-->
+			    <if COND="Variables.formfieldtype=ELEMENT">
+				<then>				
+					<if COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentDetails/Proplist.ITEM=true">
+					<then>
+						<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentDetails/Proplist.ITEM">
+							<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+							<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+						</callelement>
+					</then>
+					<else>
+						<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+						<if COND="Variables.storagetype=TIMESTAMP">
+						<then>
+							<if COND="Variables.fieldvalue!=Variables.empty">
+							<then>
+								<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.fieldvalue" VALUETYPE="jdbcdate"  VARNAME="fieldvalue"/>
+							</then>
+							</if>
+						</then>
+						</if>	
+							<STRING.STREAM VARIABLE="fieldvalue"/>
+					</else>
+					</if>
+				</then>
+				<else>
+				<span class="disabledText"><XLAT.STREAM KEY="UI/Forms/NotAvailable"/></span>
+				</else>
+				</if>				
+			</THEN>
+			<ELSE>
+				<if COND="Variables.formfieldtype=UPLOAD">
+				<then>
+					<!-- get the key field, and create
+						 an HREF to the render function for that
+						 asset -->
+					<SETVAR NAME="isempty" VALUE="true"/>
+					<SETVAR NAME="fieldname" VALUE="Proplist.ITEM"/>
+					<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+					<if COND="Variables.storagetype=BINARY">
+					<then>
+						<asset.isempty name="Variables.assetname" field="Proplist.ITEM" output="isempty"/>
+					</then>
+					<else>
+						<SETVAR NAME="filename" VALUE="Variables.ContentDetails:Variables.fieldname_file"/>
+						<if COND="Variables.filename!=Variables.empty">
+						<then>
+							<setvar NAME="isempty" VALUE="false"/>
+						</then>
+						</if>
+					</else>
+					</if>
+					<if COND="Variables.isempty=false">
+					<then>
+						<SETVAR NAME="fieldname" VALUE="Proplist.ITEM"/>
+						<BEGINS STR="Variables.fieldname" WHAT="url"/>
+						<if COND="Variables.errno=1">
+						<then>
+							<callelement NAME="OpenMarket/AssetMaker/ContentDetailsUpload">
+								<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+								<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+							</callelement>
+						</then>
+						<else>
+							<if COND="Variables.storagetype=BINARY">
+							<then>
+								<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/mimetype=true">
+								<then>
+									<setvar NAME="assetmakermimetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/mimetype" />
+								</then>
+								<else>
+									<setvar NAME="assetmakermimetype" VALUE="Variables.ContentDetails:mimetype" />
+								</else>
+								</if>
+							<SATELLITE.BLOB ASSEMBLER="query" BLOBTABLE="Variables.AssetType" BLOBCOL="Variables.fieldname" BLOBHEADER="Variables.assetmakermimetype" BLOBKEY="id" BLOBWHERE="Variables.id" BLOBNOCACHE="true" OUTSTRING="urlblobserver">
+							<SATELLITE.ARGUMENT name="blobheadername1" value="content-type"/>
+							<SATELLITE.ARGUMENT name="blobheadervalue1" value="application/octet-stream"/>
+							<SATELLITE.ARGUMENT name="blobheadername2" value="Content-Disposition"/>
+							<SATELLITE.ARGUMENT name="blobheadervalue2" value="attachment;filename=BinaryData"/>
+							<SATELLITE.ARGUMENT name="blobheadername3" value="MDT-Type"/>
+							<SATELLITE.ARGUMENT name="blobheadervalue3" value="abinary; charset=UTF-8"/>
+							</SATELLITE.BLOB>
+							<A HREF="Variables.urlblobserver" REPLACEALL="Variables.urlblobserver" TARGET="_new"><XLAT.STREAM KEY="dvin/UI/AssetMgt/DownloadBinaryData"/></A>
+							</then>
+							<else>
+								<STRING.STREAM VALUE="Variables.fieldvalue"/>
+							</else>
+							</if>
+						</else>
+						</if>
+					</then>
+					<else>
+					</else>
+					</if>
+				</then>
+				</if>
+	
+				<if COND="Variables.formfieldtype=SELECT">
+				<then>
+					<callelement NAME="OpenMarket/AssetMaker/ContentDetailsSelect">
+						<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+						<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+					</callelement>
+				</then>
+				</if>
+				
+				<if COND="Variables.formfieldtype=TEXT">
+				<then>
+					<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+					<if COND="Variables.storagetype=TIMESTAMP">
+					<then>
+						<if COND="Variables.fieldvalue!=Variables.empty">
+						<then>
+							<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.fieldvalue" VALUETYPE="jdbcdate"  VARNAME="fieldvalue"/>
+						</then>
+						</if>
+					</then>
+					</if>	
+					<STRING.STREAM VARIABLE="fieldvalue"/>
+				</then>
+				</if>
+
+				<if COND="Variables.formfieldtype=PASSWORD">
+				<then>
+					<CSVAR NAME="******"/>
+				</then>
+				</if>
+
+				<if COND="Variables.formfieldtype=TEXTAREA">
+				<then>
+					<SETVAR NAME="fieldname" VALUE="Proplist.ITEM"/>
+					<BEGINS STR="Variables.fieldname" WHAT="url"/>
+					<if COND="Variables.errno=1">
+					<then>
+					<ics.getvar name="ContentDetails:Variables.fieldname" encoding="default" output="fieldvalue"/>
+					</then>
+					</if>
+					<callelement NAME="OpenMarket/Gator/AttributeTypes/DisplayTEXTAREA">
+						<argument name="assetMakerAsset" value="true"/>
+						<argument name="EditorValue" value="Variables.fieldvalue"/>
+					</callelement>					
+				</then>
+				</if>
+	
+				<if COND="Variables.formfieldtype=CHECKBOX">
+				<then>
+					<callelement NAME="OpenMarket/AssetMaker/ContentDetailsChkBox">
+						<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+						<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+					</callelement>
+				</then>
+				</if>
+	
+				<if COND="Variables.formfieldtype=RADIO">
+				<then>
+					<callelement NAME="OpenMarket/AssetMaker/ContentDetailsRadioButton">
+						<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+						<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+					</callelement>
+				</then>
+				</if>
+	
+				<if COND="Variables.formfieldtype=ELEMENT">
+				<then>				
+					<if COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentDetails/Proplist.ITEM=true">
+					<then>
+						<callelement NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ContentDetails/Proplist.ITEM">
+							<argument NAME="fieldname" VALUE="Proplist.ITEM"/>
+							<argument NAME="fieldvalue" VALUE="Variables.fieldvalue"/>
+						</callelement>
+					</then>
+					<else>
+						<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+						<if COND="Variables.storagetype=TIMESTAMP">
+						<then>
+							<if COND="Variables.fieldvalue!=Variables.empty">
+							<then>
+								<DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.fieldvalue" VALUETYPE="jdbcdate"  VARNAME="fieldvalue"/>
+							</then>
+							</if>
+						</then>
+						</if>	
+							<STRING.STREAM VARIABLE="fieldvalue"/>
+					</else>
+					</if>
+				</then>
+				</if>
+
+				<if COND="Variables.formfieldtype=EWEBEDITPRO">
+				<then>
+					<SETVAR NAME="fieldname" VALUE="Proplist.ITEM"/>
+					<BEGINS STR="Variables.fieldname" WHAT="url"/>
+	            <if COND="Variables.errno=1">
+	            <then>
+	            	<ics.getvar name="ContentDetails:Variables.fieldname" encoding="default" OUTPUT="fieldvalue"/>
+	            </then>
+	            </if>
+					<STRING.STREAM VARIABLE="fieldvalue"/>
+				</then>
+				</if>
+                <!-- FCKEditor has been deprecated in Oracle Sites 11gR1 release and will be removed from here in future-->
+				<SETVAR NAME="CK_FCK_EDITOR" VALUE="false"/>
+				<IF COND="Variables.formfieldtype=CKEDITOR">
+				<THEN>
+					<SETVAR NAME="CK_FCK_EDITOR" VALUE="true"/>
+				</THEN>
+				</IF>
+				<IF COND="Variables.formfieldtype=FCKEDITOR">
+				<THEN>
+					<SETVAR NAME="CK_FCK_EDITOR" VALUE="true"/>
+				</THEN>
+				</IF>
+				<if COND="Variables.CK_FCK_EDITOR=true">
+				<then>
+				<SETVAR NAME="fieldname" VALUE="Proplist.ITEM"/>
+				<BEGINS STR="Variables.fieldname" WHAT="url"/>
+				<if COND="Variables.errno=1">
+				<then>
+					<ics.getvar name="ContentDetails:Variables.fieldname" encoding="default" OUTPUT="fieldvalue"/>
+				</then>
+				</if>
+				<callelement NAME="OpenMarket/Gator/AttributeTypes/DisplayCKEDITOR">
+					<argument name="assetMakerAsset" value="true"/>
+					<argument name="EditorValue" value="Variables.fieldvalue"/>
+				</callelement>
+				</then>
+				</if>
+				</ELSE>
+				</IF>
+            </td>
+		</tr>
+		
+		<!--/then>
+		</if> here -->
+		<if cond="devicenamelist=Proplist.ITEM">
+		<then>
+			<tr><td colspan="3"><div style="height:20px;"></div></td></tr>
+			
+			<tr><td colspan="3" class="light-line-color">
+				<img height="5" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+			</td>
+			</tr>
+			<tr><td colspan="3"><div style="height:10px;"></div></td></tr>
+		 </then>
+		 </if>
+		
+		</then>
+		</if>
+	</loop>
+</then>
+</if>
+<DEBABBLE VALUE="true"/>
+
+</ftcs>

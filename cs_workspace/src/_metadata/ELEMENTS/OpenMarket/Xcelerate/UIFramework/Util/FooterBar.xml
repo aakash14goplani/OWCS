@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">		 			
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/Util/FooterBar.xml $ 
+$Revision: 6 $ 
+$Modtime: 2/27/04 2:46p $ 
+--> 
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- FooterBar
+-
+- DESCRIPTION
+-	UI utility to display a standard bar for the bottom of a Content Centre screen
+-
+- Arguments
+-	None
+-
+- HISTORY
+-	 
+-->
+	<tr>
+		<td><img height="20" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+	</tr>
+</FTCS>

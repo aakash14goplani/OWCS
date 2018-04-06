@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Gator/AttributeTypes/ProcessTEXTFIELDValue
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="Variables.AttrType=money">
+<THEN>
+	<setvar NAME="mydecimal" VALUE="Variables.empty"/>
+	<IF COND="Variables.currentValue!=Variables.empty">
+	<THEN>
+		<decimal.create NAME="decinst"/>
+		<decimal.setminplaces NAME="decinst" PLACES="2"/>
+		<decimal.getdecimal NAME="decinst" VALUE="Variables.currentValue" VARNAME="mydecimal"/>
+	</THEN>
+	</IF>
+	<setvar name='currentValue' value='Variables.mydecimal' />
+</THEN>
+</IF>
+
+<IF COND="Variables.blank=true">
+<THEN>
+	<callelement NAME='OpenMarket/Gator/FlexibleAssets/Common/GetInputName'>
+		<argument name='cs_AttrName' value='Variables.AttrName' />
+		<argument name='cs_IsMultiple' value='true' />
+		<argument name='cs_ValueNum' value='Counters.MultiValCounter' />
+		<argument name='cs_IsMultiSelect' value='false' />
+		<argument name='cs_Varname' value='cs_MultipleInputName' />
+	</callelement>
+	
+	<IF COND="Variables.updatetype=setformdefaults">
+	<THEN>
+		<setvar NAME="errno" VALUE="0"/>
+		<ICS.RESOLVEVARIABLES NAME="$(Variables.Confirm$(Variables.cs_MultipleInputName))" OUTPUT="confirmval" DELIMITED="true"/>
+		<IF COND="Variables.errno!=0">
+		<THEN>
+			<setvar name='currentValue' value=''/>
+		</THEN>
+		<ELSE>
+			<setvar name='currentValue' value='Variables.confirmval'/>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+        <setvar NAME="errno" VALUE="0"/>
+        <ICS.RESOLVEVARIABLES NAME="$(Variables.Confirm$(Variables.cs_MultipleInputName))" OUTPUT="confirmval" DELIMITED="true"/>
+		<IF COND="Variables.errno!=0">
+		<THEN>
+			<setvar name='currentValue' value='Variables.currentValue'/>
+		</THEN>
+		<ELSE>
+			<setvar name='currentValue' value='Variables.confirmval'/>
+		</ELSE>
+		</IF>
+	</ELSE>
+	</IF>
+</THEN>
+</IF>
+				
+<setvar name='processedValue' value='Variables.currentValue'/>
+</ftcs>

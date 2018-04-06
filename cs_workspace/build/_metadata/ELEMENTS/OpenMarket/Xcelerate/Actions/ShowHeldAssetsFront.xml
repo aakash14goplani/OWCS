@@ -1,0 +1,235 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/ShowHeldAssetsFront
+-
+- INPUT
+-	Variables.target - id of PubTarget
+- OUTPUT
+-
+-->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="target" VARNAME="target"/>
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishFront" outstring="urlpubfront">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                               <satellite.argument name="target" value="Variables.target"/>
+                                                               </SATELLITE.LINK>
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishPost" outstring="urlpubpost">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+    <satellite.argument name="target" value="Variables.target"/>
+                                                               </SATELLITE.LINK>
+<SCRIPT LANGUAGE="JavaScript">
+<replaceall LIST="Variables.urlpubfront,Variables.urlpubpost">
+<![CDATA[
+
+function BackHandler()
+{
+    var pURL = "Variables.urlpubfront"; ]]>
+    <if cond="Variables.cs_environment=portal">
+    <then>
+        window.location=pURL;
+    </then>
+    <else>
+        parent.frames['XcelAction'].location=pURL;
+    </else>
+    </if> <![CDATA[
+    return false;
+}
+
+function setCheck(form)
+{
+       ]]>
+   if (confirm("<XLAT.STREAM KEY="dvin/UI/Publish/AboutToPublish" ESCAPE="true" ENCODE="false"/>")) {
+      <![CDATA[
+        var pURL = "Variables.urlpubpost"; ]]>
+        <if cond="Variables.cs_environment=portal">
+        <then>
+            window.location=pURL;
+        </then>
+        <else>
+            parent.frames['XcelAction'].location=pURL;
+        </else>
+        </if> <![CDATA[
+	return false;
+     }
+
+    return false;
+}
+]]>
+</replaceall>
+</SCRIPT>
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+<PUBTARGETMANAGER.LOAD ID="Variables.target" OBJVARNAME="pubtgt"/>
+<if COND="IsError.Variables.errno=false">
+<then>
+		<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt:"/>
+		<PUBTARGET.GETFACTORS NAME="pubtgt" VARNAME="pubtgt:factors"/>
+     <DELIVERYTYPE.LOAD NAME="pubdt" OBJECTID="Variables.pubtgt:type"/>
+     <DELIVERYTYPE.GET NAME="pubdt" FIELD="path" OUTPUT="pubdt:path"/>
+     <DELIVERYTYPE.GET NAME="pubdt" FIELD="name" OUTPUT="pubdt:name"/>
+     <if COND="IsError.Variables.errno=true">
+     <then>
+          <P><XLAT.STREAM KEY="dvin/UI/notloadgetpatpublishingdeliverytypeerrno2" errno="Variables.errno" EVALALL="false"/>
+          </P>
+          <setvar NAME="AbortFlag" VALUE="true"/>
+     </then>
+     </if>
+</then>
+<else>
+     <setvar NAME="AbortFlag" VALUE="true"/>
+</else>
+</if>
+
+<if COND="Variables.AbortFlag!=true">
+<then>
+<table border="0" cellpadding="0" cellspacing="0" class="width-outer-70">
+
+	<tr>
+		<td><span class="title-text"><XLAT.STREAM KEY="dvin/UI/Publishdestination"/>:  </span><span class="title-value-text"><STRING.STREAM VALUE="Variables.pubtgt:name"/></span></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar">
+		<argument NAME="SpaceBelow" VALUE="No"/>
+	</callelement>
+
+	<tr>
+	<td>
+	
+	<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Destination"/>:</td>
+		<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		<td class="form-inset"><XLAT.STREAM KEY="dvin/UI/Publish/pubtgtnameusingpubdtname"/></td>
+	</tr>
+
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/Arguments"/>:</td>
+		<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		<td class="form-inset"><STRINGLIST   NAME="factorsList" STR="Variables.pubtgt:factors" DELIM="%26"/>
+		<loop LIST="factorsList">
+		<INDEXOF STR="factorsList.ITEM" WHAT="EMAILIDS" OUTSTR="index" INDEX="0"/>
+		<IF COND="Variables.errno=0">
+			<THEN>
+				<span><STRING.STREAM VALUE="factorsList.ITEM"/><BR/></span>
+			</THEN>
+		</IF>
+		</loop></td>
+	</tr>
+
+	</table>
+	</td>
+	</tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+</table>
+
+	<ApprovedAssets.GetHeldAssets TARGET="Variables.target" LISTVARNAME="heldAssets"/>
+	<if COND="IsList.heldAssets=true">
+	<then>
+	      <if COND="heldAssets.#numRows=0">
+	      <then>
+	           <p><XLAT.STREAM KEY="dvin/UI/Noassetsareheldforpublish"/></p>
+	      </then>
+	      <else>
+	           <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/ITileHeldAssets">
+					<ARGUMENT NAME="target" VALUE="Variables.target"/>
+					<ARGUMENT NAME="targetname" VALUE="Variables.pubtgt:name"/>
+					<ARGUMENT NAME="docheckbox" VALUE="false"/>
+		   </CALLELEMENT>
+	 
+	      </else>
+	       </if>
+	</then>
+	<else>
+	     <p><XLAT.STREAM KEY="dvin/UI/ErrorCouldnotgetheldassets"/></p>
+	</else>
+	</if>
+
+<table class="width-outer-70">
+<ApprovedAssets.CountAssetsToPublish TARGET="Variables.target" VARNAME="PublishableAssetsCount" />
+<if COND="Variables.PublishableAssetsCount!=0">
+<then>
+  <ENDS STR="Variables.pubdt:path" WHAT="Export"/>
+  <if COND="Variables.errno=1">   
+  <then>
+  		<if COND="Variables.PublishableAssetsCount=1">
+  		<then>
+            <XLAT.LOOKUP KEY="dvin/UI/Publish/OnePublishableReference" VARNAME="publishableMsg"/>
+  		</then>
+  		<else>
+            <XLAT.LOOKUP KEY="dvin/UI/Publish/SomePublishableReferences" VARNAME="publishableMsg"/>
+	   </else>
+	   </if>
+  </then>
+  <else>
+  		<if COND="Variables.PublishableAssetsCount=1">
+  		<then>
+            <XLAT.LOOKUP KEY="dvin/UI/Publish/OnePublishableAsset" VARNAME="publishableMsg"/>
+  		</then>
+  		<else>
+            <XLAT.LOOKUP KEY="dvin/UI/Publish/SomePublishableAssets" VARNAME="publishableMsg"/>
+	   </else>
+	   </if>
+   </else>
+   </if>    
+   
+    <tr><td><img height="10" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+
+    <tr>
+    <td>
+	    <STRING.STREAM VALUE="Variables.publishableMsg"/> 
+    </td>
+    </tr>
+</then>
+</if>
+<USERISMEMBER GROUP="xcelpublish"/>
+<IF COND="Variables.errno=1">
+<THEN>
+	<tr>
+	   <td ALIGN="RIGHT" BGCOLOR="#FFFFFF">
+	      <XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_" ESCAPE="true"/>
+	      <A HREF="javascript:void(0)" onclick="return BackHandler()" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Back"/></CALLELEMENT></A>
+	      <if COND="Variables.PublishableAssetsCount!=0">
+	      <then>
+	 			<PUBTARGETMANAGER.CANEDIT ID="Variables.target"/>
+				<if COND="Variables.errno!=-12034">
+				<then>
+		          <XLAT.LOOKUP KEY="dvin/UI/Publish" VARNAME="_XLAT_" ESCAPE="true"/>
+		           <A HREF="javascript:void(0)" onclick="return setCheck(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Publish"/></CALLELEMENT></A>
+				</then>
+				</if>
+	      </then>
+	      </if>
+	   </td>
+	</tr>
+</THEN>
+</IF>
+<USERISMEMBER GROUP="xcelpublish"/>
+<IF COND="Variables.errno=1">
+<THEN>
+	<tr><td align="left" colspan="3">
+	<if cond="Variables.cs_environment=portal">
+	<then>
+	    <a HREF="javascript:void(0);" onclick="window.close();">
+	    <i><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></i></a>
+	</then>
+	<else>
+	    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/PublishConsoleFront" outstring="urlpubconsfront">
+	        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+	    </SATELLITE.LINK>
+		<IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" REPLACEALL="Variables.cs_imagedir"/>&nbsp;<A HREF="Variables.urlpubconsfront" REPLACEALL="Variables.urlpubconsfront"><b><XLAT.STREAM KEY="dvin/UI/GotoPublishConsole"/></b></A>
+	</else>
+	</if>
+	</td></tr>
+</THEN>
+</IF>
+</table>
+</then>
+</if>
+
+</FTCS>

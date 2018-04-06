@@ -1,0 +1,281 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/PrologActions/SBSearchPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<DEBABBLE VALUE="false"/>
+
+<!--  The following are enhancements needed for supporting the Saved Searches -->
+<!-- Make this into a seperate element -->
+
+
+<setvar NAME="doproceed" VALUE="true"/>
+<!-- Load the search engine specific strings -->
+
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/seDescription"/>
+
+<!-- Load the asset type -->
+
+	<ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+	<ASSETTYPE.SCATTER NAME="type" PREFIX="AssetTypeObj"/>
+
+<!-- 
+	If the Asset has an element to construct the search, call it,
+	otherwise use the search search specified in the AssetType
+	(0 - for SQL search; 1 for search index search )
+-->
+
+<!--
+    Construct the engine-specific query (SQL, or SE)
+    Perform one (SQL) or two (SE) step search.
+    Display results.
+-->
+<IF COND="IsVariable.ResultLimit!=true">
+<THEN>
+	<SETVAR NAME="ResultLimit" VALUE="20"/>
+</THEN>
+</IF>
+<IF COND="IsVariable.TotalResultLimit!=true">
+<THEN>
+	<setvar NAME="TotalResultLimit"  VALUE="1000"/>
+</THEN>
+</IF>
+<IF COND="Variables.AssetTypeObj:usesearchindex=1">
+  <THEN>
+  
+      
+        <!--
+            Search engine being used.
+    	Convert posted fields into an SE-specific query.
+        -->
+        <SETVAR NAME="seQuery"     VALUE="Variables.empty"/>
+        <SETVAR NAME="seType"      VALUE="Variables.empty"/>
+        <SETVAR NAME="seRelevance" VALUE="Variables.empty"/>
+        <SETVAR NAME="sqlQueryend" VALUE="Variables.empty"/>
+        
+        <!--  Restore the Search Variables for Executing , Editing and Saving Searches -->
+        
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/ManageSaveSearch"/>
+
+        <XLAT.LOOKUP KEY="dvin/FlexibleAssets/Common/Filter" VARNAME="_XLAT_Filter"/>
+        <SETVAR NAME="filterstring" VALUE="Variables._XLAT_Filter"/>
+    
+        <!--Insert common fields' contribution to the query string-->
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/AppendSelectDetailsSE"/>
+    
+        <!--Insert AssetType's contribution to the query string-->
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/AppendSelectDetailsSE"/>
+        <!--Append direct query expression, if any-->
+        <IF COND="IsVariable.DirectQuery=true">
+          <THEN>
+    			<SETVAR NAME="seQuery" VALUE="Variables.seQuery AND Variables.DirectQuery"/>
+          </THEN>
+        </IF>
+
+        <!--
+    	<REPLACEALL LIST="Variables.seQuery,Variables.seType,Variables.seRelevance,Variables.sqlQueryend">
+    	<tt>
+    	<br/>The Query State is:
+    	<br/>seQuery:     {Variables.seQuery}
+    	<br/>seType:      {Variables.seType}
+    	<br/>seRelevance: {Variables.seRelevance}
+    	<br/>sqlQueryend: {Variables.sqlQueryend}
+    	<br/></tt>
+    	</REPLACEALL>
+        -->
+    
+    	<IF COND="Variables.filterstring=Variables._XLAT_Filter">
+    		<THEN>
+    			<XLAT.LOOKUP KEY="dvin/UI/Search/FilterAll" VARNAME="filterstring"/>
+    		</THEN>
+    	</IF>
+    
+        <IF COND="Variables.seQuery=Variables.empty">
+        <THEN>
+    	<!--
+    	    First search step: There is no SE query, therefore all entries
+    	    are considered an SE match.
+    	-->
+    			<SETVAR NAME="seQuerystart" VALUE="Variables.empty"/>
+    
+        </THEN>
+        <ELSE>
+			<!--
+			    There is a search engine query to perform.
+			-->
+		
+			<!--
+			    Trim off the leading " AND ", which was blindly added before
+			    each subterm
+			-->
+			<SUBSTRING STR="Variables.seQuery" OUTSTR="seQuery" INDEX="5"/>
+			<!--
+			    First search step: Let SE find interesting primary keys
+			-->
+			<!--Final SE Query: {<csvar NAME="Variables.seQuery"/>}-->
+			<SETVAR NAME="errno" VALUE="0"/>
+			<PROPERTY.GET PARAM="xcelerate.seLimit" INIFILE="futuretense_xcel.ini" VARNAME="propselimit"/>
+			<SEARCH
+			  INDEX="Variables.AssetTypeObj:indexfile"
+			  LIST="seResults"
+			  WHAT="Variables.seQuery"
+			  TYPE="Variables.seType"
+			  RELEVANCE="Variables.seRelevance"
+			  LIMIT="Variables.propselimit"/>
+			<!--
+			    If nothing matched, end search now.
+			-->
+            <IF COND="IsList.seResults!=true">
+            <THEN>
+     				<setvar NAME="doproceed" VALUE="false"/>
+    				<setvar NAME="errno" VALUE="-101"/>
+            </THEN>
+            <ELSE>
+    			<IF COND="seResults.#numRows=0">
+    			  <THEN>
+    				<setvar NAME="doproceed" VALUE="false"/>
+    				<setvar NAME="errno" VALUE="-101"/>
+     			  </THEN>
+    			</IF>
+            </ELSE>
+            </IF>
+    		<IF COND="Variables.doproceed=true">
+    		<THEN>
+    		<!-- Convert list of keys into comma-separated IN-list for SQL WHERE query -->
+    		
+    			<SETVAR NAME="seQuerystart" VALUE="AND Variables.AssetType.id IN (seResults.ENTRY"/>
+    			<IF COND="seResults.#numRows!=1">
+    				<THEN>
+    					<LOOP LIST="seResults" FROM="2">
+    						<SETVAR NAME="seQuerystart" VALUE="Variables.seQuerystart,seResults.ENTRY"/>
+    					</LOOP>
+    				</THEN>
+    			</IF>
+    			<SETVAR NAME="seQuerystart" VALUE="Variables.seQuerystart)"/>
+    	      <FLUSH LIST="seResults"/>
+    		</THEN>
+    		</IF>
+       </ELSE>
+       </IF>
+
+    	<IF COND="Variables.doproceed=true">
+    	<THEN>
+        <!--
+            Second search: Let SQL database produce final cross-table result list
+        -->
+
+        <IF COND="IsVariable.OrderBy=true">
+          <THEN>
+          	<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Variables.OrderBy"/>
+			<ARGUMENT NAME="type" VALUE="String"/>
+			</callelement>
+			<if cond="Variables.validatedstatus=true">
+			<then>
+				<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.OrderBy"/>
+				<ARGUMENT NAME="type" VALUE="Nospace"/>
+			    </callelement>
+				<if cond="Variables.validatedstatus=true">
+				<then>
+            		<!--V1.0 customers might hold on to old hardcoded ordering-->
+            		<SETVAR NAME="sqlQueryend" VALUE="Variables.sqlQueryend ORDER BY Variables.OrderBy"/>
+          		</then>
+          		</if>
+          	</then>
+          	</if>	
+          </THEN>
+        </IF>
+        
+        <setvar NAME="queryend" VALUE="Variables.seQuerystart Variables.sqlQueryend"/>
+        <!--
+        seQuerystart: {<csvar NAME="Variables.seQuerystart"/>}
+        sqlQueryend: {<csvar NAME="Variables.sqlQueryend"/>}
+        queryend: {<csvar NAME="Variables.queryend"/>}
+        -->
+    	 <IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.AssetType/ExecuteSearch=true">
+    		<THEN>
+    			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ExecuteSearch"/>
+    		</THEN>
+    		<ELSE>
+    			<CALLSQL LIST="Content" QRYNAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SelectSummary" 
+    				LIMIT="Variables.TotalResultLimit"/>
+    		</ELSE>
+    	 </IF>
+		
+    	   <REMOVEVAR NAME="ids"/>
+    	   <REMOVEVAR NAME="seQuery"/>
+    	</THEN>
+    	</IF>
+  </THEN>
+  <ELSE>
+	    <!--
+	        SQL Search being used.
+	    -->
+               
+        <!--  Need to Restore the Search Variables for Execute , Edit and Saving Searches -->
+
+        <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/ManageSaveSearch"/>
+     	<XLAT.LOOKUP KEY="dvin/FlexibleAssets/Common/Filter" VARNAME="_XLAT_Filter"/>
+        <SETVAR NAME="filterstring" VALUE="Variables._XLAT_Filter"/>
+        
+        <SETVAR NAME="queryend" VALUE="Variables.empty"/>
+
+ 	    <CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/AppendSelectDetails"/>
+	    <IF COND="Variables.filterstring=Variables._XLAT_Filter">
+	    <THEN>
+            <XLAT.LOOKUP KEY="dvin/UI/Search/FilterAll" VARNAME="filterstring"/>
+	    </THEN>
+	    </IF>
+	    <IF COND="IsVariable.OrderBy=true">
+	      <THEN>
+	      		<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+				<ARGUMENT NAME="columnvalue" VALUE="Variables.OrderBy"/>
+				<ARGUMENT NAME="type" VALUE="String"/>
+			    </callelement>
+				<if cond="Variables.validatedstatus=true">
+				<then>
+	        		<callelement NAME="OpenMarket/Xcelerate/Util/validateFields">
+					<ARGUMENT NAME="columnvalue" VALUE="Variables.OrderBy"/>
+					<ARGUMENT NAME="type" VALUE="Nospace"/>
+			    	</callelement>
+				 	<if cond="Variables.validatedstatus=true">
+				 	<then>
+	        			<!--V1.0 customers might hold on to old hardcoded ordering-->
+	        			<SETVAR NAME="queryend" VALUE="Variables.queryend ORDER BY Variables.OrderBy"/>
+	      			</then>
+	      			</if>
+	      		</then>
+	      		</if>	
+	      </THEN>
+	    </IF>
+		<SETVAR NAME="errno" VALUE="0"/>
+	
+		<!-- Call an asset element to do the search or else just execute the search -->
+ 	 <IF COND="IsElement.OpenMarket/Xcelerate/AssetType/Variables.AssetType/ExecuteSearch=true">
+		<THEN>
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/ExecuteSearch"/>
+		</THEN>
+		<ELSE>
+                <CALLSQL LIST="Content" QRYNAME="OpenMarket/Xcelerate/AssetType/Variables.AssetType/SelectSummary" 
+				LIMIT="Variables.TotalResultLimit"/>
+
+
+		</ELSE>
+	</IF>
+  </ELSE>
+</IF>
+<IF COND="IsVariable.pagenum!=true">
+<THEN> 
+	<SETVAR NAME="pagenum" VALUE="1"/>
+</THEN>
+</IF>
+<DEBABBLE VALUE="true"/>
+
+</FTCS>

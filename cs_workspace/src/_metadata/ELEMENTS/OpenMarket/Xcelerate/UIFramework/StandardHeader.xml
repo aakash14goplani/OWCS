@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/UIFramework/StandardHeader.xml $ 
+$Revision: 2 $ 
+$Modtime: 3/04/04 5:35a $ 
+-->
+<!-- OpenMarket/Xcelerate/UIFramework/StandardHeader
+- Use this element to initialize the document domain and other standard header properties.
+- Must be called within a <HEAD> section.
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/BasicHeader"/>
+
+<PROPERTY.GET PARAM="xcelerate.domain" INIFILE="futuretense_xcel.ini" VARNAME="docDomain"/>
+<IF COND="IsVariable.docDomain=true">
+<THEN>
+	<IF COND="Variables.docDomain!=Variables.empty">
+	<THEN>
+	    <SCRIPT LANGUAGE="JavaScript">
+		document.domain = "<CSVAR NAME="Variables.docDomain"/>";
+	    </SCRIPT>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+</FTCS>

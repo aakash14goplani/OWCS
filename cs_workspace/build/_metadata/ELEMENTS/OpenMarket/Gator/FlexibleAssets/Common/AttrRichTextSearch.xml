@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/AttrRichTextSearch
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+ <if COND="IsList.attrlst=true"><then>
+    <if COND="attrlst.#numRows!=0"><then>
+        <SEARCHSTATE.CREATE NAME="rtss"/>
+            <loop LIST="attrlst">
+            <if COND="IsVariable.attrlst.assetid=true">
+            <then>
+                <setvar NAME="DonotSetFilter"  VALUE="true"/>
+                <!-- load attribute and see if it is full-text indexed -->
+                <ASSET.LOAD TYPE="Variables.attributetype" NAME="attrinst" OBJECTID="attrlst.assetid"/>
+                <ATTRIBUTE.GETENGINE NAME="attrinst" VARNAME="searchengine"/>
+                <ATTRIBUTE.GETASSETTYPE NAME="attrinst" VARNAME="attrassettype"/>
+				<ATTRIBUTE.GETTYPE NAME="attrinst" VARNAME="attrtype"/>
+                <COMPLEXASSET.GETNAME NAME="attrinst" VARNAME="attrname"/>
+
+                <SETVAR NAME="ssCreated" VALUE="1"/>
+                <SETVAR NAME="attrval" VALUE="Variables.attrlst.assetid"/>
+
+                <if COND="Variables.attrassettype!=Variables.empty"><then>
+                    <ASSET.LIST TYPE="Variables.attrassettype" FIELD1="id" VALUE1="Variables.attrval" LIST="AssetFields"/>
+                    <setvar NAME="displayName" VALUE="AssetFields.name"/>
+                </then><else>
+                    <setvar NAME="displayName" VALUE="Variables.attrval"/>
+                </else></if>
+                <if COND="Variables.searchengine!=Variables.empty"><then>
+                    <XLAT.LOOKUP KEY="dvin/UI/Search/attrnamecontainsdisplayname" VARNAME="_XLAT_"/>
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+                <searchstate.addrichtextconstraint NAME="rtss"  ATTRIBUTE="Variables.attrname" TYPENAME="Variables.attributetype" VALUE="Variables.attrval" CONFIDENCE="0"/>
+                </then><else>
+					<XLAT.LOOKUP KEY="dvin/UI/Search/attrnamecontainsdisplayname" VARNAME="_XLAT_"/>
+                    <SETVAR NAME="filterstring" VALUE="Variables.filterstring : Variables._XLAT_"/>
+					<!-- as this is in loop set to false to begin with -->
+					<setvar name="UseSimpleStandard" value="false" />
+					<if cond="Variables.attrtype=asset"><then><setvar name="UseSimpleStandard" value="true" /></then></if>
+					<if cond="Variables.attrtype=blob"><then><setvar name="UseSimpleStandard" value="true" /></then></if>
+					<if cond="Variables.attrtype=float"><then><setvar name="UseSimpleStandard" value="true" /></then></if>
+					<if cond="Variables.attrtype=int"><then><setvar name="UseSimpleStandard" value="true" /></then></if>
+					<if cond="Variables.attrtype=money"><then><setvar name="UseSimpleStandard" value="true" /></then></if>
+					<!--don't use LIKE for date, since it doesn't mix well with ts{...} etc.-->
+					<if cond="Variables.attrtype=date">
+					<then>
+						<setvar name="UseSimpleStandard" value="true" />
+						<callelement NAME="OpenMarket/Xcelerate/Util/ConvertJDBCDateTimeZone">
+							<ARGUMENT NAME="inputDate" VALUE="Variables.attrval" />
+							<ARGUMENT NAME="fromTimeZone" VALUE="client"/>
+							<ARGUMENT NAME="toTimeZone" VALUE="server"/>
+						</callelement>
+						<setvar name="attrval" value="Variables.outputDate" />	
+					</then>
+					</if>
+
+					<if cond="Variables.UseSimpleStandard=true">
+					<then>
+					 <SEARCHSTATE.ADDSIMPLESTANDARDCONSTRAINT NAME="rtss"  ATTRIBUTE="Variables.attrname" TYPENAME="Variables.attributetype" VALUE="Variables.attrval"/>
+					</then>
+					<else>
+					 <SEARCHSTATE.ADDSIMPLELIKECONSTRAINT NAME="rtss" ATTRIBUTE="Variables.attrname" TYPENAME="Variables.attributetype" VALUE="%Variables.attrval%"/>
+					</else>
+					</if>
+                </else>
+                </if>
+
+            </then>
+            </if>
+        </loop>
+     </then>
+    </if>
+</then>
+</if>
+
+<IF COND="IsVariable.DonotSetFilter!=true">
+<THEN>
+     <callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/AttrStandardConstraintsSch"/>
+</THEN>
+</IF>
+</FTCS>

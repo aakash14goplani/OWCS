@@ -1,0 +1,153 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/PrologActions/ApprovePost
+-
+-      Variables.assetTotal -- number of assets to be approved
+-      Variables.id[X] -- asset id of Xth asset, X starts with 0
+-      Variables.type[X] -- asset type of Xth asset, X starts with 0
+-      Variables.targetid -- target id
+-      Variables.force -- optional, force approval even if asset is already approved (defaults to false)
+-      Variables.recursive -- optional, approve dependent assets, (default is false)
+- OUTPUT	- assets are approved
+-
+-->
+
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+	<!-- figure out the target type is mirror or export. If it is export, 
+	     approval type is template, otherwise fundamental -->
+	<PUBTARGETMANAGER.LOAD ID="Variables.targetid" OBJVARNAME="pubtgt"/>
+	<if COND="IsError.Variables.errno=true">
+	<then>
+		Error = <CSVAR NAME="Variables.errno"/><br/>
+      <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+         <argument NAME="error" VALUE="NoPublishDest"/>
+     	</callelement>
+     	<setvar NAME="upcommand" value="cancel"/>
+	</then>
+	</if>
+	<PUBTARGET.SCATTER NAME="pubtgt" PREFIX="pubtgt:"/>
+	     
+	<if COND="IsError.Variables.errno=false">
+	<then>
+	     <DELIVERYTYPE.LOAD NAME="pubdt" OBJECTID="Variables.pubtgt:type"/>
+	     <DELIVERYTYPE.GET NAME="pubdt" FIELD="path" OUTPUT="pubdt:path"/>
+	     <if COND="IsError.Variables.errno=true">
+	     <then>
+				Error = <CSVAR NAME="Variables.errno"/><br/>
+		      <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+		         <argument NAME="error" VALUE="NoPublishDest"/>
+		     	</callelement>
+     			<setvar NAME="upcommand" value="cancel"/>
+	     </then>
+	     <else>
+	          <ENDS STR="Variables.pubdt:path" WHAT="Export"/>
+	          <if COND="Variables.errno=1">
+	          <then>
+	          		<!-- Export -->
+	               <setvar NAME="targettype" VALUE="export" />
+		  		</then>
+	          <else>
+	          		<!-- Mirror -->
+	               <setvar NAME="targettype" VALUE="mirror" />
+	          </else>
+		  </if>
+	          <setvar NAME="errno" VALUE="0" />
+	     </else>
+	     </if>
+	</then>
+	</if> 
+
+	<!-- create an IList with column name "assetid" and 
+	     "assettype" and build the asset IList -->
+	<LISTOBJECT.CREATE NAME="listobject" COLUMNS="assetid,assettype" />
+	<setcounter NAME="count" VALUE="0"/>
+	<loop COUNT="Variables.assetTotal">
+		<REMOVEVAR NAME="id"/>
+		<REMOVEVAR NAME="type"/>
+		<setvar NAME="assetid" VALUE="Variables.idCounters.count"/>
+		<setvar NAME="assettype" VALUE="Variables.typeCounters.count"/>
+		
+		<setvar NAME="canapprove" VALUE="true"/>
+		<!-- we better check whether we are allowed to approve -->
+		<!-- check whether user is allowed to approve this asset -->
+	    <callelement NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+	        <argument NAME="AssetType" VALUE="Variables.assettype"/>
+	        <argument NAME="assetid" VALUE="Variables.assetid"/>
+	        <argument NAME="Function" VALUE="approve"/>
+	    </callelement>
+	    <if COND="Variables.PrivsFailed=true">
+	    <then>
+	     		<setvar NAME="canapprove" VALUE="false"/>
+			  <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			      <argument NAME="error" VALUE="Variables.PrivsFailedReason"/>
+			  </callelement>
+	    </then>
+	    <else>
+	     		<!-- asset must not be locked, in order to do approval -->
+				<callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+				    <argument NAME="AssetType" VALUE="Variables.assettype"/>
+				</callelement>
+				<if COND="Variables.trackingenabled=true">
+				<then>
+		        	<history TABLE="Variables.assettype" ASSET="Variables.assetid" LIST="ItsHistory"/>
+				   <if COND="ItsHistory.#numRows!=0">
+				    <then>
+						<if COND="ItsHistory.lockedby!=Variables.empty">
+						<then>
+	     					<setvar NAME="canapprove" VALUE="false"/>
+	                 <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	                     <argument NAME="error" VALUE="ApproveCheckedOut"/>
+	                 </callelement>						
+						</then>
+						</if>
+					</then>
+					</if>
+			    </then>
+				</if>
+		</else>
+		</if>
+				
+		<!-- if we can approve this asset, add it to the list -->
+		<if COND="Variables.canapprove=true">
+		<then>
+	    <LISTOBJECT.ADDROW NAME="listobject"
+	        assetid="Variables.assetid"
+	        assettype="Variables.assettype" />
+	   </then>
+	   </if>
+	    <inccounter NAME="count" VALUE="1"/>
+	</loop>
+	<LISTOBJECT.TOLIST NAME="listobject" LISTVARNAME="assetlist" />
+	
+	<if COND="assetlist.#numRows!=0">
+	<then>
+		<!-- call ApproveAssets element -->
+		<if COND="IsVariable.force=false">
+		<then>
+			<setvar NAME="force" VALUE="false"/>
+		</then>
+		</if>
+		<if COND="IsVariable.recursive=false">
+		<then>
+			<setvar NAME="recursive" VALUE="false"/>
+		</then>
+		</if>
+		<callelement NAME="OpenMarket/Xcelerate/Actions/ApproveAssets">
+		     <argument NAME="list" VALUE="assetlist"/>
+		     <argument NAME="recursive" VALUE="Variables.recursive"/>
+		     <argument NAME="force" VALUE="Variables.force"/>
+		     <argument NAME="target" VALUE="Variables.targetid"/>
+		</callelement>
+	</then>
+	<else>
+		<!-- nothing to approve-->
+		<setvar NAME="upcommand" VALUE="cancel"/>
+	</else>
+	</if>
+	
+</THEN>
+</IF>
+
+</FTCS> 

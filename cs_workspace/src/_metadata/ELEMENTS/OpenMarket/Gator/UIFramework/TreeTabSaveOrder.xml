@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/TreeTabSaveOrder
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<IF COND="IsVariable.Order=true">
+<THEN>
+	<STRINGLIST NAME="OrderedTabs" STR="Variables.Order" DELIM=";"/>
+	<LOOP LIST="OrderedTabs">
+		<TTM.LOAD OBJVARNAME="tab" ID="OrderedTabs.ITEM"/>
+		<TREETAB.SETORDINAL NAME="tab" VALUE="OrderedTabs.#curRow"/>
+		<TTM.SAVE OBJECT="tab"/>
+	</LOOP>
+   
+	<IF COND="IsError.errno=true">
+	<THEN>
+		<XLAT.LOOKUP KEY="dvin/UI/Error/savingordinalserrnoerrdetail1" VARNAME="_XLAT_" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<STRING.STREAM VALUE="Variables._XLAT_"/>
+	</THEN>
+	</IF>
+	
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/TreeTabManager">
+		<ARGUMENT NAME="action" VALUE="list"/>
+	</CALLELEMENT>
+	
+</THEN>
+</IF>
+
+</FTCS> 

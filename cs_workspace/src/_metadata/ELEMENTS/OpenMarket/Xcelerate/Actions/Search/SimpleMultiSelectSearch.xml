@@ -1,0 +1,246 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/Search/SimpleMultiSelectSearch
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+
+
+<!-- Include javascript to handle passing values from the simple search field -->
+<callelement NAME="OpenMarket/Xcelerate/Scripts/SetSimpleSearch"/>
+<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage" REPLACEALL="Variables.PostPage"/>  
+   
+<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+<tr>
+    <td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+<tr>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+    <td>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="3" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+    <tr><td HEIGHT="16" class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+        <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;<BR /></td>
+        <td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+    </tr>
+    <tr><td colspan="3" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+   
+    <if COND="IsVariable.fields!=true">
+    <then>
+        <setvar NAME="fields"  VALUE="Variables.empty"/>
+    </then>
+    </if>
+    <if COND="IsVariable.SearchString!=true">
+    <then>
+         <setvar NAME="SearchString"  VALUE="Variables.empty"/>
+    </then>
+    </if>
+        <!-- use default values to search on: Name and Description -->
+    <tr><td colspan="3"><table CELLPADDING="0" CELLSPACING="0" BORDER="0" WIDTH="100%">
+    <!--tr>
+        <td>
+            <DIV class="form-label-inset"><XLAT.STREAM KEY="dvin/Common/AssetType"/></DIV>
+        </td>
+        <td><BR /></td>
+        <td NOWRAP="NOWRAP">
+            <select name="AssetType" size="1">
+
+                <option value="" >
+            </select>
+        </td>
+    </tr-->
+    <tr>
+        <td><DIV class="form-label-inset"><XLAT.STREAM KEY="dvin/Common/Search"/></DIV></td>
+        <td><BR /></td>
+        <td NOWRAP="NOWRAP">
+            <DIV class="form-inset">
+            <!-- Note this list must match exactly the values in the select named fields -->
+            <INPUT TYPE="HIDDEN" NAME="Name" VALUE=""/>
+            <INPUT TYPE="HIDDEN" NAME="Description" VALUE=""/>
+            <INPUT TYPE="HIDDEN" NAME="UpdatedBy" VALUE=""/>
+            <select name="fields" size="1"> 
+            <if COND="Variables.fields!=Variables.empty">
+            <then>                 
+                <if COND="Variables.fields=Name">
+                <then>
+                    <option value="Name" selected=""/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                </then>
+                <else>
+                    <option value="Name"/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                </else>
+                </if>
+                 
+                <if COND="Variables.fields=Description">
+                <then>
+                    <option value="Description" selected=""/><XLAT.STREAM KEY="dvin/AT/Common/Description"/>
+                </then>
+                <else>
+                    <option value="Description"/><XLAT.STREAM KEY="dvin/AT/Common/Description"/>
+                </else>
+                </if>
+                
+                <if COND="Variables.fields=UpdatedBy">
+                <then>
+                    <option value="UpdatedBy" selected=""/><XLAT.STREAM KEY="dvin/UI/Search/Modifiedby"/>
+                </then>
+                <else>
+                    <option value="UpdatedBy"/><XLAT.STREAM KEY="dvin/UI/Search/Modifiedby"/>
+                </else>
+                </if>      
+            </then>
+            <else>
+                <option value="Name" selected=""/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                <option value="Description"/><XLAT.STREAM KEY="dvin/AT/Common/Description"/>
+                <option value="UpdatedBy"/><XLAT.STREAM KEY="dvin/Common/ModifiedBy"/>
+            </else>
+            </if>
+            </select>
+            &nbsp;  <span class="form-label-text"> <XLAT.STREAM KEY="dvin/UI/Search/for"/>  </span> &nbsp;<input name="SearchString"  value="Variables.SearchString" REPLACEALL="Variables.SearchString" type="text" SIZE="32" />&nbsp;<BR />
+            </DIV>
+            </td>
+    </tr>
+    <tr>
+        <!--<td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+        </tr>		
+        <tr>
+            <td class="form-shade" colspan="3"><DIV class="form-label-inset"><XLAT.STREAM KEY="dvin/UI/Search/SearchOptions"/>:</DIV>
+            <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Search/SearchResultOptions"/>
+        <IF COND="IsVariable.OrderByDesc=true">
+        <THEN>
+            <INPUT TYPE="HIDDEN" NAME="OrderByDesc" VALUE="Variables.OrderByDesc" REPLACEALL="Variables.OrderByDesc"/>
+        </THEN>
+        <ELSE>
+            <INPUT TYPE="HIDDEN" NAME="OrderByDesc" VALUE=""/>
+        </ELSE>
+        </IF>
+        <DIV class="form-inset">
+        <XLAT.STREAM KEY="dvin/Common/SortResultsBy"/>&nbsp;
+        <SELECT NAME="OrderBy" onChange="this.form.elements['OrderByDesc'].value=this[this.selectedIndex].text">
+             <IF COND="Variables.OrderBy!=Variables.empty">
+             <THEN>
+                  <IF COND="Variables.OrderBy=Page.name">
+                 <THEN>
+                    <OPTION VALUE="name" SELECTED=""/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                 </THEN>
+                 <ELSE>
+                    <OPTION VALUE="name"/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                 </ELSE>
+                 </IF>
+                 <IF COND="Variables.OrderBy=createdby">
+                 <THEN>
+                    <OPTION VALUE="createdby" SELECTED=""/><XLAT.STREAM KEY="dvin/Common/CreatedBy"/>
+                 </THEN>
+                 <ELSE>
+                    <OPTION VALUE="createdby"/><XLAT.STREAM KEY="dvin/Common/CreatedBy"/>
+                 </ELSE>
+                 </IF>
+                 <IF COND="Variables.OrderBy=createddate DESC">
+                 <THEN>
+                    <OPTION VALUE="createddate DESC" SELECTED=""/><XLAT.STREAM KEY="dvin/UI/Search/CreatedDate"/>
+                 </THEN>
+                 <ELSE>
+                    <OPTION VALUE="createddate DESC"/><XLAT.STREAM KEY="dvin/UI/Search/CreatedDate"/>
+                 </ELSE>
+                 </IF>
+                 <IF COND="Variables.OrderBy=updatedby">
+                 <THEN>
+                    <OPTION VALUE="updatedby" SELECTED=""/><XLAT.STREAM KEY="dvin/Common/ModifiedBy"/>
+                 </THEN>
+                 <ELSE>
+                    <OPTION VALUE="updatedby"/><XLAT.STREAM KEY="dvin/Common/ModifiedBy"/>
+                 </ELSE>
+                 </IF>
+                 <IF COND="Variables.OrderBy=updateddate DESC">
+                 <THEN>
+                    <OPTION VALUE="updateddate DESC" SELECTED=""/><XLAT.STREAM KEY="dvin/UI/Search/ModifiedDate"/>
+                 </THEN>
+                 <ELSE>
+                    <OPTION VALUE="updateddate DESC"/><XLAT.STREAM KEY="dvin/UI/Search/ModifiedDate"/>
+                 </ELSE>
+                 </IF>
+             </THEN>
+             <ELSE>
+                    <OPTION VALUE="Page.name" SELECTED=""/><XLAT.STREAM KEY="dvin/AT/Common/Name"/>
+                    <!-- [insert Description] -->
+                    <OPTION VALUE="createdby"/><XLAT.STREAM KEY="dvin/Common/CreatedBy"/>
+                    <OPTION VALUE="createddate DESC"/><XLAT.STREAM KEY="dvin/UI/Search/CreatedDate"/>
+                    <OPTION VALUE="updatedby"/><XLAT.STREAM KEY="dvin/Common/ModifiedBy"/>
+                    <OPTION VALUE="updateddate DESC"/><XLAT.STREAM KEY="dvin/UI/Search/ModifiedDate"/>
+             </ELSE>
+             </IF>
+            </SELECT>
+        </DIV>
+        </td>
+    </tr>
+    </table>
+</td>   
+</tr>
+</table>
+</td>
+<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+</tr>
+<tr>
+    <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+    <td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+<tr>
+    <td></td><td>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+            <IF COND="Variables.ThisPage=SearchPost">
+                <THEN>
+                    <SETVAR NAME="searchImg" VALUE="NewSearch"/>
+                    <XLAT.LOOKUP KEY="dvin/UI/NewSearch" VARNAME="_ESC_" ESCAPE="true"/>
+                    <XLAT.LOOKUP KEY="dvin/UI/NewSearch" VARNAME="_XLAT_"/>
+                </THEN>
+                <ELSE>
+                    <SETVAR NAME="searchImg" VALUE="Search"/>
+                    <XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="_ESC_" ESCAPE="true"/>
+                    <XLAT.LOOKUP KEY="dvin/Common/Search" VARNAME="_XLAT_"/>
+                </ELSE>
+            </IF>
+            
+                <Script Language="Javascript">
+                    function setPagename()
+                    {
+                        var obj = document.forms[0].elements[0];
+                        <if COND="Variable.cs_environment=standard">
+                        <then>
+                        obj.form.pagename.value='OpenMarket/Xcelerate/Actions/SearchPost';
+                        </then>
+                        </if>
+                        searchvalue = document.forms[0].elements.SearchString.value;
+                        var themenu = document.forms[0].elements.fields;
+                        var searchfieldname = themenu.options[themenu.selectedIndex].value;
+                        document.forms[0].elements[searchfieldname].value = searchvalue;
+
+                            <IF COND="Variables.SScmd=edit">
+                            <THEN></THEN>
+                            <ELSE>
+                                if (document.forms[0].elements['searchid']) { document.forms[0].elements['searchid'].value='';}
+                                if (document.forms[0].elements['criterianame']) { document.forms[0].elements['criterianame'].value='';}
+                            </ELSE>
+                            </IF>
+
+                        obj.form.submit();
+                        return false;
+                    }
+                </Script>
+
+                <td>
+                </td>
+                <td align="right">
+                <a class="inline-right" href="javascript:void(0);" onclick="javascript:setPagename();" onmouseover="window.status='Variables._ESC_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._ESC_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Variables.searchImg"/></CALLELEMENT></a></td>
+            </tr>
+        </table>
+    </td><td></td>
+</tr>
+</table>
+
+</FTCS>

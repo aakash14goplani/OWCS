@@ -1,0 +1,553 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/FlexAssetMakerPost
+
+ INPUT
+
+ OUTPUT
+
+-->
+
+	<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+	<IF COND="Variables.action=makeasset">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Gator/FlexibleAssets/AssetMaker/makeasset"/>
+	</THEN>
+	</IF>
+	<div class="width-outer-70">
+    <!-- output mesgs from makeasset -->
+    <IF COND="IsVariable.addFiltError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addFiltError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.FiltIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.FiltIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.addAttrError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addAttrError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.AttrIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.AttrIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.addPGTError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addPGTError"/>
+        <setvar NAME="assettypename" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PGTIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PGTIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.addPTError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addPTError"/>
+        <setvar NAME="assettypename" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PTIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PTIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.addGroupError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addGroupError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.GroupIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.GroupIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.addProdError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.addProdError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/AddAssetTypeError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdExists=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeExist"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdIntoCAError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.ProdIntoCAError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.ProdIntoCAErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoCAError" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstFiltSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.FiltInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.FiltInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstFiltFailed" errno="Variables.errno" Filt="Variables.Filt" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstAttrSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.AttrInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.AttrInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstAttrFailed" errno="Variables.errno" errdetail1="Variables.errdetail1" Attr="Variables.Attr" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTIntoFGTTMError=true">
+    <THEN>
+        <setvar NAME="assettypename" VALUE="Variables.PGT"/>
+        <setvar NAME="TM" VALUE="FGTTM"/>
+        <setvar NAME="errno" VALUE="Variables.PGTIntoFGTTMError"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoTMError" errno="Variables.errno" assettypename="Variables.assettypename" TM="Variables.TM" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstPGTSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PGTInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PGTInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstPGTFailed" errno="Variables.errno" PGT="Variables.PGT" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTIntoFTTMError=true">
+    <THEN>
+        <setvar NAME="assettypename" VALUE="Variables.PT"/>
+        <setvar NAME="TM" VALUE="FTTM"/>
+        <setvar NAME="errno" VALUE="Variables.PTIntoFTTMError"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoTMError" errno="Variables.errno" assettypename="Variables.assettypename" TM="Variables.TM" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstPTSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PTInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PTInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstPTFailed" errno="Variables.errno" PT="Variables.PT" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupIntoFGTMError=true">
+    <THEN>
+        <setvar NAME="assettypename" VALUE="Variables.Group"/>
+        <setvar NAME="TM" VALUE="FGTM"/>
+        <setvar NAME="errno" VALUE="Variables.GroupIntoFGTMError"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoTMError" errno="Variables.errno" assettypename="Variables.assettypename" TM="Variables.TM" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstGroupSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.GroupInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.GroupInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstGroupFailed" errno="Variables.errno" Filt="Variables.Filt" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+
+    <IF COND="IsVariable.ProdIntoFATMError=true">
+    <THEN>
+        <setvar NAME="assettypename" VALUE="Variables.Prod"/>
+        <setvar NAME="TM" VALUE="FATM"/>
+        <setvar NAME="errno" VALUE="Variables.ProdIntoFATMError"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoTMError" errno="Variables.errno" assettypename="Variables.assettypename" TM="Variables.TM" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdInstall=true">
+    <THEN>
+        <setvar NAME="assetname" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstProdSuc"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdInstallError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.ProdInstallError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.ProdInstallErrdetail"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/InstProdFailed" errno="Variables.errno" Prod="Variables.Prod" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.FiltElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/> 
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.FiltAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.FiltAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.FiltAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Filt"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.AttrElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.AttrAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.AttrAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.AttrAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Attr"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PGTElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PGTAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PGTAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PGTAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.PGT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PTElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.PTAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.PTAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.PTAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.PT"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.GroupElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.GroupAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.GroupAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.GroupAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Group"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdElementError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.ProdElementError"/>
+        <setvar NAME="assettypename" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddElementFailed" errno="Variables.errno" assettypename="Variables.assettypename" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+    <IF COND="IsVariable.ProdAddSQLError=true">
+    <THEN>
+        <setvar NAME="errno" VALUE="Variables.ProdAddSQLError"/>
+        <setvar NAME="errdetail1" VALUE="Variables.ProdAddSQLErrdetail"/>
+        <setvar NAME="assettypename" VALUE="Variables.Prod"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeAddSQLFailed" errno="Variables.errno" assettypename="Variables.assettypename" errdetail1="Variables.errdetail1" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+	</THEN>
+    </IF>
+    <IF COND="IsVariable.FiltIntoFFTMError=true">
+    <THEN>
+        <setvar NAME="assettypename" VALUE="Variables.Filt"/>
+        <setvar NAME="TM" VALUE="FFTM"/>
+        <setvar NAME="errno" VALUE="Variables.FiltIntoFFTMError"/>
+        <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/FlexibleAssets/AssetMakers/TypeIntoTMError" errno="Variables.errno" assettypename="Variables.assettypename" TM="Variables.TM" EVALALL="false"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="msgtext" VALUE="Variables._XLAT_"/>
+			<ARGUMENT NAME="severity" VALUE="error"/>
+		</CALLELEMENT>
+    </THEN>
+    </IF>
+	</div>
+    <IF COND="Variables.installResult=Variables.empty">
+    <THEN>
+    	<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeFront">
+    		<ARGUMENT NAME="action" VALUE="list"/>
+    	</CALLELEMENT>
+    </THEN>
+    </IF>
+
+
+
+</FTCS>

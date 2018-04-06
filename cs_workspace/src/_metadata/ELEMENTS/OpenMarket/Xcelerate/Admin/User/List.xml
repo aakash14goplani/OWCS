@@ -1,0 +1,224 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!--
+$Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/User/List.xml $
+$Revision: 51 $
+$Modtime: 5/11/04 11:32a $
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- User/List.xml
+-
+- DESCRIPTION
+-	Display the data in the UserPublication table.  Displays for the
+-	selected publication (Variables.pubid).
+-
+-    In:
+-       Variables.pubid: Publication id.
+-	Variables.pattern: partial name of user to list or edit.
+-	Variables.action: ask, list, edit.  ask, which user(s) to display.
+-				list, list selected user or all.
+-				edit, edit selected user or all.
+-
+- HISTORY
+-->
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+<IF COND="Variables.showtitle!=false">
+<THEN>
+<IF COND="IsVariable._profilemgmt_=true">
+<THEN>
+ <STRING.ENCODE VARIABLE="_profilemgmt_" VARNAME="_profilemgmt_" />
+ <IF COND="Variables.action=ask"><THEN><DIV class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/UserProfileManagement"/></DIV></THEN></IF>
+ <setvar NAME="RoleOrProfile"  VALUE="PROFILE"/>
+</THEN>
+<ELSE>
+	 <DIV class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/UserRoleManagement"/></DIV>
+     <setvar NAME="RoleOrProfile"  VALUE="ROLE"/>
+</ELSE>
+</IF>
+
+     <IF COND="IsVariable._profilemgmt_=true">
+    <THEN>
+        <!-- Don't display the site as profile management is not site specific -->
+        <!--PUBLICATION.LOAD NAME="site" OBJECTID="SessionVariables.pubid"/-->
+        <P/>
+    </THEN>
+    <ELSE>
+        <!-- Load the publication record -->
+        <PUBLICATION.LOAD NAME="site" OBJECTID="Variables.pubid"/>
+        <!-- Get the publication name and save it to a session variable -->
+        <PUBLICATION.GET NAME="site" FIELD="name"/>
+        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/SiteFront" outstring="urlsitefront">
+            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="action" value="details"/>
+                                                         <satellite.argument name="pubid" value="Variables.pubid"/>
+                                                          </SATELLITE.LINK>
+        <span class="title-value-text"><XLAT.STREAM KEY="dvin/Common/Site"/>: <A HREF="Variables.urlsitefront" REPLACEALL="Variables.urlsitefront"><IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/><STRING.STREAM VALUE="Variables.name"/></A></span><P/>
+    </ELSE>
+    </IF>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+	</THEN>
+</IF>
+	</td></tr>
+	
+</table>
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+    function checkfields()
+    {
+    var obj = document.forms[0];
+         if (obj.elements['pattern']) {
+            if (obj.elements['pattern'].value.search(/\S/) == -1)
+            {]]>
+                alert("<XLAT.STREAM KEY="dvin/UI/Admin/Error/specifyaname" ESCAPE="true" ENCODE="false"/>");
+		<![CDATA[
+                return false;
+            }
+        }
+       return true;
+    }
+]]>
+</SCRIPT>
+
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<if COND="Variables.action=ask">
+<then>
+		<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid" />
+        <INPUT TYPE="HIDDEN" NAME="pubid" VALUE="Variables.pubid" REPLACEALL="Variables.pubid"/>
+
+
+<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-30">
+	<tr><td>
+		<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<tr>
+				<td class="form-label-text">
+					<IF COND="IsVariable._profilemgmt_=true">
+			        <THEN>
+						<STRING.ENCODE VARIABLE="_profilemgmt_" VARNAME="_profilemgmt_" />
+						<input type="hidden"  NAME="_profilemgmt_"  VALUE="Variables._profilemgmt_" REPLACEALL="Variables._profilemgmt_"/>
+						<NOBR><XLAT.STREAM KEY="dvin/Common/Username"/>:</NOBR>
+			        </THEN>
+			        <ELSE>
+						<XLAT.STREAM KEY="dvin/Common/Username"/>:
+					</ELSE>
+			        </IF>
+				</td>
+				<td CLASS="form-inset" nowrap="nowrap">
+			       <INPUT NAME="pattern" TYPE="text" SIZE="32" MAXLENGTH="255"/><br/>
+					<IF COND="IsVariable._profilemgmt_!=true">
+			        <THEN><XLAT.STREAM KEY="dvin/UI/Admin/PleaveblanktoselectallusersP"/>
+					</THEN>
+			        </IF>
+				</td><td><BR /></td>
+			</tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<TR>
+				<TD class="form-label-text"></TD><TD class="form-inset">
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/SelectUser" VARNAME="_XLAT_"/>
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/SelectUser" VARNAME="mouseover" ESCAPE="true"/>
+					<IF COND="IsVariable._profilemgmt_=true">
+					<THEN>
+						<A HREF="javascript:void(0);"  onclick="document.forms['AppForm'].submit();return false;" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Select"/></CALLELEMENT></A>
+					</THEN>
+					<ELSE>
+						<A HREF="javascript:void(0);"  onclick="document.forms['AppForm'].submit();return false;" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Select"/></CALLELEMENT></A>
+					</ELSE>
+					</IF>
+					<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/User/Front"/>
+					<INPUT TYPE="HIDDEN" NAME="action" VALUE="list"/>
+				</TD>
+			</TR>
+	</table>
+	</td></tr>
+</table>
+<div class="width-outer-50">
+</div>
+</then>
+<else>
+
+   <IF COND="IsVariable._profilemgmt_=true">
+   <THEN>
+		<SETVAR NAME="pagetype"  VALUE="front"/>
+
+		<IF COND="IsVariable.pattern!=true">
+		<THEN>
+            <callelement NAME="OpenMarket/Xcelerate/Admin/User/ShowUserProfiles" />
+		</THEN>
+		<ELSE>
+			<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.pattern"/>
+            <IF COND="Variables.errno!=0">
+            <THEN>
+				<DIV class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/UserProfileManagement"/></DIV><P/>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <ARGUMENT NAME="error" VALUE="UserNotFound"/>
+                </CALLELEMENT>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/List">
+					<ARGUMENT NAME="action" VALUE="ask"/>
+					<ARGUMENT NAME="showtitle" VALUE="false"/>
+				</CALLELEMENT>
+            </THEN>
+			<ELSE>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/ShowUserProfiles"/>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+	</THEN>
+	<ELSE>
+
+       <IF COND="IsVariable.pattern!=true">
+       <THEN>
+
+            <setvar NAME="singleUser" VALUE="no"/>
+   	       	<callelement NAME="OpenMarket/Xcelerate/Admin/User/Show">
+           	    <argument NAME="ValidUser"  VALUE="yes"/>
+       		</callelement>
+
+       </THEN>
+       <ELSE>
+           <USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.pattern"/>
+            <IF COND="Variables.errno!=-13051">
+            <THEN>
+                <CCUSER.GETID NAME="myobj" VARNAME="useridvarname"/>
+	   	<ROLEMANAGER.GETROLENAMES LISTVARNAME="allacl"/>
+            </THEN>
+            </IF>
+           <if COND="IsVariable.useridvarname!=true">
+           <then>
+                <LOGMSG STR="Invalid User"/>
+                <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                    <argument NAME="error" VALUE="UserNotFound"/>
+                </callelement>
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/User/List">
+					<ARGUMENT NAME="action" VALUE="ask"/>
+					<ARGUMENT NAME="showtitle" VALUE="false"/>
+				</CALLELEMENT>
+          </then>
+	  <else>
+	        <setvar NAME="singleUser" VALUE="yes"/>
+	       	<callelement NAME="OpenMarket/Xcelerate/Admin/User/Show">
+           	    <argument NAME="ValidUser"  VALUE="yes"/>
+       		</callelement>
+	  </else>
+          </if>
+       </ELSE>
+       </IF>
+
+   </ELSE>
+   </IF>
+
+</else>
+</if>
+
+</FTCS>

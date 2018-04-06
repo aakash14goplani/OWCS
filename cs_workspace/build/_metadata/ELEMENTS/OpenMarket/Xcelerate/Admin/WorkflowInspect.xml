@@ -1,0 +1,444 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/WorkflowInspect
+-
+- INPUT
+-
+- OUTPUT
+-
+HISTORY
+ [2008-02-25 KGF]
+ * XSS fixes: csvar->string.stream and proper html special char escaping
+   for description field in display and forms
+-->
+
+
+<!-- Display only a simple table if we're not on the process pages -->
+<table BORDER="0" CELLSPACING="0" CELLPADDING="0" class="width-outer-70">
+<tr><td>
+	<if COND="Variables.subaction=steps">
+	<then>
+	    <span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/WorkflowProcessSteps"/>: </span>
+	     <if COND="Variables.action!=confirmdelete"><then>
+		    <span class="title-value-text"><STRING.STREAM VARIABLE="wfp:description"/></span><p/>
+		</then></if>
+	</then>
+	<else>
+		<if COND="Variables.subaction=functions">
+		<then>
+	        <span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/WorkflowProcessFunctions"/>: </span>
+	    </then>
+	    <else>
+	        <if COND="Variables.action=graph"><then>
+	            <span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/WorkflowProcessGraph"/>: </span>
+	        </then>
+	        <else>
+	            <if COND="Variables.action!=confirmdelete"><then>
+	                <span class="title-text"><XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>: </span>
+	            </then></if>
+	        </else></if>
+	    </else>
+	    </if>
+	    <if COND="Variables.action!=confirmdelete"><then>
+		    <span class="title-value-text"><STRING.STREAM VARIABLE="wfp:name"/></span><p/>
+		</then></if>
+	</else>
+	</if>
+</td></tr>
+<if COND="Variables.action!=confirmdelete"><then>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</then></if>
+</table>
+
+<if COND="Variables.inspectlevel=short"><then>   
+    <!-- The edit pages are using this, so we have to save the information in hidden fields -->
+
+	<SETVAR NAME="OutputQString" VALUE="Variables.empty"/>
+	<STRING.ENCODE VARIABLE="wfp:description" VARNAME="OutputQString"/>
+	<INPUT TYPE="HIDDEN" NAME="description" VALUE="Variables.OutputQString" REPLACEALL="Variables.OutputQString"/>
+	<STRING.ENCODE VARIABLE="wfp:name" VARNAME="wfp:nameEnc"/>
+    <INPUT TYPE="HIDDEN" NAME="pName"       VALUE="Variables.wfp:nameEnc"        REPLACEALL="Variables.wfp:nameEnc"/>
+	<INPUT TYPE="HIDDEN" NAME="startstep"   VALUE="Variables.wfp:startstep"   REPLACEALL="Variables.wfp:startstep"/>
+	<INPUT TYPE="HIDDEN" NAME="pubid"       VALUE="Variables.wfp:sitessites"  REPLACEALL="Variables.wfp:sitessites"/>
+	<INPUT TYPE="HIDDEN" NAME="assettype"   VALUE="Variables.wfp:typestypes"  REPLACEALL="Variables.wfp:typestypes"/>
+	<INPUT TYPE="HIDDEN" NAME="roles"       VALUE="Variables.wfp:rolesroles"  REPLACEALL="Variables.wfp:rolesroles"/>
+	<INPUT TYPE="HIDDEN" NAME="adminsroles" VALUE="Variables.wfp:adminsroles" REPLACEALL="Variables.wfp:adminsroles"/>
+</then>
+</if>
+
+<!-- Table Header -->
+			<table class="width-outer-50 margin-top-zero" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">				             
+			
+                <if COND="Variables.action!=confirmdelete"><then>								
+				<tr>
+                    <td class="form-label-text" VALIGN="TOP" colspan="3"> 
+                    	<callelement NAME="OpenMarket/Xcelerate/Admin/WorkflowProcessBar"/>
+				    </td>
+                </tr> 
+			
+              	<!--<tr><td colspan="3" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>-->
+                </then></if>
+
+
+				<!-- Item -->
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Admin/ProcessName"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<STRING.STREAM VALUE="Variables.wfp:name"/>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/Common/Description"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<STRING.STREAM VARIABLE="wfp:description"/>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+
+			<if COND="Variables.inspectlevel!=short">
+			<then>                       
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Admin/StartStep"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<WORKFLOWENGINE.GETPROCESSID ID="Variables.wfp:id" OBJVARNAME="newprocess"/>
+						<WORKFLOWPROCESS.GETINITIALSTEPID NAME="newprocess" VARNAME="startstp"/>
+						<WORKFLOWPROCESS.GETSTEP NAME="newprocess" VALUE="Variables.startstp" OBJVARNAME="strtstpobj"/>
+						<WORKFLOWSTEP.GETNAME NAME="strtstpobj" VARNAME="tname"/>
+						<if COND="IsVariable.tname=true">
+						<then>
+                   		    <STRING.STREAM VALUE="Variables.tname"/>
+						</then>
+						<else>
+							<setvar NAME="tname" VALUE="Variables.empty"/>
+							&nbsp;
+						</else>
+						</if>
+					</td> 
+                </tr> 
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			</then></if>
+
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/Common/Sites"/>:
+					</td>
+                    <td><br/></td> 
+					<td class="form-inset">
+						<!-- get description of sites --> 
+						<setvar NAME="tablename" VALUE="Publication"/>
+						<if COND="IsVariable.wfp:sitessites=true">
+						<then>
+							<if COND="Variables.wfp:sitessites=_ALL_">
+							<then>
+								<XLAT.STREAM KEY="dvin/Common/Any"/><br/>	
+							</then>
+							<else>
+								<STRINGLIST NAME="sites" STR="Variables.wfp:sitessites" DELIM=";"/>
+								<if COND="sites.#numRows!=0">
+								<then>
+       						    <loop LIST="sites">
+									<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+										<ARGUMENT NAME="columnvalue" VALUE="sites.ITEM"/>
+										<ARGUMENT NAME="type" VALUE="Long"/>
+									</CALLELEMENT>
+									<IF COND="Variables.validatedstatus=true">
+									<THEN>
+										<execsql LIST="sdesc" SQL="select description from Publication where id=sites.ITEM"/>
+									</THEN>
+									</IF>
+									<STRING.STREAM VALUE="sdesc.description"/><br/>
+       							</loop>
+								</then>
+								</if>
+
+							</else>
+							</if>
+						</then>
+						</if>
+					</td> 
+                </tr> 
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Common/AssetTypes"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="IsVariable.wfp:typestypes=true">
+						<then>
+							<if COND="Variables.wfp:typestypes=_ALL_">
+							<then>
+								<XLAT.STREAM KEY="dvin/Common/Any"/><br/>	
+							</then>
+							<else>					
+								<STRINGLIST NAME="assets" STR="Variables.wfp:typestypes" DELIM=";"/>
+								<if COND="assets.#numRows!=0">
+								<then>
+									<loop LIST="assets">
+										<ASSETTYPE.LOAD NAME="type" TYPE="assets.ITEM"/>
+										<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+										<STRING.STREAM VALUE="Variables.ATdesc"/><br/>
+									</loop>
+								</then>
+								<else>
+									&nbsp;
+								</else>
+								</if>
+							</else>
+							</if>
+						</then>
+						</if>
+					</td> 
+                </tr> 
+                <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			<if COND="Variables.inspectlevel!=short">
+			<then>  
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/Common/Roles"/>: 
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="IsVariable.wfp:rolesroles=true">
+						<then>
+							<if COND="Variables.wfp:rolesroles=_ALL_">
+							<then>
+								<XLAT.STREAM KEY="dvin/Common/Any"/><br/>	
+							</then>
+							<else>
+								<!-- rolesroles is the only one with , separated -->
+								<STRINGLIST NAME="roles" STR="Variables.wfp:rolesroles" DELIM=","/>
+								<if COND="roles.#numRows!=0">
+								<then>
+									<loop LIST="roles">
+										<STRING.STREAM VALUE="roles.ITEM"/><br/>
+									</loop>
+								</then>
+								</if>
+							</else>
+							</if>
+						</then>
+						</if>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Admin/AdminRoles"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="IsVariable.wfp:adminsroles=true">
+						<then>
+							<if COND="Variables.wfp:adminsroles=_ALL_">
+							<then>
+								<XLAT.STREAM KEY="dvin/Common/Any"/><br/>	
+							</then>
+							<else>
+								<STRINGLIST NAME="admnrole" STR="Variables.wfp:adminsroles" DELIM=","/>
+								<if COND="admnrole.#numRows!=0">
+								<then>
+									<loop LIST="admnrole">
+										<STRING.STREAM VALUE="admnrole.ITEM"/><br/>
+									</loop>
+								</then>
+								</if>
+							</else>
+							</if>
+						</then>
+						</if>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<!-- Item new -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Admin/CanSetProcessDeadline"/>: 
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="Variables.wfp:deadlinetype=ask">
+						<then>
+							<XLAT.STREAM KEY="dvin/Common/allowed"/>		
+						</then>
+						<else>
+							<XLAT.STREAM KEY="dvin/Common/notallowed"/>
+						</else>
+						</if>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/UI/Admin/DelegateActions"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="IsVariable.wfp:actionsactionTotal=true">
+						<then>
+							<if COND="Variables.wfp:actionsactionTotal!=0">
+							<then>
+								<setcounter NAME="DLGACTIONS" VALUE="0"/>
+								<loop FROM="0" COUNT="Variables.wfp:actionsactionTotal">
+									<setvar NAME="tmp" VALUE="Variables.wfp:actionsactionCounters.DLGACTIONS"/>
+									<WORKFLOWENGINE.GETDELEGATEACTIONID ID="Variables.wfp:actionsactionCounters.DLGACTIONS" OBJVARNAME="dlgobj"/>
+									<WORKFLOWACTION.GETNAME NAME="dlgobj" VARNAME="dlgname"/>
+			 						&nbsp;<STRING.STREAM VALUE="Variables.dlgname"/><br/>
+									<inccounter NAME="DLGACTIONS" VALUE="1"/>
+								</loop>
+							</then>
+							<else>
+								<XLAT.STREAM KEY="dvin/UI/Admin/Nodelegateactionscurrentlydefined"/>
+							</else>
+							</if>
+						</then>
+						<else>
+							<XLAT.STREAM KEY="dvin/UI/Admin/Nodelegateactionscurrentlydefined"/>
+						</else>
+						</if>
+					</td> 
+                </tr> 
+				<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+			</then></if>
+
+        
+				<!-- Item -->
+				<tr>
+					<td class="form-label-text" VALIGN="TOP">
+						<XLAT.STREAM KEY="dvin/AT/Common/ID"/>:
+					</td> 
+                    <td><br/></td>
+					<td class="form-inset">
+						<if COND="Variables.action=new">
+						<then>
+                               (<XLAT.STREAM KEY="dvin/Common/lcnew"/>)
+						</then>
+                           <else>
+                               <if COND="IsVariable.wfp:id=true"><then>
+                                   <STRING.STREAM VALUE="Variables.wfp:id"/>
+                               </then><else>
+							    <if COND="IsVariable.processid=true">
+								<then>
+                                      <STRING.STREAM VALUE="Variables.processid"/>
+								</then><else>
+							       &nbsp;
+								</else></if>
+                               </else></if>
+                           </else>
+						</if>
+					</td> 
+                </tr> 
+				
+							<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+				<tr>
+					<td><BR/></td><td><BR/></td>
+					<td>
+					<if COND="Variables.action=confirmdelete">
+			<then>
+				<if COND="Variables.subaction=process">
+				<then>
+				<!-- Buttons on the form that gets confirmation for delete -->
+					<XLAT.LOOKUP KEY="dvin/UI/CancelEdits" VARNAME="_XLAT_" ESCAPE="true"/>
+					<setvar NAME="CancelFrom" VALUE="CancelDeletingProcess"/>
+					<INPUT TYPE="HIDDEN" NAME="CancelFrom" VALUE="Variables.CancelFrom" REPLACEALL="Variables.CancelFrom"/>
+					<A HREF="javascript: CancelProcess(document.forms[0], 'Variables.wfp:name');" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.wfp:name,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/DeleteProcess" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript:DeleteProcess(document.forms[0], Variables.wfp:id);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.wfp:id,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/DeleteProcess"/></CALLELEMENT></A>
+				</then>
+				</if>
+			</then>
+			<else>
+				<if COND="IsVariable.subaction!=true">
+				<then>
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/ViewSteps" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript: ViewSteps(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/ViewSteps"/></CALLELEMENT></A>
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/ViewFunctionPrivs" VARNAME="_XLAT_" ESCAPE="true"/>
+					<A HREF="javascript: ViewFunctionPrivs(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/ViewFunctionPrivs"/></CALLELEMENT></A>				
+				</then>
+				<else>
+				<if COND="Variables.subaction=functions">
+				<then>
+					<if COND="Variables.action=details">
+					<then>
+						<callelement NAME="OpenMarket/Xcelerate/Admin/FunctionPrivs/List">
+							<argument NAME="privaction" VALUE="details"/>
+						</callelement>
+						<!-- Back to Inspect screen -->
+						<XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_" ESCAPE="true" ENCODE="false"/>
+						<A HREF="javascript: InspectProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.wfp:name,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Back"/></CALLELEMENT></A>
+					</then>
+					<else>
+						<callelement NAME="OpenMarket/Xcelerate/Admin/FunctionPrivs/List">
+							<argument NAME="privaction" VALUE="update"/>
+						</callelement>
+						<callelement NAME="OpenMarket/Xcelerate/Admin/WorkflowButtons"/>
+					</else>
+					</if>
+					
+			</then>
+			<else>
+				<if COND="Variables.subaction=steps">
+				<then>
+					<table cellpadding="0" cellspacing="0" border="0">
+					<callelement NAME="OpenMarket/Xcelerate/Admin/WorkflowSteps"/>
+					<!-- Back to Inspect screen -->
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+					<if COND="Variables.inspectlevel!=short">
+					<then>
+					<tr><td colspan="2"><BR/></td><td><XLAT.LOOKUP KEY="dvin/UI/Back" VARNAME="_XLAT_" ESCAPE="true" ENCODE="false"/>
+						<SPAN class="width-outer-70"><A HREF="javascript: InspectProcess(document.forms[0]);" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.wfp:name,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Back"/></CALLELEMENT></A></SPAN>
+					</td>
+					</tr>
+					
+					</then>
+					<else>
+					<tr><td colspan="2"><BR/></td><td>
+					<callelement NAME="OpenMarket/Xcelerate/Admin/WorkflowButtons"/></td>
+					</tr>
+					</else>
+					</if>
+					
+					</table>	
+				</then>
+				<else>
+					<if COND="Variables.subaction=graph">
+					<then>
+							<callelement NAME="OpenMarket/Xcelerate/Admin/WorkflowGraph"/>
+					</then>
+					</if>
+				</else>
+				</if>
+			</else>
+			</if>
+</else>
+</if>			
+			</else>
+			</if></td>
+				</tr>
+				
+			<!-- Table Footer -->
+			</table>
+			
+
+</FTCS> 
+

@@ -1,0 +1,189 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/ArgsForm
+
+ INPUT
+		Variables.AssetType
+     asset scatter with ContentDetails prefix
+ OUTPUT
+
+-->
+<SCRIPT LANGUAGE="JavaScript">
+
+<![CDATA[
+
+function addArgument(ourPage,nextstep,field)
+{
+	var obj = document.forms[0].elements[0];
+	var argname=obj.form.elements[field];
+	if ( isblank(argname.value)) {
+	      ]]>
+	      alert("<XLAT.STREAM KEY="dvin/Common/Youmustspecifyargument" ESCAPE="true" ENCODE="false"/>");
+	      <![CDATA[
+			obj.form.elements[field].focus();
+		return false;
+	}
+	Fixpagename(ourPage,nextstep);
+	return false;
+}
+function addValue(ourPage,nextstep,field)
+{
+	var obj = document.forms[0].elements[0];
+	var argname=obj.form.elements[field];
+	if ( isblank(argname.value)) {
+	      ]]>
+	      alert("<XLAT.STREAM KEY="dvin/Common/Youmustspecifyvalue" ESCAPE="true" ENCODE="false"/>");
+	      <![CDATA[
+			obj.form.elements[field].focus();
+		return false;
+	}
+	Fixpagename(ourPage,nextstep);
+	return false;
+}
+
+function clearValue(ourPage,nextstep,field)
+{
+	var obj = document.forms[0].elements[0];
+	obj.form.elements[field+'value'].value="";
+	obj.form.elements[field+'description'].value="";
+	Fixpagename(ourPage,nextstep);
+	return false;
+}
+
+]]>
+</SCRIPT>
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<tr>
+	<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/LegalArgs"/>:</td>
+	<td></td>
+	<td class="form-inset">
+	<table border="0" cellpadding="0" cellspacing="0"><tr><td>
+	<SETCOUNTER NAME="nthArg" VALUE="Variables.ContentDetails:Arguments:Total"/>
+	<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:name" VALUE="" REPLACEALL="Counters.nthArg,Variables.AssetType"/>
+	<INPUT TYPE="HIDDEN" NAME="Variables.AssetType:Arguments:Counters.nthArg:required" VALUE="false" REPLACEALL="Variables.AssetType,Counters.nthArg"/>
+	<INPUT TYPE="HIDDEN" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Total" VALUE="0" REPLACEALL="Variables.AssetType,Counters.nthArg"/>
+	<XLAT.LOOKUP KEY="dvin/Common/AddNewArg" VARNAME="_XLAT_"/>
+	<XLAT.LOOKUP KEY="dvin/Common/AddNewArg" VARNAME="mouseover" ESCAPE="true"/>
+	</td><td>
+	<a href="javascript:void(0);" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" onClick="return addArgument('Variables.ThisPage', 'ContentFormName','Variables.AssetType:Arguments:Counters.nthArg:name' )" REPLACEALL="Variables.ThisPage,Variables.mouseover,Variables.AssetType,Counters.nthArg"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddArgument"/></CALLELEMENT></a>
+<INPUT TYPE="hidden" NAME="addNewArg" VALUE="Variables._XLAT_" REPLACEALL="Variables._XLAT_,"/>
+	</td></tr></table>
+	</td>
+</tr>
+
+<SETCOUNTER NAME="nthArg" VALUE="0"/>
+<if COND="Variables.ContentDetails:Arguments:Total!=0">
+<then>
+	<LOOP COUNT="Variables.ContentDetails:Arguments:Total">
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+		<td class="form-label-text" VALIGN="TOP" ><XLAT.STREAM KEY="dvin/Common/Argument"/>:</td>
+		<td></td>
+		<td class="form-inset">
+			<setvar NAME="name" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:name"/>
+			<div style="float: left">
+			<STRING.ENCODE VARNAME="nameEnc" VARIABLE="name"/>
+			<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:name" VALUE="Variables.nameEnc" MAXLENGTH="64" REPLACEALL="Counters.nthArg,Variables.AssetType,Variables.nameEnc"/></div>
+			<setvar NAME="required" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:required"/>
+		<div>
+			<if COND="Variables.required=true">
+			<then> 
+				<INPUT TYPE="RADIO" ID="rb-Variables.AssetType:Arguments:Counters.nthArg:req" NAME="Variables.AssetType:Arguments:Counters.nthArg:required" CHECKED="true" VALUE="true" REPLACEALL="Variables.AssetType,Counters.nthArg"/><label for="rb-Variables.AssetType:Arguments:Counters.nthArg:req" REPLACEALL="Variables.AssetType,Counters.nthArg"><XLAT.STREAM KEY="dvin/Common/RequiredArgument"/></label>
+				<INPUT TYPE="RADIO" ID="rb-Variables.AssetType:Arguments:Counters.nthArg:opt" NAME="Variables.AssetType:Arguments:Counters.nthArg:required" VALUE="false" REPLACEALL="Variables.AssetType,Counters.nthArg"/><label for="rb-Variables.AssetType:Arguments:Counters.nthArg:opt" REPLACEALL="Variables.AssetType,Counters.nthArg"><XLAT.STREAM KEY="dvin/Common/OptionalArgument"/></label>
+			</then>
+			<else>
+				<INPUT TYPE="RADIO" ID="rb-Variables.AssetType:Arguments:Counters.nthArg:req" NAME="Variables.AssetType:Arguments:Counters.nthArg:required" VALUE="true" REPLACEALL="Variables.AssetType,Counters.nthArg"/><label for="rb-Variables.AssetType:Arguments:Counters.nthArg:req" REPLACEALL="Variables.AssetType,Counters.nthArg"><XLAT.STREAM KEY="dvin/Common/RequiredArgument"/></label>
+				<INPUT TYPE="RADIO" ID="rb-Variables.AssetType:Arguments:Counters.nthArg:opt" NAME="Variables.AssetType:Arguments:Counters.nthArg:required" CHECKED="true" VALUE="false" REPLACEALL="Variables.AssetType,Counters.nthArg"/><label for="rb-Variables.AssetType:Arguments:Counters.nthArg:opt" REPLACEALL="Variables.AssetType,Counters.nthArg"><XLAT.STREAM KEY="dvin/Common/OptionalArgument"/></label>
+			</else>
+			</if>
+			</div>
+		</td>
+		</tr>
+
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/ArgumentDescription"/>:</td>
+		<td></td>
+		<td class="form-inset">
+			<setvar NAME="description" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:description"/>
+			<STRING.ENCODE VARNAME="descriptionEnc" VARIABLE="description"/>
+			<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:description" VALUE="Variables.descriptionEnc"  SIZE="32" MAXLENGTH="255" REPLACEALL="Counters.nthArg,Variables.AssetType,Variables.descriptionEnc"/>
+		</td>
+		</tr>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+		<tr>
+		<td class="form-label-text"></td>
+		<td></td>
+		<td class="form-inset">
+				<div class="form-label-text" style="padding:0;margin:0;height:auto;text-align:left;"><XLAT.STREAM KEY="dvin/Common/LegalValues"/>:</div>
+				<setvar NAME="numValues" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:values:Total"/>
+				<SETCOUNTER NAME="nthValue" VALUE="0"/>
+				
+				<table style="margin:8px">
+					<tr>
+					<td></td>
+						<td><XLAT.STREAM KEY="dvin/Common/Value"/></td>
+						<td><XLAT.STREAM KEY="dvin/Common/ValueDescription"/></td>
+						<td></td>
+					</tr>
+					<if COND="Variables.numValues!=0">
+					<then>
+						<LOOP COUNT="Variables.numValues">
+							<tr>
+							<td>
+								<setvar NAME="value" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:value"/>
+ 					<XLAT.LOOKUP KEY="dvin/UI/Deletethisitem" VARNAME="_XLAT_"/>
+					<XLAT.LOOKUP KEY="dvin/UI/Deletethisitem" VARNAME="mouseover" ESCAPE="true"/>													<A HREF="javascript:clearValue('Variables.ThisPage', 'ContentFormName','Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:');" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.ThisPage,Counters.nthArg,Variables.AssetType,Counters.nthValue,Variables.mouseover">
+					<img hspace="2" vspace="4" height="14" width="14" src="Variables.cs_imagedir/graphics/common/icon/iconDeleteContent.gif" border="0" ALT="Variables._XLAT_" title="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+					</A></td>
+					<td>
+					<STRING.ENCODE VARNAME="valueEnc" VARIABLE="value"/>
+					<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:value" VALUE="Variables.valueEnc" SIZE="32" MAXLENGTH="255" REPLACEALL="Counters.nthArg,Variables.AssetType,Counters.nthValue,Variables.valueEnc"/>
+							</td>
+							<td>
+								<setvar NAME="valdescription" VALUE="Variables.ContentDetails:Arguments:Counters.nthArg:values:Counters.nthValue:description"/>
+								<STRING.ENCODE VARNAME="valdescriptionEnc" VARIABLE="valdescription"/>
+								<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:description" VALUE="Variables.valdescriptionEnc" SIZE="32" MAXLENGTH="255" REPLACEALL="Counters.nthArg,Variables.AssetType,Counters.nthValue,Variables.valdescriptionEnc"/>
+							</td>
+							<td></td>
+							</tr>
+							<INCCOUNTER NAME="nthValue" VALUE="1"/>
+						</LOOP>
+					</then>
+					</if>
+					<tr>
+					<td></td>	<td>
+
+<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:value" VALUE="" SIZE="32" MAXLENGTH="255" REPLACEALL="Counters.nthArg,Variables.AssetType,Counters.nthValue"/>
+						</td>
+						<td>
+							<INPUT TYPE="text" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:description" VALUE="" SIZE="32" MAXLENGTH="255" REPLACEALL="Counters.nthArg,Variables.AssetType,Counters.nthValue"/>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+					
+					<td></td><td colspan="3">
+							<XLAT.LOOKUP KEY="dvin/Common/AddNewValue" VARNAME="addNewValue"/>
+	<a href="javascript:void(0);" onClick="return addValue('Variables.ThisPage', 'ContentFormName','Variables.AssetType:Arguments:Counters.nthArg:values:Counters.nthValue:value')" REPLACEALL="Variables.ThisPage,Variables.AssetType,Counters.nthArg,Counters.nthValue"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/AddLegalValue"/></CALLELEMENT></a>
+							
+							<INPUT TYPE="hidden" NAME="addNewValue" VALUE="Variables.addNewValue" REPLACEALL="Variables.addNewValue"/>
+						</td>
+					</tr>
+				</table>
+
+		</td>
+		</tr>
+		<INCCOUNTER NAME="nthValue" VALUE="1"/>
+		<INPUT TYPE="hidden" NAME="Variables.AssetType:Arguments:Counters.nthArg:values:Total" VALUE="Counters.nthValue" REPLACEALL="Counters.nthArg,Variables.AssetType,Counters.nthValue"/>
+		<INCCOUNTER NAME="nthArg" VALUE="1"/>
+	</LOOP>
+</then>
+</if>
+
+<INCCOUNTER NAME="nthArg" VALUE="1"/>
+<INPUT TYPE="hidden" NAME="Variables.AssetType:Arguments:Total" VALUE="Counters.nthArg" REPLACEALL="Counters.nthArg,Variables.AssetType"/>
+		 		
+
+</FTCS>

@@ -1,0 +1,543 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/DelegateAssignmentFront
+-
+- INPUT
+-
+- OUTPUT
+-
+
+COMMENTS:
+
+	Purpose of this element
+	This XML element basically paints the Delegate Assignment Screen. When users choose to delegate an assignment from the drop down options in the 
+	Status screen we need to display a choice of user-lists filtered according to roles. In Other words, for each role associated with the workflow 
+	process, we need to display the available list of users to whom the current asset can be DELEGATED TO.
+	
+	There are two issues in this regard. If the user delegating the asset has WorkflowAdmin roles i.e. roles defined as Admin roles in the
+	workflow-process definition, then that user is allowed to delegate the asset from any user who is currently assigned the asset (of any role) 
+	to any other available user in the same role.
+	
+	If the user delegating the asset DOES NOT have atleast one of the roles in the set of workflow admin roles(defined in the workflow process defn)
+	then that user is allowed to delegate the asset to other available users ONLY in the same set of roles that the current user also has.
+			
+	This logic is implemented by the following element.  This page is called by the OpenMarket\Xcelerate\Actions\AssetMgt\StatusDetail.xml element
+	
+	The input to this element: Asset id and Asset type.
+	The output of this element is a set of Drop down boxes giving users the choice to select the roles and the corresponding list of possible delegates
+	will change according to the roles selected. Note however that an asset can be delegated to only one SINGLE user. The mapping is always one-one and within
+	the role domain.
+
+	- Sathish Paul Leo
+-->
+<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetType"/>
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+
+<SCRIPT LANGUAGE="JavaScript">
+<![CDATA[
+
+function DelegateAssignment()
+{
+   var obj = document.forms[0].elements[0];
+   
+   if (typeof(obj.form.elements['DelegateUser']) == 'undefined')
+   {
+     ]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Error/NoAvaiableUserForDelegation" ESCAPE="true" ENCODE="false"/>");
+     <![CDATA[   
+     return false;
+   }
+   
+   if (obj.form.elements['DelegateUser'].selectedIndex=="-1")
+   {
+     ]]>
+     alert("<XLAT.STREAM KEY="dvin/UI/Error/YouMustPickAUserForDelegation" ESCAPE="true" ENCODE="false"/>");
+     <![CDATA[
+     return false;
+   }
+   
+   return true;
+}
+
+function ChangeAssignment()
+{
+   var obj = document.forms[0].elements[0];
+
+   obj.form.elements['pagename'].value = "OpenMarket/Xcelerate/Actions/DelegateAssignmentFront";
+   obj.form.submit();
+   return false;
+}
+
+]]>
+</SCRIPT>
+
+<WORKFLOWASSET.LOAD ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+<ASSET.GET NAME="theAsset" FIELD="description" OUTPUT="assetdesc" />
+<ASSET.GETASSETTYPE NAME="theAsset" OUTNAME="type"/>
+<ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="atDescription"/>
+
+<SETVAR NAME="userisworkflowadmin" VALUE="false"/>
+<WorkflowEngine.GetObjectWorkflowProcess OBJECT="workflowasset" VARNAME="workflowid" />
+<WorkflowEngine.GetProcessID ID="Variables.workflowid" OBJVARNAME="workflowobj" />
+<WorkflowProcess.GetAdminRoles NAME="workflowobj" OBJVARNAME="adminrolesobj"/>
+<ROLELIST.GETALL NAME="adminrolesobj" VARNAME="admnroles"/>
+<if COND="Variables.admnroles!=Variables.empty">
+<then>
+    <STRINGLIST NAME="rlist" STR="Variables.admnroles" DELIM=","/>
+    
+
+    <loop LIST="rlist">
+        <setvar NAME="errno" VALUE="0"/>
+        <isinlist STR="SessionVariables.currentpubACLs" ITEM="rlist.ITEM"/>
+        <if COND="Variables.errno=1">
+        <then>
+            <setvar NAME="userisworkflowadmin" VALUE="true"/>            
+        </then>
+        </if>
+    </loop>
+    <setvar NAME="errno" VALUE="0"/>
+</then>
+</if>
+<!-- CODE FOR ALLOY UI -->
+	<SETVAR NAME="doesUserHaveAdminRoles" VALUE="Variables.userisworkflowadmin" />
+<!-- CODE FOR ALLOY UI -->
+
+
+<setvar NAME="AbortFlag" VALUE="false"/>
+
+<!-- if user is workflow admin, don't check func priv  -->
+<if COND="Variables.userisworkflowadmin=false">
+<then>
+    <WorkflowEngine.isFunctionLegal OBJECT="workflowasset" FUNCTIONNAME="delegate" SITE="SessionVariables.pubid" VARNAME="isLegal" REASONVARNAME="denialreason" MUSTBEASSIGNED="true"/>
+    <if COND="Variables.isLegal=false">
+    <then>
+         <setvar NAME="AbortFlag" VALUE="true"/>
+         <setvar NAME="ErrorName" VALUE="IllegalTransition"/>
+         <setvar NAME="severity" VALUE="info"/>
+    </then>
+    </if>
+</then>
+</if>
+
+<!-- if the asset is checked out by himself, abort -->
+<if COND="Variables.AbortFlag!=true">
+<then>
+    <callelement NAME="OpenMarket/Xcelerate/Actions/RevisionTracking/CheckTrackingEnabled">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+    </callelement>
+    <if COND="Variables.trackingenabled=true">
+    <then>
+        <history TABLE="Variables.AssetType" ASSET="Variables.id" LOCKER="SessionVariables.username" LIST="ItsHistory"/>
+        <if COND="ItsHistory.#numRows!=0">
+        <then>
+            <if COND="ItsHistory.lockedby!=Variables.empty">
+            <then>
+                <SETVAR NAME="AbortFlag" VALUE="true"/>
+                <SETVAR NAME="ErrorName" VALUE="CantDelegateLocked"/>
+                <SETVAR NAME="lockedby" VALUE="SessionVariables.username" />
+                <SETVAR NAME="severity" VALUE="info"/>
+            </then>
+            </if>
+        </then>
+        </if>
+    </then>
+    </if>
+</then>
+</if>
+
+<!-- check if there is a current active assignment for this user. -->
+<if COND="Variables.AbortFlag!=true">
+<then>    
+    <if COND="Variables.userisworkflowadmin=false">
+    <then>
+    	<!-- user is not admin. Check if asset is assigned to user -->
+    	
+        <USERMANAGER.GETLOGINUSER VARNAME="loginUser"/>
+        <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+        <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.loginUser" />
+        <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+        <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+        <!-- If not, it may be the case of assigned to nobody -->
+        <if COND="Variables.workflow_assignmentsTotal=0">
+        <then>
+            <removevar NAME="workflow_assignmentsTotal"/>
+            <LISTOBJECT.CREATE NAME="listobj" COLUMNS="ITEM" />
+            <LISTOBJECT.ADDROW NAME="listobj" ITEM="Variables.empty" />
+            <LISTOBJECT.TOLIST NAME="listobj" LISTVARNAME="assignlist" />
+            <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" ASSIGNEDTO="assignlist" STATUS="active" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+        </then>
+        </if>
+    </then>
+    <else>
+        <WorkflowEngine.GetFilteredAssignments OBJECT="workflowasset" STATUS="active" PREFIX="workflow_assignments" EXCLUDECOMMENTS="true"/>
+    </else>
+    </if>
+
+    <if COND="Variables.workflow_assignmentsTotal=0">
+    <then>
+         <setvar NAME="ErrorName" VALUE="NeedsAssignment"/>
+         <setvar NAME="AbortFlag" VALUE="true"/>
+         <setvar NAME="severity" VALUE="info"/>
+    </then>
+    </if>
+</then>
+</if>         
+     
+<if COND="Variables.AbortFlag!=true">
+<then>    
+    <if COND="IsVariable.assignmentid!=true">
+    <then>
+        <!-- from asset status page -->
+        
+        <WorkflowAssignment.GetID NAME="workflow_assignments0" VARNAME="assignmentid" />
+    </then>
+    </if>
+
+    <if COND="Variables.workflow_assignmentsTotal=1">
+    <then>
+        <setvar NAME="nodelegateuser" VALUE="true" />
+        <WorkflowEngine.GetDelegateeCandidates SITE="SessionVariables.pubid" ID="Variables.assignmentid" LISTVARNAME="delegateusers"/>
+        <if COND="IsList.delegateusers=true">
+        <then>
+            <if COND="delegateusers.#numRows!=0">
+            <then>
+                 <setvar NAME="nodelegateuser" VALUE="false" />
+            </then>
+            </if>
+        </then>
+        </if>
+
+        <if COND="Variables.nodelegateuser=true">    
+        <then>    
+             <setvar NAME="ErrorName" VALUE="NoDelegateUsers"/>
+             <setvar NAME="AbortFlag" VALUE="true"/>
+             <setvar NAME="severity" VALUE="info"/>
+        </then>
+        </if>
+    </then>
+    </if>
+</then>
+</if>
+
+<if COND="Variables.AbortFlag!=true">
+<then>    
+
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+   		<span class="title-text"><XLAT.STREAM KEY="dvin/UI/DelegateAssignmentforAssetType"/>: <STRING.STREAM VALUE="Variables.assetname"/></span>
+		<if COND="Variables.userisworkflowadmin=true">
+		<then>
+			<br/><i>(<XLAT.STREAM KEY="dvin/UI/Asworkflowadministrator"/>)</i><br/>        
+		</then>
+		</if>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+
+<table class="width-outer-50" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+    <tr>
+        <td class="form-label-text">
+            <STRING.STREAM VALUE="Variables.atDescription "/> <XLAT.STREAM KEY="dvin/AT/Common/Name"/>:
+        </td>
+        <td class="form-inset">
+      		<STRING.STREAM VALUE="Variables.assetname" />
+        </td>
+    </tr>
+    
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+    <tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/AT/Common/Description"/>:
+        </td>
+        <td class="form-inset">
+        	<STRING.STREAM VALUE="Variables.assetdesc" />
+        </td>
+    </tr>
+    
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+    <tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/WorkflowProcess"/>:
+        </td>
+        <td class="form-inset">
+            <WorkflowProcess.GetProcessName NAME="workflowobj" VARNAME="workflowname" />
+            <WorkflowAssignment.GetStateID NAME="workflow_assignments0" VARNAME="workflow_stateid" />
+            <WorkflowEngine.GetStateID ID="Variables.workflow_stateid" OBJVARNAME="workflow_state" />
+            <WorkflowState.GetStateDescription NAME="workflow_state" VARNAME="statedesc" />
+             <STRING.STREAM VALUE="Variables.workflowname" /> - <STRING.STREAM VALUE="Variables.statedesc" />      
+             <!-- Code for Alloy UI -->
+             	<SETVAR NAME="workflowProcessName_for_AlloyUI" VALUE="Variables.workflowname" />
+             	<SETVAR NAME="workflowStateDesc_for_AlloyUI" VALUE="Variables.statedesc" />
+             <!-- Code for Alloy UI -->                 
+        </td>
+    </tr>
+    
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+    <tr>
+        <td class="form-label-text">
+            <if COND="Variables.userisworkflowadmin=false">
+            <then>
+                <!-- Code for Alloy UI -->
+                	<SETVAR NAME="username_list_available_for_AlloyUI" VALUE="false" />
+                <!-- Code for Alloy UI -->                                
+                <if COND="Variables.workflow_assignmentsTotal=1" >
+                <then>
+                    <XLAT.STREAM KEY="dvin/UI/AssignedUserRole"/>:
+                </then>
+                <else>
+                    <span class="alert-color">*</span>
+                    
+                    <XLAT.STREAM KEY="dvin/UI/PickaUserRole"/>:
+                </else>
+                </if>
+            </then>
+            <else>
+                 <!-- Code for Alloy UI -->
+                 	<SETVAR NAME="username_list_available_for_AlloyUI" VALUE="true" />
+                 <!-- Code for Alloy UI -->            
+                <if COND="Variables.workflow_assignmentsTotal!=1" >
+                <then>
+                    <span class="alert-color">*</span>
+                </then>
+                </if>
+                <XLAT.STREAM KEY="dvin/Common/AssignedtoCapital"/>:
+            </else>
+            </if>
+        </td>
+        <td class="form-inset">
+            <if COND="Variables.workflow_assignmentsTotal=1" >
+            <then>
+                <WorkflowAssignment.GetAssignedUserRole NAME="workflow_assignments0" VARNAME="assignrole"/>
+                <if COND="Variables.userisworkflowadmin=true">
+                <then>
+                    <WorkflowAssignment.GetAssignedUserID NAME="workflow_assignments0" VARNAME="userid"/>
+             	    <UserManager.GetDisplayableUserName USER="Variables.userid" VARNAME="uname"/>
+                    <if COND="IsVariable.assignrole=true" >
+                    <then>
+                        <STRING.STREAM VALUE="Variables.uname(Variables.assignrole)" />
+					<!-- Code for Alloy UI -->
+						<SETVAR NAME="userName" VALUE="Variables.uname" />
+						<SETVAR NAME="roleName" VALUE="Variables.assignrole" />
+					<!-- Code for Alloy UI -->                                                    
+                    </then>
+                    <else>
+                        <!-- from keep assign list -->
+                        <STRING.STREAM VALUE="Variables.uname" />(<XLAT.STREAM KEY="dvin/Common/Unknown"/>)
+					<!-- Code for Alloy UI -->
+						<XLAT.LOOKUP KEY="dvin/Common/Unknown" VARNAME="unknownRole" />
+						<SETVAR NAME="userName" VALUE="Variables.uname" />
+						<SETVAR NAME="roleName" VALUE="Variables.unknownRole" />
+					<!-- Code for Alloy UI -->                                                                            
+                    </else>
+                    </if>           
+                </then>
+                <else>
+                    <if COND="IsVariable.assignrole=true" >
+                    <then>
+					<STRING.STREAM VALUE="Variables.assignrole" />
+					<!-- Code for Alloy UI -->
+						<SETVAR NAME="roleName" VALUE="Variables.assignrole" />
+					<!-- Code for Alloy UI -->                           
+                    </then>
+                    <else>
+                        <!-- from keep assign list -->
+                        (<XLAT.STREAM KEY="dvin/Common/Unknown"/>)
+					<!-- Code for Alloy UI -->
+						<XLAT.LOOKUP KEY="dvin/Common/Unknown" VARNAME="unknownRole"/>
+						<SETVAR NAME="roleName" VALUE="Variables.unknownRole" />
+					<!-- Code for Alloy UI -->                           
+                    </else>
+                    </if>
+                </else>
+                </if>
+                <STRING.ENCODE VARIABLE="assignmentid" VARNAME="assignmentidEnc"/> 
+                <INPUT TYPE="hidden" NAME="assignmentid" VALUE="Variables.assignmentidEnc" REPLACEALL="Variables.assignmentidEnc"/>
+                        <!-- Code for Alloy UI, retrieve the associated users to which the assignment can be delegated TO -->
+                        <IF COND="IsVariable.populate_Delegate_User_Objects_for_AlloyUI=true">
+                        <THEN>
+	            			<WORKFLOWENGINE.GETDELEGATEECANDIDATES SITE="SessionVariables.pubid" ID="Variables.assignmentid" LISTVARNAME="delegateusers"/>
+	            			<LISTOBJECT.CREATE NAME="myAssigneeList" COLUMNS="delegates" />
+			               <IF COND="delegateusers.#numRows!=0">
+	          		     <THEN>
+	          	              <LOOP LIST="delegateusers">
+								<USERMANAGER.GETDISPLAYABLEUSERNAME USER="delegateusers.ITEM" VARNAME="uname"/>
+								<LISTOBJECT.ADDROW NAME="myAssigneeList" delegates="Variables.uname" />
+	                        		</LOOP>    
+			               </THEN>
+	                		<ELSE>
+				                    <setvar NAME="hasdelegateusers" VALUE="false" />			                    
+				                    <XLAT.LOOKUP KEY="dvin/UI/Noavailableusersfordelegation" VARNAME="NoUsersToDelegate" />
+				                    <LISTOBJECT.ADDROW NAME="myAssigneeList" delegates="Variables.NoUsersToDelegate" />
+			               </ELSE>
+	                		</IF>
+	                		<LISTOBJECT.TOLIST NAME="myAssigneeList" LISTVARNAME="list_of_delegates" />
+						
+						<SETVAR NAME="assignmentID_for_AlloyUI" VALUE="Variables.assignmentid" />
+						<!-- call the jsp element that creates objects that represent delegate information -->
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/populateDelegateUserInformation" />
+					</THEN>
+					</IF>
+                   <!-- Code for Alloy UI -->                
+            </then>
+            <else>
+                <SELECT NAME="assignmentid" SIZE="1" ONCHANGE="return ChangeAssignment();">
+                    <SETCOUNTER NAME="count" VALUE="0"/>
+                    <LOOP COUNT="Variables.workflow_assignmentsTotal">
+                        <WorkflowAssignment.GetAssignedUserRole NAME="workflow_assignmentsCounters.count" VARNAME="assignrole"/>
+                        <WorkflowAssignment.GetID NAME="workflow_assignmentsCounters.count" VARNAME="assignid" />
+                        <if COND="Variables.assignmentid=Variables.assignid">
+                        <then>
+                            <OPTION VALUE="Variables.assignid" SELECTED="yes" REPLACEALL="Variables.assignid" />
+                        </then>
+                        <else>
+                            <OPTION VALUE="Variables.assignid" REPLACEALL="Variables.assignid"/>
+                        </else>
+                        </if>
+                        
+                        <if COND="Variables.userisworkflowadmin=false">
+                        <then>
+                            <STRING.STREAM VALUE="Variables.assignrole"/>
+						<!-- Code for Alloy UI -->
+							<SETVAR NAME="roleName" VALUE="Variables.assignrole" />
+						<!-- Code for Alloy UI -->                            
+                        </then>
+                        <else>
+						<WorkflowAssignment.GetAssignedUserID NAME="workflow_assignmentsCounters.count" VARNAME="userid"/>
+						<UserManager.GetDisplayableUserName USER="Variables.userid" VARNAME="uname"/>
+						<STRING.STREAM VALUE="Variables.uname (Variables.assignrole)" />
+						<!-- Code for Alloy UI -->
+							<SETVAR NAME="roleName" VALUE="Variables.assignrole" />
+							<SETVAR NAME="userName" VALUE="Variables.uname" />
+						<!-- Code for Alloy UI -->
+                        </else>
+                        </if>
+                        
+                        <!-- Code for Alloy UI, retrieve the associated users to which the assignment can be delegated TO -->
+                        <IF COND="IsVariable.populate_Delegate_User_Objects_for_AlloyUI=true">
+                        <THEN>
+	            			<WORKFLOWENGINE.GETDELEGATEECANDIDATES SITE="SessionVariables.pubid" ID="Variables.assignid" LISTVARNAME="delegateusers"/>
+	            			<LISTOBJECT.CREATE NAME="myAssigneeList" COLUMNS="delegates" />
+			               <IF COND="delegateusers.#numRows!=0">
+	          		     <THEN>
+	          	              <LOOP LIST="delegateusers">
+								<USERMANAGER.GETDISPLAYABLEUSERNAME USER="delegateusers.ITEM" VARNAME="uname"/>
+								<LISTOBJECT.ADDROW NAME="myAssigneeList" delegates="Variables.uname" />
+	                        		</LOOP>    
+			               </THEN>
+	                		<ELSE>
+				                    <setvar NAME="hasdelegateusers" VALUE="false" />			                    
+				                    <XLAT.LOOKUP KEY="dvin/UI/Noavailableusersfordelegation" VARNAME="NoUsersToDelegate" />
+				                    <LISTOBJECT.ADDROW NAME="myAssigneeList" delegates="Variables.NoUsersToDelegate" />
+			               </ELSE>
+	                		</IF>
+	                		<LISTOBJECT.TOLIST NAME="myAssigneeList" LISTVARNAME="list_of_delegates" />
+	                		
+	                		<SETVAR NAME="assignmentID_for_AlloyUI" VALUE="Variables.assignid" />
+                        <IF COND="IsVariable.populate_Delegate_User_Objects_for_AlloyUI=true">
+                        <THEN>
+	                		<!-- call the jsp element that creates objects that represent delegate information -->
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/populateDelegateUserInformation" />
+						</THEN>
+						</IF>
+					</THEN>
+					</IF>
+                        <!-- Code for Alloy UI -->
+                        <INCCOUNTER NAME="count" VALUE="1"/>
+                    </LOOP>
+                </SELECT>
+            </else>
+            </if>
+        </td>
+    </tr> 
+                   
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+    <tr>
+        <td class="form-label-text">
+         	<span class="alert-color">*</span><XLAT.STREAM KEY="dvin/UI/Delegateto"/>:
+        </td>
+        <td class="form-inset">
+            <setvar NAME="hasdelegateusers" VALUE="true" />
+            <WorkflowEngine.GetDelegateeCandidates SITE="SessionVariables.pubid" ID="Variables.assignmentid" LISTVARNAME="delegateusers"/>
+             <if COND="delegateusers.#numRows!=0">
+             <then>
+                 <SELECT Name="DelegateUser" SIZE="4" >
+                     <loop LIST="delegateusers">
+                         <USERMANAGER.GETDISPLAYABLEUSERNAME USER="delegateusers.ITEM" VARNAME="uname"/>
+                         <OPTION VALUE="delegateusers.ITEM" REPLACEALL="delegateusers.ITEM"/>
+                         <STRING.STREAM VALUE="Variables.uname"/>
+                     </loop>    
+                 </SELECT>
+             </then>
+             <else>
+                 <setvar NAME="hasdelegateusers" VALUE="false" />
+                 <XLAT.STREAM KEY="dvin/UI/Noavailableusersfordelegation"/>
+             </else>
+             </if>
+        </td>
+    </tr>
+
+    <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+    <tr>
+        <td class="form-label-text">
+            <XLAT.STREAM KEY="dvin/Common/ActionTaken"/>:
+        </td>
+        <td class="form-inset">
+        	<TEXTAREA NAME="delegatecomment" ROWS="8" COLS="60" WRAP="VIRTUAL"></TEXTAREA>
+        </td>
+    </tr>
+   
+	
+	<STRING.ENCODE VARIABLE="PostPage" VARNAME="PostPage"/>
+	<INPUT type="hidden" name="pagename" value="OpenMarket/Xcelerate/Actions/Variables.PostPage"  REPLACEALL="Variables.PostPage"/>
+	<STRING.ENCODE VARIABLE="AssetType" VARNAME="AssetTypeEnc"/> 
+	<INPUT type="hidden" name="AssetType" VALUE="Variables.AssetTypeEnc"  REPLACEALL="Variables.AssetTypeEnc"/>
+	<STRING.ENCODE VARIABLE="id" VARNAME="idEnc"/> 
+	<INPUT type="hidden" name="id" VALUE="Variables.idEnc" REPLACEALL="Variables.idEnc"/>
+
+	<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="mouseover" ESCAPE="true"/>
+	<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_"/>
+	<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/StatusDetailsFront" outstring="urlstatusdetfront">
+		<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+		<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+		<satellite.argument name="AssetType" value="Variables.AssetType"/>
+		<satellite.argument name="id" value="Variables.id"/>
+	</SATELLITE.LINK>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/> 
+	<tr><td></td><td>
+		<A HREF="Variables.urlstatusdetfront" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;"  REPLACEALL="Variables.urlstatusdetfront,Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>  
+		<if COND="Variables.hasdelegateusers=true">
+		<then>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/DelegateAssignment" VARNAME="mouseover" ESCAPE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/AssetMgt/DelegateAssignment" VARNAME="_XLAT_"/>
+			<A HREF="javascript:void(0);" OnClick="if(DelegateAssignment()!=false){document.forms['AppForm'].submit(); return false;}" onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.mouseover"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Delegate"/></CALLELEMENT></A>
+		</then>
+		</if>
+		</td></tr>
+	</table>
+
+
+<div class="width-outer-70">		
+<table></table>
+</div>
+</then>
+<else>
+	<div class="width-outer-70">
+     <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="elem" VALUE="Variables.ErrorName"/>
+        <argument NAME="severity" VALUE="Variables.severity"/>
+     </callelement>
+	</div> 
+     <callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+        <argument NAME="AssetType" VALUE="Variables.AssetType"/>
+        <argument NAME="id"        VALUE="Variables.id"/>
+     </callelement>
+</else>
+</if>
+
+</FTCS>

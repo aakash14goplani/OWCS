@@ -1,0 +1,42 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.0">
+<div class="width-outer-70">
+<SETCOUNTER NAME="UnlockCounter" VALUE="1"/>
+<LOOP UNTIL="Counters.UnlockCounter=Variables.numunlocks">
+    <SETVAR NAME="shouldUnlock" VALUE="Variables.dounlockCounters.UnlockCounter"/>
+    <IF COND="Variables.shouldUnlock=true"><THEN>
+        <!-- clear out errno -->
+        <SETVAR NAME="errno" VALUE="0"/>
+
+        <!-- do the unlock -->
+        <SETVAR NAME="unlockTable" VALUE="Variables.unlockmeTableCounters.UnlockCounter"/>
+        <SETVAR NAME="unlockAsset" VALUE="Variables.unlockmeAssetCounters.UnlockCounter"/>
+        <!-- do the unlock -->
+        <UNLOCKRECORD TABLE="Variables.unlockTable"
+                      ASSET="Variables.unlockAsset"/>
+        <!-- See if track succeeded -->
+        <IF COND="Variables.errno=0">
+             <THEN>
+                  <!-- if succeeded, brag about it -->
+                  <XLAT.LOOKUP KEY="dvin/AdminForms/UnlockRecord" VARNAME="unlocksuccess"/> 
+				  <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables.unlocksuccess"/>
+						<ARGUMENT NAME="severity" VALUE="info"/>
+				   </CALLELEMENT>
+             </THEN>
+             <ELSE>
+                  <!-- otherwise, call an error reporting element -->
+                  <XLAT.LOOKUP KEY="dvin/AdminForms/UnlockRecordfailed" VARNAME="unlockfailed"/>
+				  <CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+						<ARGUMENT NAME="msgtext" VALUE="Variables.unlockfailed"/>
+						<ARGUMENT NAME="severity" VALUE="error"/>
+				  </CALLELEMENT>
+				  <CALLELEMENT NAME="FutureTense/Apps/AdminForms/RevisionMgt/errors"/>
+             </ELSE>
+        </IF>
+    </THEN></IF>
+    <INCCOUNTER NAME="UnlockCounter" VALUE="1"/>
+</LOOP>
+</div>
+</FTCS>

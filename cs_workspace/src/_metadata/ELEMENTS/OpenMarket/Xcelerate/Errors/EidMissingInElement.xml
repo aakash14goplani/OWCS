@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Errors/EidMissingInElement
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+
+<XLAT.STREAM KEY="dvin/UI/Error/EidMissingInElement" ESCAPE="false" ENCODE="false"/>
+<!--
+<p>
+A standard parameter eid=<CSElement_id> is expected in either resdetails1 or resdetails2 
+for the element catalog entry.  Normally this is already added for you except when there is 
+no  space available in resdetails1 and resdetails2.  Please edit your resdetails1 or resdetails2 
+and add this parameter.  Here <CSElement_id_id> is the id of the CSElement asset  
+</p>
+-->
+
+</FTCS> 

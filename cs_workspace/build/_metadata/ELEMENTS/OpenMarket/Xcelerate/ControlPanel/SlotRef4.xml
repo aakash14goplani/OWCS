@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/ControlPanel/SlotRef4
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<replaceall LIST="Variables.beginrefid,Variables.style,Variables.sb_url,Variables.tid,Variables.lockenabled">
+<if COND="IsVariable.style=true">
+<then>
+    <![CDATA[
+    <SPAN id="Variables.beginrefid" STYLE="Variables.style">            
+    ]]>
+</then>
+<else>
+    <![CDATA[
+    <SPAN id="Variables.beginrefid">            
+    ]]>
+</else>
+</if>
+
+<![CDATA[
+<table cellspacing="0" border="0">
+<tr id="bar_Variables.beginrefid">           
+<td>
+    <button class="sb_plus" border="0" id="plus_Variables.beginrefid" title="Select" onclick="site_plus('Variables.beginrefid');" ></button>
+    <button class="sb_slot1" border="0" id="slot_Variables.beginrefid" title="Slot" onclick="openSlotConsole('Variables.sb_url', 'Variables.tid', Variables.lockenabled);" ></button>
+</td>
+
+<td align="right">  
+</td>
+</tr>
+
+<tr>
+<td colspan="2" id="content_Variables.beginrefid">
+]]>
+
+</replaceall>
+
+</FTCS>

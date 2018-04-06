@@ -1,0 +1,203 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 23 $ 
+$Modtime: 7/02/04 4:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildEditUpload.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+
+<if COND="Variables.fieldvalue!=Variables.empty">
+<then>
+<!--    <font SIZE="2">	-->
+    <if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/linktext=true">
+    <then>
+        <if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/mimetype=true">
+        <then>
+            <setvar NAME="assetmakermimetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/mimetype"/>
+			<if COND="Variables.id!=Variables.empty">
+			<then>
+                <SATELLITE.BLOB ASSEMBLER="query" BLOBTABLE="Variables.AssetType" BLOBCOL="Variables.fieldname" BLOBHEADER="Variables.assetmakermimetype" BLOBKEY="id" BLOBWHERE="Variables.id" BLOBNOCACHE="true" OUTSTRING="urlblobserver"/>
+				<XLAT.LOOKUP KEY="dvin/Assetmaker/View" VARNAME="ForView" ESCAPE="true"/>
+                <replaceall LIST="Variables.ForView,Variables.assetmakermimetype, Variables.urlblobserver, 
+							 Variables.fieldname,Variables.AssetType, Variables.id, CS.UniqueID,Variables.fielddescription">
+					<A HREF="Variables.urlblobserver" TARGET="_new"
+						onmouseover="window.status='Variables.ForView';return true;"
+						onmouseout="window.status='';return true;" >
+					<STRING.STREAM VARIABLE="assetmaker/property/Variables.fieldname/inputform/linktext"/><br/>
+					</A>
+				</replaceall>
+			</then>
+			</if>
+        </then>
+        </if>
+    </then>
+    </if>
+<!--    </font>	-->
+</then>
+</if>
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+
+<!--
+set up width and maxlength.  If not specified, then default them.
+-->
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/width=true">
+<then>
+	<setvar NAME="inputfieldsize" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/width"/>
+</then>
+<else>
+	<setvar NAME="inputfieldsize" VALUE="32"/>
+</else>
+</if>
+
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/maxlength=true">
+<then>
+	<setvar NAME="inputmaxlength" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/maxlength"/>
+</then>
+<else>
+	<if COND="IsVariable.assetmaker/property/Variables.fieldname/storage/length=true">
+	<then>
+		<setvar NAME="inputmaxlength" VALUE="Variables.assetmaker/property/Variables.fieldname/storage/length"/>
+	</then>
+	<else>
+		<setvar NAME="inputmaxlength" VALUE="255"/>
+	</else>
+	</if>
+</else>
+</if>
+<div style="display: table;">
+<callelement NAME="OpenMarket/Gator/AttributeTypes/CommonDojoxUploader">
+	<argument NAME="inputTagName" VALUE="Variables.AssetType:Variables.fieldname"/>
+</callelement>
+<IMG style="vertical-align: middle; margin-left: 5px;" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" /><br/>
+</div>
+<if COND="Variables.fieldvalue!=Variables.empty">
+<then>
+    <INPUT NAME="UploadDeleteVariables.fieldname" ONCLICK="setTabDirty()" TYPE="CHECKBOX" VALUE="true" REPLACEALL="Variables.fieldname" style="margin-left: 2px"/>&nbsp;<XLAT.STREAM KEY="dvin/Assetmaker/CheckdeleteUploadFile"/> 
+</then>
+</if>
+<if COND="Variables.fieldvalue!=Variables.empty">
+<then>
+	<if COND="Variables.ThisPage=CopyFront">
+	<then>
+		<setvar NAME="asset_id" VALUE="Variables.Copyid"/>
+	</then>
+	<else>
+		<setvar NAME="asset_id" VALUE="Variables.id"/>
+	</else>
+	</if>
+	<ASSET.LOAD NAME="basicUploadAsset" TYPE="Variables.AssetType" OBJECTID="Variables.asset_id" />
+	<ASSET.GET NAME="basicUploadAsset" FIELD="Variables.fieldname_file" OUTPUT="fileName"/>
+	<IF COND="Variables.fileName!=Variables.empty">
+	<THEN>
+	<callelement NAME="OpenMarket/Gator/FlexibleAssets/Common/DetermineFileType">
+		<argument NAME="filename" VALUE="Variables.fileName"/>
+	</callelement>
+	
+	<IF COND="Variables.filetype=application/unknown">
+	<THEN>
+		<IF COND="IsVariable.assetmakermimetype=true">
+		<THEN>
+			<setvar NAME="filetype" VALUE="Variables.assetmakermimetype"/>		
+		</THEN>
+		</IF>
+	</THEN>
+	</IF>
+	<SETVAR NAME='buildEditUploadJSON' value='{ "1" : {'/>
+	<SETVAR NAME='buildEditUploadJSON' value='Variables.buildEditUploadJSON  "filename": "Variables.fileName", '/>
+	<SETVAR NAME='buildEditUploadJSON' value='Variables.buildEditUploadJSON  "filetype": "Variables.filetype" '/>
+	
+	<div class='FormUploader'>
+	<div class='dojoDndSourceDashedInspect'>
+	<div class='UploadFileDivInspect' name='buildEditUpload_Variables.fieldname_1' REPLACEALL='Variables.fieldname'>
+		<IF COND="Variables.displayable=true">
+		<THEN>
+			<RENDER.GETBLOBURL OUTSTR="urlblobserver" C="Variables.AssetType" CID="Variables.asset_id" FIELD="Variables.fieldname" BLOBHEADER="Variables.filetype" BLOBHEADERNAME1="Content-Disposition" BLOBHEADERVALUE1='inline; filename="Variables.fileName"' BLOBNOCACHE="true" ASSEMBLER="query" />
+			<IF COND="Variables.picture=true">
+			<THEN>
+				<img src="Variables.urlblobserver" data-dojo-type='fw.dijit.UILightbox' data-dojo-props="title:'Variables.fileName', href:'Variables.urlblobserver'" style='width:96px' REPLACEALL="Variables.urlblobserver, Variables.fileName"/>
+			</THEN>
+			<ELSE>
+				<XLAT.LOOKUP KEY="dvin/Assetmaker/ViewFormfield" VARNAME="ViewFormfield" ESCAPE="true" />
+		        <A HREF=" Variables.urlblobserver" onmouseover="window.status='Variables.ViewFormfield';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.ViewFormfield,Variables.urlblobserver" TARGET="_new">
+		        	<img src='#' name='iconImg'/>
+		       	</A>
+			</ELSE>
+			</IF>
+		</THEN>
+		<ELSE>
+			<XLAT.LOOKUP KEY="dvin/Assetmaker/ViewFormfield" VARNAME="ViewFormfield" ESCAPE="true" />
+	       	<RENDER.GETBLOBURL OUTSTR="urlblobserver" C="Variables.AssetType" CID="Variables.asset_id" FIELD="Variables.fieldname" BLOBHEADER="Variables.filetype" BLOBHEADERNAME1="Content-Disposition" BLOBHEADERVALUE1='attachment; filename="Variables.fileName"' BLOBHEADERNAME2="MDT-Type" BLOBHEADERVALUE2="abinary; charset=UTF-8" BLOBNOCACHE="true" ASSEMBLER="query" />
+	        <A HREF=" Variables.urlblobserver" onmouseover="window.status='Variables.ViewFormfield';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables.ViewFormfield,Variables.urlblobserver" TARGET="_new">
+	        	<img src='#' name='iconImg'/>
+	       	</A> 
+		</ELSE>
+		</IF>
+	</div>
+	</div>
+	</div>
+	<SETVAR NAME='buildEditUploadJSON' value='Variables.buildEditUploadJSON} }'/>
+	<REMOVEVAR NAME="asset_id"/>
+	</THEN>
+	<ELSE>
+		<setvar NAME="storagetype" VALUE="Variables.assetmaker/property/Proplist.ITEM/storage/type"/>
+		<if COND="Variables.storagetype=BINARY">
+		<then>
+			<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/mimetype=true">
+			<then>
+				<setvar NAME="assetmakermimetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/mimetype" />
+			</then>
+			<else>
+				<setvar NAME="assetmakermimetype" VALUE="Variables.ContentDetails:mimetype" />
+			</else>
+			</if>
+			<SATELLITE.BLOB ASSEMBLER="query" BLOBTABLE="Variables.AssetType" BLOBCOL="Variables.fieldname" BLOBHEADER="Variables.assetmakermimetype" BLOBKEY="id" BLOBWHERE="Variables.id" BLOBNOCACHE="true" OUTSTRING="urlblobserver">
+			<SATELLITE.ARGUMENT name="blobheadername1" value="content-type"/>
+			<SATELLITE.ARGUMENT name="blobheadervalue1" value="application/octet-stream"/>
+			<SATELLITE.ARGUMENT name="blobheadername2" value="Content-Disposition"/>
+			<SATELLITE.ARGUMENT name="blobheadervalue2" value="attachment;filename=BinaryData"/>
+			<SATELLITE.ARGUMENT name="blobheadername3" value="MDT-Type"/>
+			<SATELLITE.ARGUMENT name="blobheadervalue3" value="abinary; charset=UTF-8"/>
+			</SATELLITE.BLOB>
+			<div><A HREF="Variables.urlblobserver" REPLACEALL="Variables.urlblobserver" TARGET="_new"><XLAT.STREAM KEY="dvin/UI/AssetMgt/DownloadBinaryData"/></A></div>
+		</then>
+		<else>
+			<div><STRING.STREAM VALUE="Variables.fieldvalue"/></div>
+		</else>
+		</if>
+	</ELSE>
+	</IF>
+</then>
+<else>
+	 <SETVAR NAME='buildEditUploadJSON' value=""/>
+	 <INPUT NAME="UploadDeleteVariables.fieldname" TYPE="HIDDEN" VALUE="nofile" REPLACEALL="Variables.fieldname"/>
+</else>
+</if>
+
+<removevar NAME="alttext"/>
+
+<callelement NAME="OpenMarket/Gator/Scripts/ApplyIconsAndTooltip">
+	<argument NAME="AttributeName" VALUE="Variables.fieldname"/>
+	<argument NAME="fileInfoJSON" VALUE='Variables.buildEditUploadJSON'/>
+	<argument NAME="divNamePrefix" VALUE="buildEditUpload_"/>
+</callelement>
+
+</FTCS> 

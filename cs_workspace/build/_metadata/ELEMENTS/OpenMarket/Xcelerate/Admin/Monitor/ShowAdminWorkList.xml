@@ -1,0 +1,402 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/Monitor/ShowAdminWorkList.xml $ 
+$Revision: 30 $ 
+$Modtime: 3/01/04 9:15a $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- ShowAdminWorkList.xml
+-
+- DESCRIPTION
+-    - admin welcome screen
+-
+- HISTORY 
+-->
+
+<!-- first check to see if the user is logged in or not -->
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<STRING.ENCODE VARIABLE="ClearTarget" VARNAME="ClearTarget"/>
+<STRING.ENCODE VARIABLE="pagetype" VARNAME="pagetype"/>
+<if COND="Variables.pagetype=front">
+<then>
+<callelement NAME="OpenMarket/Xcelerate/Admin/Monitor/SearchForm">
+	<argument NAME="ClearTarget" VALUE="Variables.ClearTarget"/>
+      <argument NAME="pagetype" VALUE="Variables.pagetype"/>
+</callelement>
+</then>
+</if>
+
+<if COND="Variables.pagetype=post">
+<then>
+   	<USERMANAGER.GETUSERFROMNAME OBJVARNAME="myobj" USERNAME="Variables.username"/>
+    <CCUSER.GETID NAME="myobj" VARNAME="userid"/>
+   	<if COND="IsVariable.userid!=true">
+   	<then>
+        	<LOGMSG STR="Invalid User"/>
+        	<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+            	<argument NAME="error" VALUE="UserNotFound"/>                
+        	</callelement>
+        	<throwexception/>
+    	</then>
+    	</if>
+	<callelement NAME="OpenMarket/Xcelerate/Admin/Monitor/ShowTasks">
+      	    <argument NAME="username" VALUE="Variables.username" />
+	    <argument NAME="userid" VALUE="Variables.userid" />
+	    <argument NAME="ClearTarget" VALUE="Variables.ClearTarget"/>
+	</callelement>
+</then>
+</if>
+
+<if COND="Variables.pagetype=Final">
+<then>
+	<if COND="Variables.ClearTarget=ShowAssignments">
+	<then>
+        <if COND="IsVariable.clearassignments=false">
+		<then>
+            <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                <argument NAME="error" VALUE="NoAssetChecked"/>
+            </callelement>
+            <throwexception/>
+		</then>
+		</if>
+        
+        <table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ClearAssignmentsReport"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+		</table>
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/AssignmentCleared" VARNAME="assignmentCleared"/>
+        <if COND="IsVariable.clearcomment=false">
+        <then>
+            <setvar NAME="clearcomment" VALUE="Variables.assignmentCleared"/>
+        </then>
+        <else>
+    	    <substitute STR="Variables.clearcomment" WHAT="%26" WITH=" AND " OUTSTR="clearcomment"/>
+    	    <substitute STR="Variables.clearcomment" WHAT="'" WITH=" " OUTSTR="clearcomment"/>
+    	    <substitute STR="Variables.clearcomment" WHAT="%22" WITH=" " OUTSTR="clearcomment"/>
+    	</else>
+        </if>
+        
+        
+        <table class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <tr>
+        	<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+        </tr>
+        <tr>
+        <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+        <td>
+            <table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+            <tr><td colspan="12" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+            <tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Wf/AssignedTo"/></DIV></td>
+            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Admin/Clearcommand"/></DIV></td>
+            	<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" NOWRAP="NOWRAP" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Status"/></DIV></td>
+            	<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            </tr>
+            <tr><td colspan="12" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+            
+        
+		<stringlist NAME="assignmentlist" STR="Variables.clearassignments" DELIM=";"/>
+        <setvar NAME="firstrow" VALUE="true" />
+        <SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+		<loop LIST="assignmentlist">
+            <WorkflowEngine.GetAssignmentID ID="assignmentlist.ITEM" OBJVARNAME="assignment" />
+            <WorkflowAssignment.GetAssignedObject NAME="assignment" OBJVARNAME="workflowasset" />
+            <WorkflowAsset.GetAssetId OBJECT="workflowasset" VARNAME="assetid" />
+            <WorkflowAsset.GetAssetType OBJECT="workflowasset" VARNAME="assettype" />
+            <ASSET.LOAD NAME="asset" TYPE="Variables.assettype" OBJECTID="Variables.assetid"/>
+		    <ASSET.GET NAME="asset" FIELD="name" OUTPUT="assetname"/>
+            <ASSET.GET NAME="asset" FIELD="description" OUTPUT="assetdescription"/>
+            
+            <if COND="Variables.firstrow!=true">
+            <then>
+                <tr><td colspan="12"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+            </then>
+            <else>
+                <setvar NAME="firstrow" VALUE="false" /> 
+            </else>
+            </if>
+                        
+            <tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+            <td><BR/></td>
+            
+            <td><BR /></td>
+            <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.assettype"/> 
+					<BR />
+				</DIV>
+			</td>
+            
+		    <td><BR/></td>
+            <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.assetname"/> 
+					<BR />
+				</DIV>
+			</td>
+            
+		    <td><BR/></td>
+            <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+				<DIV class="small-text-inset">
+					<STRING.STREAM VALUE="Variables.username"/>
+					<BR />
+				</DIV>
+			</td>
+            
+			<XLAT.LOOKUP KEY="dvin/UI/Admin/cmdCancelAssignment" VARNAME="_cmd_" ENCODE="false"/>
+            <setvar NAME="command" VALUE="Variables._cmd_"/>
+            <WorkflowEngine.CancelAssignment ID="assignmentlist.ITEM" COMMENT="Variables.clearcomment" SITE="SessionVariables.pubid" />
+            <if COND="Variables.errno!=0">
+            <then>
+                <if COND="Variables.errno=-12027">
+                <then>
+                    <if COND="Variables.remove=true">
+                    <then>
+                    	<XLAT.LOOKUP KEY="dvin/UI/Admin/cmdRemovefromWorkflow" VARNAME="_cmd_"/>
+                        <setvar NAME="command" VALUE="Variables._cmd_"/>
+                        <WorkflowEngine.CloseAssignments OBJECT="workflowasset" COMMENT="Variables.clearcomment" SITE="SessionVariables.pubid" />                 
+                        <if COND="Variables.errno!=0">
+                        <then>
+                        	<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Failederrno" errno="Variables.errno" EVALALL="false" VARNAME="_status_"/>
+                        </then>
+                        <else>
+                        	<XLAT.LOOKUP KEY="dvin/Common/Success" VARNAME="_status_"/>
+                        </else>
+                        </if>                               
+                             <setvar NAME="status" VALUE="Variables._status_"/>
+                    </then>
+                    <else>
+                    	<XLAT.LOOKUP KEY="dvin/UI/Cantcancelassignmentnootherassignees" ENCODE="false" VARNAME="_status_"/>
+                        <setvar NAME="status" VALUE="Variables._status_"/>
+                    </else>
+                    </if>
+                </then>
+                <else>
+                  	<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Failederrno" errno="Variables.errno" EVALALL="false" VARNAME="_status_"/>
+                    <setvar NAME="status" VALUE="Variables._status_"/>
+                </else>
+                </if>
+            </then>
+            <else>
+               	<XLAT.LOOKUP KEY="dvin/Common/Success" VARNAME="_status_"/>
+                 <setvar NAME="status" VALUE="Variables._status_" />
+            </else>
+            </if>
+            
+            <td><BR/></td>
+            <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                <DIV class="small-text-inset">
+                    <STRING.STREAM VALUE="Variables.command"/> 
+                </DIV>
+            </td>
+            
+            <td><BR/></td>
+            <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                <DIV class="small-text-inset">
+                    <STRING.STREAM VALUE="Variables.status"/>
+                </DIV>
+            </td>
+            
+            <td><BR /></td>
+	        </tr>
+            
+            <IF COND="Variables.rowStyle=tile-row-normal">
+    		<THEN>
+    			<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+    		</THEN>
+    		<ELSE>
+    			<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+    		</ELSE>
+    		</IF>
+        </loop>
+
+    </table>
+            
+    </td>
+    <td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+        </tr>
+        <tr>
+            <td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+        </tr>
+    </table>
+    </then>
+	</if>
+    
+    
+	<if COND="Variables.ClearTarget=ShowCheckouts">
+	<then>
+		<if COND="IsVariable.commitcomment=false">
+        	<then>
+        		<XLAT.LOOKUP KEY="dvin/UI/Admin/Assetcheckedinbyadministrator" VARNAME="commitcomment"/>
+        	</then>
+    		</if>
+		    <table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+			<tr><td>
+				<span class="title-text"><XLAT.STREAM KEY="dvin/UI/Admin/ResultsofClearCheckouts"/></span>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+			</table>
+			
+ <!-- Table header -->
+
+     <table class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+     <tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	<td >
+<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="10"class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+		    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Name"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;</td><td class="tile-b" NOWRAP="NOWRAP" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/UI/Admin/StatusforClearCheckout"/></DIV></td>
+			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		</tr>
+<tr><td colspan="10" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+     <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+	<setvar NAME="separatorLine" VALUE="0"/>
+
+		<stringlist NAME="assetidtype" STR="Variables.junk" DELIM=","/>
+		<setvar NAME="check" VALUE="false"/>
+		<loop LIST="assetidtype">
+			<stringlist NAME="assetids" STR="assetidtype.ITEM" DELIM=";"/>
+			<setvar NAME="id" VALUE="assetids.ITEM"/>
+			<GOTOROW LIST="assetids" ROWNUM="2"/>
+			<setvar NAME="Category" VALUE="assetids.ITEM"/>
+					<IF COND="Variables.separatorLine=1">
+					<THEN>
+						<tr>
+							<!--<td colspan="10" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+						</tr>
+					</THEN>
+					</IF>
+					<setvar NAME="separatorLine" VALUE="1"/>
+			<if COND="IsVariable.box-Variables.id=true">
+			<then>
+				<setvar NAME="check" VALUE="true"/>
+				<!-- We perform the sequence
+					unlockrecord
+					lock
+					release
+				because if we just did unlockrecord, we would not revert to the 
+				most-recently checked-in version
+				-->		
+ 				<setvar NAME="errno" VALUE="0"/>
+				<ASSET.LOAD TYPE="Variables.Category" OBJECTID="Variables.id" NAME="Release-Asset"/>
+				<ASSET.GET NAME="Release-Asset" FIELD="name"/>
+				<ASSET.GET NAME="Release-Asset" FIELD="description"/>
+				<ASSET.UNDOCHECKOUT NAME="Release-Asset" REVERT="false"/>
+				<ASSET.CHECKOUT OBJECTTYPE="Variables.Category" OBJECTID="Variables.id"/>
+				<ASSET.UNDOCHECKOUT NAME="Release-Asset"/>
+                <IMPLICITCHECKOUT.CLEARCHECKOUT ASSETTYPE="Variables.Category" ASSETID="Variables.id"/>
+
+				<if COND="Variables.errno!=-1000">
+    				<then>
+    					<SETVAR NAME="checkouterr" VALUE="0"/>
+    				</then>
+    				<else>
+	    				<SETVAR NAME="checkouterr" VALUE="-1000"/>
+    				</else>
+    				</if>
+    				
+				<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                    <DIV class="small-text-inset">
+                    <STRING.STREAM VALUE="Variables.Category"/>
+                    <BR />
+                  </DIV>
+                </td> 
+             <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+                        <XLAT.LOOKUP KEY="dvin/UI/ShowContent" VARNAME="_XLAT_" ESCAPE="true"/>
+                         <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ContentDetailsFront" outstring="urlcontdetfront">
+                             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                             <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                         <satellite.argument name="id" value="Variables.id"/>
+                                                         <satellite.argument name="AssetType" value="Variables.Category"/>
+                                                          </SATELLITE.LINK>
+                        <A HREF="Variables.urlcontdetfront"
+                             OnMouseOver="window.status='Variables._XLAT_'; return true"
+                             OnMouseOut="return window.status='';"  REPLACEALL="Variables.urlcontdetfront,Variables._XLAT_">
+                            <STRING.STREAM VALUE="Variables.name"/>
+                        </A><BR />
+                    </DIV>
+                </td> 
+             <td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+                            <STRING.STREAM VALUE="Variables.description"/>
+                        <BR />
+                    </DIV>
+                </td> 
+             <td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+					<IF COND="Variables.checkouterr!=-1000">
+					<THEN>
+                            <XLAT.STREAM KEY="dvin/UI/Admin/ClearedCheckout"/>
+                    </THEN>
+                    <ELSE>
+                    		<XLAT.STREAM KEY="dvin/UI/Admin/FailedToClearCheckout"/>
+                    </ELSE>
+                    </IF>
+                        <BR />
+                    </DIV>
+                </td> 
+                <td><BR /></td>
+                </tr>
+            <IF COND="Variables.rowStyle=tile-row-normal">
+            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+            </THEN>
+            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+            </ELSE>
+            </IF>
+			</then>
+			</if>
+
+			</loop>
+
+</table>
+</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		</tr>
+<tr>
+<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+</table>
+
+
+
+		<if COND="Variables.check=false">
+		<then>
+			  	<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+					<argument NAME="error" VALUE="NoAssetChecked"/>
+  				</callelement>
+		</then>
+		</if> 
+
+
+      </then>
+      </if>
+</then>
+</if>
+</FTCS>

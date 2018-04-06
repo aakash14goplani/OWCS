@@ -1,0 +1,303 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!--
+Logfile: /VerticalApps/XcelerateD/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Admin/AssetTypeForClientFront.xml 
+
+-->
+
+<!--
+ Confidential and Proprietary Information of Open Market, Inc.
+					All Rights Reserved.
+
+ DESCRIPTION
+	Admin control of enabling or disabling one more assettypes
+     for Word Integration
+
+ INPUT
+   action - grant/revoke
+   pagetype - front/post
+   clientapp -  MSWord  
+-->
+
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeForClientCommon"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+	<!-- Get the list of asset types to be enabled/disabled -->
+<IF COND="Variables.action!=list">
+<THEN>
+	<setvar NAME="assetsfound" VALUE="false"/>
+	<setvar NAME="errno" VALUE="0"/>
+	<PUBLICATION.LOAD NAME="site" OBJECTID="Variables.pubid"/>
+	<PUBLICATION.CHILDREN NAME="site" LIST="enabledAssets" OBJECTTYPE="AssetType" ORDER="description"/>
+	<IF COND="Variables.errno=0">
+	<THEN>
+		<setvar NAME="assetsfound" VALUE="true"/>
+	</THEN>
+	</IF>
+	<IF COND="Variables.action=grant">
+	<THEN>
+		<EXTERNALCLIENTSMANAGER.GetDisabledAssetTypesForAClient SITE="Variables.pubid" LISTVARNAME="AssetType" CLIENTAPP="Variables.clientapp"/>
+
+      <IF COND="Variables.clientapp=CSDocLink">
+      <THEN>
+         <!-- only show flex assets -->
+         <LISTOBJECT.CREATE NAME="atList" COLUMNS="assettype,description"/>
+         <ATM.GETASSETS FILTER="com.openmarket.gator.interfaces.IFlexAssetManager" LISTVARNAME="fats"/>
+         <HASH.CREATE NAME="flexassettypes" LIST="fats" COLUMN="assettype"/>
+         <LOOP LIST="AssetType">
+            <HASH.CONTAINS NAME="flexassettypes" VALUE="AssetType.assettype" VARNAME="hasit"/>
+            <IF COND="Variables.hasit=true">
+            <THEN>
+               <LISTOBJECT.ADDROW NAME="atList" assettype="AssetType.assettype" description="AssetType.description"/>
+            </THEN>
+            </IF>
+         </LOOP>
+         <LISTOBJECT.TOLIST NAME="atList" LISTVARNAME="AssetType"/>
+      </THEN>
+      </IF>
+	</THEN>
+	<ELSE>
+		<EXTERNALCLIENTSMANAGER.GetEnabledAssetTypesForAClient SITE="Variables.pubid" LISTVARNAME="AssetType" CLIENTAPP="Variables.clientapp"/>
+	</ELSE>
+	</IF>
+	<!-- Get the list of asset types -->
+<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+	<tr><td class="form-label-inset">
+		<PUBLICATION.LOAD NAME="publication" OBJECTID="Variables.pubid"/>
+		<PUBLICATION.SCATTER NAME="publication" PREFIX="Publication"/>
+		<if COND="Variables.showtitle!=false">
+		<then>
+			<IF COND="Variables.action=grant">
+			<THEN>
+				<XLAT.STREAM KEY="dvin/UI/Admin/EnableAssetTypesForclientapp"/>
+			</THEN>
+			<ELSE>
+				<XLAT.STREAM KEY="dvin/UI/Admin/DisableAssetTypesForclientapp"/>	
+			</ELSE>
+			</IF>: <STRING.STREAM VALUE="Variables.Publication:name"/>
+		</then>
+		</if>
+		<p/>
+		<IF COND="Variables.action=grant">
+		<THEN>
+			<XLAT.STREAM KEY="dvin/UI/Admin/Enableforclientapp"/>
+		</THEN>
+		<ELSE>
+			<XLAT.STREAM KEY="dvin/UI/Admin/Disableforclientapp"/>
+		</ELSE>
+		</IF>:
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+	<IF COND="Variables.assetsfound=true">
+	<THEN>	
+	<IF COND="IsList.AssetType=true">
+	<THEN>
+		<IF COND="AssetType.#numRows=0">
+		<THEN>
+			<IF COND="Variables.action=grant">
+			<THEN>
+			
+				<EXTERNALCLIENTSMANAGER.GetEnabledAssetTypesForAClient SITE="Variables.pubid" LISTVARNAME="EnabledAssetType" CLIENTAPP="Variables.clientapp"/>
+				<IF COND="IsList.EnabledAssetType=true">
+				<THEN>
+					<IF COND="EnabledAssetType.#numRows!=0">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Allassettypesenabledforclientapp" VARNAME="msgtext"/>
+					</THEN>
+					<ELSE>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Noassettypescanbeenabledforclientapp" VARNAME="msgtext"/>
+					</ELSE>
+					</IF>
+				</THEN>
+				</IF>
+			</THEN>
+			<ELSE>
+				<XLAT.LOOKUP KEY="dvin/UI/Admin/Error/Noassettypesenabledforclientapp" VARNAME="msgtext"/>
+			</ELSE>
+			</IF>
+			<div class="width-outer-70">
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+				<ARGUMENT NAME="severity" VALUE="info"/>
+			</CALLELEMENT>
+			<p/>
+						<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_status_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/DisableAssetTypesForclientapp" VARNAME="_ALT_"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/DisableAssetTypes" VARNAME="_XLAT_" ESCAPE="true"/>
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeClientFront" outstring="urlasttpclfront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="pubid" value="Variables.pubid"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientapp" value="Variables.clientapp"/>
+                                              </SATELLITE.LINK>
+						<A HREF="Variables.urlasttpclfront" onmouseover="window.status='Variables._status_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._status_,Variables.urlasttpclfront"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+			</div>
+		</THEN>
+		<ELSE>
+			<table class="width-outer-30" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+				<tr>
+					<td></td><td class="tile-dark" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+				</tr>
+				<tr>
+					<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td >
+						<table class="width-inner-100" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="7" class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+							<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Name"/></DIV></td>
+					            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td><td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Description"/></DIV></td>
+								<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+							</tr>
+							<tr><td colspan="7" class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+							<!-- Loop over all search results. -->
+					   			<setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+								<SETVAR NAME="separatorLine" VALUE="0"/>
+
+							<LOOP LIST="AssetType">
+									<IF COND="Variables.separatorLine=1">
+									<THEN>
+										<!--<tr>
+											<td colspan="7" class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+										</tr>-->
+									</THEN>
+									</IF>
+									<SETVAR NAME="separatorLine" VALUE="1"/>
+			
+							<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle"><td><BR /></td>
+							<td><IF COND="Variables.doCheck!=false"><THEN><STRING.ENCODE LIST="AssetType" COLUMN="assettype" VARNAME="ATassettype"/><INPUT TYPE="Checkbox" NAME="ContCategory" VALUE="Variables.ATassettype" REPLACEALL="Variables.ATassettype"/></THEN><ELSE><BR /></ELSE></IF></td>
+					                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+                                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeFront" outstring="urlasttpfront">
+                                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="assettype" value="AssetType.assettype"/>
+                                             <satellite.argument name="action" value="details"/>
+                                              </SATELLITE.LINK>
+										<A HREF="Variables.urlasttpfront" REPLACEALL="Variables.urlasttpfront"><STRING.STREAM VALUE="AssetType.assettype"/></A>
+										</DIV>
+									</td>
+									<td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+					                    <DIV class="small-text-inset">
+					                    <STRING.STREAM VALUE="AssetType.description"/>
+					                    </DIV>
+					                 </td>
+					                 	<td><BR /></td></tr>
+								<IF COND="Variables.rowStyle=tile-row-normal">
+					            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+					            </THEN>
+					            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+					            </ELSE>
+					            </IF>
+
+							</LOOP>
+							</table>
+						</td>
+						<td class="tile-dark" VALIGN="top" WIDTH="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+						</tr>
+					<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					</tr>
+					<tr>
+					<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+					</tr>
+					</table> 
+		</ELSE></IF>
+	</THEN>
+	</IF>
+	</THEN>
+	<ELSE>
+		<XLAT.LOOKUP KEY="dvin/UI/Admin/Noassettypesenabledforthissite" VARNAME="msgtext"/>
+		<div class="width-outer-70">
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+			<ARGUMENT NAME="severity" VALUE="info"/>
+		</CALLELEMENT>
+		</div>
+	</ELSE>
+	</IF>
+
+<IF COND="Variables.action=grant">
+<THEN>
+	<!-- if we are enabling asset types, then the next step is to manage the 
+	     start menu items for those asset types. -->
+	<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/AssetTypePubPost"/>
+	<INPUT TYPE="HIDDEN" NAME="action" VALUE="asksmi"/>
+	<INPUT TYPE="HIDDEN" NAME="destelem" VALUE="OpenMarket/Xcelerate/Admin/AssetTypeForClientPost"/>
+	<IF COND="Variables.clientapp=MSWord">
+	<THEN>
+		<INPUT TYPE="HIDDEN" NAME="SMIType" VALUE="Word"/>
+	</THEN>
+	<ELSE>
+		<INPUT TYPE="HIDDEN" NAME="SMIType" VALUE="Variables.clientapp" REPLACEALL="Variables.clientapp"/>
+	</ELSE>
+	</IF>
+</THEN>
+<ELSE>
+	<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/AssetTypeClientPost"/>
+	<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+	<INPUT TYPE="HIDDEN" NAME="action" VALUE="Variables.action" REPLACEALL="Variables.action"/> 
+</ELSE>
+</IF>
+			<STRING.ENCODE VARIABLE="pubid" VARNAME="pubid"/>
+			<INPUT TYPE="HIDDEN" NAME="pubid" VALUE="Variables.pubid" REPLACEALL="Variables.pubid"/>
+			<INPUT TYPE="HIDDEN" NAME="clientapp" VALUE="Variables.clientapp" REPLACEALL="Variables.clientapp"/>
+			<div class="width-outer-70">	
+			<IF COND="Variables.assetsfound=true">
+			<THEN>
+				<IF COND="Variables.action=grant">
+				<THEN>
+					<IF COND="AssetType.#numRows!=0">
+					<THEN>
+						<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_status_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/EnableAssetTypes" VARNAME="_ALT_"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/EnableAssetTypesForclientapp" VARNAME="_XLAT_" ESCAPE="true"/>
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeClientFront" outstring="urlasttpclfront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="pubid" value="Variables.pubid"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientapp" value="Variables.clientapp"/>
+                                              </SATELLITE.LINK>
+						<table><tr><td>
+						<A HREF="Variables.urlasttpclfront" onmouseover="window.status='Variables._status_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._status_,Variables.urlasttpclfront"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+						</td><td>
+						<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/EnableAssetTypes"/></CALLELEMENT></A>
+						</td></tr></table>
+					</THEN>
+					</IF>
+				</THEN>
+				<ELSE>
+					<IF COND="AssetType.#numRows!=0">
+					<THEN>
+
+						<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_status_" ESCAPE="true"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/DisableAssetTypesForclientapp" VARNAME="_ALT_"/>
+						<XLAT.LOOKUP KEY="dvin/UI/Admin/DisableAssetTypes" VARNAME="_XLAT_" ESCAPE="true"/>
+                        <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeClientFront" outstring="urlasttpclfront">
+                            <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                            <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="pubid" value="Variables.pubid"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientapp" value="Variables.clientapp"/>
+                                              </SATELLITE.LINK>
+						<table><tr><td>
+						<A HREF="Variables.urlasttpclfront" onmouseover="window.status='Variables._status_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._status_,Variables.urlasttpclfront"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT></A>
+						</td><td>
+						<A HREF="javascript:void(0);" onclick="document.forms['AppForm'].submit(); return false;" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true;" REPLACEALL="Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/DisableAssetTypes"/></CALLELEMENT></A>
+						</td></tr></table>
+					</THEN>
+					</IF>
+				</ELSE>
+				</IF>
+			</THEN>
+			</IF>
+			</div>
+ <!-- if pagetype==front -->
+</THEN>
+</IF>
+
+</FTCS>

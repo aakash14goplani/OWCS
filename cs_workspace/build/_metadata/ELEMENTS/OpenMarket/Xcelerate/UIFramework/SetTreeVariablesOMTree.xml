@@ -1,0 +1,534 @@
+<?XML VERSION="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/UIFramework/SetTreeVariablesOMTree
+--
+-- INPUT
+--
+-- OUTPUT
+--
+-->
+<STRING.ENCODE VARIABLE="id" VARNAME="id"/>
+<STRING.ENCODE VARIABLE="assettype" VARNAME="assettype"/>
+<STRING.ENCODE VARIABLE="validTypes" VARNAME="validTypes"/>
+<STRING.ENCODE VARIABLE="name" VARNAME="name"/>
+
+<if COND="IsVariable.TreeNodeParentPath=true">
+	<then>
+		<STRING.ENCODE VARIABLE="TreeNodeParentPath" VARNAME="TreeNodeParentPath"/>
+		<replace STR="Variables.TreeNodeParentPath">
+			<INPUT type="hidden" name="TreeNodeParentPath" value="Variables.TreeNodeParentPath"/>
+		</replace>
+	</then>
+</if>
+
+<if COND="IsVariable.TreeNodePath=true">
+	<then>
+		<STRING.ENCODE VARIABLE="TreeNodePath" VARNAME="TreeNodePath"/>
+		<replace STR="Variables.TreeNodePath">
+			<INPUT type="hidden" name="TreeNodePath" value="Variables.TreeNodePath"/>
+		</replace>
+	</then>
+</if>
+
+<SCRIPT>
+			
+<![CDATA[
+function createHistoryNode(nodeData, tab, makeTabActive)
+{
+	
+  if(parent.frames["XcelTree"].document.TreeApplet.createHistoryNode(nodeData, tab, makeTabActive)==0)
+    ]]>
+    alert("<XLAT.STREAM KEY="dvin/UI/Error/notcreatenodeintreerefreshmanually" ENCODE="false" ESCAPE="true"/>");
+    <![CDATA[
+}
+
+function SelectAllResults(path, tab, makeTabActive)
+{
+	for (i=0;i<nodeData.length;i++)
+		parent.frames["XcelTree"].document.TreeApplet.createSearchNode(path, nodeData[i], tab, makeTabActive);
+}
+
+function ClearHistory(tab)
+{
+	parent.frames["XcelTree"].document.TreeApplet.clearHistory(tab);
+}
+
+function gotoSelectionNeighbor(tab, action)
+{
+	alert(parent.frames["XcelTree"].document.TreeApplet.gotoSelectionNeighbor(tab, action));
+}
+function selectNode(tab, path)
+{
+	parent.frames["XcelTree"].document.TreeApplet.selectNode(tab, path);
+}
+
+function DecodeUTF8(encoded)
+{
+   var i=0;
+   var currentUnicode=0;
+   var UnicodeString = new Array();
+   var UnicodeIndex = 0;
+   
+   var currentState = "Start";
+
+   for (i = 0; i<encoded.length;i+=2) {
+       var twochars = encoded.substr(i,2);
+       var currentByte = parseInt(twochars,16);
+       
+       // utf-8 representation may have up to 4 bytes per character
+       if (currentState=="Start") {
+           if ((currentByte & 0x80) != 0) {
+               // if 1st 3 bits are 110 then 2 bytes
+               if ((currentByte>>5) == 0x06) {
+                   // 2 bytes - want 3 bits after 0xC0 as low 3 bits in first unicode byte
+                   currentUnicode = (currentByte & 0x1C)>>2;
+                   
+                   // 2 remaining bits of byte 1 become low bits of currentUnicode
+                   currentUnicode = currentUnicode << 2;
+                   currentUnicode = currentUnicode | (currentByte & 0x03);
+                   currentState = "Done";
+               }
+               // if first 4 bits are 1110 then 3 bytes
+               else if ((currentByte>>4) == 0x0E) {
+                       currentUnicode = (currentByte & 0x0F);
+                       currentState = "Middle1";
+               }
+               // if first 5 bits are 11110 then 4 bytes
+               else if ((currentByte>>3) == 0x1E) {
+                       currentUnicode = (currentByte & 0x07);
+                       currentState = "Middle2";
+               }
+           }
+           else
+           {
+               UnicodeString[UnicodeIndex] = currentByte;
+               UnicodeIndex++;
+           }
+       }
+       else if (currentState=="Done") {
+           currentUnicode = currentUnicode << 6;
+           currentUnicode = currentUnicode | (currentByte & 0x3F);
+           UnicodeString[UnicodeIndex] = currentUnicode;
+           UnicodeIndex++;
+           currentState = "Start";
+       }
+       else if (currentState=="Middle1") {
+           currentUnicode = currentUnicode << 6;
+           currentUnicode = currentUnicode | (currentByte & 0x3F);
+           currentState = "Done";
+       }
+       else if (currentState=="Middle2") {
+           currentUnicode = currentUnicode << 6;
+           currentUnicode = currentUnicode | (currentByte & 0x3F);
+           UnicodeString[UnicodeIndex] = currentUnicode;
+           UnicodeIndex++;
+           currentState = "Middle1";
+       }
+
+   }
+   var StringCode = "String.fromCharCode(";
+   StringCode += UnicodeString[0];
+   for (var y = 1; y < UnicodeIndex; y++) {
+       StringCode+=","+UnicodeString[y];
+   }
+   StringCode += ");";
+   
+   return(eval(StringCode));
+}
+
+function SelectFromTreeTextField(where, idwhere, assettype, selectionmode)
+{  
+	var obj = document.forms[0].elements[0];
+	var id,name;
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+	var idArray = EncodedString.split(',');
+	var assetcheck = unescape(idArray[0]);
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+		// string is of the format: id=[id],[name]:
+		var test = new String(EncodedString);
+   	
+		var nameVal = test.split(",");
+		if (selectionmode=='single' && nameVal.length!=2)
+]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/Pleaseselect1assetfromthetree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+		else
+		{
+			var i = 0;
+			for (i=0;i<nameVal.length;i+=2)
+			{
+				if (assettype!=null)
+				{
+					id = unescape(nameVal[i]);
+					var splitid = id.split(',');
+					if (splitid.length==1)
+					{
+]]>
+						var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/Nodeidisnotavalidselection" ENCODE="false" ESCAPE="true"/>';
+						var replacestr=/Variables.id/;
+						xlatstr = xlatstr.replace(replacestr,id);
+						alert(xlatstr);
+<![CDATA[
+						return;
+					}
+   					
+					var splitpair = splitid[1].split("=");
+   				
+					if (assettype!=splitpair[1])
+					{
+]]>
+						var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/Selectionstypeselectionoftypeinvalid" ENCODE="false" ESCAPE="true"/>';
+						var replacestr=/Variables.assettype/;
+						xlatstr = xlatstr.replace(replacestr,assettype);
+						var replacestr=/Variables.splitpair/;
+						alert(xlatstr.replace(replacestr,splitpair[1]));
+<![CDATA[
+						return;
+					}
+					splitpair = splitid[0].split("=");
+					id = splitpair[1];
+
+				}
+				var name = nameVal[i+1].replace(/\+/g,' ');
+				name = DecodeUTF8(name.substr(0, name.length-1));
+			}
+    
+			obj.form.elements[idwhere].value = id;
+			obj.form.elements[where].value = name;
+		}
+	}
+	else
+	{
+]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+	}
+}
+
+function SelectFromTreeTypedTextField(where, idwhere, typewhere, validTypes, selectionmode)
+{  
+	var assettype=validTypes;
+	var validTypesAndComma = validTypes+",";
+	var obj = document.forms[0].elements[0];
+	var id,name,type;
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+	var idArray = EncodedString.split(',');
+	var assetcheck = unescape(idArray[0]);
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+		// string is of the format: id=[id],[name]:
+		var test = new String(EncodedString);
+   	
+		var nameVal = test.split(",");
+		if (selectionmode=='single' && nameVal.length!=2)
+]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/Pleaseselect1assetfromthetree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+		else
+		{
+			var i = 0;
+			for (i=0;i<nameVal.length;i+=2)
+			{
+				id = unescape(nameVal[i]);
+				var splitid = id.split(',');
+				if (splitid.length==1)
+				{
+]]>
+					var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/Nodeidisnotavalidselection" ENCODE="false" ESCAPE="true"/>';
+					var replacestr=/Variables.id/;
+					xlatstr = xlatstr.replace(replacestr,id);
+					alert(xlatstr);
+<![CDATA[
+					return;
+				}
+   					
+				var splitpair = splitid[1].split("=");
+  				
+				if (validTypesAndComma.indexOf(splitpair[1]+",") == -1)
+				{
+]]>
+					var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/Selectionstypeselectionoftypeinvalid" ENCODE="false" ESCAPE="true"/>';
+					var replacestr=/Variables.assettype/;
+					xlatstr = xlatstr.replace(replacestr,assettype);
+					var replacestr=/Variables.splitpair/;
+					alert(xlatstr.replace(replacestr,splitpair[1]));
+<![CDATA[
+					return;
+				}
+				type = splitpair[1];
+				splitpair = splitid[0].split("=");
+				id = splitpair[1];
+
+				var name = nameVal[i+1].replace(/\+/g,' ');
+				name = DecodeUTF8(name.substr(0, name.length-1));
+			}
+    
+			obj.form.elements[typewhere].value = type;
+			obj.form.elements[idwhere].value = id;
+			obj.form.elements[where].value = name;
+		}
+	}
+	else
+	{
+]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+	}
+}
+
+function SelectFromTreeMultiSelect(where,validTypes)
+{
+	var validTypesAndComma = validTypes+",";
+	var obj = document.forms[0].elements[0];
+	var id,name,newindex,items,assettype;
+	
+	if (validTypes==null)
+	{
+]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/Error/Thisassethasnorelatedassettypes" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+		return;
+	}
+	
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+	var idArray = EncodedString.split(',');
+	var assetcheck = unescape(idArray[0]);
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+   
+		// string is of the format: id=[id],[name]:repeat
+		var test = new String(EncodedString);
+   	
+		var allNodes = test.split(":");
+		if (allNodes.length==1)
+		{
+]]>
+			alert("<XLAT.STREAM KEY="dvin/UI/Error/Nonodesareselectedinthetree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+			return;
+		}
+   	
+		var currentNode = 0;
+		for (currentNode = 0;currentNode<allNodes.length-1;currentNode++)
+		{
+			var nameVal = allNodes[currentNode].split(",");
+			var i = 0;
+			for (i=0;i<nameVal.length;i+=2)
+			{
+				id = unescape(nameVal[i]);
+				var splitid = id.split(',');
+				if (splitid.length==1)
+				{
+]]>
+					alert("<XLAT.STREAM KEY="dvin/UI/Error/Nodeidisnotavalidselection" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+					return;
+				}
+   				
+				var splitpair = splitid[1].split("=");
+   			
+				if (validTypesAndComma.indexOf(splitpair[1]+",")==-1)
+				{
+]]>
+					var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/selectionfollowingtypesvalidTypesinvalid" ENCODE="false" ESCAPE="true"/>';
+					var replacestr=/Variables.validTypes/;
+					xlatstr = xlatstr.replace(replacestr,validTypes);
+					var replacestr=/Variables.splitpair/;
+					alert(xlatstr.replace(replacestr,splitpair[1]));
+<![CDATA[
+					return;
+				}
+				assettype=splitpair[1];
+				splitpair = splitid[0].split("=");
+				id = splitpair[1];
+   				
+				var name = nameVal[i+1].replace(/\+/g,' ');
+				name = DecodeUTF8(name.substr(0, name.length));
+			}
+   	
+			items=new Option(name+" ("+assettype+")",assettype+","+id);
+   			
+			newIndex=where.options.length;
+   		
+			for ( j=0; j < where.options.length ; j++ )
+			{
+				if ( where.options[j].value == items.value )
+				{
+]]>
+					var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/AssetAlreadyInList" ENCODE="false" ESCAPE="true"/>';
+					var replacestr=/Variables.name/;
+					xlatstr = xlatstr.replace(replacestr,items.text);
+					alert(xlatstr);
+<![CDATA[
+					return;
+				}
+			}
+			where.options[newIndex]=items;
+			where.options[newIndex].selected=true
+		}
+	}
+	else
+	{
+]]>
+		alert("<XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/>");
+<![CDATA[
+	}
+}
+]]>
+
+
+<![CDATA[
+function SelectFromTreeAssocTypeAhead(widgetName, validTypes, selectionmode)
+{
+	var assettype=validTypes;
+	var validTypesAndComma = validTypes+",";
+	var id,name,type, subtype, selValue={};
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+	var idArray = EncodedString.split(',');
+    var assetcheck = unescape(idArray[0]);	  
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+		var test = new String(EncodedString);
+   	
+		var nameVal = test.split(",");
+		if (selectionmode=='single' && nameVal.length!=2)
+			alert("]]><XLAT.STREAM KEY="dvin/UI/Error/Pleaseselect1assetfromthetree" ENCODE="false" ESCAPE="true"/><![CDATA[");
+		else
+		{			
+			var i = 0;
+			for (i=0;i<nameVal.length;i+=2)
+			{
+				id = unescape(nameVal[i]);
+				var splitid = id.split(',');
+				if (splitid.length==1)
+				{
+					var xlatstr=']]><XLAT.STREAM KEY="dvin/UI/Error/Nodeidisnotavalidselection" ENCODE="false" ESCAPE="true"/><![CDATA[';
+					var replacestr=/Variables.id/;
+					xlatstr = xlatstr.replace(replacestr,id);
+					alert(xlatstr);
+					return;
+				}
+   					
+				var splitpair = splitid[1].split("=");
+  				
+				if (validTypesAndComma.indexOf(splitpair[1]+",") == -1)
+				{
+					var xlatstr=']]><XLAT.STREAM KEY="dvin/UI/Error/Selectionstypeselectionoftypeinvalid" ENCODE="false" ESCAPE="true"/><![CDATA[';
+					var replacestr=/Variables.assettype/;
+					xlatstr = xlatstr.replace(replacestr,assettype);
+					var replacestr=/Variables.splitpair/;
+					alert(xlatstr.replace(replacestr,splitpair[1]));
+					return;
+				}
+				id = (splitid[0].split('='))[1];
+				type = (splitid[1].split('='))[1];
+				subtype = (splitid[3].split('='))[1];
+				name = nameVal[i+1].replace(/\+/g,' ');
+				name = DecodeUTF8(name.substr(0, name.length-1));
+				subtype = subtype.replace(/\+/g," ");
+				type = type.replace(/\+/g," ");	
+			}
+			var nodes= [];
+			nodes = dojo.query('div[name='+widgetName+']');
+			if(nodes.length === 0)
+				nodes = dojo.query('input[name='+widgetName+']');
+			var typeWidgetIns = dijit.getEnclosingWidget(nodes[0]);
+
+			selValue = {
+				'id':id,
+				'name':name,
+				'subtype':subtype,
+				'type':type
+			};
+			typeWidgetIns.setSelectedValue(selValue);
+		}	
+
+	}
+	else
+	{
+	 alert("]]><XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/><![CDATA[");
+	}
+}
+]]>
+<![CDATA[
+function SelectFromTreeAssocTAMult(widgetName, validTypes)
+{
+	var id,name,type, subtype, selValue={};
+	var validTypesAndComma = validTypes+",";
+	var EncodedString = parent.frames["XcelTree"].document.TreeApplet.exportSelections()+'';
+	var idArray = EncodedString.split(',');
+    var assetcheck = unescape(idArray[0]);	
+	var nodes= [];
+	nodes = dojo.query('div[name='+widgetName+']');
+	if(nodes.length === 0)
+		nodes = dojo.query('input[name='+widgetName+']');
+	var typeWidgetIns = dijit.getEnclosingWidget(nodes[0]);	
+	if (assetcheck.indexOf('assettype=')!=-1 && assetcheck.indexOf('id=')!=-1)
+	{
+		var test = new String(EncodedString);
+		var allNodes = test.split(":");
+		if (allNodes.length==1)
+		{
+			alert("]]><XLAT.STREAM KEY="dvin/UI/Error/Nonodesareselectedinthetree" ENCODE="false" ESCAPE="true"/><![CDATA[");
+			return;
+		}
+		var currentNode = 0;
+		for (currentNode = 0;currentNode<allNodes.length-1;currentNode++)
+		{
+			var nameVal = allNodes[currentNode].split(",");					
+			var i = 0;
+			for (i=0;i<nameVal.length;i+=2)
+			{
+				id = unescape(nameVal[i]);
+				var splitid = id.split(',');
+				if (splitid.length==1)
+				{
+					var xlatstr=']]><XLAT.STREAM KEY="dvin/UI/Error/Nodeidisnotavalidselection" ENCODE="false" ESCAPE="true"/><![CDATA[';
+					var replacestr=/Variables.id/;
+					xlatstr = xlatstr.replace(replacestr,id);
+					alert(xlatstr);
+					return;
+				}
+					
+				var splitpair = splitid[1].split("=");
+				if (validTypesAndComma.indexOf(splitpair[1]+",")==-1)
+				{
+]]>
+					var xlatstr='<XLAT.STREAM KEY="dvin/UI/Error/selectionfollowingtypesvalidTypesinvalid" ENCODE="false" ESCAPE="true"/>';
+					var replacestr=/Variables.validTypes/;
+					xlatstr = xlatstr.replace(replacestr,validTypes);
+					var replacestr=/Variables.splitpair/;
+					alert(xlatstr.replace(replacestr,splitpair[1]));
+<![CDATA[
+					return;
+				}
+				
+				id = (splitid[0].split('='))[1];
+				type = (splitid[1].split('='))[1];
+				subtype = (splitid[3].split('='))[1];
+				name = nameVal[i+1].replace(/\+/g,' ');
+				name = DecodeUTF8(name.substr(0, name.length));
+				subtype = subtype.replace(/\+/g," ");
+				type = type.replace(/\+/g," ");	
+			}			
+
+			selValue = {
+				'id':id,
+				'name':name,
+				'subtype':subtype,
+				'type':type
+			};
+			typeWidgetIns.setSelectedValue(selValue);
+		}
+	}
+	else
+	{
+	 alert("]]><XLAT.STREAM KEY="dvin/UI/PleaseSelectAssetFromTree" ENCODE="false" ESCAPE="true"/><![CDATA[");
+	}
+}
+]]>
+</SCRIPT>
+
+</FTCS> 

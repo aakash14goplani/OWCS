@@ -1,0 +1,187 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Revision: 16 $ 
+$Modtime: 7/02/04 4:23p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of FutureTense Inc.
+-					All Rights Reserved.
+-
+- BuildEditChkBox.xml
+-
+- DESCRIPTION
+-
+- HISTORY 
+-->
+<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/data/empty.gif"/>
+<setvar NAME="alttext" VALUE="Variables.empty"/>
+<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/instruction=true">
+<then>
+	<setvar NAME="helpimage" VALUE="Variables.cs_imagedir/graphics/common/icon/help_new.png"/>
+	<setvar NAME="alttext" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/instruction"/>
+</then>
+</if>
+
+<setvar NAME="checksourcetype" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sourcetype"/>
+<!-- Start of Code-fix for Issues #21397,21398,21403  -->
+<setvar NAME="ismultiple" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/multiple"/> 
+<setvar NAME="noneOption" VALUE="None"/>
+<!-- End of Code-fix for Issues #21397,21398,21403  -->
+<if COND="Variables.checksourcetype=TABLE">
+<then>
+	<setvar NAME="tablename" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/tablename"/>
+	<setvar NAME="errno" VALUE="0"/>
+	<setvar NAME="cbvaluekey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/cbvaluekey"/>
+	<setvar NAME="cbdesckey" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/cbdesckey"/>
+	<setvar NAME="selectsql" VALUE="SELECT Variables.cbvaluekey,Variables.cbdesckey
+									FROM Variables.tablename ORDER BY Variables.cbdesckey"/>
+	<if COND="IsVariable.assetmaker/property/Variables.fieldname/inputform/sql=true">
+	<then>
+		<setvar NAME="selectsql" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/sql"/>
+		<setvar NAME="selectsql" VALUE="Variables.selectsql"/>   <!--to resolve any variables in the query -->
+	</then>
+	</if>
+
+	<execsql LIST="CBList" SQL="Variables.selectsql"/>
+	<if COND="IsError.Variables.errno=false">
+	<then>
+		<SUBSTITUTE STR="Variables.fieldvalue" WHAT=";" WITH="," OUTSTR="fldvallist"/>
+		<loop LIST="CBList">
+			<setvar NAME="cbvalue" VALUE="CBList.Variables.cbvaluekey"/>
+			<setvar NAME="errno" VALUE="0"/>
+			<ISINLIST ITEM="Variables.cbvalue" STR="Variables.fldvallist"/>
+			
+			<if COND="Variables.errno=1">
+			<then>
+			<!-- Start of Code-fix for Issues #21397,21398,21403  -->
+			<if COND="Variables.ismultiple=YES">
+				<then>
+				<INPUT TYPE="CHECKBOX" ONCLICK="setTabDirty()" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="Variables.cbvalue" REPLACEALL="Variables.fieldname,Variables.cbvalue,Variables.AssetType"/><STRING.STREAM LIST="CBList" COLUMN="Variables.cbdesckey"/>
+				</then>
+			<else>
+				<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="Variables.cbvalue" REPLACEALL="Variables.fieldname,Variables.cbvalue,Variables.AssetType"/><STRING.STREAM LIST="CBList" COLUMN="Variables.cbdesckey"/>
+				<setvar NAME="valuepresent" VALUE="TRUE"/>
+			</else>
+			</if>
+			<!-- End of Code-fix for Issues #21397,21398,21403 -->
+			</then>
+			<else>
+			<!-- Start of Code-fix for Issues #21397,21398,21403  -->
+			<if COND="Variables.ismultiple=YES">
+				<then>
+					<INPUT TYPE="CHECKBOX" ONCLICK="setTabDirty()" NAME="Variables.AssetType:Variables.fieldname" VALUE="Variables.cbvalue" REPLACEALL="Variables.fieldname,Variables.cbvalue,Variables.AssetType"/><STRING.STREAM LIST="CBList" COLUMN="Variables.cbdesckey"/>
+				 </then>
+			<else>
+					<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" NAME="Variables.AssetType:Variables.fieldname" VALUE="Variables.cbvalue" REPLACEALL="Variables.fieldname,Variables.cbvalue,Variables.AssetType"/><STRING.STREAM LIST="CBList" COLUMN="Variables.cbdesckey"/>
+			</else>
+			</if>
+			<!-- End of Code-fix for Issues #21397,21398,21403 -->
+			</else>
+			</if>
+	
+			<if COND="CBList.#curRow=1">
+			<then>
+				<IMG style="vertical-align: middle; margin-left: 10px;" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" />
+			</then>
+			</if>
+			<BR/>
+	
+		</loop>
+	<!-- Start of Code-fix for Issues #21397,21398,21403 - Adding a radio button with value 'None'. -->
+	<if COND="Variables.ismultiple!=YES">
+	<then>
+	<if COND="Variables.valuepresent=TRUE">
+	<then>
+	<INPUT TYPE="RADIO"  ONCLICK="setTabDirty()" NAME="Variables.AssetType:Variables.fieldname" VALUE="" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.noneOption"/><STRING.STREAM VALUE="Variables.noneOption"/>
+	</then>
+	<else>
+	<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.noneOption"/><STRING.STREAM VALUE="Variables.noneOption"/>
+	</else>
+	</if>
+	</then>
+	</if>
+	<!-- End of Code-fix for Issues #21397,21398,21403 -->
+	</then>
+	<else>
+		<XLAT.STREAM KEY="dvin/Assetmaker/ErrorQuery" errno="Variables.errno" selectsql="Variables.selectsql" EVALALL="false"/>  
+	</else>
+	</if>	
+</then>
+</if>
+
+<if COND="Variables.checksourcetype=STRING">
+<then>
+	<setvar NAME="cbvalues" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/cbvalues"/>
+	<setvar NAME="cbdescriptions" VALUE="Variables.assetmaker/property/Variables.fieldname/inputform/cbdescriptions"/>
+	<stringlist NAME="cbvlist" STR="Variables.cbvalues" DELIM=","/>
+	<stringlist NAME="cbdesclist" STR="Variables.cbdescriptions" DELIM=","/>
+	<SUBSTITUTE STR="Variables.fieldvalue" WHAT=";" WITH="," OUTSTR="fldvallist"/>
+	<loop LIST="cbvlist">
+		<setvar NAME="errno" VALUE="0"/>
+		<ISINLIST ITEM="cbvlist.ITEM" STR="Variables.fldvallist"/>
+		<if COND="Variables.errno=1">
+		<then>
+		<!-- Start of Code-fix for Issues #21397,21398,21403  -->
+		<if COND="Variables.ismultiple=YES">
+				<then>
+				<INPUT ONCLICK="setTabDirty()" TYPE="CHECKBOX" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="cbvlist.ITEM" REPLACEALL="Variables.AssetType,Variables.fieldname,cbvlist.ITEM"/><STRING.STREAM VALUE="cbdesclist.ITEM"/>
+				</then>
+		<else>
+				<INPUT ONCLICK="setTabDirty()" TYPE="RADIO" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="cbvlist.ITEM" REPLACEALL="Variables.AssetType,Variables.fieldname,cbvlist.ITEM"/><STRING.STREAM VALUE="cbdesclist.ITEM"/>
+				<setvar NAME="valuepresent" VALUE="TRUE"/>
+		</else>
+		</if>
+		
+		
+		<!-- End of Code-fix for Issues #21397,21398,21403 -->
+		</then>
+		<else>
+		<!-- Start of Code-fix for Issues #21397,21398,21403  -->
+		<if COND="Variables.ismultiple=YES">
+				<then>
+				<INPUT ONCLICK="setTabDirty()" TYPE="CHECKBOX" NAME="Variables.AssetType:Variables.fieldname" VALUE="cbvlist.ITEM" REPLACEALL="Variables.fieldname,cbvlist.ITEM,Variables.AssetType"/><STRING.STREAM VALUE="cbdesclist.ITEM"/>
+				</then>
+		<else>
+				<INPUT ONCLICK="setTabDirty()" TYPE="RADIO" NAME="Variables.AssetType:Variables.fieldname" VALUE="cbvlist.ITEM" REPLACEALL="Variables.fieldname,cbvlist.ITEM,Variables.AssetType"/><STRING.STREAM VALUE="cbdesclist.ITEM"/>
+		</else>
+		</if>
+		
+		
+		
+		<!-- End of Code-fix for Issues #21397,21398,21403 -->
+		</else>
+		</if>
+
+		<if COND="cbvlist.#curRow=1">
+		<then>
+				<IMG style="vertical-align: middle; margin-left: 10px;" SRC="Variables.helpimage" ALT="Variables.alttext" REPLACEALL="Variables.alttext,Variables.helpimage" TITLE="Variables.alttext" />
+		</then>
+		</if>
+		<BR/>
+
+		<setrow LIST="cbdesclist" ACTION="NEXT"/>
+		
+		
+	</loop>
+	
+	<!-- Start of Code-fix for Issues #21397,21398,21403 - Adding a radio button with value 'None'. -->
+	<if COND="Variables.ismultiple!=YES">
+	<then>
+	<if COND="Variables.valuepresent=TRUE">
+	<then>
+	<INPUT TYPE="RADIO"  ONCLICK="setTabDirty()" NAME="Variables.AssetType:Variables.fieldname" VALUE="" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.noneOption"/><STRING.STREAM VALUE="Variables.noneOption"/>
+	</then>
+	<else>
+	<INPUT TYPE="RADIO" ONCLICK="setTabDirty()" CHECKED="yes" NAME="Variables.AssetType:Variables.fieldname" VALUE="" REPLACEALL="Variables.AssetType,Variables.fieldname,Variables.noneOption"/><STRING.STREAM VALUE="Variables.noneOption"/>
+	</else>
+	</if>
+	</then>
+	</if>
+	<!-- End of Code-fix for Issues #21397,21398,21403 -->
+</then>
+</if>
+<removevar NAME="alttext"/>
+</FTCS> 

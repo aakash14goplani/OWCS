@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/UIFramework/TreeTabSave
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<TTM.CREATE OBJVARNAME="tab"/>
+
+<SUBSTITUTE STR="Variables.New:roles" WHAT=";" WITH="," OUTSTR="New:roles"/>
+
+<!-- determine number of sections -->
+<SETVAR NAME="New:sectionTotal" VALUE="0"/>
+<IF COND="IsVariable.SelectedSections=true">
+<THEN>
+   <STRINGLIST NAME="SectionList" STR="Variables.SelectedSections" DELIM=";"/>
+	<SETVAR NAME="New:sectionTotal" VALUE="SectionList.#numRows"/>
+	<LOOP LIST="SectionList">
+		<SETCOUNTER NAME="row" VALUE="SectionList.#curRow"/>
+		<INCCOUNTER NAME="row" VALUE="-1"/>
+		<STRINGLIST NAME="pairs" STR="SectionList.ITEM" DELIM=":"/>
+		
+		<SETROW LIST="pairs" ACTION="FIRST"/>
+		<SETVAR NAME="New:sectionCounters.rowname" VALUE="pairs.ITEM"/>
+		<SETROW LIST="pairs" ACTION="NEXT"/>
+		<SETVAR NAME="New:sectionCounters.rowpopulate" VALUE="pairs.ITEM"/>
+		<if COND="Variables.New:sites!=1"> <!-- corresponding to Any -->
+		<then>
+		<SETVAR NAME="New:sectionCounters.rowsites" VALUE="Variables.New:sites"/>
+		</then>
+		</if>
+		<SETVAR NAME="New:sectionCounters.rowroles" VALUE="Variables.New:roles"/>
+	</LOOP>
+</THEN>
+</IF>
+
+<TREETAB.GATHER NAME="tab" PREFIX="New:"/>
+
+<!-- if roles are Any -->
+<if COND="Variables.New:roles=Any">
+<then>
+	<TREETAB.GETROLES NAME="tab" OBJVARNAME="troles"/>
+	<ROLELIST.SETALL NAME="troles"/>
+
+	<TREETAB.GETSECTIONS NAME="tab" OBJVARNAME="tsections"/>
+	<SECTIONLIST.GETALL NAME="tsections" PREFIX="all:"/>
+	<SETCOUNTER NAME="sectionNum" VALUE="0"/>
+    <IF COND="Variables.all:Total!=0">
+    <THEN>
+    	<LOOP COUNT="Variables.all:Total">
+    		<SECTION.GETROLES NAME="all:Counters.sectionNum" OBJVARNAME="sectroles"/>
+    		<ROLELIST.SETALL NAME="sectroles"/>
+    		<INCCOUNTER NAME="sectionNum" VALUE="1"/>
+    	</LOOP>
+    </THEN>
+    </IF>
+</then>
+</if>
+
+<!-- if sites are Any -->
+<if COND="Variables.New:sites=1"> 
+<then>
+	<TREETAB.GETSITES NAME="tab" OBJVARNAME="tsites"/>
+	<SITELIST.SETALL NAME="tsites"/>
+
+	<TREETAB.GETSECTIONS NAME="tab" OBJVARNAME="tsections"/>
+	<SECTIONLIST.GETALL NAME="tsections" PREFIX="all:"/>
+	<SETCOUNTER NAME="sectionNum" VALUE="0"/>
+    <IF COND="Variables.all:Total!=0">
+    <THEN>
+    	<LOOP COUNT="Variables.all:Total">
+    		<SECTION.GETSITES NAME="all:Counters.sectionNum" OBJVARNAME="sectsites"/>
+    		<SITELIST.SETALL NAME="sectsites"/>
+    		<INCCOUNTER NAME="sectionNum" VALUE="1"/>
+    	</LOOP>
+    </THEN>
+    </IF>
+</then>
+</if>
+
+<TTM.SAVE OBJECT="tab"/>
+<IF COND="Variables.errno!=0">
+<THEN>
+	<XLAT.LOOKUP KEY="dvin/UI/Error/Savefailederrnoerrdetail1" errno="Variables.errno" errdetail1="Variables.errdetail1" EVALALL="false" VARNAME="mesg"/>
+	<div class="width-outer-70">
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<argument NAME="severity" value="error" />
+		<argument NAME="msgtext" value="Variables.mesg" />
+	</callelement>
+	</div>
+	<REMOVEVAR NAME="mesg" />
+</THEN>
+<ELSE>
+	<TREETAB.GETID NAME="tab" VARNAME="tabid"/>
+</ELSE>
+</IF>
+</FTCS> 

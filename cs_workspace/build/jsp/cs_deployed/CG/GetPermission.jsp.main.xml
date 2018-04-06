@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">CG/GetPermission</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>CG/GetPermission</string>
+        <string></string>
+        <string></string>
+        <string></string>
+        <string>CG\GetPermission.jsp</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/JSP/CG/GetPermission.jsp|null|_storable_type\=%2FELEMENTS%2FJSP%2FCG%2FGetPermission.jsp
+@hashval=-145818749
+key=@ELEMENTCATALOG-CG/GetPermission
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

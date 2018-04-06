@@ -1,0 +1,146 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/AssetType/Page/PlacedPageParents
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- loadexecuted will be assigned to true to Signal that we handled the request -->
+<SETVAR NAME="loadexecuted" VALUE="true"/>
+			
+<SITEPLAN.ROOT LIST="PubRoot" OBJECTID="SessionVariables.pubid"/>
+
+<SETVAR NAME='theSitePlanNid' VALUE='PubRoot.nid' />
+<IF COND="IsVariable.siteplannid=true" >
+<THEN>
+	<SETVAR NAME='theSitePlanNid' VALUE='Variables.siteplannid' />
+</THEN>
+</IF>
+
+<setvar NAME="nodecount" VALUE="0"/>
+<setvar NAME="tablename" VALUE="SitePlanTree"/>
+<execsql LIST="mylist"
+		 SQL="SELECT COUNT(*) as mycount FROM  SitePlanTree
+			 WHERE nparentid = Variables.theSitePlanNid AND ncode = 'Placed'"/>
+						
+<IF COND="IsList.mylist=true">
+<THEN>					
+	<IF COND="mylist.mycount!=0">
+	<THEN>
+		<setvar NAME="nodecount" VALUE="mylist.mycount"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<SITEPLAN.LOAD NAME="theSiteplanNode" NODEID="Variables.theSitePlanNid"/>
+<SITEPLAN.CHILDREN NAME="theSiteplanNode" LIST="children" CODE="Placed" ORDER="nrank"/>
+
+<SETVAR NAME='tmpOkFunctions' VALUE='edit;delete;treerefresh' />
+
+<SETVAR NAME='tmpOkFunctions' VALUE='Variables.tmpOkFunctions;copy-site-navigation;paste-site-navigation;approve' />
+
+<IF COND="IsList.children=true">
+<THEN>
+		  
+	<IF COND="children.#numRows!=0">
+	<THEN>
+		<!--  Read the max tree nodes to fetch  -->
+	    <callelement NAME="OpenMarket/Xcelerate/Util/LoadProperty">
+					<argument NAME="property" VALUE="xcelerate.treeMaxNodes"/>
+					<argument NAME="ini" VALUE="futuretense_xcel.ini"/>
+					<argument NAME="varname" VALUE="TOOMANY"/>
+		</callelement>
+			
+		<!--  Set the Total Count in the immediate children ALL Result Set List -->				
+		<setvar NAME="COUNT" VALUE="children.#numRows"/>					
+				
+		<!--  Set the Total Count in the immediate children ALL Result Set List -->				
+		<setvar NAME="totalNodes" VALUE="children.#numRows"/>					
+		<setvar NAME="FETCH" VALUE="Variables.COUNT"/>				   	  		  
+	  	<setvar NAME="maxNodes" VALUE="no"/>	
+	  		
+	  	<!-- compare COUNT and TooMany, SET THE COUNT TO MAXNODES -->
+		<CALCULATOR.GO VALUE="Variables.COUNT Variables.TOOMANY GT" VARNAME="ANS"/>							
+		<if COND="Variables.ANS=1">
+		<then>
+			<!--   <CALCULATOR.GO VALUE="Variables.FROM Variables.TOOMANY +" VARNAME="FETCH"/>  --> 							
+			<setvar NAME="FETCH" VALUE="Variables.TOOMANY"/>	
+			<!-- Set the reached max nodes indicator parameter  --> 
+		    <setvar NAME="maxNodes" VALUE="yes"/>	
+	  	</then>
+		</if>
+		
+		<!--  
+			<LOGMSG STR="$PlacedPageParents FETCHED = Variables.totalNodes MAX = Variables.TOOMANY FETCH = Variables.FETCH " />
+		 --> 
+		
+		<LOOP LIST="children" FROM="Variables.FROM"  COUNT="Variables.FETCH">
+							
+			<SITEPLAN.LOAD NAME="thePage" NODEID="children.nid"/>
+			<ASSET.LOAD NAME="currentChild" TYPE="children.otype" OBJECTID="children.oid"/>
+			<ASSET.GET NAME="currentChild" FIELD="name" OUTPUT="currentName"/>
+			<ASSET.GET NAME="currentChild" FIELD="description" OUTPUT="currentDesc"/>			
+			<SITEPLAN.CHILDREN NAME="thePage" LIST="grandchildren" CODE="Placed" ORDER="nrank"/>
+							
+			<REMOVEVAR NAME="LoadURL"/>
+			<IF COND="IsList.grandchildren=true">
+			<THEN>
+				<IF COND="grandchildren.#numRows!=0">
+				<THEN>
+						<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Gator/UIFramework/LoadTab" outstring="LoadURL">
+							<satellite.argument name="AssetType" value="children.otype"/>
+							<satellite.argument name="populate" value="OpenMarket/Xcelerate/AssetType/children.otype/LoadSiteTree"/>
+							<satellite.argument name="op" value="load"/>
+							<satellite.argument name="loadpages" value="children.nid"/>
+						</SATELLITE.LINK>													
+				</THEN>
+				</IF>
+			</THEN>				
+			</IF>
+							
+			<SETVAR NAME="oldat" VALUE="Variables.AssetType"/>
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNodeID" SCOPED="STACKED">
+					<ARGUMENT NAME="ID" VALUE="children.oid"/>
+					<ARGUMENT NAME="AssetType" VALUE="children.otype"/>
+					<ARGUMENT NAME="TreeNodeID" VALUE="Variables.empty"/>
+			</CALLELEMENT>
+			<SETVAR NAME="AssetType" VALUE="Variables.oldat"/>
+											
+			<CALLELEMENT NAME="OpenMarket/Gator/UIFramework/BuildTreeNode">
+					<ARGUMENT NAME="Label" VALUE="Variables.currentName"/>
+					<ARGUMENT NAME="Description" VALUE="Variables.currentDesc"/>
+					<ARGUMENT NAME="ID" VALUE="Variables.TreeNodeID"/>
+					
+					<ARGUMENT NAME="okFunctions" VALUE="Variables.tmpOkFunctions" />
+				
+					<ARGUMENT NAME="executeFunction" VALUE="Variables.cs_defaultFunctionChild" />
+					<ARGUMENT NAME="Image" VALUE="Variables.cs_imagedir/OMTree/TreeImages/AssetTypes/children.otype.png"/>
+					<ARGUMENT NAME="RefreshKeys" VALUE="children.oid;children.nid"/> 
+					
+					<!--  
+						  SitePlanTree SPN Node Record identifier  
+						  Used to detect, track and manage 
+					      spn dnd stale nodes 
+					-->
+					<ARGUMENT NAME="nid" VALUE="children.nid"/>
+					<ARGUMENT NAME="oid" VALUE="children.oid"/>
+					<ARGUMENT NAME="otype"  VALUE="children.otype"/>
+					<ARGUMENT NAME="oversion" VALUE="children.oversion"/>	
+			</CALLELEMENT>
+		</LOOP>
+	</THEN>
+	</IF>
+</THEN>
+</IF>			
+			
+			
+<REMOVEVAR NAME='theSitePlanNid' />
+<REMOVEVAR NAME='siteplannid' />	
+<REMOVEVAR NAME='tmpOkFunctions' />		
+</FTCS>

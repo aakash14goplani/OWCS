@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/EnableMobilityAssetTypes
+-
+- INPUT
+-
+- OUTPUT
+- DESCRIPTION - Given a pubid, it enables mobility specific OOTB asset types for this site. It is being called from element 'SitePost' on creating a new site when mobility flag is ON, but
+-  can be used for any other site also, which did not had these asset types enabled due to some reason.
+-->
+
+<IF COND="IsVariable.pubid=true">
+<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+			<ARGUMENT name="upcommand" value="EnableAssetType"/>
+			<ARGUMENT name="assettype" value="DeviceGroup"/>
+			<ARGUMENT name="pubid" value='Variables.pubid'/>
+		</CALLELEMENT>
+
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+			<ARGUMENT name="upcommand" value="EnableAssetType"/>
+			<ARGUMENT name="assettype" value="Device"/>
+			<ARGUMENT name="pubid" value='Variables.pubid'/>
+		</CALLELEMENT>
+		
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+			<ARGUMENT name="upcommand" value="EnableAssetType"/>
+			<ARGUMENT name="assettype" value="SitePlan"/>
+			<ARGUMENT name="pubid" value='Variables.pubid'/>
+		</CALLELEMENT>
+		
+			<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+			<ARGUMENT name="upcommand" value="EnableAssetType"/>
+			<ARGUMENT name="assettype" value="WebRoot"/>
+			<ARGUMENT name="pubid" value='Variables.pubid'/>
+		</CALLELEMENT>
+</THEN>
+</IF>
+</ftcs>

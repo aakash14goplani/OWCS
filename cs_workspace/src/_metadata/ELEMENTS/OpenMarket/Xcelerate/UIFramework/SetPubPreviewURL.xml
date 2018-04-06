@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/UIFramework/SetPubPreviewURL
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+ <!--
+     1) Load the Site's Publication record
+     2) Set the Publication:cs_previewasset value in ICS scope so that the calling element can access it
+ -->
+
+ <!-- Load the publication record  -->
+
+ <!-- <PUBLICATION.LOAD NAME="publication" OBJECTID="SessionVariables.pubid"/>      -->
+
+ <PUBLICATION.LOAD NAME="publication" OBJECTID="SessionVariables.pubid"/>      
+
+ <PUBLICATION.SCATTER NAME="publication" PREFIX="Publication"/>
+
+ <!--   The SETVAR tag sets the value of a variable.
+        The value of the variable exists for the duration of the page evaluation
+        ICS scope so that the calling element can access and reference it
+   -->
+ <SETVAR NAME="PubPreviewAsset" VALUE="Variables.Publication:cs_previewasset"/>
+
+ 
+</ftcs>

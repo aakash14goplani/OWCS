@@ -1,0 +1,129 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/WorkflowReportFront.xml $ 
+$Revision: 7 $ 
+$Modtime: 2/02/04 5:42p $ 
+-->
+<!-- OpenMarket/Xcelerate/PrologActions/WorkflowReportFront
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<PROPERTY.GET PARAM="xcelelem.manageuserpub" INIFILE="futuretense_xcel.ini" VARNAME="propmanageuserpub"/>
+
+<!-- Get the list of enabled asset types for this pubid-->
+<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/AssetMgt/EnableAssetTypePub">
+	<ARGUMENT NAME="upcommand" VALUE="ListEnabledAssetTypes"/>
+	<ARGUMENT NAME="list" VALUE="EnabledAssetTypes"/>
+	<ARGUMENT NAME="pubid" VALUE="SessionVariables.pubid"/>
+</CALLELEMENT>
+
+<!-- get the workflow states -->
+<SETVAR NAME="tablename" VALUE="WorkflowStatusCode"/>
+<execsql LIST="WflStatusCode" SQL="SELECT * FROM WorkflowStatusCode order by description "/>
+
+<!-- get the users for this pub, and the superset of acls for those users -->
+<!--SETVAR NAME="id" VALUE="SessionVariables.pubid" />
+<SELECTTO LIST="pub" FROM="Publication" WHERE="id" WHAT="name"/>
+      
+<CALLELEMENT NAME="Variables.propmanageuserpub">
+	<ARGUMENT NAME="upcommand" VALUE="GetUsers"/>
+	<ARGUMENT NAME="name" VALUE="pub.name"/>
+	<ARGUMENT NAME="qryprefix" VALUE="pubuserlist"/>
+</CALLELEMENT>
+<SETVAR NAME="tablename" VALUE="UserPublication"/>
+<EXECSQL LIST="ActiveACL" SQL="SELECT DISTINCT UserPublication.acl
+	FROM UserPublication, Publication
+	WHERE Publication.id = UserPublication.pubid AND
+	UserPublication.pubid=SessionVariables.pubid"/ -->
+
+<USERMANAGER.GETUSERS SITE="SessionVariables.pubid" PREFIX="SiteUsers:"/>
+<!-- Turn it into an ordered list -->
+<LISTOBJECT.CREATE NAME="userlistobj" COLUMNS="username"/>
+<!-- Also, accumulate roles in a hash -->
+<HASH.CREATE NAME="rolehash"/>
+<SETVAR NAME="allroles" VALUE="false"/>
+<IF COND="Variables.SiteUsers:Total!=0">
+<THEN>
+	<SETCOUNTER NAME="SiteUserCounter" VALUE="0"/>
+	<LOOP COUNT="Variables.SiteUsers:Total">
+		<CCUSER.GETID NAME="SiteUsers:Counters.SiteUserCounter" VARNAME="userid"/>
+		<CCUSER.GETSITEROLES NAME="SiteUsers:Counters.SiteUserCounter" SITE="SessionVariables.pubid" OBJVARNAME="rolelist"/>
+		<LISTOBJECT.ADDROW NAME="userlistobj" username="Variables.userid"/>
+		<!-- Loop through user's role list and put the values in the role hash -->
+		<ROLELIST.SCATTER NAME="rolelist" PREFIX="Roles:"/>
+		<IF COND="Variables.Roles:roles=_ALL_">
+		<THEN>
+			<SETVAR NAME="allroles" VALUE="true"/>
+		</THEN>
+		<ELSE>
+			<STRINGLIST STR="Variables.Roles:roles" NAME="rolelist" DELIM=","/>
+			<IF COND="IsList.rolelist=true">
+			<THEN>
+				<IF COND="rolelist.#numRows!=0">
+				<THEN>
+					<LOOP LIST="rolelist">
+						<HASH.ADD NAME="rolehash" VALUE="rolelist.ITEM"/>
+					</LOOP>
+				</THEN>
+				</IF>
+			</THEN>
+			</IF>
+		</ELSE>
+		</IF>
+		<INCCOUNTER NAME="SiteUserCounter" VALUE="1"/>
+	</LOOP>
+</THEN>
+</IF>
+<LISTOBJECT.TOLIST NAME="userlistobj" LISTVARNAME="pubuserlist"/>
+
+<!-- Turn the role hash object into a proper list -->
+<ROLEMANAGER.GETROLENAMES LISTVARNAME="rolelist"/>
+<LISTOBJECT.CREATE NAME="rolelistobj" COLUMNS="acl"/>
+<IF COND="IsList.rolelist=true">
+<THEN>
+	<IF COND="rolelist.#numRows!=0">
+	<THEN>
+		<!-- Iterate through the role list, taking the right subset -->
+		<!-- I do it this way because it's ordered, and because we can handle the 'all' case easily -->
+		<LOOP LIST="rolelist">
+			<IF COND="Variables.allroles=true">
+			<THEN>
+				<LISTOBJECT.ADD NAME="rolelistobj" VALUE="rolelist.aclname"/>
+			</THEN>
+			<ELSE>
+				<HASH.CONTAINS NAME="rolehash" VALUE="rolelist.aclname" VARNAME="output"/>
+				<IF COND="Variables.output=true">
+				<THEN>
+					<LISTOBJECT.ADDROW NAME="rolelistobj" acl="rolelist.aclname"/>
+				</THEN>
+				</IF>
+			</ELSE>
+			</IF>
+		</LOOP>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+<LISTOBJECT.TOLIST NAME="rolelistobj" LISTVARNAME="ActiveACL"/>
+
+<SETVAR NAME="actionTitle" VALUE="Create"/>
+<if COND="Variables.action=update">
+<then>
+	<SETVAR NAME="actionTitle" VALUE="Edit"/>
+</then>
+</if>
+
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/ShowWorkflowFront" outstring="WorkflowFrontURL">
+	<satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+	<satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+</SATELLITE.LINK>
+
+
+</FTCS> 

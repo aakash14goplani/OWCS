@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/DisplayAttributeName
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<setvar NAME="currentAttrName" VALUE="Variables.AttrName"/>
+<IF COND="Variables.attrDisplayStyle=description">
+<THEN>
+	<IF COND="Variables.AttrDesc!=Variables.empty">
+	<THEN>
+        <setvar NAME="currentAttrName" VALUE="Variables.AttrDesc"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+<IF COND="IsVariable.showFilter=true">
+<THEN>
+	<td class="form-label-text">
+		<if COND="Variables.RequiredAttr=true">
+		<then>
+			<span class="alert-color">*</span>
+		</then>
+		</if>
+		<STRING.STREAM VALUE="Variables.currentAttrName"/>: 
+        <!--PR#16786 Removed the filter name (<STRING.STREAM VARIABLE="showFilter"/>):-->
+	</td>
+</THEN>
+<ELSE>
+    <td class="form-label-text">		
+        <if COND="Variables.RequiredAttr=true">
+		<then>
+			<span class="alert-color">*</span>
+		</then>
+		</if>
+		<STRING.STREAM VALUE="Variables.currentAttrName"/>:
+	</td>
+</ELSE>
+</IF>
+</FTCS> 

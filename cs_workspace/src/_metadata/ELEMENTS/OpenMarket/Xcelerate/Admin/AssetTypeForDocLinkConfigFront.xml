@@ -1,0 +1,1220 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+	<!-- OpenMarket/Xcelerate/Admin/AssetTypeForDocLinkConfigFront
+	-
+	- INPUT
+	-
+	- OUTPUT
+	-
+	-->
+
+	<!--
+	- Confidential and Proprietary Information of Open Market, Inc.
+	-					All Rights Reserved.
+	-
+	- DESCRIPTION
+	-	Admin control of specifying attributes of an external client for each of
+	-     of the columns for a given asset type, subtype, pubid and clientapplication.
+	-     Known Attributes for CSDocLink:  
+	-     	name:  enable  ; values:  true,false
+	-		name:  acceptdocs  ; values:  null, *, comma separated list of MimeType extensions
+	-
+	- INPUT
+	-   action   - list,edit  when pagetype is front, empty when pagetype is post
+	-   pagetype - front,post
+	-   clientid - id of the row in externalclients table 
+	-               (assettypeid,clientapp,pubid combination)
+	-   subtype -   asset subtype
+	-->
+
+	<!-- type is either front or post -->
+
+			<SCRIPT LANGUAGE="JavaScript">
+				function NextPage(form, action, pagetype, docfield, docfielddisplay)
+				{
+					var obj = document.forms[0].elements[0];
+					var postPage = "OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfig"+pagetype;
+					
+					if (typeof(docfield)!='undefined')
+               {
+                  obj.form.docField.value = docfield;
+                  obj.form.docFieldDisplay.value = docfielddisplay;
+               }
+               if (typeof(obj.form.maxSize)!='undefined')
+                  if (obj.form.maxSize.value == 'unlimited')
+                     obj.form.maxSize.value = '';
+					obj.form.action.value = action;
+					obj.form.pagename.value = postPage;
+					obj.form.submit();
+					return false;
+				}
+			</SCRIPT>
+		<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+		<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+		<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+         <if COND="IsVariable.subtype=false">
+   		<then>
+   			<SETVAR NAME="subtype" VALUE="Variables.empty"/>
+   		</then>
+   		</if>
+
+			<INPUT TYPE="HIDDEN" NAME="pagename" VALUE="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront"/>
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="edit" />
+			<STRING.ENCODE VARIABLE="clientid" VARNAME="clientid"/>
+			<INPUT TYPE="HIDDEN" NAME="clientid" VALUE="Variables.clientid" REPLACEALL="Variables.clientid"/>
+			<STRING.ENCODE VARIABLE="subtype" VARNAME="subtype"/>
+			<INPUT TYPE="HIDDEN" NAME="subtype" VALUE="Variables.subtype" REPLACEALL="Variables.subtype"/>
+         
+			<!-- 
+			Load the externalclients entry corresponding to clientid.
+			Get the list of assettype columns & attributes values from 
+			externalclients config table
+			-->
+			<EXTERNALCLIENTSMANAGER.LOADID OBJVARNAME="aClient" ID="Variables.clientid"/>
+			<EXTERNALCLIENTSITEM.GETASSETTYPE NAME="aClient" VARNAME="assettype" />
+			<EXTERNALCLIENTSITEM.GETCLIENTAPP  NAME="aClient" VARNAME="clientapp" />
+			<EXTERNALCLIENTSITEM.GETPUBID  NAME="aClient" VARNAME="pubid" />
+			<STRING.ENCODE VARIABLE="clientapp" VARNAME="clientapp"/>
+			<INPUT TYPE="HIDDEN" NAME="clientapp" VALUE="Variables.clientapp" REPLACEALL="Variables.clientapp"/>
+			<STRING.ENCODE VARIABLE="assettype" VARNAME="assettype"/>
+			<INPUT TYPE="HIDDEN" NAME="assettype" VALUE="Variables.assettype" REPLACEALL="Variables.assettype"/>
+			
+			<ASSETTYPE.LOAD NAME="at" FIELD="assettype" VALUE="Variables.assettype"/>
+   		<if COND="IsError.Variables.errno=true">
+   		<then>
+   			<setvar NAME="assettype" VALUE="Variables.aType"/>
+   				<XLAT.STREAM KEY="dvin/UI/Admin/NoDataavailableforassettype"/>
+   			<THROWEXCEPTION/>
+   		</then>
+   		</if>
+   		<ASSETTYPE.GET NAME="at" FIELD="description" OUTPUT="at:description"/>
+
+			<!-- get a list of attributes for this asset subtype  -->
+			<ASSET.DEF TYPE="Variables.assettype" LIST="aTypeDef" SUBTYPE="Variables.subtype" PUBID="Variables.pubid"/>
+			<IF COND="IsList.aTypeDef=false">
+				<THEN>
+					<XLAT.STREAM KEY="dvin/UI/Admin/NoDataavailable"/>
+					<THROWEXCEPTION/>
+				</THEN>
+			</IF>
+			<!-- check if it has got any config. data already, if not add default data -->
+			<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST LISTVARNAME="verifyList" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" />
+          
+			<IF COND="IsList.verifyList=true">
+				<THEN>
+               <HASH.CREATE NAME="hSubtypeFields" LIST="aTypeDef" COLUMN="name"/>
+					<IF COND="verifyList.#numRows=0">
+						<THEN>
+							<LOOP LIST="aTypeDef">
+								<IF COND="aTypeDef.editable=true">
+									<THEN>
+										<SETVAR NAME="attribVal" VALUE="Variables.empty"/>
+										<IF COND="aTypeDef.name=Name">
+											<THEN>
+												<SETVAR NAME="attribVal" VALUE="true"/>
+											</THEN>
+										</IF>
+										<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+										<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="enable"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.attribVal"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+										<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+										
+										<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+										<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="acceptdocs"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="No"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+										<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+
+                              <EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+										<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="maxfilesize"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="No"/>
+										<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+										<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+									</THEN>
+								</IF>
+							</LOOP>
+							<!-- call this element again to redisplay the new status -->
+							<CALLELEMENT NAME="OpenMarket/Xcelerate/Admin/AssetTypeForDocLinkConfigFront">
+								<ARGUMENT NAME="action" VALUE="list"/>
+								<ARGUMENT NAME="clientid" VALUE="Variables.clientid"/>
+								<ARGUMENT NAME="subtype" VALUE="Variables.subtype"/>
+							</CALLELEMENT>
+							<THROWEXCEPTION/>
+						</THEN>
+					</IF>
+				</THEN>
+			</IF>
+
+         <!-- check if the existing config data is still valid -->
+         <!-- ways it might have broken include deletion of the subtype, removal or fields in the subtype, and
+            renamed fields in the subtype -->
+         <EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST LISTVARNAME="cList" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype"/>
+         
+         <HASH.CREATE NAME="hSavedFields" LIST="cList" COLUMN="property"/>
+         <HASH.TOSTRING NAME="hSavedFields" VARNAME="savedFields" DELIM=";"/>
+         <STRINGLIST NAME="lSavedFields" STR="Variables.savedFields" DELIM=";"/>
+         <LOOP LIST="lSavedFields">
+            <HASH.CONTAINS NAME="hSubtypeFields" VALUE="lSavedFields.ITEM" VARNAME="hasit"/>
+            <IF COND="Variables.hasit=false">
+            <THEN>
+               <table border="1" cellspacing="0" cellpadding="0">
+            	<tr>
+            		<td class="message-bg-color">
+            			<table border="0" cellspacing="0" cellpadding="3">
+            				<tr>
+            					<td valign="top"><img src="Variables.cs_imagedir/graphics/common/msg/warning.gif" width="25" height="22" REPLACEALL="Variables.cs_imagedir"/></td>
+            					<td>
+                              <XLAT.STREAM KEY="dvin/CSDocLink/V1/RemovedInvalidField"/><BR/>
+            					</td>
+            				</tr>
+            			</table>
+            		</td>
+            	</tr>
+            	</table>
+               
+               <EXTERNALCLIENTSCONFIGMANAGER.LOADFROMFIELDS OBJVARNAME="aRec" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="lSavedFields.ITEM" ACTION="enable"/>
+               <EXTERNALCLIENTSCONFIGITEM.GETID NAME="aRec" VARNAME="currentID"/>
+               <EXTERNALCLIENTSCONFIGMANAGER.DELETE ID="Variables.currentID"/>
+               <EXTERNALCLIENTSCONFIGMANAGER.LOADFROMFIELDS OBJVARNAME="aRec" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="lSavedFields.ITEM" ACTION="acceptdocs"/>
+               <EXTERNALCLIENTSCONFIGITEM.GETID NAME="aRec" VARNAME="currentID"/>
+               <EXTERNALCLIENTSCONFIGMANAGER.DELETE ID="Variables.currentID"/>
+               <EXTERNALCLIENTSCONFIGMANAGER.LOADFROMFIELDS OBJVARNAME="aRec" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="lSavedFields.ITEM" ACTION="maxfilesize"/>
+               <EXTERNALCLIENTSCONFIGITEM.GETID NAME="aRec" VARNAME="currentID"/>
+               <EXTERNALCLIENTSCONFIGMANAGER.DELETE ID="Variables.currentID"/>
+            </THEN>
+            </IF>
+         </LOOP>
+
+			<IF COND="Variables.action=list">
+				<THEN>
+						<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+						<tr><td>
+							<SPAN CLASS="title-text">
+								<IF COND="Variables.subtype=Variables.empty">
+								<THEN>
+									<XLAT.LOOKUP KEY="dvin/UI/Util/Standardnosubtype" VARNAME="stdescription"/>
+								</THEN>
+								<ELSE>
+									<SETVAR NAME="stdescription" VALUE="Variables.subtype"/>
+								</ELSE>
+								</IF>
+								<XLAT.STREAM KEY="dvin/UI/Admin/ConfigassettypeaTypesubtypeCSDocLink"  aType="Variables.assettype" subtype="Variables.stdescription" EVALALL="false"/>
+							</SPAN>
+						</td></tr>
+					<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+					</table>
+
+					<table class="width-outer-70" >
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_alt_"/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront" outstring="urlasttpdoclkconfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="subtype" value="Variables.subtype"/>
+                                             <satellite.argument name="action" value="edit"/>
+                                             <satellite.argument name="clientid" value="Variables.clientid"/>
+                                              </SATELLITE.LINK>
+					<tr><td>
+					
+					<XLAT.LOOKUP KEY="dvin/UI/Admin/Enabled" VARNAME="_isEnabled_"/>
+					<TABLE class="width-inner-100" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+						<TR>
+							<TD></TD>
+							<TD CLASS="tile-dark" HEIGHT="1">
+								<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</TD>
+							<TD></TD>
+						</TR>
+						<TR>
+							<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+								<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</TD>
+							<TD >
+								<TABLE WIDTH="100%" CELLPADDING="0" CELLSPACING="0" BORDER="0" BGCOLOR="#ffffff">
+									<TR>
+										<TD COLSPAN="10" CLASS="tile-highlight">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+									</TR>
+									<TR>
+										<TD CLASS="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+											<DIV CLASS="new-table-title">
+												<XLAT.STREAM KEY="dvin/UI/Admin/Fieldname"/>
+											</DIV>
+										</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+											<DIV CLASS="new-table-title">
+												<XLAT.STREAM KEY="dvin/AT/Common/Description"/>
+											</DIV>
+										</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+											<DIV CLASS="new-table-title">
+												<XLAT.STREAM KEY="dvin/Common/EnableQ"/>
+											</DIV>
+										</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+										<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+											<DIV CLASS="new-table-title">
+												<XLAT.STREAM KEY="dvin/UI/Admin/AcceptsDocumentsQ"/>
+											</DIV>
+										</TD>
+										<TD CLASS="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+									</TR>
+									<TR>
+										<TD COLSPAN="10" CLASS="tile-dark">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+									</TR>
+									<!-- Loop over all search results. -->
+									<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+									<SETVAR NAME="separatorLine" VALUE="0"/>
+									<SETROW LIST="aTypeDef" ACTION="FIRST"/>
+
+									<LOOP  LIST="aTypeDef" >
+									<!--This is to hide the display of Dimension-parent field -->
+									<IF COND="aTypeDef.name=Dimension-parent">
+									  <THEN>
+									     <SETROW LIST="aTypeDef" ACTION="NEXT"/>
+									  </THEN>
+									</IF>
+										<IF COND="aTypeDef.editable=true" >
+											<THEN>
+												<EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST LISTVARNAME="cList" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="aTypeDef.name" />
+												<REMOVEVAR NAME="enable"/>
+												<REMOVEVAR NAME="acceptdocs"/>
+                                    <REMOVEVAR NAME="maxfilesize"/>
+												<LOOP LIST="cList">
+													<SETVAR NAME="cList.action" VALUE="cList.value"/>
+												</LOOP>
+								
+
+												<IF COND="Variables.separatorLine=1">
+													<THEN>
+														<!--<TR>
+															<TD COLSPAN="10" CLASS="light-line-color">
+																<IMG HEIGHT="1" WIDTH="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+															</TD>
+														</TR>-->
+													</THEN>
+												</IF>
+												<SETVAR NAME="separatorLine" VALUE="1"/>
+												<TR CLASS="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+													<TD>
+														<BR />
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+														<DIV CLASS="small-text-inset">
+															<STRING.STREAM LIST="aTypeDef" COLUMN="name"/>
+														</DIV>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD VALIGN="TOP" ALIGN="LEFT">
+														<DIV CLASS="small-text-inset">
+															<STRING.STREAM LIST="aTypeDef" COLUMN="description"/>
+															<BR />
+														</DIV>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD ALIGN="CENTER">
+														<DIV CLASS="small-text-inset">
+															<IF COND="IsVariable.enable=true">
+																<THEN>
+																	<IF COND="Variables.enable=true">
+																		<THEN>
+																			<IMG src="Variables.cs_imagedir/graphics/common/icon/check.gif" ALT="Variables._isEnabled_" REPLACEALL="Variables.cs_imagedir,Variables._isEnabled_"/>
+																		</THEN>
+																		<ELSE>
+																			-
+																		</ELSE>
+																	</IF>
+																</THEN>
+																<ELSE>
+																	<!-- add default config data since this is newly added field, which could be the case with flex asset types -->
+																	<IF COND="aTypeDef.name=Name">
+																		<THEN>
+																			<SETVAR NAME="enable" VALUE="true"/>
+																		</THEN>
+																		<ELSE>
+																			<SETVAR NAME="enable" VALUE="false"/>
+																		</ELSE>
+																	</IF>
+																	<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+																	<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+																	<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+																	<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="enable"/>
+																	<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="Variables.enable"/>
+																	<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+																	<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+
+																	<IF COND="Variables.enable=true">
+																		<THEN>
+																			<IMG src="Variables.cs_imagedir/graphics/common/icon/check.gif" ALT="Variables._isEnabled_" REPLACEALL="Variables.cs_imagedir,Variables._isEnabled_"/>
+																		</THEN>
+																		<ELSE>
+																			-
+																		</ELSE>
+																	</IF>
+																</ELSE>
+															</IF>
+
+														</DIV>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD ALIGN="CENTER">
+														<DIV CLASS="small-text-inset">
+															<IF COND="IsVariable.acceptdocs=true">
+															<THEN>
+																<IF COND="Variables.acceptdocs!=No">
+																	<THEN>
+																		<IF COND="Variables.acceptdocs!=*.*">
+																		<THEN>
+																			<SETVAR NAME="tablename" VALUE="MimeType"/>
+																			<STRINGLIST NAME="lDocTypes" STR="Variables.acceptdocs" DELIM=","/>
+																			<HASH.CREATE NAME="hQuotedDocTypes"/>
+																			<LOOP LIST="lDocTypes">
+																				<ics.literal table="Variables.tablename" column="extension" string="lDocTypes.ITEM" output="literal"/>
+																				<HASH.ADD NAME="hQuotedDocTypes" VALUE="Variables.literal"/>
+																			</LOOP>
+																			<HASH.TOSTRING NAME="hQuotedDocTypes" VARNAME="InClause" DELIM=","/>
+																			<SETVAR NAME="validatedstatus" VALUE="true" />
+																			<STRINGLIST NAME="stringInClause" STR="Variables.InClause" DELIM=","/>
+																			<LOOP LIST="stringInClause">
+																			<IF COND="Variables.validatedstatus=true" >
+																			<THEN>
+																			<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+																				<ARGUMENT NAME="columnvalue" VALUE="stringInClause.ITEM"/>
+																				<ARGUMENT NAME="type" VALUE="String"/>
+																			</CALLELEMENT>
+																			</THEN>
+																			</IF>
+																			</LOOP>
+																			<IF COND="Variables.validatedstatus=true">
+																			<THEN>
+																				<EXECSQL SQL="SELECT description FROM Variables.tablename WHERE extension IN (Variables.InClause) ORDER BY description" LIST="lSelectedDocTypes"/>
+																			
+																			<LOOP LIST="lSelectedDocTypes">
+																				<STRING.STREAM LIST="lSelectedDocTypes" COLUMN="description"/>
+																				<IF COND="lSelectedDocTypes.#numRows!=lSelectedDocTypes.#curRow">
+																				<THEN>
+																					<BR/>
+																				</THEN>
+																				</IF>
+																			</LOOP>
+																			</THEN>
+																			</IF>
+                                                      </THEN>
+																		<ELSE>
+																			*.*
+																		</ELSE>
+																		</IF>
+                                                      <BR/>
+                                                      <IF COND="Variables.maxfilesize!=unlimited">
+                                                      <THEN>
+                                                         (<XLAT.STREAM KEY="dvin/UI/Admin/Maxsizemaxfilesizebytes"/>)
+                                                      </THEN>
+                                                      <ELSE>
+                                                         (<XLAT.STREAM KEY="dvin/UI/Admin/Nosizerestriction"/>)
+                                                      </ELSE>
+                                                      </IF>
+																	</THEN>
+																	<ELSE>
+																		-
+																	</ELSE>
+																</IF>
+															</THEN>
+															<ELSE>
+																<EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+																<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="acceptdocs"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="No"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+																<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+
+                                                <EXTERNALCLIENTSCONFIGMANAGER.CREATE OBJVARNAME="aRec" />
+																<EXTERNALCLIENTSCONFIGITEM.SETCLIENTID NAME="aRec" VALUE="Variables.clientid"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETSUBTYPE NAME="aRec" VALUE="Variables.subtype"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETACTION NAME="aRec" VALUE="maxfilesize"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETVALUE NAME="aRec" VALUE="No"/>
+																<EXTERNALCLIENTSCONFIGITEM.SETPROPERTY NAME="aRec" VALUE="aTypeDef.name"/>
+																<EXTERNALCLIENTSCONFIGMANAGER.SAVE OBJECT="aRec"/>
+																-
+															</ELSE>
+															</IF>
+														</DIV>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+												</TR>
+												<IF COND="Variables.rowStyle=tile-row-normal">
+													<THEN>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+													</THEN>
+													<ELSE>
+														<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+													</ELSE>
+												</IF>
+											</THEN>
+										</IF>
+									</LOOP>
+								</TABLE>
+							</TD>
+							<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+								<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</TD>
+						</TR>
+						<TR>
+							<TD COLSPAN="3" CLASS="tile-dark" VALIGN="TOP" HEIGHT="1">
+								<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</TD>
+						</TR>
+						<TR>
+							<TD></TD>
+							<TD background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir">
+								<IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+							</TD>
+							<TD></TD>
+						</TR>
+					</TABLE>
+			</td></tr>
+			<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/FooterBar"/>
+			<tr><td>
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_XLAT_" ESCAPE="true"/>
+					<XLAT.LOOKUP KEY="dvin/Common/Edit" VARNAME="_alt_"/>
+                    <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront" outstring="urlasttpdoclkconfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="subtype" value="Variables.subtype"/>
+                                             <satellite.argument name="action" value="edit"/>
+                                             <satellite.argument name="clientid" value="Variables.clientid"/>
+                                              </SATELLITE.LINK>
+					<A HREF="Variables.urlasttpdoclkconfront" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true" REPLACEALL="Variables.urlasttpdoclkconfront,Variables._XLAT_">
+						<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/EditConfiguration"/></CALLELEMENT>
+					</A>
+				</td></tr><tr><td>	
+                   <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeClientFront" outstring="urlasttpclfront">
+                        <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                        <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="pubid" value="Variables.pubid"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientapp" value="CSDocLink"/>
+                                              </SATELLITE.LINK>
+					<A HREF="Variables.urlasttpclfront" REPLACEALL="Variables.urlasttpclfront">
+						<IMG src="Variables.cs_imagedir/graphics/common/icon/doubleArrow.gif" WIDTH="15" HEIGHT="12" BORDER="0" REPLACEALL="Variables.cs_imagedir"/>
+						<XLAT.STREAM KEY="dvin/UI/Admin/ListCSDocLinkforthissite"/>
+					</A>
+               </td></tr></table>
+				</THEN>
+				<ELSE>   <!--  edit screen -->
+					<IF COND="Variables.action=edit">
+						<THEN>
+							<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+								<tr><td>
+								<SPAN CLASS="title-text">
+									<IF COND="Variables.subtype=Variables.empty">
+									<THEN>
+										<XLAT.LOOKUP KEY="dvin/UI/Util/Standardnosubtype" VARNAME="stdescription"/>
+									</THEN>
+									<ELSE>
+										<SETVAR NAME="stdescription" VALUE="Variables.subtype"/>
+									</ELSE>
+									</IF>
+									<XLAT.STREAM KEY="dvin/UI/Admin/ConfigassettypeaTypesubtypeCSDocLink"  aType="Variables.assettype" subtype="Variables.stdescription" EVALALL="false"/>
+								</SPAN>
+								</td></tr>
+								<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+							</table>
+							
+                             <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront" outstring="CSDocLinkURL">
+                                 <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                 <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="subtype" value="Variables.subtype"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientid" value="Variables.clientid"/>
+                                              </SATELLITE.LINK>
+							
+							<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+							<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_alt_"/>
+
+                            <XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_XLAT_" ESCAPE="true"/>
+                            <XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_alt_"/>
+							
+                     
+							
+                     <TABLE class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0" >
+								<TR>
+									<TD></TD>
+									<TD CLASS="tile-dark" HEIGHT="1">
+										<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</TD>
+									<TD></TD>
+								</TR>
+								<TR>
+									<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+										<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</TD>
+									<TD >
+										<TABLE WIDTH="100%" CELLPADDING="0" CELLSPACING="0" BORDER="0" BGCOLOR="#ffffff">
+											<TR>
+												<TD COLSPAN="10" CLASS="tile-highlight">
+													<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+												</TD>
+											</TR>
+											<TR>
+												<TD CLASS="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+													<DIV CLASS="new-table-title">
+														<XLAT.STREAM KEY="dvin/UI/Admin/Fieldname"/>
+													</DIV>
+												</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+													<DIV CLASS="new-table-title">
+														<XLAT.STREAM KEY="dvin/AT/Common/Description"/>
+													</DIV>
+												</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+													<DIV CLASS="new-table-title">
+														<XLAT.STREAM KEY="dvin/Common/EnableQ"/>
+													</DIV>
+												</TD>
+												<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+												<TD ALIGN="CENTER" CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+													<DIV CLASS="new-table-title">
+														<XLAT.STREAM KEY="dvin/UI/Admin/AcceptsDocumentsQ"/>
+													</DIV>
+												</TD>
+												<TD CLASS="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+											</TR>
+											<TR>
+												<TD COLSPAN="10" CLASS="tile-dark">
+													<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+												</TD>
+											</TR>
+											<!-- Loop over all search results. -->
+											<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+											<SETVAR NAME="separatorLine" VALUE="0"/>
+											<HASH.CREATE NAME="hFieldList"/>
+											<INSPECTOR.GETMATCHINGFIELDS ASSETTYPE="Variables.assettype" SUBTYPE="Variables.subtype" TYPEFILTER="file" PUBID="Variables.pubid" LISTVARNAME="fileAttrs"/>
+											<LOOP LIST="aTypeDef">
+											<!--This is to hide the display of Dimension-parent field -->
+											<IF COND="aTypeDef.name=Dimension-parent">
+											  <THEN>
+												 <SETROW LIST="aTypeDef" ACTION="NEXT"/>
+											  </THEN>
+											</IF>
+
+												<IF COND="aTypeDef.editable=true">
+                                    <THEN>
+                                       <HASH.ADD NAME="hFieldList" VALUE="aTypeDef.name"/>
+                                       <EXTERNALCLIENTSCONFIGMANAGER.GETITEMLIST LISTVARNAME="cList" CLIENTID="Variables.clientid" SUBTYPE="Variables.subtype" PROPERTY="aTypeDef.name" />
+                                       <REMOVEVAR NAME="enable"/>
+                                       <REMOVEVAR NAME="acceptdocs"/>
+                                       <REMOVEVAR NAME="maxfilesize"/>
+                                       <LOOP LIST="cList">
+                                          <IF COND="cList.action=enable">
+                                          <THEN>
+                                             <SETVAR NAME="enable" VALUE="false"/>
+                                             <IF COND="IsVariable.fromAccept=true">
+                                             <THEN>
+                                                 <SETVAR NAME="errno" VALUE="0"/>
+                                                 <ICS.RESOLVEVARIABLES NAME="$(Variables.$(aTypeDef.name)-enable)" OUTPUT="tmp" DELIMITED="true"/>
+                                                <IF COND="Variables.errno=0">
+                                                <THEN>
+                                                   <SETVAR NAME="enable" VALUE="true"/>
+                                                </THEN>
+                                                </IF>
+                                             </THEN>
+                                             <ELSE>
+                                                <SETVAR NAME="cList.action" VALUE="cList.value"/>
+                                             </ELSE>
+                                             </IF>
+                                          </THEN>
+                                          <ELSE>
+                                             <SETVAR NAME="cList.action" VALUE="cList.value"/>
+                                          </ELSE>
+                                          </IF>
+                                       </LOOP>
+                                       <IF COND="IsVariable.docField=true">
+                                       <THEN>
+                                          <IF COND="aTypeDef.name=Variables.docField">
+                                          <THEN>
+                                             <SETVAR NAME="errno" VALUE="0"/>
+                                             <BEGINS STR="Variables.allowedDocs" WHAT="*"/>
+                                             <IF COND="Variables.errno=1">
+                                             <THEN>
+                                                <SETVAR NAME="allowedDocs" VALUE="*.*"/>
+                                             </THEN>
+                                             </IF>
+                                             <SETVAR NAME="acceptdocs" VALUE="Variables.allowedDocs"/>
+                                             <SETVAR NAME="enable" VALUE="true"/>
+                                             <SETVAR NAME="docField" VALUE="Variables.docField"/>
+                                             <SETVAR NAME="docFieldDisplay" VALUE="aTypeDef.description"/>
+                                             <SETVAR NAME="allowedDocs" VALUE="Variables.allowedDocs"/>
+                                             <IF COND="IsVariable.maxSize=false">
+                                             <THEN>
+                                                <SETVAR NAME="maxSize" VALUE="unlimited"/>
+                                             </THEN>
+                                             </IF>
+                                          </THEN>
+                                          <ELSE>
+                                             <SETVAR NAME="acceptdocs" VALUE="No"/>
+                                          </ELSE>
+                                          </IF>
+                                       </THEN>
+                                       <ELSE>
+                                          <IF COND="IsVariable.fromAccept=false">
+                                          <THEN>
+                                             <IF COND="Variables.acceptdocs!=No">
+                                             <THEN>
+                                                <SETVAR NAME="docField" VALUE="aTypeDef.name"/>
+                                                <SETVAR NAME="docFieldDisplay" VALUE="aTypeDef.description"/>
+                                                <SETVAR NAME="allowedDocs" VALUE="Variables.acceptdocs"/>
+                                                <SETVAR NAME="maxSize" VALUE="Variables.maxfilesize"/>
+                                             </THEN>
+                                             </IF>
+                                          </THEN>
+                                          <ELSE>
+                                             <SETVAR NAME="acceptdocs" VALUE="No"/>
+                                          </ELSE>
+                                          </IF>
+                                       </ELSE>
+                                       </IF>
+                                       
+                                       <IF COND="Variables.separatorLine=1">
+                                          <THEN>
+                                             <!--<TR>
+                                                <TD COLSPAN="10" CLASS="light-line-color">
+                                                   <IMG HEIGHT="1" WIDTH="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+                                                </TD>
+                                             </TR>-->
+                                          </THEN>
+                                       </IF>
+                                       <SETVAR NAME="separatorLine" VALUE="1"/>
+                                       <TR CLASS="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                          <TD VALIGN="CENTER" NOWRAP="NOWRAP" ALIGN="LEFT">
+                                             <DIV CLASS="small-text-inset">
+                                                <STRING.STREAM LIST="aTypeDef" COLUMN="name"/>
+                                             </DIV>
+                                          </TD>
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                          <TD VALIGN="CENTER" ALIGN="LEFT">
+                                             <DIV CLASS="small-text-inset">
+                                                <STRING.STREAM LIST="aTypeDef" COLUMN="description"/>
+                                                <BR />
+                                             </DIV>
+                                          </TD>
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                          <TD VALIGN="CENTER" ALIGN="CENTER">
+                                             <DIV >
+                                               <IF COND="IsVariable.enable=true">
+                                                <THEN>
+                                                    <IF COND="aTypeDef.name=name">
+                                                    <THEN>
+                                                       <span class="alert-color"><XLAT.STREAM KEY="dvin/Common/Required"/></span>
+                                                       <INPUT TYPE="HIDDEN" NAME="name-enable" VALUE="true"/>
+                                                    </THEN>
+                                                    <ELSE>
+                                                       <IF COND="Variables.enable=true">
+                                                           <THEN>
+                                                               <INPUT TYPE="checkbox" NAME="aTypeDef.name-enable" VALUE="true" CHECKED="true" REPLACEALL="aTypeDef.name"  />
+                                                           </THEN>
+                                                           <ELSE>
+                                                               <INPUT TYPE="checkbox" NAME="aTypeDef.name-enable" VALUE="true" REPLACEALL="aTypeDef.name"  />
+                                                           </ELSE>
+                                                       </IF>
+                                                    </ELSE>
+                                                    </IF>
+                                                </THEN>
+                                                <ELSE>
+                                                    <INPUT TYPE="checkbox" NAME="aTypeDef.name-enable" VALUE="true" REPLACEALL="aTypeDef.name"  />
+                                                </ELSE>
+                                               </IF>
+
+                                             </DIV>
+                                          </TD>
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                          <TD ALIGN="CENTER">
+                                             <DIV>
+                                                <IF COND="IsVariable.acceptdocs=true">
+                                                <THEN>
+                                                   <IF COND="Variables.acceptdocs!=No">
+                                                   <THEN>
+                                                      <IF COND="Variables.acceptdocs!=*.*">
+                                                      <THEN>
+                                                         <SETVAR NAME="tablename" VALUE="MimeType"/>
+                                                         <SUBSTITUTE STR="Variables.acceptdocs" WHAT=";" WITH="," OUTSTR="acceptdocs"/>
+                                                         <STRINGLIST NAME="lDocTypes" STR="Variables.acceptdocs" DELIM=","/>
+                                                         <HASH.CREATE NAME="hQuotedDocTypes"/>
+                                                         <LOOP LIST="lDocTypes">
+                                                            <ics.literal table="Variables.tablename" column="extension" string="lDocTypes.ITEM" output="literal"/>
+                                                            <HASH.ADD NAME="hQuotedDocTypes" VALUE="Variables.literal"/>
+                                                         </LOOP>
+                                                         <HASH.TOSTRING NAME="hQuotedDocTypes" VARNAME="InClause" DELIM=","/>
+                                                         <SETVAR NAME="validatedstatus" VALUE="true" />
+														 <STRINGLIST NAME="stringInClause" STR="Variables.InClause" DELIM=","/>
+														 <LOOP LIST="stringInClause">
+														 <IF COND="Variables.validatedstatus=true" >
+														 <THEN>
+														 <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+															<ARGUMENT NAME="columnvalue" VALUE="stringInClause.ITEM"/>
+															<ARGUMENT NAME="type" VALUE="String"/>
+														 </CALLELEMENT>
+														 </THEN>
+														 </IF>
+														 </LOOP>
+														 <IF COND="Variables.validatedstatus=true">
+														 <THEN>
+                                                         <EXECSQL SQL="SELECT description FROM Variables.tablename WHERE extension IN (Variables.InClause) ORDER BY description" LIST="lSelectedDocTypes"/>
+														 
+                                                         
+                                                         <LOOP LIST="lSelectedDocTypes">
+                                                            <STRING.STREAM LIST="lSelectedDocTypes" COLUMN="description"/>
+                                                            <IF COND="lSelectedDocTypes.#numRows!=lSelectedDocTypes.#curRow">
+                                                            <THEN>
+                                                               <BR/>
+                                                            </THEN>
+                                                            </IF>
+                                                         </LOOP>
+                                                         </THEN>
+														 </IF>
+                                                      </THEN>
+                                                      <ELSE>
+                                                         *.*
+                                                      </ELSE>
+                                                      </IF>
+                                                      <BR/>
+                                                      <IF COND="Variables.maxSize!=unlimited">
+                                                      <THEN>
+                                                         <SETVAR NAME="maxfilesize" VALUE="Variables.maxSize"/>
+                                                         (<XLAT.STREAM KEY="dvin/UI/Admin/Maxsizemaxfilesizebytes"/>)
+                                                      </THEN>
+                                                      <ELSE>
+                                                         (<XLAT.STREAM KEY="dvin/UI/Admin/Nosizerestriction"/>)
+                                                      </ELSE>
+                                                      </IF>
+                                                   </THEN>
+                                                   <ELSE>
+                                                      -
+                                                   </ELSE>
+                                                   </IF>
+                                                   <HASH.CREATE NAME="hFileAttrs" LIST="fileAttrs" COLUMN="name"/>
+                                                   <HASH.CONTAINS NAME="hFileAttrs" VALUE="aTypeDef.name" VARNAME="hasit"/>
+                                                   <IF COND="Variables.hasit=true">
+                                                   <THEN>
+                                                      <BR/>
+                                                      <XLAT.LOOKUP KEY="dvin/UI/Admin/Selectdocumenttypes" VARNAME="_XLAT_" ESCAPE="true"/>
+                                                      <XLAT.LOOKUP KEY="dvin/UI/Admin/Selectdocumenttypes" VARNAME="_alt_"/>
+                                                      <A HREF="javascript:NextPage(this.form,'acceptdocs','Front','aTypeDef.name','aTypeDef.description');" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables._XLAT_,aTypeDef.description,aTypeDef.name">
+														<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/SelectDocumentTypes"/></CALLELEMENT>
+                                                      </A>
+                                                      <IF COND="IsVariable.inputsDone=false">
+                                                      <THEN>
+                                                         <IF COND="Variables.docField=aTypeDef.name">
+                                                         <THEN>
+                                                            <SETVAR NAME="inputsDone" VALUE="yes"/>
+															<STRING.ENCODE VARIABLE="docField" VARNAME="docField"/>
+                                                            <INPUT TYPE="HIDDEN" NAME="docField" VALUE="Variables.docField" REPLACEALL="Variables.docField"/>
+															<STRING.ENCODE VARIABLE="docFieldDisplay" VARNAME="docFieldDisplay"/>
+                                                            <INPUT TYPE="HIDDEN" NAME="docFieldDisplay" VALUE="Variables.docFieldDisplay" REPLACEALL="Variables.docFieldDisplay"/>
+															<STRING.ENCODE VARIABLE="allowedDocs" VARNAME="allowedDocs"/>
+                                                            <INPUT TYPE="HIDDEN" NAME="allowedDocs" VALUE="Variables.allowedDocs" REPLACEALL="Variables.allowedDocs"/>
+															<STRING.ENCODE VARIABLE="maxSize" VARNAME="maxSize"/>
+                                                            <INPUT TYPE="HIDDEN" NAME="maxSize" VALUE="Variables.maxSize" REPLACEALL="Variables.maxSize"/>
+                                                         </THEN>
+                                                         </IF>
+                                                      </THEN>
+                                                      </IF>
+                                                   </THEN>
+                                                   </IF>
+                                                </THEN>
+                                                <ELSE>
+                                                   -
+                                                </ELSE>
+                                                </IF>
+                                             </DIV>
+                                          </TD>
+                                          <TD>
+                                             <BR />
+                                          </TD>
+                                       </TR>
+                                       <IF COND="Variables.rowStyle=tile-row-normal">
+                                          <THEN>
+                                             <SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+                                          </THEN>
+                                          <ELSE>
+                                             <SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+                                          </ELSE>
+                                       </IF>
+                                    </THEN>
+												</IF>
+											</LOOP>
+                                 <IF COND="IsVariable.inputsDone=false">
+                                 <THEN>
+									<STRING.ENCODE VARIABLE="docField" VARNAME="docField"/>
+                                    <INPUT TYPE="HIDDEN" NAME="docField" VALUE="Variables.docField" REPLACEALL="Variables.docField"/>
+									<STRING.ENCODE VARIABLE="docFieldDisplay" VARNAME="docFieldDisplay"/>
+                                    <INPUT TYPE="HIDDEN" NAME="docFieldDisplay" VALUE="Variables.docFieldDisplay" REPLACEALL="Variables.docFieldDisplay"/>
+                                 </THEN>
+                                 </IF>
+											<HASH.TOSTRING NAME="hFieldList" VARNAME="rowList" DELIM=","/>
+										</TABLE>
+									</TD>
+									<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+										<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</TD>
+								</TR>
+								<TR>
+									<TD COLSPAN="3" CLASS="tile-dark" VALIGN="TOP" HEIGHT="1">
+										<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</TD>
+								</TR>
+								<TR>
+									<TD></TD>
+									<TD background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir">
+										<IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+									</TD>
+									<TD></TD>
+								</TR>
+							</TABLE>
+
+							
+                            <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront" outstring="CSDocLinkURL">
+                                <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                                <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="subtype" value="Variables.subtype"/>
+                                             <satellite.argument name="action" value="list"/>
+                                             <satellite.argument name="clientid" value="Variables.clientid"/>
+                                              </SATELLITE.LINK>
+							<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+							<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_alt_"/>
+							<table class="width-outer-70"><tr><td>
+							<A HREF="Variables.CSDocLinkURL" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables.CSDocLinkURL,Variables._XLAT_">
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+							</A>
+							<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_XLAT_" ESCAPE="true"/>
+							<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_alt_"/>
+							<A HREF="javascript:NextPage(this.form,'save','Post');" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+								<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT>
+							</A>
+							</td></tr></table>
+                     
+						<STRING.ENCODE VARIABLE="rowList" VARNAME="rowList"/>
+                     <INPUT TYPE="HIDDEN" NAME="rowList" VALUE="Variables.rowList" REPLACEALL="Variables.rowList"/>
+
+						</THEN>
+						<ELSE>
+							<IF COND="Variables.action=acceptdocs">
+								<THEN>
+									 <SCRIPT LANGUAGE="JavaScript">
+                            <![CDATA[
+                              document.forms[0].onsubmit=checkValues;
+                           
+                              function checkValues() {
+                                 var obj = document.forms[0].elements[0];
+                                 var numSelected=0;
+                                 var allowedDocs = obj.form.elements['allowedDocs'];
+                                 for (var i=0;i<allowedDocs.options.length;i++)
+											{
+												if (allowedDocs.options[i].selected)
+													numSelected++;
+											}
+											if (numSelected==0)
+											{
+                                    obj.form.elements['maxSize'].value="";
+												obj.form.elements['docField'].value="";
+											}
+ 
+                                 // strip commas from maxSize and parseInt()
+                                 var maxSize = obj.form.elements['maxSize'].value;
+                                 
+                                 if (maxSize != '')
+                                 {
+                                    var splitString = maxSize.split(",");
+                                    
+                                    maxSize = '';
+                                    
+                                    for (var i=0; i<splitString.length; i++)
+                                       maxSize+=splitString[i];
+                                       
+                                    var StrNum=parseInt(maxSize);
+                                    if(StrNum > 0 && 999999999 >= StrNum)
+                                       obj.form.elements['maxSize'].value = StrNum;
+                                    else 
+                                    {
+                                       ]]>
+   												alert("<XLAT.STREAM KEY="dvin/UI/Error/Pleasespecifyavalidfilesize"/>");
+   												<![CDATA[
+   												obj.form.elements['maxSize'].focus();
+   												return false;
+                                    }
+                                 }
+                                 return true;
+                              }
+                              
+                              function CheckFields(form, action, pagetype)
+										{
+											if (!checkValues())
+                                    return false;
+                                 
+                                 var obj = document.forms[0].elements[0];
+											var postPage = "OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfig"+pagetype;
+											obj.form.pagename.value = postPage;
+											obj.form.elements['action'].value = action;
+											obj.form.submit();
+											return false;
+											
+										}
+                           ]]>
+                           </SCRIPT>
+										
+									<INPUT TYPE="HIDDEN" NAME="fromAccept" VALUE="yes"/>
+									<!-- hidden input all the enable checkboxes -->
+									<STRINGLIST NAME="aTypeList" STR="Variables.rowList" DELIM=","/>
+									
+									<LOOP LIST="aTypeList">
+                                        <SETVAR NAME="errno" VALUE="0"/>
+                                        <ICS.RESOLVEVARIABLES NAME="$(Variables.$(aTypeList.ITEM)-enable)" OUTPUT="tmp" DELIMITED="true"/>
+                                        <IF COND="Variables.errno=0">
+										<THEN>
+                                            <INPUT TYPE="HIDDEN" NAME="aTypeList.ITEM-enable" VALUE="true" REPLACEALL="aTypeList.ITEM"/>
+										</THEN>
+										</IF>
+									</LOOP>
+									<table class="width-outer-70" cellspacing="0" cellpadding="0" border="0">
+										<tr><td>
+											<SPAN CLASS="title-text">
+												<IF COND="Variables.subtype=Variables.empty">
+												<THEN>
+													<XLAT.LOOKUP KEY="dvin/UI/Util/Standardnosubtype" VARNAME="stdescription"/>
+												</THEN>
+												<ELSE>
+													<SETVAR NAME="stdescription" VALUE="Variables.subtype"/>
+												</ELSE>
+												</IF>
+												<XLAT.STREAM KEY="dvin/UI/Admin/ConfigassettypeaTypesubtypeCSDocLink"  aType="Variables.assettype" subtype="Variables.stdescription" EVALALL="false"/>
+											</SPAN>
+										</td></tr>
+										<CALLELEMENT name="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+									</table>	
+									
+									<TABLE class="width-outer-70" BORDER="0" CELLSPACING="0" CELLPADDING="0" >
+									<TR>
+										<TD></TD>
+										<TD CLASS="tile-dark" HEIGHT="1">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+										<TD></TD>
+									</TR>
+									<TR>
+										<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+										<TD >
+											<TABLE WIDTH="100%" CELLPADDING="0" CELLSPACING="0" BORDER="0" BGCOLOR="#ffffff">
+												<TR>
+													<TD COLSPAN="10" CLASS="tile-highlight">
+														<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+													</TD>
+												</TR>
+												<TR>
+													<TD CLASS="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+													<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+													<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+														<DIV CLASS="new-table-title">
+															<XLAT.STREAM KEY="dvin/UI/Admin/Fieldname"/>
+														</DIV>
+													</TD>
+													<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+													<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+														<DIV CLASS="new-table-title">
+															<XLAT.STREAM KEY="dvin/UI/Admin/DocumentTypes"/>
+														</DIV>
+													</TD>
+                                       <TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+													<TD CLASS="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+														<DIV CLASS="new-table-title">
+															<XLAT.STREAM KEY="dvin/UI/Admin/Maxfilesize"/>
+														</DIV>
+													</TD>
+													<TD CLASS="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</TD>
+												</TR>
+												<TR>
+													<TD COLSPAN="10" CLASS="tile-dark">
+														<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+													</TD>
+												</TR>
+												<!-- Loop over all search results. -->
+												<SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+								
+												<!--<TR>
+													<TD COLSPAN="12" CLASS="light-line-color">
+														<IMG HEIGHT="1" WIDTH="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+													</TD>
+												</TR>-->
+												<TR CLASS="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+													<TD>
+														<BR />
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+														<STRING.STREAM VARIABLE="docFieldDisplay"/>
+														<STRING.ENCODE VARIABLE="docField" VARNAME="docField"/>
+														<INPUT TYPE="HIDDEN" NAME="docField" VALUE="Variables.docField" REPLACEALL="Variables.docField"/>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+													<TD ALIGN="CENTER">
+														<SELECT NAME="allowedDocs" SIZE="6" MULTIPLE="yes">
+															<IF COND="Variables.allowedDocs=*.*">
+															<THEN>
+																<OPTION VALUE="*.*" SELECTED="yes"><XLAT.STREAM KEY="dvin/Common/Any"/></OPTION>
+															</THEN>
+															<ELSE>
+																<OPTION VALUE="*.*"><XLAT.STREAM KEY="dvin/Common/Any"/></OPTION>
+															</ELSE>
+															</IF>
+															<SETVAR NAME="tablename" VALUE="MimeType"/>
+															<EXECSQL SQL="SELECT * FROM Variables.tablename ORDER BY description" LIST="lAllMimeTypes"/>
+															<IF COND="Variables.errno=0">
+															<THEN>
+																<SUBSTITUTE STR="Variables.allowedDocs" WHAT=";" WITH="," OUTSTR="allowedDocs"/>
+																<LOOP LIST="lAllMimeTypes">
+																	<SETVAR NAME="errno" VALUE="0"/>
+																	<ISINLIST ITEM="lAllMimeTypes.extension" STR="Variables.allowedDocs"/>
+																	<IF COND="Variables.errno=1">
+																	<THEN>
+																		<OPTION VALUE="lAllMimeTypes.extension" SELECTED="yes" REPLACEALL="lAllMimeTypes.extension"><STRING.STREAM LIST="lAllMimeTypes" COLUMN="description"/></OPTION>
+																	</THEN>
+																	<ELSE>
+																		<OPTION VALUE="lAllMimeTypes.extension" REPLACEALL="lAllMimeTypes.extension"><STRING.STREAM LIST="lAllMimeTypes" COLUMN="description"/></OPTION>
+																	</ELSE>
+																	</IF>
+																</LOOP>
+															</THEN>
+															</IF>
+														</SELECT>
+													</TD>
+                                       <TD>
+														<BR />
+													</TD>
+													<TD VALIGN="MIDDLE" NOWRAP="NOWRAP" ALIGN="LEFT">
+                                          <IF COND="IsVariable.maxSize=false">
+                                          <THEN>
+                                             <SETVAR NAME="maxSize" VALUE="Variables.empty"/>
+                                          </THEN>
+                                          </IF>
+                                          <INPUT TYPE="TEXT" NAME="maxSize" VALUE="Variables.maxSize" SIZE="9" MAXLENGTH="9" REPLACEALL="Variables.maxSize"/>&nbsp;<XLAT.STREAM KEY="dvin/Common/bytes"/>
+													</TD>
+													<TD>
+														<BR />
+													</TD>
+												</TR>
+											</TABLE>
+										</TD>
+										<TD CLASS="tile-dark" VALIGN="top" WIDTH="1">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+									</TR>
+									<TR>
+										<TD COLSPAN="3" CLASS="tile-dark" VALIGN="TOP" HEIGHT="1">
+											<IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+									</TR>
+									<TR>
+										<TD></TD>
+										<TD background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir">
+											<IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/>
+										</TD>
+										<TD></TD>
+									</TR>
+								</TABLE>
+								
+                        <SETVAR NAME="appendThis" VALUE="Variables.empty"/>
+                        <LOOP LIST="aTypeList">
+                           <SETVAR NAME="errno" VALUE="0"/>
+                            <ICS.RESOLVEVARIABLES NAME="$(Variables.$(aTypeList.ITEM)-enable)" OUTPUT="tmp" DELIMITED="true"/>
+                            <IF COND="Variables.errno=0">
+                            <THEN>
+                              <IF COND="Variables.appendThis=Variables.empty">
+                              <THEN>
+                                 <SETVAR NAME="appendThis" VALUE="&#38;aTypeList.ITEM-enable=true"/>
+                              </THEN>
+                              <ELSE>
+                                 <SETVAR NAME="appendThis" VALUE="Variables.appendThis&#38;aTypeList.ITEM-enable=true"/>
+                              </ELSE>
+                              </IF>
+                           </THEN>
+                           </IF>
+                        </LOOP>
+                         <SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Admin/AssetTypeDocLinkConfigFront" outstring="CSDocLinkURL">
+                             <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+                             <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                             <satellite.argument name="subtype" value="Variables.subtype"/>
+                                             <satellite.argument name="action" value="edit"/>
+                                             <satellite.argument name="clientid" value="Variables.clientid"/>
+                                             <satellite.argument name="fromAccept" value="yesVariables.appendThis"/>
+                                              </SATELLITE.LINK>
+								<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_XLAT_" ESCAPE="true"/>
+								<XLAT.LOOKUP KEY="dvin/UI/Cancel" VARNAME="_alt_"/>
+								<table><tr><td>
+								<A HREF="Variables.CSDocLinkURL" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables.CSDocLinkURL,Variables._XLAT_">
+									<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Cancel"/></CALLELEMENT>
+								</A>
+								</td><td>
+								<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_XLAT_" ESCAPE="true"/>
+								<XLAT.LOOKUP KEY="dvin/UI/Save" VARNAME="_alt_"/>
+								<A HREF="javascript:void(0);" ONCLICK="return CheckFields(this.form,'edit','Front');" ONMOUSEOVER="window.status='Variables._XLAT_';return true;" ONMOUSEOUT="window.status='';return true;" REPLACEALL="Variables._XLAT_">
+									<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/Save"/></CALLELEMENT>
+								</A>
+								</td></tr></table>
+									
+								</THEN>
+							</IF>
+						</ELSE>
+					</IF>
+				</ELSE>
+
+	</IF>
+	
+
+</FTCS>

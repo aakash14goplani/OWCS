@@ -1,0 +1,31 @@
+<object-stream>
+  <com.fatwire.realtime.ResourceDataImpl>
+    <id class="string">OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentDetails</id>
+    <resourceType>ELEMENTCATALOG</resourceType>
+    <deps class="empty-set"/>
+    <data class="com.openmarket.xcelerate.common.ElementCatalogEntry" serialization="custom">
+      <com.openmarket.xcelerate.common.ElementCatalogEntry>
+        <int>1</int>
+        <string>OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentDetails</string>
+        <string>Display Details</string>
+        <string></string>
+        <string></string>
+        <string>OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentDetails.xml</string>
+        <string></string>
+        <string></string>
+      </com.openmarket.xcelerate.common.ElementCatalogEntry>
+    </data>
+  </com.fatwire.realtime.ResourceDataImpl>
+</object-stream>
+<!--==================___ METADATA ___================
+<dependencies>
+  <linked-hash-set/>
+</dependencies>
+==================______________________==================
+#
+storable0=/ELEMENTS/OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentDetails.xml|null|_storable_type\=%2FELEMENTS%2FOpenMarket%2FGator%2FFlexibleAssets%2FFlexGroups%2FContentDetails.xml
+@hashval=998128422
+key=@ELEMENTCATALOG-OpenMarket/Gator/FlexibleAssets/FlexGroups/ContentDetails
+type=ELEMENTCATALOG
+
+==================___ END METADATA ___==================-->

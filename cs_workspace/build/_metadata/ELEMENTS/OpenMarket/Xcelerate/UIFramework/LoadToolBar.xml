@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/UIFramework/LoadToolBar
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<replaceall list="CS.Property.ft.cgipath,Variables.urlPreviewURL">
+   <script type="text/javascript" src="CS.Property.ft.cgipathjs/prototype.js"></script>     
+
+    <SCRIPT LANGUAGE="JavaScript">
+	<![CDATA[
+    function redirectToInsiteURL(ajaxURL){
+       new Ajax.Request(ajaxURL,{
+		method : 'get',
+		onSuccess: function(transport){
+		  window.parent.focusInsiteWindow(transport.responseText);
+		}
+	});
+    }
+    ]]>
+	</SCRIPT>
+    </replaceall>
+
+    <img src="Variables.cs_imagedir/graphics/common/toolbar/spacer.gif" width="1" height="28" REPLACEALL="Variables.cs_imagedir"/>
+		<img src="Variables.cs_imagedir/graphics/common/toolbar/advancedon.gif" style="position: relative; top: -4px; left: 0px;" REPLACEALL="Variables.cs_imagedir"/>
+		<img src="Variables.cs_imagedir/graphics/common/toolbar/spacer.gif" width="1" height="1" REPLACEALL="Variables.cs_imagedir"/>
+		<!-- start #16533 checks to see if user has access to dash and display appropriate icon -->
+		<USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="userObject"/>
+		<CCUSER.GETSITEROLES NAME="userObject" SITE="SessionVariables.pubid" OBJVARNAME="roleObject"/>
+		<ROLELIST.HASROLE NAME="roleObject" ROLE="DashUser" VARNAME="roleExists"/>
+		<IF COND="Variables.roleExists=true">
+		<THEN>
+			<img src="Variables.cs_imagedir/graphics/common/toolbar/dashboard.gif" style="position: relative; top: -4px; left: 0px; cursor: pointer;" onclick="window.parent.openDashWindow('faces/jspx/dash.jspx?CS_UI_CONTEXT=CS_ADVANCE_UI')" onmouseover="swap(this,'Variables.cs_imagedir/graphics/common/toolbar/dashboardhover.gif')" onmouseout="swap(this,'Variables.cs_imagedir/graphics/common/toolbar/dashboard.gif')" REPLACEALL="Variables.cs_imagedir"/>
+		</THEN>
+		<ELSE>
+		<XLAT.LOOKUP KEY="dvin/Common/Dashisunavailable" VARNAME="_XLAT_"/>
+		<img src="Variables.cs_imagedir/graphics/common/toolbar/dashboardunavail.gif" alt="Variables._XLAT_" title="Variables._XLAT_" style="position: relative; top: -4px; left: 0px;" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+		</ELSE>
+		</IF>
+		<!-- end #16533 -->
+
+        <img src="Variables.cs_imagedir/graphics/common/toolbar/spacer.gif" width="1" height="1" REPLACEALL="Variables.cs_imagedir"/>
+
+        <!--  This implements the Insite Enhancement for Default Preview Asset
+              Publication or Site Plan
+              onclick="window.parent.focusInsiteWindow('Variables.insiteURL');"
+          -->
+       <SATELLITE.LINK ASSEMBLER="query"
+                       pagename="OpenMarket/Xcelerate/UIFramework/SetDefaultPreviewURL"
+                       outstring="urlPreviewURL"/>
+
+        <img src="Variables.cs_imagedir/graphics/common/toolbar/insite.gif"
+             onmouseover="displayInsiteImage( this )"
+             onmouseout="swap(this,'Variables.cs_imagedir/graphics/common/toolbar/insite.gif')"
+             onclick="redirectToInsiteURL('Variables.urlPreviewURL')"
+             style="position: relative; top: -4px; left: 0px; cursor: pointer;"
+             REPLACEALL="Variables.cs_imagedir,Variables.urlPreviewURL"/>
+
+        <img src="Variables.cs_imagedir/graphics/common/toolbar/spacer.gif" width="1" height="1" REPLACEALL="Variables.cs_imagedir"/>
+		<XLAT.LOOKUP KEY="dvin/Common/Analyticsisunavailable" VARNAME="_XLAT_" />
+
+		<!-- start Analytics Performance Indicator-->
+		 <USERMANAGER.GETUSERFROMNAME USERNAME="SessionVariables.username" OBJVARNAME="u"/>
+		 <CCUSER.GETSITEROLES NAME="u" SITE="SessionVariables.pubid" OBJVARNAME="srl"/>
+		 <ROLELIST.HASROLE NAME="srl" ROLE="Analytics" VARNAME="hasit"/>
+
+		 <IF COND="Variables.hasit=true">
+				  <THEN>
+
+
+		   <PROPERTY.GET INIFILE="futuretense_xcel.ini" PARAM="analytics.enabled" VARNAME="AnalyticsInst"/>
+		   <IF COND="Variables.AnalyticsInst=true">
+			<THEN>
+				<PROPERTY.GET INIFILE="futuretense_xcel.ini" PARAM="analytics.reporturl" VARNAME="reportURL"/>
+				<PROPERTY.GET INIFILE="futuretense_xcel.ini" PARAM="analytics.user" VARNAME="analyticsUser"/>
+				<img src="Variables.cs_imagedir/graphics/common/toolbar/analytics.gif" onclick="window.parent.openAnalyticsWindow('Variables.reportURL?context=cs&#38;username=Variables.analyticsUser&#38;action=doLogin')" onmouseover="swap(this,'Variables.cs_imagedir/graphics/common/toolbar/analyticshover.gif')" onmouseout="swap(this,'Variables.cs_imagedir/graphics/common/toolbar/analytics.gif')" alt="" title="" style="position: relative; top: -4px; left: 0px; cursor: pointer;" REPLACEALL="Variables.cs_imagedir,Variables.reportURL,Variables.analyticsUser"/>
+			</THEN>
+			<ELSE>
+				<img src="Variables.cs_imagedir/graphics/common/toolbar/analyticsunavail.gif" alt="Variables._XLAT_" title="Variables._XLAT_" style="position: relative; top: -4px; left: 0px;" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+			</ELSE>
+		   </IF>
+
+
+		 </THEN>
+			<ELSE>
+				<img src="Variables.cs_imagedir/graphics/common/toolbar/analyticsunavail.gif" alt="Variables._XLAT_" title="Variables._XLAT_" style="position: relative; top: -4px; left: 0px;" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+			</ELSE>
+		 </IF>
+		   <!-- end Analytics Performance Indiacator-->
+
+</ftcs>

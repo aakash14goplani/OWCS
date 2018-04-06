@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Gator/FlexibleAssets/Common/CheckforQuotes
+--
+-- INPUT		:  Prefix (name of assettype typically)
+--
+-- OUTPUT	:  OutputQString
+--
+-->
+ 	
+<!-- Set the Parameters -->
+<setvar NAME="TSIZE"  VALUE="32"/>
+<setvar NAME="TMAXLENGTH"  VALUE="64"/>
+ 
+<tr>
+		<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/Name"/> </td>
+		<td><img height="1" width="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+		<td class="form-inset">
+			<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+				<argument NAME="inputName" VALUE="Variables.Prefix:name"/>
+				<argument NAME="inputValue" VALUE="Variables.ContentDetails:name"/>
+				<argument NAME="inputSize" VALUE="Variables.TSIZE"/>
+				<argument NAME="inputMaxlength" VALUE="Variables.TMAXLENGTH"/>
+			</callelement>
+	  </td>
+</tr>
+
+
+<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+<tr>
+  <if COND="IsVariable.DesReq=true">
+	<then>
+			<td class="form-label-text"><span class="alert-color">*</span><XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/Description"/> </td>
+	</then>
+	<else>
+ 			<td class="form-label-text"><XLAT.STREAM KEY="dvin/FlexibleAssets/Attributes/Description"/> </td>
+	</else>
+	</if>
+	<td></td>
+	<td class="form-inset">
+		<setvar NAME="TSIZE"  VALUE="32"/>
+		<setvar NAME="TMAXLENGTH"  VALUE="128"/>
+		<!--setvar NAME="TNAME"  VALUE="Qdescription"/-->
+		<callelement NAME="OpenMarket/Gator/AttributeTypes/TextBox">
+			<argument NAME="inputName" VALUE="Variables.Prefix:description"/>
+			<argument NAME="inputValue" VALUE="Variables.ContentDetails:description"/>
+			<argument NAME="inputSize" VALUE="Variables.TSIZE"/>
+			<argument NAME="inputMaxlength" VALUE="Variables.TMAXLENGTH"/>
+		</callelement>
+  </td>
+</tr>
+</FTCS> 

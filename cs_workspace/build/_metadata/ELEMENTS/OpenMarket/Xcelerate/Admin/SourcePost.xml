@@ -1,0 +1,172 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+
+<!--
+ Confidential and Proprietary Information of Oracle Corp.
+					All Rights Reserved.
+
+ Source.xml
+
+ DESCRIPTION
+	Admin things about a Source
+
+ HISTORY 
+  [2007-09-13 KGF]
+  * added XSS scripting fixes (adapted from 6.3 fixes); search for isCleanString
+  * changed definitions of 'obj' to just forms[0] (not .elements[0])
+  [2008-02-25 KGF]
+  * further XSS fix: encode HTML special chars in description field
+-->
+
+
+	<STRING.ENCODE VARIABLE="description" VARNAME="description"/>
+    <if COND="Variables.action!=delete">
+    <then>
+        <!-- check to ensure that a source is defined -->
+        <if COND="IsVariable.source!=true">
+        <then>
+            <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                <argument NAME="error" VALUE="NoSource"/>                
+            </callelement>
+            <throwexception/>
+        </then>
+        </if>
+    </then>
+    </if>
+    <!-- process editing of stuff -->
+    <if COND="Variables.action=edit">
+    <then>
+                <ics.literal table="Source" column="source" string="Variables.source"
+                output="literal"/>
+                <setvar NAME="tablename" VALUE="Source"/>
+                <execsql LIST="SourceDetails" SQL="SELECT * FROM Source WHERE source=Variables.literal"/>
+                <if COND="IsVariable.description!=true">
+                <then>
+                    <setvar NAME="description" VALUE="SourceDetails.description"/>
+                </then>
+                </if>
+                <setvar NAME="errno" VALUE="0"/>
+
+                	<CATALOGMANAGER SCOPED="LOCAL">
+                  	  <ARGUMENT NAME="tablename" VALUE="Source"/>
+                   	 <ARGUMENT NAME="source" VALUE="Variables.origsource"/>
+                   	 <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+                	</CATALOGMANAGER>
+
+                <if COND="Variables.errno!=0">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="UpdateFailed"/>
+                    </callelement>            
+                </then>
+                <else>
+                	<CATALOGMANAGER>
+	                    <ARGUMENT NAME="tablename" VALUE="Source"/>
+	                    <ARGUMENT NAME="source" VALUE="Variables.source"/>
+	                    <ARGUMENT NAME="description" VALUE="Variables.description"/>
+	                    <ARGUMENT NAME="ftcmd" VALUE="replacerow"/>
+                	</CATALOGMANAGER>
+
+                <if COND="Variables.errno!=0">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="UpdateFailed"/>
+                    </callelement>            
+                </then>
+                <else>
+                    <callelement NAME="OpenMarket/Xcelerate/Admin/SourceFront">
+                        <argument NAME="source" VALUE="Variables.source"/>
+                        <argument NAME="action" VALUE="details"/>
+                        <argument NAME="showtitle" VALUE="true"/>
+                    </callelement>
+                </else>
+                </if>
+				</else>
+				</if>
+    </then>
+    </if>
+
+    <!-- process deletion of stuff -->
+    <if COND="Variables.action=delete">
+    <then>
+                <setvar NAME="errno" VALUE="0"/>
+                	<CATALOGMANAGER>
+                    <ARGUMENT NAME="tablename" VALUE="Source"/>
+                    <ARGUMENT NAME="source" VALUE="Variables.source"/>
+                    <ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+                	</CATALOGMANAGER>
+
+                <if COND="Variables.errno!=0">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="DeleteFailed"/>
+                    </callelement>            
+                </then>
+                <else>
+                    <XLAT.STREAM KEY="dvin/UI/Deletesuccessful"/>
+                    <callelement NAME="OpenMarket/Xcelerate/Admin/SourceFront">
+                        <argument NAME="action" VALUE="list"/>
+                        <argument NAME="showtitle" VALUE="true"/>
+                    </callelement>
+                </else>
+                </if>
+    </then>
+    </if>
+
+    <!-- process addition of stuff -->
+    <if COND="Variables.action=new">
+    <then>
+
+                <if COND="IsVariable.source!=true">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="NoSource"/>
+                    </callelement>            
+                    <throwexception/>
+                </then>
+                </if>
+                <!-- insert the specified information
+                    into the table. Report any errors.
+                    Refresh the navigation -->
+                <if COND="IsVariable.description!=true">
+                <then>
+                    <setvar NAME="description" VALUE="Variables.empty"/>
+                </then>
+                </if>
+                <setvar NAME="errno" VALUE="0"/>
+                	<CATALOGMANAGER>
+                    <ARGUMENT NAME="tablename" VALUE="Source"/>
+                    <ARGUMENT NAME="source" VALUE="Variables.source"/>
+                    <ARGUMENT NAME="description" VALUE="Variables.description"/>
+                    <ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+                	</CATALOGMANAGER>
+                <if COND="Variables.errno!=0">
+                <then>
+                    <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+                        <argument NAME="error" VALUE="EnterFailed"/>
+                    </callelement>            
+                </then>
+                <else>
+                    <callelement NAME="OpenMarket/Xcelerate/Admin/SourceFront">
+                        <argument NAME="source" VALUE="Variables.source"/>
+                        <argument NAME="action" VALUE="details"/>
+                        <argument NAME="showtitle" VALUE="true"/>
+                    </callelement>
+                </else>
+                </if>
+
+    </then>
+    </if>
+	 
+	 <PROPERTY.GET PARAM="xcelerate.treeType" INIFILE="futuretense_xcel.ini" VARNAME="proptreetype"/>
+	<if  COND="IsElement.OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype=true">
+	<then>
+		<callelement NAME="OpenMarket/Xcelerate/UIFramework/UpdateTreeVariables.proptreetype">
+			<argument NAME="__TreeRefreshKeys__" VALUE="Self:Sources"/>
+		</callelement>		
+	</then>
+	</if>
+	 
+
+</FTCS>

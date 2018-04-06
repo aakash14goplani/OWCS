@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<!DOCTYPE ftcs SYSTEM "futuretense_cs.dtd">
+<ftcs version="1.2">
+<!-- OpenMarket/Xcelerate/Actions/AssetMgt/MapDetails
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+
+<!-- Display Map Values -->
+<if COND="Variables.ContentDetails:Mapping:Total!=0">
+<then>
+
+	<!--<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacerBar"/>-->
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/RowSpacer"/>
+	<tr>
+		<td class="form-label-text"><XLAT.STREAM KEY="dvin/Common/AT/Map"/>:</td>
+		<td></td>
+		<td class="form-inset">
+			<table BORDER="0" CELLSPACING="0" CELLPADDING="0">
+				<tr>
+					<td></td>
+					<td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+					<td>
+						<table cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
+							<tr>
+								<td class="tile-a" WIDTH="1" HEIGHT="1" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" VALIGN="RIGHT" REPLACEALL="Variables.cs_imagedir">
+									&nbsp;
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title">
+										<XLAT.STREAM KEY="dvin/Common/AT/Map/key"/>
+									</DIV>
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title">
+										<XLAT.STREAM KEY="dvin/Common/AT/Map/type"/>
+									</DIV>
+								</td>
+								<td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title">
+										<XLAT.STREAM KEY="dvin/Common/AT/Map/value"/>
+									</DIV>
+								</td>
+                                <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">
+									<DIV class="new-table-title">
+										<XLAT.STREAM KEY="dvin/Common/Site"/>
+									</DIV>
+								</td>
+                                <td class="tile-c" WIDTH="1" HEIGHT="1" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" VALIGN="LEFT" REPLACEALL="Variables.cs_imagedir">
+									&nbsp;
+								</td>
+							</tr>
+							<SETCOUNTER NAME="nthValue" VALUE="0"/>
+							<LOOP COUNT="Variables.ContentDetails:Mapping:Total">
+								<IF COND="Variables.rowStyle=tile-row-normal">
+								<THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+								</THEN>
+								<ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+								</ELSE>
+								</IF>
+								<tr class="Variables.rowStyle" REPLACEALL="Variables.rowStyle">
+								<td>&nbsp;</td>
+								<td>
+									<div class="form-inset">
+										<STRING.STREAM VALUE="Variables.ContentDetails:Mapping:Counters.nthValue:key" />
+									</div>
+								</td>
+								<td>
+									<div class="form-inset">
+										<XLAT.STREAM KEY="dvin/Common/AT/Map/TYPEVariables.ContentDetails:Mapping:Counters.nthValue:type" />
+									</div>
+								</td>
+								<td>
+									<div class="form-inset">
+										<STRING.STREAM VALUE="Variables.ContentDetails:Mapping:Counters.nthValue:value" />
+									</div>
+								</td>
+                                <td>
+                                    <div class="form-inset">
+                                    <EXECSQL SQL="select id, name from Publication" LIST="publist" TABLE="Publication" />
+                                    <LOOP LIST="publist">
+				                        <ICS.LISTGET LISTNAME="publist" FIELDNAME="id" OUTPUT="ssiteid" />
+				                        <ICS.LISTGET LISTNAME="publist" FIELDNAME="name" OUTPUT="ssitename" />
+                                        <ICS.RESOLVEVARIABLES NAME="$(Variables.ContentDetails:Mapping:$(Counters.nthValue):siteid)" OUTPUT="siteid" DELIMITED="true"/>
+                                        <IF COND="Variables.siteid=Variables.ssiteid"><THEN>
+                                            <STRING.STREAM VARIABLE="ssitename"/>
+                                        </THEN></IF>
+                                    </LOOP>
+                                    </div>
+								</td>
+                                <td>&nbsp;</td>
+								</tr>
+								<INCCOUNTER NAME="nthValue" VALUE="1"/>
+							</LOOP>
+
+						</table>
+					</td>
+					<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+				</tr>
+				<tr>
+					<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+					<td></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</then>
+</if>
+</ftcs>

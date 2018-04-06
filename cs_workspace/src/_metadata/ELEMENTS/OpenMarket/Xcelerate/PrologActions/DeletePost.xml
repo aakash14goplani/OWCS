@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/Xcelerate36/install/Populate/ElementCatalog/OpenMarket/Xcelerate/PrologActions/DeletePost.xml $ 
+$Revision: 2 $ 
+$Modtime: 3/02/01 6:01p $ 
+-->
+
+<!--
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- DeletePost.xml
+-
+- DESCRIPTION
+-		voids an asset
+- INPUT
+-		Variables.upcommand - delete or cancel
+-		Variables.id
+-
+-->
+
+<IF COND="Variables.upcommand!=cancel">
+<THEN>
+	<!-- Load the asset -->
+	<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theCurrentAsset"/>
+	<!-- check whether we can perform this function on this asset (access right may have changed since the front page was displayed) -->
+    <CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/CheckPrivs">
+        <ARGUMENT NAME="AssetType" VALUE="Variables.AssetType"/>
+        <ARGUMENT NAME="assetObjectName" VALUE="theCurrentAsset"/>
+        <ARGUMENT NAME="Function" VALUE="delete"/>
+    </CALLELEMENT>
+	<IF COND="Variables.PrivsFailed=true">
+	<THEN>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+			<ARGUMENT NAME="error" VALUE="Variables.PrivsFailedReason"/>
+		</CALLELEMENT>
+		<SETVAR NAME="upcommand" VALUE="cancel"/>
+	</THEN>
+	</IF>
+</THEN>
+</IF>
+
+</FTCS>
+
+

@@ -1,0 +1,348 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+
+<FTCS Version="1.1">
+<!-- 
+$Logfile: /VerticalApps/XcelerateC/install/Xcelerate/Populate/ElementCatalog/OpenMarket/Xcelerate/Actions/ShowCheckoutsFront.xml $ 
+$Revision: 41 $ 
+$Modtime: 3/01/04 9:15a $ 
+-->
+
+<!--
+
+- Confidential and Proprietary Information of Open Market Inc.
+-					All Rights Reserved.
+-
+- ShowCheckoutsFront.xml
+-
+- DESCRIPTION
+-    - display the list of items currently checked out to the user
+-
+- HISTORY 
+-->
+
+
+<!-- For each asset type get history 
+     If history exists, look for checkouts to current user.
+     If exist, display -->
+
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<setvar NAME="CheckoutFound" VALUE="no"/>
+<setvar NAME="tablename" VALUE="AssetType"/>
+<execsql LIST="AssetType" SQL="select AssetType.* from AssetType"/>
+<!-- Check if any asset table is tracked. If yes, Check history for checkouts to user.  -->
+<setvar NAME="CheckedOutAssetType" VALUE="Variables.empty"/>
+<if COND="AssetType.#numRows!=0">
+<then>
+<loop LIST="AssetType">
+<setvar NAME="errno" VALUE="0"/>
+<history TABLE="AssetType.assettype" LIST="AssetType.assettypeHistory" LOCKER="SessionVariables.username"/>
+	<if COND="Variables.errno=0">
+	<then>
+		<replace STR="AssetType.assettypeHistory">
+		<setvar NAME="num" VALUE="AssetType.assettypeHistory.#numRows"/>
+		<if COND="Variables.num!=0">
+		<then>
+			<setvar NAME="CheckoutFound" VALUE="yes"/>
+			<setvar NAME="CheckedOutAssetType" VALUE="Variables.CheckedOutAssetType;AssetType.assettype"/>
+		</then>
+		</if>
+		</replace>
+	</then>
+	</if>
+</loop>
+</then>
+</if>
+<if COND="Variables.CheckedOutAssetType!=Variables.empty">
+<then>
+	<substring STR="Variables.CheckedOutAssetType" OUTSTR="CheckedOutAssetType" INDEX="1"/>
+	<flush LIST="AssetType"/>
+	<stringlist NAME="AssetType" STR="Variables.CheckedOutAssetType" DELIM=";"/>
+</then>
+</if>
+
+<!-- Reject Checkouts are of status PR --> 
+<setvar NAME="FilteredCheckout" VALUE="0"/>
+<if COND="Variables.CheckoutFound=yes">
+<then>
+<loop LIST="AssetType" UNTIL="Variables.FilteredCheckout=1">
+	<loop LIST="AssetType.ITEMHistory">
+		<setvar NAME="tablename" VALUE="AssetType.ITEM"/>
+		<setvar NAME="ath" VALUE="AssetType.ITEMHistory.asset"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Variables.ath"/>
+			<ARGUMENT NAME="type" VALUE="Long"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<execsql LIST="Checkedout" SQL="select Variables.tablename.id,Variables.tablename.name, AssetPublication.pubid, AssetPublication.assetid from Variables.tablename, AssetPublication where Variables.tablename.id=Variables.ath and Variables.tablename.status!='VO' and Variables.tablename.id=AssetPublication.assetid and (AssetPublication.pubid=SessionVariables.pubid or AssetPublication.pubid=0)" TABLE="Variables.tablename,AssetPublication"/>
+		</THEN>
+		</IF>
+		<if COND="Checkedout.#numRows!=0">
+		<then>
+			<setvar NAME="FilteredCheckout" VALUE="1"/>
+			<flush LIST="Checkedout"/>
+		</then>
+		</if>
+	</loop>
+</loop>
+</then>
+</if>
+<table class="width-inner-100" cellspacing="0" cellpadding="0" border="0">
+	<tr><td>
+		<span style="font-size: 12px;font-weight: bold;"><XLAT.STREAM KEY="dvin/Common/MyCheckouts"/></span>
+	</td></tr>
+	<callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/TitleBar"/>
+</table>
+<!-- if checkout exists, find out its details -->
+<if COND="Variables.FilteredCheckout=1">
+<then>
+
+
+<!-- Table header -->
+
+     <table BORDER="0" CELLSPACING="0" CELLPADDING="0" CLASS="width-inner-100">
+     <tr>
+		<td></td><td class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+	</tr>
+	<tr>
+	<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+	<td >
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff"><tr><td colspan="11"class="tile-highlight"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+		<tr><td class="tile-a" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Type"/></DIV></td>
+		    <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Name"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/AT/Common/Description"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><XLAT.STREAM KEY="dvin/Common/Lastrevisiondate"/></DIV></td>
+            <td class="tile-b" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir"><DIV class="new-table-title"><BR /></DIV></td>
+			<td class="tile-c" background="Variables.cs_imagedir/graphics/common/screen/grad.gif" REPLACEALL="Variables.cs_imagedir">&nbsp;</td>
+		</tr>
+<tr><td colspan="11"class="tile-dark"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td></tr>
+     <setvar NAME="rowStyle" VALUE="tile-row-normal"/>
+	<setvar NAME="separatorLine" VALUE="0"/>
+
+<!-- Reusing this template for the New/Alloy/CS7 UI requires that we create another list to store the output -->
+<LISTOBJECT.CREATE NAME="tempList" COLUMNS="assettype,id,name,description,checkedoutdate"/>
+
+<PUBLICATION.LOAD NAME="site" OBJECTID="SessionVariables.pubid"/>
+<PUBLICATION.CHILDREN NAME="site" LIST="EnabledAssetTypes" OBJECTTYPE="AssetType" ORDER="assettype"/>
+<HASH.CREATE NAME="EnabledAssetTypesMap" LIST="EnabledAssetTypes" COLUMN="assettype" />
+
+<loop LIST="AssetType">
+<HASH.CONTAINS NAME="EnabledAssetTypesMap" VALUE="AssetType.ITEM" VARNAME="validAssetType" />
+
+<if cond="Variables.validAssetType=true">
+<then>
+    <!-- [KGF 2008-12-29 #14297] Look up AT description here so we don't do it more often than necessary -->
+    <ASSETTYPE.LOAD NAME="currAT" TYPE="AssetType.ITEM"/>
+    <ASSETTYPE.GET NAME="currAT" FIELD="description" OUTPUT="ATdesc"/>
+<!--    <ASSETTYPE.GET NAME="currAT" FIELD="id" OUTPUT="ATId"/>
+    <ASSETTYPE.GET NAME="currAT" FIELD="assettype" OUTPUT="AT"/>-->
+    <loop LIST="AssetType.ITEMHistory">
+		<setvar NAME="tablename" VALUE="AssetType.ITEM"/>
+		<setvar NAME="ath" VALUE="AssetType.ITEMHistory.asset"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Variables.ath"/>
+			<ARGUMENT NAME="type" VALUE="Long"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<execsql LIST="Checkedout" SQL="select Variables.tablename.id,Variables.tablename.name,Variables.tablename.description, AssetPublication.pubid, AssetPublication.assetid from Variables.tablename, AssetPublication where Variables.tablename.id=Variables.ath and Variables.tablename.status!='VO' and Variables.tablename.id=AssetPublication.assetid and (AssetPublication.pubid=SessionVariables.pubid or AssetPublication.pubid=0)" TABLE="Variables.tablename,AssetPublication"/>
+		</THEN>
+		</IF>
+		<if COND="Checkedout.#numRows!=0">
+		<then>
+			<loop LIST="Checkedout">
+				<IF COND="Variables.separatorLine=1">
+				<THEN>
+					<tr>
+						<!--<td colspan="11"class="light-line-color"><img height="1" width="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>-->
+					</tr>
+				</THEN>
+				</IF>
+				<setvar NAME="separatorLine" VALUE="1"/>
+				<tr class="Variables.rowStyle"  REPLACEALL="Variables.rowStyle">
+                    <!--js-->
+                    <td valign="middle" NOWRAP="NOWRAP">                  
+                              <PREVIEWURL.MAKEURL VARNAME="previewURL" ASSETTYPE="AssetType.ITEM" ASSETID="Checkedout.id" PUBID="SessionVariables.pubid"/>
+                             <IF COND="IsVariable.previewURL=true">
+                             <THEN>
+                                 <XLAT.LOOKUP KEY="dvin/Common/PreviewThisItem" VARNAME="_XLAT_"/>
+                                 <XLAT.LOOKUP KEY="dvin/Common/PreviewThisItem" VARNAME="mouseover" ESCAPE="true"/>
+                                 <A HREF="javascript:void(0)" onclick="openPreview('Variables.previewURL');"
+                                    onmouseover="window.status='Variables.mouseover';return true;" onmouseout="window.status='';return true"
+                                    REPLACEALL="Variables.previewURL,Variables.mouseover"><img height="14" width="14" hspace="2" vspace="4"
+                                    src="Variables.cs_imagedir/graphics/common/icon/iconPreviewContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_"
+                                    REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+                             </THEN>
+                              </IF>
+
+                            <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="_XLAT_"/>
+                            <XLAT.LOOKUP KEY="dvin/Common/InspectThisItem" VARNAME="mouseover" ESCAPE="true"/>
+                            <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+                                <ARGUMENT NAME="assettype" VALUE="AssetType.ITEM"/>
+                                <ARGUMENT NAME="assetid" VALUE="Checkedout.id"/>
+                                <ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+                                <ARGUMENT NAME="function" VALUE="inspect"/>
+                            </CALLELEMENT>
+							<STRING.ENCODE VARIABLE="urlInspectItem" VARNAME="urlInspectItem"/>
+                            <A href="Variables.urlInspectItem" OnMouseOver="window.status='Variables.mouseover'; return true"
+                               OnMouseOut="return window.status='';" REPLACEALL="Variables.urlInspectItem,Variables.mouseover">
+                                <img height="14" width="14" hspace="2" vspace="4"  src="Variables.cs_imagedir/graphics/common/icon/iconInspectContent.gif" border="0"
+                                     title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+
+                        <XLAT.LOOKUP KEY="dvin/Common/EditThisItem" VARNAME="_XLAT_"/>
+                        <XLAT.LOOKUP KEY="dvin/Common/EditThisItem" VARNAME="mouseover" ESCAPE="true"/>
+                        <CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+                            <ARGUMENT NAME="assettype" VALUE="AssetType.ITEM"/>
+                            <ARGUMENT NAME="assetid" VALUE="Checkedout.id"/>
+                            <ARGUMENT NAME="varname" VALUE="urlEditItem"/>
+                            <ARGUMENT NAME="function" VALUE="edit"/>
+                        </CALLELEMENT>
+						<STRING.ENCODE VARIABLE="urlEditItem" VARNAME="urlEditItem"/>
+                        <IF COND="AssetType.ITEM=Template">
+                        <THEN>
+                            <IF COND="Variables.hasEditACL=true">
+                            <THEN>
+                                <A href="Variables.urlEditItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlEditItem,Variables.mouseover"><img vspace="4" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+                            </THEN>
+                            <ELSE>
+                                    <XLAT.LOOKUP VARNAME="_XLAT_" KEY="dvin/AT/Template/Youdonthaveprivilegestoedit"/>
+                                <img height="14" width="14" vspace="4" src="Variables.cs_imagedir/graphics/common/icon/iconEditContentX.gif" border="0" hspace="2" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/>
+                            </ELSE>
+                            </IF>
+                        </THEN>
+                        <ELSE>
+                            <A href="Variables.urlEditItem" OnMouseOver="window.status='Variables.mouseover'; return true" OnMouseOut="return window.status='';" REPLACEALL="Variables.urlEditItem,Variables.mouseover"><img vspace="4" hspace="2" src="Variables.cs_imagedir/graphics/common/icon/iconEditContent.gif" border="0" title="Variables._XLAT_" alt="Variables._XLAT_" REPLACEALL="Variables.cs_imagedir,Variables._XLAT_"/></A>
+                        </ELSE>
+                        </IF>
+                 </td>
+                    <!--js-->                    
+
+                <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                    <DIV class="small-text-inset">
+                    <STRING.STREAM VARIABLE="ATdesc"/>
+                    <BR />
+                  </DIV>
+                </td> 
+             <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+                        <XLAT.LOOKUP KEY="dvin/UI/ShowContent" VARNAME="_XLAT_" ESCAPE="true"/>
+			 					<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/GenerateLink">
+									<ARGUMENT NAME="assettype" VALUE="AssetType.ITEM"/>
+									<ARGUMENT NAME="assetid" VALUE="Checkedout.id"/>
+									<ARGUMENT NAME="varname" VALUE="urlInspectItem"/>
+									<ARGUMENT NAME="function" VALUE="inspect"/>
+								</CALLELEMENT>
+						<STRING.ENCODE VARIABLE="urlInspectItem" VARNAME="urlInspectItem"/>
+                        <A HREF="Variables.urlInspectItem"
+                             OnMouseOver="window.status='Variables._XLAT_'; return true"
+                             OnMouseOut="return window.status='';"  REPLACEALL="Variables.urlInspectItem,Variables._XLAT_">
+                            <STRING.STREAM LIST="Checkedout" COLUMN="name"/>
+                        </A><BR />
+                    </DIV>
+                </td> 
+             <td><BR /></td><td VALIGN="TOP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+                            <STRING.STREAM LIST="Checkedout" COLUMN="description"/>
+                        <BR />
+                    </DIV>
+                </td> 
+		<setvar NAME="tablename" VALUE="CheckOutInfo"/>
+		<setvar NAME="errno" VALUE="0"/>
+		<CALLELEMENT NAME="OpenMarket/Xcelerate/Util/validateFields">
+			<ARGUMENT NAME="columnvalue" VALUE="Checkedout.id"/>
+			<ARGUMENT NAME="type" VALUE="Long"/>
+		</CALLELEMENT>
+		<IF COND="Variables.validatedstatus=true">
+		<THEN>
+			<execsql LIST="ItsHistory" SQL="select cs_checkoutdate from Variables.tablename where cs_assetid=Checkedout.id"/>
+		</THEN>
+		</IF>
+		<if COND="IsError.Variables.errno=false">
+		<then>
+			<setvar name="GmtDateString" value="ItsHistory.cs_checkoutdate"/>
+			<flush list="ItsHistory"/>
+		</then>
+		<else>
+          		<history TABLE="AssetType.ITEM" ASSET="Checkedout.id" LIST="ItsHistory"/>
+                        <setvar name="GmtDateString" value="ItsHistory.versiondate" />
+		</else>
+		</if>
+
+             <td><BR /></td><td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+				<!-- callelement NAME="OpenMarket/Xcelerate/Util/SetClientRevisionTime"/-->
+                        <LOCALE.CREATE VARNAME="localeobj" LOCALENAME="SessionVariables.locale"/>
+                        <DATEFORMAT.CREATE NAME="dObject" DATESTYLE="SHORT" TIMESTYLE="SHORT" LOCALE="localeobj"  TIMEZONEID="SessionVariables.time.zone"/>
+                        <DATEFORMAT.GETDATETIME NAME="dObject" VALUE="Variables.GmtDateString" VALUETYPE="jdbcdate" VARNAME="formatteddate"/>
+                        <DATEFORMAT.GETDATETIME NAME="_FormatDate_" VALUE="Variables.GmtDateString" VALUETYPE="jdbcdate"  VARNAME="formatteddateFullVersion"/>
+                        <SPAN TITLE="Variables.formatteddateFullVersion" REPLACEALL="Variables.formatteddateFullVersion">
+	 							<STRING.STREAM VARIABLE="formatteddate"/>
+                        </SPAN>
+                        <BR />
+                    </DIV>
+                </td> 
+
+
+<SATELLITE.LINK ASSEMBLER="query" pagename="OpenMarket/Xcelerate/Actions/CommitFront" outstring="CheckInURL">
+    <satellite.argument name="cs_environment" value="Variables.cs_environment"/>
+    <satellite.argument name="cs_formmode" value="Variables.cs_formmode"/>
+                                                               <satellite.argument name="AssetType" value="AssetType.ITEM"/>
+                                                              <satellite.argument name="id" value="Checkedout.id"/>
+                                                              <satellite.argument name="CancelReturn" value="OpenMarket/Xcelerate/Actions/ShowCheckoutsFront"/>
+                                                               </SATELLITE.LINK>
+
+             <td VALIGN="TOP" NOWRAP="NOWRAP" ALIGN="LEFT">
+                	<DIV class="small-text-inset">
+			<XLAT.LOOKUP KEY="dvin/UI/Checkinthisitem" VARNAME="_XLAT_" ESCAPE="true"/>
+			<XLAT.LOOKUP KEY="dvin/UI/Checkinthisitem" VARNAME="_xlat_checkin"/>
+			<A HREF="Variables.CheckInURL" onmouseover="window.status='Variables._XLAT_';return true;" onmouseout="window.status='';return true" REPLACEALL="Variables.CheckInURL,Variables._XLAT_"><CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/TextButton"><ARGUMENT NAME="buttonkey" VALUE="UI/Forms/CheckIn"/></CALLELEMENT></A>
+                        <BR />
+                    </DIV>
+                </td> 
+                <td><BR /></td>
+                </tr>
+            <IF COND="Variables.rowStyle=tile-row-normal">
+            <THEN><SETVAR NAME="rowStyle" VALUE="tile-row-highlight"/>
+            </THEN>
+            <ELSE><SETVAR NAME="rowStyle" VALUE="tile-row-normal"/>
+            </ELSE>
+            </IF>
+            <!-- Adding stuff to the list required for Alloy UI -->
+                        <LISTOBJECT.ADDROW NAME="tempList" assettype="AssetType.ITEM" id="Checkedout.id" name="Checkedout.name" description="Checkedout.description" checkedoutdate="Variables.GmtDateString" />
+            </loop>
+            <!--<flush LIST="Checkedout"/>-->
+        </then>
+        </if>
+    </loop>
+</then>
+</if>
+
+</loop>
+<!-- Converting the listobject to a list required for Alloy UI -->
+<LISTOBJECT.TOLIST NAME="tempList" LISTVARNAME="CheckedOutAssets_AlloyUI"/>
+</table>
+</td>
+		<td class="tile-dark" VALIGN="top" WIDTH="1" NOWRAP="nowrap"><BR /></td>
+		</tr>
+<tr>
+<td colspan="3" class="tile-dark" VALIGN="TOP" HEIGHT="1"><IMG WIDTH="1" HEIGHT="1" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td>
+</tr>
+<tr>
+<td></td><td background="Variables.cs_imagedir/graphics/common/screen/shadow.gif" REPLACEALL="Variables.cs_imagedir"><IMG WIDTH="1" HEIGHT="5" src="Variables.cs_imagedir/graphics/common/screen/dotclear.gif" REPLACEALL="Variables.cs_imagedir"/></td><td></td>
+</tr>
+</table>
+
+</then>
+</if>
+<if COND="Variables.FilteredCheckout=0">
+<then>
+<XLAT.STREAM KEY="dvin/UI/Noassetscheckedoutbyusername"/>
+</then>
+</if>
+</FTCS>

@@ -1,0 +1,151 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Actions/Workflow/StepActions/SendEmailToAssignees
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- This is an action element called by step actions SendAssignmentEmail and SendRejectionEmail-->
+
+<XLAT.LOOKUP KEY="dvin/UI/Wf/StepActionSendEmail" VARNAME="displayMsg" />
+
+<!-- load email object -->
+<EMAILMANAGER.LOAD NAME="Variables.emailname" OBJVARNAME="emailobject"/>
+
+<!-- get total assignments -->
+<if COND="IsVariable.ObjectTotal=true">
+<then>
+<setvar NAME="NumOfAssignments" VALUE="Variables.ObjectTotal"/>
+</then>
+<else>
+<setvar NAME="NumOfAssignments" VALUE="0"/>
+</else>
+</if>
+
+<!-- For each assignment object, get asignee -->
+<setcounter NAME="COUNT" VALUE="0"/>
+<if COND="Variables.NumOfAssignments!=0">
+<then>
+	<loop FROM="0" COUNT="Variables.NumOfAssignments">
+		<removevar NAME="Step"/>
+
+		<setvar NAME="assignednamesemilist" VALUE="Variables.StepTargetUsersCounters.COUNT"/>
+		<stringlist NAME="assignednamelist" STR="Variables.assignednamesemilist" DELIM=";"/>
+
+		<if COND="IsVariable.StepTargetRolesCounters.COUNT=true">
+		<then>
+			<setvar NAME="assignedrolecommalist" VALUE="Variables.StepTargetRolesCounters.COUNT"/>
+			<stringlist NAME="assignedrolelist" STR="Variables.assignedrolecommalist" DELIM=","/>
+		</then>
+		</if>
+
+		<setvar NAME="assignername" VALUE="Variables.StepUser"/>
+
+		<!-- get assigner -->
+		<!-- get assigner's name -->
+		<USERMANAGER.GETDISPLAYABLEUSERNAME USER="Variables.assignername" VARNAME="assigner_user_name"/>
+
+		<XLAT.LOOKUP KEY="dvin/UI/Wf/Assignername" VARNAME="AssignerNameLabel" />
+		<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.AssignerNameLabel: Variables.assigner_user_name" />
+
+		<!-- get asset -->
+		<WORKFLOWABLEOBJECT.GETDISPLAYABLENAME OBJECT="ObjectCounters.COUNT" VARNAME="assetname"/>
+		<XLAT.LOOKUP KEY="dvin/Common/Object" VARNAME="cobject" />
+		<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.cobject: Variables.assetname" />
+
+		<XLAT.LOOKUP KEY="dvin/UI/Wf/NotSpecified" VARNAME="comment" />
+		<if COND="IsVariable.AssignCommentsCounters.COUNT=true">
+		<then>
+			<setvar NAME="temp" VALUE="Variables.AssignCommentsCounters.COUNT"/>
+			<if COND="Variables.temp!=Variables.empty">
+			<then>
+				<setvar NAME="comment" VALUE="Variables.AssignCommentsCounters.COUNT"/>
+			</then>
+			</if>
+		</then>
+		</if>
+		<XLAT.LOOKUP KEY="dvin/UI/Wf/actiontotake" VARNAME="actionTotake" />
+		<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.actionTotake: Variables.comment" />
+
+
+		<loop LIST="assignednamelist">
+			<setvar NAME="assignedname" VALUE="assignednamelist.ITEM"/>
+			<if COND="IsList.assignedrolelist=true">
+			<then>
+				<gotorow LIST="assignedrolelist" ROWNUM="assignednamelist.#curRow"/>
+				<setvar NAME="assignedrole" VALUE="assignedrolelist.ITEM"/>
+			</then>
+			<else>
+				<XLAT.LOOKUP KEY="dvin/UI/Wf/Unimportant" VARNAME="assignedrole" />
+			</else>
+			</if>
+			<!-- get email address -->
+			<USERMANAGER.GETUSER USER="Variables.assignedname" OBJVARNAME="userobj"/>
+			<CCUSER.GETDISPLAYABLENAME NAME="userobj" VARNAME="assigned_user_name"/>
+			<CCUSER.GETEMAIL NAME="userobj" VARNAME="EmailAddress"/>
+			<XLAT.LOOKUP KEY="dvin/UI/Wf/Assignedname" VARNAME="assignedName" />
+			<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.assignedName: Variables.assigned_user_name" />
+
+			<XLAT.LOOKUP KEY="dvin/UI/Wf/Assignedrole" VARNAME="assignedRoleLabel"/>
+			<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.assignedRoleLabel: Variables.assignedrole" />
+
+
+			<IF COND="IsVariable.EmailAddress=true">
+			<THEN>
+				<XLAT.LOOKUP KEY="dvin/UI/Wf/Emailaddress" VARNAME="emailAddressLabel" />
+				<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.emailAddressLabel: Variables.EmailAddress" />
+
+			
+				<CALLELEMENT NAME="OpenMarket/Xcelerate/Actions/Workflow/StepActions/EncodeUtil">
+					<ARGUMENT NAME="assignee" VALUE="Variables.assigned_user_name"/>
+					<ARGUMENT NAME="assigneerole" VALUE="Variables.assignedrole"/>
+					<ARGUMENT NAME="assigner" VALUE="Variables.assigner_user_name"/>
+					<ARGUMENT NAME="assetname" VALUE="Variables.assetname"/>
+					<ARGUMENT NAME="instruction" VALUE="Variables.comment"/>
+				</CALLELEMENT>
+				<!-- translate subject -->
+				<EMAIL.TRANSLATESUBJECT NAME="emailobject" PARAMS="Variables.paramString" VARNAME="subject" DECODE="true"/>
+
+
+				<!-- translate body -->
+				<EMAIL.TRANSLATEBODY NAME="emailobject" PARAMS="Variables.paramString" VARNAME="body" DECODE="true"/>
+
+				<XLAT.LOOKUP KEY="dvin/UI/Wf/Translatedsubject" VARNAME="TranslatedSubjectLabel" />
+				<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.TranslatedSubjectLabel: Variables.subject" />
+
+				<XLAT.LOOKUP KEY="dvin/UI/Wf/Translatedbody" VARNAME="TranslatedBodyLabel" />
+				<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.TranslatedBodyLabel: Variables.body" />
+
+
+				<!-- send mail -->
+                <MAIL.SEND TO="Variables.EmailAddress" SUBJECT="Variables.subject" BODY="Variables.body" CONTENTTYPE="text/html" />
+			</THEN>
+			<ELSE>
+				<XLAT.LOOKUP KEY="dvin/UI/Wf/EmailaddressNone" VARNAME="noEmailAddress" />
+				<SETVAR NAME="displayMsg" VALUE="Variables.displayMsg %3cbr/%3e Variables.noEmailAddress" />
+			</ELSE>
+			</IF>
+		</loop>
+
+		<inccounter NAME="COUNT" VALUE="1"/>
+	</loop>
+	<REMOVEVAR NAME="AssignerNameLabel" />
+	<REMOVEVAR NAME="cobject" />
+	<REMOVEVAR NAME="actionTotake" />
+	<REMOVEVAR NAME="assignedName" />
+	<REMOVEVAR NAME="assignedRoleLabel" />
+	<REMOVEVAR NAME="emailAddressLabel" />
+	<REMOVEVAR NAME="TranslatedSubjectLabel" />
+	<REMOVEVAR NAME="TranslatedBodyLabel" />
+	<REMOVEVAR NAME="noEmailAddress" />
+</then>
+</if>
+
+<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+		<ARGUMENT NAME="severity" VALUE="info"/>
+		<ARGUMENT NAME="msgtext" VALUE="Variables.displayMsg"/>
+	</CALLELEMENT>
+</FTCS> 

@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.2">
+<!-- OpenMarket/Xcelerate/Admin/LocalePost
+
+ INPUT
+
+ OUTPUT
+
+-->
+
+
+
+<STRING.ENCODE VARIABLE="action" VARNAME="action"/>
+		<IF COND="Variables.action=delete">
+		<THEN>
+			<CATALOGMANAGER>
+				<ARGUMENT NAME="ftcmd" VALUE="deleterow"/>
+				<ARGUMENT NAME="tablename" VALUE="LocaleMap"/>
+				<ARGUMENT NAME="id" VALUE="Variables.Locale"/>
+			</CATALOGMANAGER>
+		</THEN>
+		<ELSE>
+			
+			<SETVAR NAME="ordinal" VALUE="2"/>
+
+			<!-- find everything with ordinal 1 and update to ordinal 2 -->
+			<!-- then update selected to ordinal 1 -->
+			<SETVAR NAME="errno" VALUE="0"/>
+			<SETVAR NAME="tablename" VALUE="LocaleMap"/>
+			<EXECSQL SQL="SELECT * FROM Variables.tablename WHERE ordinal=1" LIST="currentDefault"/>
+			<IF COND="Variables.errno=0">
+			<THEN>
+				<IF COND="Variables.Default=new">
+				<THEN>
+					<LOOP LIST="currentDefault">
+						<CATALOGMANAGER>
+							<ARGUMENT NAME="ftcmd" VALUE="updaterow"/>
+							<ARGUMENT NAME="tablename" VALUE="LocaleMap"/>
+							<ARGUMENT NAME="id" VALUE="currentDefault.id"/>
+							<ARGUMENT NAME="ordinal" VALUE="2"/>
+						</CATALOGMANAGER>
+					</LOOP>
+					<SETVAR NAME="ordinal" VALUE="1"/>
+				</THEN>
+				<ELSE>
+					<IF COND="Variables.Default=Variables.Locale">
+					<THEN>
+						<LOOP LIST="currentDefault">
+							<CATALOGMANAGER>
+								<ARGUMENT NAME="ftcmd" VALUE="updaterow"/>
+								<ARGUMENT NAME="tablename" VALUE="LocaleMap"/>
+								<ARGUMENT NAME="id" VALUE="currentDefault.id"/>
+								<ARGUMENT NAME="ordinal" VALUE="2"/>
+							</CATALOGMANAGER>
+						</LOOP>
+						<SETVAR NAME="ordinal" VALUE="1"/>
+					</THEN>
+					</IF>
+            </ELSE>
+				</IF>
+			</THEN>
+			<ELSE>
+				<SETVAR NAME="ordinal" VALUE="1"/>
+			</ELSE>
+			</IF>
+
+			<IF COND="Variables.action!=new">
+			<THEN>
+				<CATALOGMANAGER>
+					<ARGUMENT NAME="ftcmd" VALUE="updaterow"/>
+					<ARGUMENT NAME="tablename" VALUE="LocaleMap"/>
+					<ARGUMENT NAME="id" VALUE="Variables.Locale"/>
+					<ARGUMENT NAME="language" VALUE="Variables.Language"/>
+				</CATALOGMANAGER>
+			</THEN>
+			<ELSE>
+				<CATALOGMANAGER>
+					<ARGUMENT NAME="ftcmd" VALUE="addrow"/>
+					<ARGUMENT NAME="tablename" VALUE="LocaleMap"/>
+					<ARGUMENT NAME="id" VALUE="Variables.Locale"/>
+					<ARGUMENT NAME="language" VALUE="Variables.Language"/>
+				</CATALOGMANAGER>
+			</ELSE>
+			</IF>
+		</ELSE>
+		</IF>
+		
+	<IF COND="Variables.errno!=0">
+	<THEN>
+			<IF COND="Variables.action=new">
+			<THEN>
+				<callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+					<argument NAME="error" VALUE="AlreadyExistingLocale"/>
+				</callelement>
+			</THEN>
+			<ELSE>
+		<XLAT.STREAM KEY="dvin/UI/Admin/Error/Localeupdateerror" errno="Variables.errno" Locale="Variables.Locale" errdetail1="Variables.errdetail1" EVALALL="false"/><BR/>
+			</ELSE>
+			</IF>
+	</THEN>
+	</IF>
+
+	<REMOVEVAR NAME="Locale"/>
+	<REMOVEVAR NAME="action"/>
+	<CALLELEMENT NAME="OpenMarket/Xcelerate/UIFramework/AdminPage">
+		<ARGUMENT NAME="ThisPage" VALUE="LocaleFront"/>
+		
+	</CALLELEMENT>
+
+
+
+</FTCS> 

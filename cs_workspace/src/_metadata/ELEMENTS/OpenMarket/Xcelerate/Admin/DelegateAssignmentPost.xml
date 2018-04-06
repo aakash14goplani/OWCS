@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<!DOCTYPE FTCS SYSTEM "futuretense_cs.dtd">
+<FTCS Version="1.1">
+<!-- OpenMarket/Xcelerate/Admin/DelegateAssignmentPost
+-
+- INPUT
+-
+- OUTPUT
+-
+-->
+<!-- specify stylesheets -->
+<STRING.ENCODE VARIABLE="cs_imagedir" VARNAME="cs_imagedir"/>
+<STRING.ENCODE VARIABLE="cs_formmode" VARNAME="cs_formmode"/>
+<STRING.ENCODE VARIABLE="cs_environment" VARNAME="cs_environment"/>
+<link href="Variables.cs_imagedir/data/css/SessionVariables.locale/common.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.cs_imagedir,SessionVariables.locale"/>
+<link href="Variables.cs_imagedir/data/css/SessionVariables.locale/content.css" rel="styleSheet" type="text/css" REPLACEALL="Variables.cs_imagedir,Variables.cs_imagedir,SessionVariables.locale"/>	
+<callelement NAME="OpenMarket/Xcelerate/Util/LoadDefaultStyleSheet">
+	<argument NAME="cssFilesToLoad" VALUE="common.css,content.css"/>
+</callelement>
+<!-- get delegateto selection for the corresponding radio button selected for delegatefrom -->
+<stringlist NAME="assignmentid" STR="Variables.assignmentid" DELIM=":"/>
+<setvar NAME="assignmentid" VALUE="assignmentid.ITEM"/>
+<gotorow LIST="assignmentid" ROWNUM="2"/>
+<setvar NAME="count" VALUE="assignmentid.ITEM"/>
+<setvar NAME="temp" VALUE="Variables.DelegateUserVariables.count"/>
+<setvar NAME="DelegateUser" VALUE="Variables.temp"/>
+
+<WorkflowAsset.Load ASSETTYPE="Variables.AssetType" ID="Variables.id" OBJVARNAME="workflowasset" />
+
+<ASSET.LOAD TYPE="Variables.AssetType" OBJECTID="Variables.id" NAME="theAsset"/>
+<ASSET.GET NAME="theAsset" FIELD="name" OUTPUT="assetname"/>
+
+<if COND="IsVariable.delegatecomment!=true">
+<then>
+     <setvar NAME="delegatecomment" VALUE=""/>
+</then>
+<else>
+     <substitute STR="Variables.delegatecomment" WHAT="%26" WITH=" AND " OUTSTR="delegatecomment"/>
+     <substitute STR="Variables.delegatecomment" WHAT="'" WITH=" " OUTSTR="delegatecomment"/>
+     <substitute STR="Variables.delegatecomment" WHAT="%22" WITH=" " OUTSTR="delegatecomment"/>
+</else>
+</if>
+
+<UserManager.GetDisplayableUserName USER="Variables.DelegateUser" VARNAME="uname" />
+<WorkflowEngine.DelegateAssignment OBJECT="workflowasset" ID="Variables.assignmentid" DELEGATEDTO="Variables.DelegateUser" COMMENT="Variables.delegatecomment" SITE="SessionVariables.pubid" />
+
+<if COND="Variables.errno!=0">
+<then>
+     <callelement NAME="OpenMarket/Xcelerate/Actions/Util/ShowError">
+	<argument NAME="error" VALUE="DelegateAssignmentFailed"/>
+	<argument NAME="delegateuser" VALUE="Variables.uname"/>
+     </callelement>
+</then>
+<else>
+     <ASSETTYPE.LOAD NAME="type" TYPE="Variables.AssetType"/>
+     <ASSETTYPE.GET NAME="type" FIELD="description" OUTPUT="ATdesc"/>
+     <XLAT.LOOKUP KEY="dvin/UI/Admin/DelegateAssignmentToUser" VARNAME="msgtext"/>
+     <callelement NAME="OpenMarket/Xcelerate/UIFramework/Util/ShowMessage">
+        <argument NAME="msgtext" VALUE="Variables.msgtext"/>
+	<argument NAME="severity" VALUE="info"/>	
+     </callelement>     
+</else>
+</if>
+
+<callelement NAME="OpenMarket/Xcelerate/Actions/StatusDetailsFront">
+	<argument NAME="AssetType" VALUE="Variables.AssetType"/>
+	<argument NAME="id"        VALUE="Variables.id"/>
+</callelement>
+
+</FTCS> 
