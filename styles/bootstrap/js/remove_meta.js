@@ -6,9 +6,7 @@ document.querySelector("head").appendChild(jq);
 function proceed () {
     $("a > img").unwrap();
     // include disclaimer
-    $(document).ready(function(){
-        $(".disclaimer").load("../../html/disclaimer.html");
-    });
+    $(".disclaimer").load("../../html/disclaimer.html");
 }
 // hide meta-data and display filename at meta section
 var divsToHide = document.getElementsByClassName("gist-meta");
