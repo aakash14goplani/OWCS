@@ -22,3 +22,7 @@ for(var i = 0; i < divsToHide.length; i++){
 var bordersToHide = document.getElementsByClassName("gist-file");
 for(var i = 0; i < bordersToHide.length; i++)
     bordersToHide[i].style.border = "none";
+// include disclaimer
+$(document).ready(function(){
+    $(".disclaimer").load("disclaimer.html");
+});
