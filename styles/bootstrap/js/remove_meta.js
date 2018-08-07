@@ -7,7 +7,7 @@ function proceed () {
     $("a > img").unwrap();
     // include disclaimer
     $(document).ready(function(){
-        $(".disclaimer").load("disclaimer.html");
+        $(".disclaimer").load("../../html/disclaimer.html");
     });
 }
 // hide meta-data and display filename at meta section
