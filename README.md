@@ -125,7 +125,7 @@
     + GetAssetInfo (Read JSON)
     + LoadAssetInfo (Create JSON)
     + Create String
-    + Share Assets
+    + Share/Unshare Assets
     + Flush Visitor Data
     + Send Email Notifications
     + Breadcrums
