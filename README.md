@@ -96,6 +96,12 @@
     + Basic Debugging
     + Common errors and their Prevention
     + Bad Implementation of code
+*  REST API
+    + REST API: INTRO
+    + Java/Jersey Example
+    + AJAX Example
+    + JSON Response
+    + Misc. Implementation
 * Publishing
     + Publishing
     + Static Publishing
@@ -128,7 +134,9 @@
     + Share/Unshare Assets
     + Flush Visitor Data
     + Send Email Notifications
-    + Breadcrums
+    + Breadcrumbs
+    + OOTB Asset Include Button
+    + Pre-fill asset fields
     + Creating new Category
     + Find all Variables in Page
     + Fetch Attributes of Assets
@@ -155,7 +163,4 @@ The purpose of this site is to give free tutorials (or good reading/guidelines) 
 I want to stress on this point that I didn't mean to steal or copy the articles from other blogs, I am just aggregating all stuff from differnet nodes under a common tree for educational purposes. The articles that I have refered from are clearly mentioned under "Reference" section.   
 
 
-Code snippets are shown for demo purpose only, use them in PROD with your understanding and risk.   
-
-
-I can answer your queries at <a href="mailto:aakash.14.goplani@gmail.com">aakash.14.goplani@gmail.com</a>
+Code snippets are shown for demo purpose only, use them in PROD with your understanding and risk.
