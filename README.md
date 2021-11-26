@@ -1,6 +1,6 @@
 # Oracle WebCenter Sites Tutorials
 
-[SITE URL](https://aakash14goplani.github.io/OWCS)
+[SITE URL](https://aakashgoplani.in/OWCS/)
 
 ### Topics Covered
 
