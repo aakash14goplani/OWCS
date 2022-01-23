@@ -586,7 +586,7 @@
         </div>    	
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     	<script src="styles/bootstrap/js/bootstrap.min.js"></script>
-		<script src="https://www.googletagmanager.com/gtag/js?id=G-4GBZ8HQRSH"></script>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-4GBZ8HQRSH"></script>
 		<script>
 		  window.dataLayer = window.dataLayer || [];
 		  function gtag(){dataLayer.push(arguments);}

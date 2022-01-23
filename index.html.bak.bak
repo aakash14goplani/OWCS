@@ -7,21 +7,6 @@
         <meta content="width=device-width,initial-scale=1,maximum-scale=1" name="viewport">
         <meta content="owcs, wcs, tutorial, owcs tutorial, oracle webcenter sites tutorial" name="keywords">
         <meta content="index,follow" name="robots">
-		<!-- OG Tags -->
-		<meta property="og:locale" content="en_US" />
-		<meta property="og:title" content="Aakash Goplani" />
-		<meta property="og:description" content="owcs, wcs, tutorial, owcs tutorial, oracle webcenter sites tutorial" />
-		<meta property="og:url" content="https://www.aakashgoplani.in/OWCS" />
-		<meta property="og:site_name" content="Aakash Goplani" />
-		<meta property="og:type" content="website" />
-		<meta property="og:image" content="https://avatars.githubusercontent.com/u/13452115?v=4" />
-		<meta property="og:image:alt" content="Aakash Goplani" />
-		<!-- Twitter Tags -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/13452115?v=4" />
-		<meta name="twitter:site" content="@aakashgoplani" />
-		<meta name="twitter:creator" content="@aakashgoplani" />
-		<meta name="twitter:title" content="owcs, wcs, tutorial, owcs tutorial, oracle webcenter sites tutorial" />
         <title>Oracle WebCenter Sites Tutorial</title>
         <link href="styles/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
         <link href="styles/bootstrap/css/navigation.css" type="text/css" rel="stylesheet" />
@@ -586,7 +571,7 @@
         </div>    	
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     	<script src="styles/bootstrap/js/bootstrap.min.js"></script>
-		<script src="https://www.googletagmanager.com/gtag/js?id=G-4GBZ8HQRSH"></script>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-4GBZ8HQRSH"></script>
 		<script>
 		  window.dataLayer = window.dataLayer || [];
 		  function gtag(){dataLayer.push(arguments);}
